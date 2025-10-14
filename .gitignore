@@ -482,7 +482,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
-/API/appsettings.json
 /API/seePaw.db
 /API/seePaw.db-shm
 /API/seePaw.db-wal
