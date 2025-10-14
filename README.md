@@ -145,7 +145,7 @@ curl https://localhost:5001/swagger
 backend/
 ├── .env                    # Variáveis Docker (não vai para Git)
 ├── docker-compose.yml      # Configuração Docker
-├── API/                    # Camada de apresentação
+├── API/                    # Controllers, middleware e configuração HTTP
 ├── Application/            # Lógica de negócio
 ├── Domain/                 # Entidades
 └── Persistence/            # Acesso a dados
