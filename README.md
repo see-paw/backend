@@ -87,9 +87,9 @@ dotnet ef database update
 
 #### Atualizar a BD após pull
 
-Se um colega adicionou migrations:
+Se um colega adicionou migrations relevantes para o que estás a desenvolver:
 ```bash
-git pull
+git pull (ou merge a partir da respetiva branch)
 cd API
 dotnet watch
 ```
