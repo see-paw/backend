@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Application.Animals.DTOs;
+using AutoMapper;
 using Domain;
 
 namespace API.Core;

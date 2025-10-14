@@ -1,12 +1,7 @@
 ﻿using API.Core;
-using Application.Core;
-using Application.Shelters.Queries;
 using AutoMapper;
 using Domain;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Persistence;
 
 

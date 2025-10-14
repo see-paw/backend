@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain;
 
-public class Image
+public class Photo
 {
     [Key]
     public string ImageId { get; set; } = Guid.NewGuid().ToString();

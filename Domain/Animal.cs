@@ -62,5 +62,5 @@ public class Animal
     public Shelter? Shelter { get; set; }
 
     [JsonIgnore]
-    public ICollection<Image>? Images { get; set; }
+    public ICollection<Photo>? Images { get; set; }
 }

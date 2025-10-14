@@ -9,7 +9,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
     public required DbSet<Animal> Animals { get; set; }
     public required DbSet<Shelter> Shelters { get; set; }
 
-    public required DbSet<Image> Images { get; set; }
+    public required DbSet<Photo> Images { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -37,7 +37,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
        .OnDelete(DeleteBehavior.Restrict);// Prevent cascade delete: when a Shelter is deleted, its Animals are not deleted
 
         // Configure the one-to-many relationship between Animal and Image with restricted delete behavior
-        modelBuilder.Entity<Image>()
+        modelBuilder.Entity<Photo>()
             .HasOne(i => i.Animal)
             .WithMany(a => a.Images)
             .HasForeignKey(i => i.AnimalId)
