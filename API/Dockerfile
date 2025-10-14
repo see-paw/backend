@@ -6,6 +6,7 @@ USER $APP_UID
 WORKDIR /app
 EXPOSE 5000
 EXPOSE 5001
+ENV ASPNETCORE_ENVIRONMENT=Docker
 
 
 # Esta fase é usada para compilar o projeto de serviço

@@ -2,30 +2,33 @@
 using Persistence;
 using System.Text.Json.Serialization;
 
-var builder = WebApplication.CreateBuilder(args);
+var inContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    EnvironmentName = inContainer ? "Docker" : null
+});
+
+// Config: base + por ambiente + env vars; secrets só em Dev local (não Docker)
 builder.Configuration
-    .AddJsonFile("appsettings.json", optional: false)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false)
     .AddEnvironmentVariables();
 
-if (builder.Environment.IsDevelopment())
-{
+if (builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironment("Docker"))
     builder.Configuration.AddUserSecrets<Program>(optional: true);
-}
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-connectionString ??= Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+// Connection string (config → env fallback)
+var connectionString =
+    builder.Configuration.GetConnectionString("DefaultConnection") ??
+    Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
 
 if (string.IsNullOrWhiteSpace(connectionString))
-{
-    throw new InvalidOperationException("Invalid Connection String");
-}
+    throw new InvalidOperationException("Connection string not found.");
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
-
+// Services
+builder.Services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(connectionString));
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 builder.Services.AddControllers().AddJsonOptions(o =>
@@ -34,17 +37,18 @@ builder.Services.AddControllers().AddJsonOptions(o =>
     o.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
 });
 
-
 builder.Services.AddCors();
 
 var app = builder.Build();
 
-app.UseCors(options => options
+// Pipeline
+app.UseCors(c => c
     .AllowAnyHeader()
     .AllowAnyMethod()
     .WithOrigins("http://localhost:3000", "https://localhost:3000"));
 
 app.MapControllers();
+
 
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
