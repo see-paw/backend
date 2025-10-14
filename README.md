@@ -10,7 +10,7 @@
 ## Setup Inicial
 
 ### 1. Clonar o repositório
-```bash
+```
 git clone <url-do-repositorio>
 cd backend
 ```
@@ -18,7 +18,7 @@ cd backend
 ### 2. Configurar variáveis de ambiente
 
 Cria um ficheiro `.env` na pasta raiz do projeto com o seguinte conteúdo:
-```bash
+```
 # .env
 POSTGRES_DB=seepaw
 POSTGRES_USER=seepaw
@@ -29,7 +29,7 @@ POSTGRES_PASSWORD=seepawpwd
 > mas ficam aqui pois o projeto está enquadrado no contexto do curso.
 
 ### 3. Configurar User Secrets (desenvolvimento local)
-```bash
+```
 cd API
 dotnet user-secrets init
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=seepaw;Username=seepaw;Password=seepawpwd"
@@ -37,7 +37,7 @@ cd ..
 ```
 
 ### 4. Levantar a base de dados
-```bash
+```
 docker-compose up -d database
 ```
 > 💡 **O que isto faz:**  
@@ -45,7 +45,7 @@ docker-compose up -d database
 
 
 Verificar que está saudável:
-```bash
+```
 docker ps
 ```
 
@@ -56,7 +56,7 @@ xxxxxx         postgres:latest   Up X seconds (healthy)
 ```
 
 ### 5. Correr a aplicação de backend
-```bash
+```
 dotnet watch
 ```
 
@@ -75,7 +75,7 @@ Se vires a interface do Swagger, está tudo OK! ✅
 #### Criar uma nova migration
 
 Quando adicionares/modificares entidades novas:
-```bash
+```
 # 1. Adiciona a entidade no Domain
 # 2. Adiciona ao DbContext (Persistence/AppDbContext.cs)
 # 3. Cria a migration
@@ -88,7 +88,7 @@ dotnet ef database update (ou arranca a app: dotnet watch)
 #### Atualizar a BD após pull
 
 Se um colega adicionou migrations relevantes para o que estás a desenvolver:
-```bash
+```
 git pull (ou merge a partir da respetiva branch)
 cd API
 dotnet watch
@@ -126,7 +126,7 @@ docker-compose up -d database
 ## Health Checks aos containers
 
 ### Base de Dados
-```bash
+```
 # Verificar status
 docker ps
 
@@ -135,7 +135,7 @@ docker exec -it database pg_isready -U seepaw -d seepaw
 ```
 
 ### API
-```bash
+```
 # Deve mostrar as tabelas criadas
 curl https://localhost:5001/swagger
 ```
