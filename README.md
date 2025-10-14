@@ -109,6 +109,9 @@ docker-compose logs database
 # Parar a BD
 docker-compose stop database
 
+# Parar todos os containers, mantendo os dados dentro dos containers parados.
+docker-compose down
+
 # Remover tudo (⚠️ incluindo dados!)
 docker-compose down -v
 
