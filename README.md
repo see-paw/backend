@@ -82,7 +82,7 @@ Quando adicionares/modificares entidades novas:
 dotnet ef migrations add NomeDaMigration
 
 # 4. Aplica a migration (ou arranca a app que aplica automaticamente)
-dotnet ef database update
+dotnet ef database update (ou arranca a app: dotnet watch)
 ```
 
 #### Atualizar a BD após pull
