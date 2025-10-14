@@ -109,8 +109,12 @@ docker-compose logs database
 # Parar a BD
 docker-compose stop database
 
-# Remover tudo (incluindo dados!)
+# Remover tudo (⚠️ incluindo dados!)
 docker-compose down -v
+
+⚠️ ATENÇÃO: A flag `-v` remove também os volumes (onde estão os dados da BD).  
+Todos os dados inseridos/criados localmente serão permanentemente apagados!
+É aconselhávem configurarem uma seed e adicionarem ao .gitignore o ficheiro/classe, caso queiram fazer testes.
 
 # Levantar apenas a BD
 docker-compose up -d database
