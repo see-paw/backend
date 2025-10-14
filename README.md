@@ -37,6 +37,8 @@ cd ..
 ```
 
 ### 4. Levantar a base de dados
+
+(Nota: é necessário ter o docker desktop a correr)
 ```
 docker-compose up -d database
 ```
