@@ -130,7 +130,7 @@ docker-compose up -d database
 # Verificar status
 docker ps
 
-# Testar conexão
+# Testar ligação
 docker exec -it database pg_isready -U seepaw -d seepaw
 ```
 
