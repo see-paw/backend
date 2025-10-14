@@ -96,10 +96,10 @@ dotnet watch
 
 > 💡 A aplicação aplica migrations automaticamente ao arrancar!
 
-```
+
 
 ## 🐳 Comandos Docker Úteis
-```bash
+```
 # Ver containers a correr
 docker ps
 
