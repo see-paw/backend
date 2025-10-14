@@ -7,23 +7,22 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
-    .AddEnvironmentVariables()
-    .AddUserSecrets<Program>(optional: true);
+    .AddEnvironmentVariables();
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>(optional: true);
+}
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
 
-if (!string.IsNullOrWhiteSpace(dbPassword))
+connectionString ??= Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+
+if (string.IsNullOrWhiteSpace(connectionString))
 {
-    connectionString = connectionString.Replace("Password=", $"Password={dbPassword}");
+    throw new InvalidOperationException("Invalid Connection String");
 }
 
-if (string.IsNullOrWhiteSpace(connectionString) || connectionString.EndsWith("Password="))
-{
-    throw new InvalidOperationException("Invalid connection string");
-}
-
-Console.WriteLine($"🔐 ConnectionString: {connectionString}");
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
