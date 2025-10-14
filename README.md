@@ -57,7 +57,7 @@ xxxxxx         postgres:latest   Up X seconds (healthy)
 
 ### 5. Correr a aplicação de backend
 ```bash
-dotnet watch run
+dotnet watch
 ```
 
 Ou no Visual Studio: **F5** (seleciona o perfil **API**, não Docker Compose)
