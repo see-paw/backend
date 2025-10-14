@@ -1,6 +1,6 @@
 # Backend - SeePaw - Guia de Configuração
 
-## 📋 Pré-requisitos
+## Pré-requisitos
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop)
