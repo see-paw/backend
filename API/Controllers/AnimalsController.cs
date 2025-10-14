@@ -1,4 +1,7 @@
-﻿using Domain;
+﻿using API.DTOs;
+using API.Validators;
+using AutoMapper;
+using Domain;
 using Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -6,20 +9,29 @@ using Persistence;
 
 namespace API.Controllers
 {
-    public class AnimalsController(AppDbContext dbContext) : BaseApiController
+    public class AnimalsController(AppDbContext dbContext, IMapper mapper) : BaseApiController
     {
 
         [HttpGet]
 
         public async Task<ActionResult<List<Animal>>> GetAnimals()
         {
-            return await dbContext.Animals.ToListAsync();
+            var animals = await dbContext.Animals.ToListAsync();
+            var animalDTOs = mapper.Map<List<AnimalDTO>>(animals);
+            return Ok(animalDTOs);
         }
 
         [HttpGet("{id:guid}")]
 
-        public async Task<ActionResult<Animal>> GetAnimalDetails(string id)
+        public async Task<ActionResult<AnimalDTO>> GetAnimalDetails(string id)
         {
+            var validation = ValidateId(id);
+
+            if (validation != null)
+            {
+                return validation;
+            }
+
             var animal = await dbContext.FindAsync<Animal>(id);
 
             if (animal == null)
@@ -34,7 +46,9 @@ namespace API.Controllers
                 return NotFound("Animal not Available");
             }
 
-            return Ok(animal);
+            var animalDto = mapper.Map<AnimalDTO>(animal);
+
+            return Ok(animalDto);
 
         }
     }

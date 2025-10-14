@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Persistence;
 using System.Text.Json.Serialization;
+using Application.Core;
 
 var inContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 
@@ -38,6 +39,7 @@ builder.Services.AddControllers().AddJsonOptions(o =>
 });
 
 builder.Services.AddCors();
+builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 
 var app = builder.Build();
 
@@ -57,6 +59,7 @@ try
 {
     var context = services.GetRequiredService<AppDbContext>();
     await context.Database.MigrateAsync();
+    await DbInitializer.SeedData(context);
 }
 catch (Exception ex)
 {
