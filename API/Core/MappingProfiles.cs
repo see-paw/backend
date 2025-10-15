@@ -1,4 +1,4 @@
-﻿using Application.Animals.DTOs;
+﻿using API.DTOs;
 using AutoMapper;
 using Domain;
 

@@ -1,6 +1,5 @@
 ﻿using API.Core;
 using API.DTOs;
-using Application.Animals.DTOs;
 using AutoMapper;
 using Domain;
 using Domain.Enums;
@@ -10,6 +9,13 @@ using Persistence;
 
 namespace API.Controllers
 {
+    /// <summary>
+    /// Controller responsible for managing animal-related operations.
+    /// </summary>
+    /// <remarks>
+    /// This controller interacts directly with the database through <see cref="AppDbContext"/>,
+    /// applies business logic and uses <see cref="AutoMapper"/> to map DTOs to entities.
+    /// </remarks>
     [Route("api/[controller]")]
     [ApiController]
     public class AnimalsController : ControllerBase
@@ -17,17 +23,36 @@ namespace API.Controllers
         private readonly AppDbContext dbContext;
         private readonly IMapper mapper;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnimalsController"/> class.
+        /// </summary>
+        /// <param name="context">Database context used to access and manage animal data.</param>
+        /// <param name="mapper">AutoMapper instance used for DTO-to-entity conversions.</param>
         public AnimalsController(AppDbContext context, IMapper mapper)
         {
             this.dbContext = context;
             this.mapper = mapper;
         }
 
-
+        /// <summary>
+        /// Retrieves a paginated list of available or partially fostered animals.
+        /// </summary>
+        /// <param name="pageNumber">Page number for pagination (defaults to 1).</param>
+        /// <returns>
+        /// A paginated list of animals, ordered alphabetically by name.
+        /// Returns <see cref="NotFoundResult"/> if no animals are found.
+        /// </returns>
+        /// <response code="200">Returns the list of animals.</response>
+        /// <response code="404">No animals found.</response>
         [HttpGet]
         public async Task<ActionResult<PagedList<Animal>>> GetAnimals([FromQuery] int pageNumber = 1)
         {
-            const int pageSize = 20; // default page size
+            if (pageNumber < 1)
+            {
+                return BadRequest("Page number must be 1 or greater");
+            }
+
+            const int pageSize = 20; // Default page size
 
             var query = dbContext.Animals
                 .Where(a => a.AnimalState == AnimalState.Available
@@ -43,31 +68,42 @@ namespace API.Controllers
             return Ok(pagedList);
         }
 
+        /// <summary>
+        /// Creates a new animal record associated with a specific shelter.
+        /// </summary>
+        /// <param name="animalDTO">The data transfer object containing animal details.</param>
+        /// <returns>
+        /// The unique identifier (GUID) of the newly created animal.
+        /// </returns>
+        /// <response code="201">Animal successfully created and persisted in the database.</response>
+        /// <response code="400">Validation error or failed to create the animal.</response>
+        /// <response code="401">Invalid or missing shelter token.</response>
+        /// <response code="404">Shelter not found.</response>
         [HttpPost]
         public async Task<ActionResult<string>> CreateAnimal([FromBody] CreateAnimalDTO animalDTO)
         {
-            //Obter o shelterId do token (simulado enquanto não há auth)
-            var shelterId = "11111111-1111-1111-1111-111111111111";
-            // var shelterId = User.FindFirst("shelterId")?.Value; // usar mais tarde com JWT
+            //apagar depois, temporário enquanto não temos autenticação
+            var shelterId = "22222222-2222-2222-2222-222222222222"; // mudar para testar
+            // var shelterId = User.FindFirst("shelterId")?.Value; // depois com JWT
 
             if (string.IsNullOrEmpty(shelterId))
                 return Unauthorized("Invalid shelter token");
 
-            // check if shelter exists
+            // Check if the shelter exists in the database
             var shelterExists = await dbContext.Shelters
                 .AnyAsync(s => s.ShelterId == shelterId);
 
             if (!shelterExists)
                 return NotFound("Shelter not found");
 
-            // create animal from DTO
+            // Create animal entity from the DTO
             var animal = mapper.Map<Animal>(animalDTO);
             animal.AnimalState = AnimalState.Available;
             animal.CreatedAt = DateTime.UtcNow;
             animal.UpdatedAt = DateTime.UtcNow;
             animal.ShelterId = shelterId;
 
-            // add animal to the database
+            // Add animal to the database
             dbContext.Animals.Add(animal);
 
             var result = await dbContext.SaveChangesAsync() > 0;
@@ -75,11 +111,8 @@ namespace API.Controllers
             if (!result)
                 return BadRequest("Failed to create the animal");
 
-            //return the id of the created animal
+            // Return the ID of the newly created animal
             return Created("", animal.AnimalId);
         }
-
-       
     }
 }
-

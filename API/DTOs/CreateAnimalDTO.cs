@@ -1,7 +1,4 @@
-﻿using API.DTOs;
-
-
-namespace Application.Animals.DTOs;
+﻿namespace API.DTOs;
 
 public class CreateAnimalDTO : BaseAnimalDTO
 {

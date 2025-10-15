@@ -60,6 +60,9 @@ builder.Services.AddValidatorsFromAssemblyContaining<BaseAnimalDTO>();
 // Allows requests from the frontend 
 builder.Services.AddCors();
 
+// Custom middleware to handle exceptions globally
+builder.Services.AddTransient<ExceptionMiddleware>();
+
 //build the application
 var app = builder.Build();
 

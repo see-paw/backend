@@ -9,7 +9,7 @@ public class Animal
     [Key]
     public string AnimalId { get; set; } = Guid.NewGuid().ToString();
 
-    [Required, StringLength(100, MinimumLength = 2)]
+    [Required, StringLength(40, MinimumLength = 2)]
     public required string Name { get; set; }
 
     [Required]
@@ -27,7 +27,7 @@ public class Animal
     [Required]
     public required SexType Sex { get; set; }
 
-    [Required, StringLength(50)]
+    [Required, StringLength(40)]
     public required string Colour { get; set; }
 
     [Required]

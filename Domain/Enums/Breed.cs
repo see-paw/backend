@@ -25,6 +25,7 @@ public enum Breed
     Dachshund,
     SiberianHusky,
     Chihuahua,
+    Doberman,
     DobermanPinscher,
     ShihTzu,
     BorderCollie,

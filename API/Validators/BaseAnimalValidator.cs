@@ -1,7 +1,7 @@
 ﻿using API.DTOs;
 using FluentValidation;
 
-namespace Application.Animals.Validators;
+namespace API.Validators;
 
 /// <summary>
 /// Base generic validator for animal-related operations.
@@ -22,7 +22,9 @@ public class BaseAnimalValidator<T, TDto> : AbstractValidator<T> where TDto : Ba
     public BaseAnimalValidator(Func<T, TDto> selector)
     {
         RuleFor(x => selector(x).Name)
+            .NotNull().WithMessage("Name cannot be null")
             .NotEmpty().WithMessage("Name is required")
+            .Length(2, 40).WithMessage("Name must be between 2 and 40 characters")
             .Matches(@"^[a-zA-ZÀ-ÿ\s'-]+$").WithMessage("Name can only contain letters, spaces, hyphens and apostrophes");
 
         RuleFor(x => selector(x).Species)
@@ -37,29 +39,33 @@ public class BaseAnimalValidator<T, TDto> : AbstractValidator<T> where TDto : Ba
             .NotNull().WithMessage("Sex is required")
             .IsInEnum().WithMessage("Invalid sex type");
 
-        RuleFor(x => selector(x).Colour)
-            .NotEmpty().WithMessage("Colour is required");
-
-        RuleFor(x => selector(x).BirthDate)
-            .NotEmpty().WithMessage("Birth date is required")
-            .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow))
-                .WithMessage("Birth date cannot be in the future")
-            .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-30)))
-                .WithMessage("Birth date seems unrealistic (more than 30 years ago)");
-
-        RuleFor(x => selector(x).Sterilized)
-           .NotNull().WithMessage("Sterilization status is required");
-
         RuleFor(x => selector(x).Breed)
             .NotNull().WithMessage("Breed is required")
             .IsInEnum().WithMessage("Invalid breed");
 
+        RuleFor(x => selector(x).Colour)
+            .NotNull().WithMessage("Colour cannot be null")
+            .NotEmpty().WithMessage("Colour is required")
+            .Length(2, 40).WithMessage("Colour must be between 2 and 40 characters")
+            .Matches(@"^[a-zA-ZÀ-ÿ\s-]+$").WithMessage("Colour can only contain letters, spaces and hyphens");
+
+        RuleFor(x => selector(x).BirthDate)
+            .NotEmpty().WithMessage("Birth date is required")
+            .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow)).WithMessage("Birth date cannot be in the future")
+            .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-30))).WithMessage("Birth date seems unrealistic (more than 30 years ago)");
+
+        RuleFor(x => selector(x).Sterilized)
+           .NotNull().WithMessage("Sterilization status is required");
+
+
         RuleFor(x => selector(x).Cost)
             .NotNull().WithMessage("Cost is required")
             .GreaterThanOrEqualTo(0).WithMessage("Cost must be zero or positive")
+            .LessThanOrEqualTo(1000).WithMessage("Cost cannot exceed 1000")
             .PrecisionScale(6, 2, true).WithMessage("Cost can have at most 2 decimal places");
 
         RuleFor(x => selector(x).MainImageUrl)
+           .NotNull().WithMessage("Main image URL cannot be null")
            .NotEmpty().WithMessage("Main image URL is required")
            .Must(BeAValidUrl).WithMessage("Main image URL must be a valid URL");
     }

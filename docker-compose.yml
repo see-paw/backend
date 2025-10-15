@@ -1,5 +1,7 @@
 services:
   api:
+    env_file:
+      - .env
     image: ${DOCKER_REGISTRY-}api
     build:
       context: .
@@ -20,6 +22,8 @@ services:
       - "5001:5001"
 
   database:
+    env_file:
+      - .env
     image: postgres:latest
     container_name: database
     environment:

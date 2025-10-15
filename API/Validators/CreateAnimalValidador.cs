@@ -1,6 +1,7 @@
 ﻿using API.DTOs;
-using Application.Animals.DTOs;
-using Application.Animals.Validators;
+
+namespace API.Validators;
+
 
 public class CreateAnimalValidator : BaseAnimalValidator<CreateAnimalDTO, CreateAnimalDTO>
 {

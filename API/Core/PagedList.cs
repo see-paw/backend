@@ -22,8 +22,15 @@ public class PagedList<T> : List<T>
     }
 
     /// <summary>
-    /// Creates a paginated list from a queryable data source.
+    /// Creates a paginated list asynchronously from a queryable data source.
     /// </summary>
+    /// <param name="source">The IQueryable data source (e.g., EF Core query).</param>
+    /// <param name="pageNumber">The current page number (starting from 1).</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <returns>
+    /// A task that represents the asynchronous operation, 
+    /// returning a <see cref="PagedList{T}"/> containing the paginated data and metadata.
+    /// </returns>
     public static async Task<PagedList<T>> CreateAsync(IQueryable<T> source, int pageNumber, int pageSize)
     {
         var count = await source.CountAsync();

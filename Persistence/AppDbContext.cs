@@ -6,10 +6,10 @@ namespace Persistence;
 
 public class AppDbContext(DbContextOptions options) : DbContext(options)
 {
-    public required DbSet<Animal> Animals { get; set; }
-    public required DbSet<Shelter> Shelters { get; set; }
+    public DbSet<Animal> Animals { get; set; }
+    public DbSet<Shelter> Shelters { get; set; }
 
-    public required DbSet<Photo> Images { get; set; }
+    public DbSet<Photo> Images { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -27,7 +27,20 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             OpeningTime = new TimeSpan(9, 0, 0),
             ClosingTime = new TimeSpan(18, 0, 0),
             CreatedAt = DateTime.UtcNow
-        }
+        },
+         new Shelter
+         {
+             ShelterId = "22222222-2222-2222-2222-222222222222",
+             Name = "Test Shelter 2",
+             Street = "Rua de cima 898",
+             City = "Porto",
+             PostalCode = "4000-125",
+             Phone = "224589631",
+             NIF = "999999999",
+             OpeningTime = new TimeSpan(9, 0, 0),
+             ClosingTime = new TimeSpan(18, 0, 0),
+             CreatedAt = DateTime.UtcNow
+         }
     );
         // Configure the one-to-many relationship between Shelter and Animal with restricted delete behavior
         modelBuilder.Entity<Animal>()
