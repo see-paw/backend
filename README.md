@@ -1,167 +1,166 @@
-# Backend - SeePaw - Guia de Configuração
+# Backend - SeePaw - Configuration Guide
 
-## Pré-requisitos
+## Prerequisites
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop)
 - [Git](https://git-scm.com/)
-- Visual Studio 2022 ou VS Code (opcional)
+- Visual Studio 2022 or VS Code (optional)
 
-## Setup Inicial
+## Initial Setup
 
-### 1. Clonar o repositório
-```
-git clone <url-do-repositorio>
+### 1. Clone the repository
+```bash
+git clone <repository-url>
 cd backend
 ```
 
-### 2. Configurar variáveis de ambiente
+### 2. Configure environment variables
 
-Cria um ficheiro `.env` na pasta raiz do projeto com o seguinte conteúdo:
-```
+Create a `.env` file in the project root folder with the following content:
+```bash
 # .env
 POSTGRES_DB=seepaw
 POSTGRES_USER=seepaw
 POSTGRES_PASSWORD=seepawpwd
 ```
 
-> ⚠️ **Importante:** Este ficheiro **não** vai para o Git (está no `.gitignore`).  Normalmente estas credenciais nunca são enviadas para o repositório nem nunca são mostradas a ninguém,
-> mas ficam aqui pois o projeto está enquadrado no contexto do curso.
+> ⚠️ **Important:** This file is **not** committed to Git (it's listed in `.gitignore`).  
+> Normally, these credentials should never be sent to the repository or shared with anyone,  
+> but they are included here because the project is part of an academic context.
 
-### 3. Configurar User Secrets (desenvolvimento local)
-```
+### 3. Configure User Secrets (for local development)
+```bash
 cd API
 dotnet user-secrets init
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=seepaw;Username=seepaw;Password=seepawpwd"
 cd ..
 ```
 
-### 4. Levantar a base de dados
+### 4. Start the database
 
-(Nota: é necessário ter o docker desktop a correr)
-```
+(Note: Docker Desktop must be running)
+```bash
 docker-compose up -d database
 ```
-> 💡 **O que isto faz:**  
-> Cria e inicia um **container Docker** com PostgreSQL. O container é um ambiente isolado que corre a base de dados sem instalares PostgreSQL diretamente no teu PC. A flag `-d` (detached) corre em background, libertando o terminal.
+> 💡 **What this does:**  
+> Creates and starts a **Docker container** running PostgreSQL.  
+> The container is an isolated environment that runs the database without requiring a direct PostgreSQL installation on your PC.  
+> The `-d` (detached) flag runs it in the background, freeing the terminal.
 
-
-Verificar que está saudável:
-```
+Check that it's healthy:
+```bash
 docker ps
 ```
 
-Deves ver:
-```
+You should see:
+```bash
 CONTAINER ID   IMAGE             STATUS
 xxxxxx         postgres:latest   Up X seconds (healthy)
 ```
 
-### 5. Correr a aplicação de backend
-```
+### 5. Run the backend application
+```bash
 dotnet watch
 ```
 
-Ou no Visual Studio: **F5** (seleciona o perfil **API**, não Docker Compose)
+Or in Visual Studio: **F5** (select the **API** profile, not Docker Compose)
 
-### 6. Testar
+### 6. Test
 
-Abre o browser em: **https://localhost:5001/swagger**
+Open your browser at: **https://localhost:5001/swagger**
 
-Se vires a interface do Swagger, está tudo OK! ✅
+If you see the Swagger interface, everything is OK! ✅
 
-## Workflow de Desenvolvimento
+## Development Workflow
 
-### Trabalhar com Migrations
+### Working with Migrations
 
-#### Criar uma nova migration
+#### Create a new migration
 
-Quando adicionares/modificares entidades novas:
+When adding or modifying entities:
+```bash
+# 1. Add the entity in the Domain layer
+# 2. Add it to the DbContext (Persistence/AppDbContext.cs)
+# 3. Create the migration
+dotnet ef migrations add MigrationName
+
+# 4. Apply the migration (or start the app, which applies it automatically)
+dotnet ef database update (or start the app: dotnet watch)
 ```
-# 1. Adiciona a entidade no Domain
-# 2. Adiciona ao DbContext (Persistence/AppDbContext.cs)
-# 3. Cria a migration
-dotnet ef migrations add NomeDaMigration
 
-# 4. Aplica a migration (ou arranca a app que aplica automaticamente)
-dotnet ef database update (ou arranca a app: dotnet watch)
-```
+#### Update the database after a pull
 
-#### Atualizar a BD após pull
-
-Se um colega adicionou migrations relevantes para o que estás a desenvolver:
-```
-git pull (ou merge a partir da respetiva branch)
+If a teammate added migrations relevant to your work:
+```bash
+git pull (or merge from the respective branch)
 cd API
 dotnet watch
 ```
 
-> 💡 A aplicação aplica migrations automaticamente ao arrancar!
+> 💡 The application automatically applies migrations when starting up!
 
-
-
-## 🐳 Comandos Docker Úteis
-```
-# Ver containers a correr
+## 🐳 Useful Docker Commands
+```bash
+# List running containers
 docker ps
 
-# Ver logs da BD
+# View database logs
 docker-compose logs database
 
-# Parar a BD
+# Stop the database
 docker-compose stop database
 
-# Parar todos os containers, mantendo os dados dentro dos containers parados.
+# Stop all containers, keeping their data
 docker-compose down
 
-# Remover tudo (⚠️ incluindo dados!)
+# Remove everything (⚠️ including data!)
 docker-compose down -v
 
-⚠️ ATENÇÃO: A flag `-v` remove também os volumes (onde estão os dados da BD).  
-Todos os dados inseridos/criados localmente serão permanentemente apagados!
-É aconselhávem configurarem uma seed e adicionarem ao .gitignore o ficheiro/classe, caso queiram fazer testes.
+⚠️ WARNING: The `-v` flag also removes volumes (where database data is stored).  
+All data inserted/created locally will be permanently deleted!  
+It’s recommended to configure a seed and add the seed file/class to .gitignore if you plan to run tests.
 
-# Levantar apenas a BD
+# Start only the database
 docker-compose up -d database
 ```
 
-## Health Checks aos containers
+## Health Checks for Containers
 
-### Base de Dados
-```
-# Verificar status
+### Database
+```bash
+# Check status
 docker ps
 
-# Testar ligação
+# Test connection
 docker exec -it database pg_isready -U seepaw -d seepaw
 ```
 
 ### API
-```
-# Deve mostrar as tabelas criadas
+```bash
+# Should display the created tables
 curl https://localhost:5001/swagger
 ```
 
-## Estrutura do Projeto
-```
+## Project Structure
+```bash
 backend/
-├── .env                    # Variáveis Docker (não vai para Git)
-├── docker-compose.yml      # Configuração Docker
-├── API/                    # Controllers, middleware e configuração HTTP
-├── Application/            # Lógica de negócio
-├── Domain/                 # Entidades
-└── Persistence/            # Acesso a dados
-    └── Migrations/         # Histórico de mudanças na BD
+├── .env                    # Docker environment variables (ignored by Git)
+├── docker-compose.yml      # Docker configuration
+├── API/                    # Controllers, middleware, and HTTP setup
+├── Application/            # Business logic
+├── Domain/                 # Entities
+└── Persistence/            # Data access
+    └── Migrations/         # Database schema change history
 ```
 
+## 📚 Resources
 
-## 📚 Recursos
-
-- [Documentação .NET](https://docs.microsoft.com/dotnet/)
+- [.NET Documentation](https://docs.microsoft.com/dotnet/)
 - [Entity Framework Core](https://docs.microsoft.com/ef/core/)
 - [PostgreSQL](https://www.postgresql.org/docs/)
 - [Docker Compose](https://docs.docker.com/compose/)
 
 ---
 
-**Nota:** Mantém sempre o Docker Desktop a correr quando desenvolveres!
+**Note:** Always keep Docker Desktop running while developing!
