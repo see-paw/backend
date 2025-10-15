@@ -144,11 +144,11 @@ jobs:
   # ======================================================
   # 3️⃣ INTEGRATION TESTS
   # ======================================================
-integration_tests:
-  runs-on: ubuntu-latest
-  needs: build
+  integration_tests:
+   runs-on: ubuntu-latest
+   needs: build
 
-  services:
+   services:
     postgres:
       image: postgres:16
       env:
@@ -163,11 +163,11 @@ integration_tests:
         --health-timeout=5s
         --health-retries=20
 
-  env:
+   env:
     ASPNETCORE_ENVIRONMENT: Docker
     ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=seepaw_test;Username=seepaw;Password=seepaw"
 
-  steps:
+   steps:
     - name: Checkout código
       uses: actions/checkout@v4
 
@@ -229,10 +229,10 @@ integration_tests:
       with:
         name: integration-test-results
         path: |
-            TestResults/*.json
-            TestResults/*.xml
-            TestResults/*.txt
-            TestResults/newman-summary.json
+          TestResults/*.json
+          TestResults/*.xml
+          TestResults/*.txt
+          TestResults/newman-summary.json
         if-no-files-found: warn
 
     - name: Parar API e containers
