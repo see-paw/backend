@@ -58,17 +58,17 @@ jobs:
         with:
           fetch-depth: 0
         
-      - name: Descarregar artefactos
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          path: ./
+      #- name: Descarregar artefactos
+       # uses: actions/download-artifact@v4
+        #with:
+         # name: build-artifacts
+          #path: ./
           
       - name: Restaurar dependências dos testes
         run: |
           echo "📦 Restaurar dependências do projeto de testes..."
           ls -R
-          dotnet restore ./Tests/Tests.csproj
+          dotnet restore Tests/Tests.csproj
 
       - name: Correr testes unitários (xUnit) + Cobertura
         run: |
