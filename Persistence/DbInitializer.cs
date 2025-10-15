@@ -5,8 +5,35 @@ using Domain.Enums;
 
 namespace Persistence;
 
+/// <summary>
+/// Provides database seeding functionality for the application.
+/// </summary>
+/// <remarks>
+/// The <see cref="DbInitializer"/> class populates the database with initial data
+/// when it is first created or found empty.  
+/// It ensures that essential entities, such as <see cref="Animal"/>, are available
+/// for testing and demonstration purposes.  
+/// 
+/// This seeding process is typically invoked during application startup 
+/// (see <c>Program.cs</c>) after applying migrations.
+/// </remarks>
 public static class DbInitializer
 {
+    /// <summary>
+    /// Seeds the database with initial <see cref="Animal"/> data if no records exist.
+    /// </summary>
+    /// <param name="dbContext">The application's database context used to access and modify data.</param>
+    /// <returns>
+    /// A <see cref="Task"/> representing the asynchronous operation of seeding the database.
+    /// </returns>
+    /// <remarks>
+    /// This method checks whether the <see cref="AppDbContext.Animals"/> table already contains data.  
+    /// If it is empty, it inserts a predefined list of animals with various attributes and states.  
+    /// 
+    /// The method is designed to be idempotent — running it multiple times will not duplicate data.  
+    /// It is called during application startup, typically after migrations have been applied.
+    /// </remarks>
+
     public static async Task SeedData(AppDbContext dbContext)
     {
         if (dbContext.Animals.Any())
@@ -16,7 +43,7 @@ public static class DbInitializer
 
         var animals = new List<Animal>
     {
-        new Animal
+        new()
         {
             Name = "Bolinhas",
             AnimalState = AnimalState.Available,
@@ -32,7 +59,7 @@ public static class DbInitializer
             Features = "Olhos verdes, muito sociável",
             MainImageUrl = "https://exemplo.pt/imagens/bolinhas.jpg"
         },
-        new Animal
+        new()
         {
             Name = "Luna",
             AnimalState = AnimalState.Available,
@@ -48,7 +75,7 @@ public static class DbInitializer
             Features = "Muito obediente e adora correr",
             MainImageUrl = "https://exemplo.pt/imagens/luna.jpg"
         },
-        new Animal
+        new()
         {
             Name = "Tico",
             AnimalState = AnimalState.Available,
@@ -64,7 +91,7 @@ public static class DbInitializer
             Features = "Sabe dizer 'Olá!' e assobiar",
             MainImageUrl = "https://exemplo.pt/imagens/tico.jpg"
         },
-        new Animal
+        new()
         {
             Name = "Mika",
             AnimalState = AnimalState.Available,
@@ -80,7 +107,7 @@ public static class DbInitializer
             Features = "Olhos azuis intensos",
             MainImageUrl = "https://exemplo.pt/imagens/mika.jpg"
         },
-        new Animal
+        new()
         {
             Name = "Thor",
             AnimalState = AnimalState.Available,
@@ -96,7 +123,7 @@ public static class DbInitializer
             Features = "Muito atento e obediente",
             MainImageUrl = "https://exemplo.pt/imagens/thor.jpg"
         },
-        new Animal
+        new()
         {
             Name = "Nina",
             AnimalState = AnimalState.Available,
@@ -112,10 +139,10 @@ public static class DbInitializer
             Features = "Orelhas pequenas e pelo macio",
             MainImageUrl = "https://exemplo.pt/imagens/nina.jpg"
         },
-        new Animal
+        new()
         {
             Name = "Rocky",
-            AnimalState = AnimalState.Available,
+            AnimalState = AnimalState.Inactive,
             Description = "Cão atlético e leal, ideal para quem gosta de caminhadas.",
             Species = Species.Dog,
             Size = SizeType.Medium,
@@ -128,10 +155,10 @@ public static class DbInitializer
             Features = "Olhos azuis e muita energia",
             MainImageUrl = "https://exemplo.pt/imagens/rocky.jpg"
         },
-        new Animal
+        new()
         {
             Name = "Amora",
-            AnimalState = AnimalState.Available,
+            AnimalState = AnimalState.HasOwner,
             Description = "Gata jovem e curiosa, adora caçar brinquedos.",
             Species = Species.Cat,
             Size = SizeType.Small,
@@ -144,10 +171,10 @@ public static class DbInitializer
             Features = "Bigodes longos e muito expressiva",
             MainImageUrl = "https://exemplo.pt/imagens/amora.jpg"
         },
-        new Animal
+        new()
         {
             Name = "Zeus",
-            AnimalState = AnimalState.Available,
+            AnimalState = AnimalState.TotallyFostered,
             Description = "Cavalo calmo e bem treinado, ótimo para equitação.",
             Species = Species.Dog,
             Size = SizeType.Large,
@@ -160,10 +187,10 @@ public static class DbInitializer
             Features = "Crina longa e brilhante",
             MainImageUrl = "https://exemplo.pt/imagens/zeus.jpg"
         },
-        new Animal
+        new()
         {
             Name = "Pipoca",
-            AnimalState = AnimalState.Available,
+            AnimalState = AnimalState.PartiallyFostered,
             Description = "Hamster pequena e simpática, ideal para crianças.",
             Species = Species.Dog,
             Size = SizeType.Small,
