@@ -211,6 +211,7 @@ jobs:
           
           API_KEY="${{ secrets.POSTMAN_API_KEY }}"
           ENV_ID="${{ secrets.POSTMAN_ENV_ID }}"
+          WORKSPACE_ID="54b6c1b3-901d-43fe-8182-932e41a0cd50"
           COLLECTION_NAME="Tests"
           
           mkdir -p TestResults
@@ -221,16 +222,16 @@ jobs:
           
           # Obter todas as coleções da workspace/team
           echo "📡 A procurar coleção '$COLLECTION_NAME'..."
-          collections_json=$(curl -s "https://api.getpostman.com/collections" \
+          collections_json=$(curl -s "https://api.getpostman.com/workspaces/$WORKSPACE_ID"\
             -H "X-Api-Key: $API_KEY")
           
           # Encontrar a coleção "Tests"
-          col_uid=$(echo "$collections_json" | jq -r ".collections[] | select(.name == \"$COLLECTION_NAME\") | .uid")
+          col_uid=$(echo "$workspace_json" | jq -r ".workspace.collections[] | select(.name == \"$COLLECTION_NAME\") | .uid")
           
           if [ -z "$col_uid" ] || [ "$col_uid" = "null" ]; then
             echo "❌ Coleção '$COLLECTION_NAME' não encontrada!"
             echo "📋 Coleções disponíveis:"
-            echo "$collections_json" | jq -r '.collections[].name'
+            echo "$workspace_json" | jq -r '.workspace.collections[].name'
             exit 1
           fi
           
