@@ -16,7 +16,6 @@ jobs:
   # ======================================================
   build:
     runs-on: ubuntu-latest
-    environment: Test
     container:
       image: mcr.microsoft.com/dotnet/sdk:8.0
 
@@ -51,7 +50,6 @@ jobs:
   # ======================================================
   unit_tests:
     runs-on: ubuntu-latest
-    environment: Test
     container:
       image: mcr.microsoft.com/dotnet/sdk:8.0
     needs: build
@@ -148,7 +146,6 @@ jobs:
   # ======================================================
   integration_tests:
     runs-on: ubuntu-latest
-    environment: Test
     needs: build
 
     services:
@@ -468,7 +465,6 @@ jobs:
   # ======================================================
   quality_gate:
     runs-on: ubuntu-latest
-    environment: Test
     needs: [unit_tests, integration_tests]
 
     steps:
