@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain.Enums;
-
-public enum Species
+﻿namespace Domain.Enums
 {
-    Dog,
-    Cat
+    /// <summary>
+    /// Represents the species classification of an animal.
+    /// </summary>
+    /// <remarks>
+    /// Defines the primary animal types supported by the system.
+    /// </remarks>
+    public enum Species
+    {
+        Dog,
+        Cat
+    }
 }

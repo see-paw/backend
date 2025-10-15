@@ -4,6 +4,15 @@ using System.Text.Json.Serialization;
 
 namespace Domain;
 
+/// <summary>
+/// Represents an animal entity within the SeePaw system.
+/// </summary>
+/// <remarks>
+/// Contains identification, biological, descriptive, and relational data 
+/// about animals available for adoption or fostering.  
+/// This class is mapped to the database and used throughout the application 
+/// for persistence and API data exchange.
+/// </remarks>
 public class Animal
 {
     [Key]

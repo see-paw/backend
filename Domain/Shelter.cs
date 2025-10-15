@@ -4,6 +4,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Domain
 {
+    /// <summary>
+    /// Represents an animal shelter within the SeePaw system,
+    /// including its identification, contact information, and operating details.
+    /// </summary>
     public class Shelter
     {
         [Key]

@@ -19,13 +19,11 @@ public class MappingProfiles : Profile
     {
         // Mapping: Animal → Animal
         // Used to clone/copy Animal objects.
-        // Useful when you need to create a duplicate of an entity without affecting the original.
+        // Useful when is necessary to create a duplicate of an entity without affecting the original.
         CreateMap<Animal, Animal>();
 
         // Mapping: CreateAnimalDTO → Animal
-        // Converts the DTO received from the client (data for creation) into the domain entity.
-        // Used in CreateAnimal.Handler to transform the DTO into an Animal object before saving it to the database.
-        // Example: { Name: "Bobby", Age: 3 } → new Animal { Name = "Bobby", Age = 3 }
+        // Converts the DTO received from the client into the domain entity
         CreateMap<CreateAnimalDTO, Animal>();
     }
 }
