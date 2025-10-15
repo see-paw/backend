@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/see-paw/backend/compare/v1.0.1...v1.0.2) (2025-10-15)
+
+
+### Chores
+
+* Translate README from Portuguese to English ([136d8ba](https://github.com/see-paw/backend/commit/136d8babe34cb31e0b892b53bb030e20fe3f0729))
+
 ## [1.0.1](https://github.com/see-paw/backend/compare/v1.0.0...v1.0.1) (2025-10-15)
 
 
