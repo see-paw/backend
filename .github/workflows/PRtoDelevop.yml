@@ -229,10 +229,10 @@ integration_tests:
       with:
         name: integration-test-results
         path: |
-            TestResults/*.json
-            TestResults/*.xml
-            TestResults/*.txt
-            TestResults/newman-summary.json
+          TestResults/*.json
+          TestResults/*.xml
+          TestResults/*.txt
+          TestResults/newman-summary.json
         if-no-files-found: warn
 
     - name: Parar API e containers
