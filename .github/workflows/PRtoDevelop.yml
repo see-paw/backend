@@ -63,7 +63,10 @@ jobs:
           path: ./
           
       - name: Restaurar dependências dos testes
-        run: dotnet restore Tests/Tests.csproj
+        run: |
+          echo "📦 Restaurar dependências do projeto de testes..."
+          ls -R
+          dotnet restore ./Tests/Tests.csproj
 
       - name: Correr testes unitários (xUnit) + Cobertura
         run: |
