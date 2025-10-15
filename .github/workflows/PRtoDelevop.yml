@@ -223,23 +223,23 @@ integration_tests:
           --reporter-json-export "TestResults/result-Tests.json" \
           --reporter-junit-export "TestResults/junit-Tests.xml"
       
-      - name: Upload resultados de integração
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: integration-test-results
-          path: |
-            TestResults/*.json
-            TestResults/*.xml
-            TestResults/*.txt
-            TestResults/newman-summary.json
-          if-no-files-found: warn
+    - name: Upload resultados de integração
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: integration-test-results
+        path: |
+          TestResults/*.json
+          TestResults/*.xml
+          TestResults/*.txt
+          TestResults/newman-summary.json
+        if-no-files-found: warn
 
-      - name: Parar API e containers
-        if: always()
-        run: |
-          echo "🧹 A encerrar ambiente de teste..."
-          kill $(cat server_pid.txt) || true
+    - name: Parar API e containers
+      if: always()
+      run: |
+        echo "🧹 A encerrar ambiente de teste..."
+        kill $(cat server_pid.txt) || true
 
   # ======================================================
   # 4️⃣ QUALITY GATE (SonarCloud)
