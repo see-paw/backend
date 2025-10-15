@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Persistence;
 using System.Text.Json.Serialization;
-using API.Core;
 
 var inContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 
@@ -11,7 +10,7 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     EnvironmentName = inContainer ? "Docker" : null
 });
 
-// Config: base + by environment + env vars; secrets only on Dev local (não Docker)
+// Config: base + por ambiente + env vars; secrets só em Dev local (não Docker)
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false)
@@ -38,24 +37,11 @@ builder.Services.AddControllers().AddJsonOptions(o =>
     o.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
 });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddCors();
-builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 
 var app = builder.Build();
 
 // Pipeline
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "SeePaw API");
-    });
-}
-
 app.UseCors(c => c
     .AllowAnyHeader()
     .AllowAnyMethod()
@@ -71,7 +57,6 @@ try
 {
     var context = services.GetRequiredService<AppDbContext>();
     await context.Database.MigrateAsync();
-    await DbInitializer.SeedData(context);
 }
 catch (Exception ex)
 {
