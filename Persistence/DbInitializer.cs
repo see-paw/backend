@@ -5,8 +5,35 @@ using Domain.Enums;
 
 namespace Persistence;
 
+/// <summary>
+/// Provides database seeding functionality for the application.
+/// </summary>
+/// <remarks>
+/// The <see cref="DbInitializer"/> class populates the database with initial data
+/// when it is first created or found empty.  
+/// It ensures that essential entities, such as <see cref="Animal"/>, are available
+/// for testing and demonstration purposes.  
+/// 
+/// This seeding process is typically invoked during application startup 
+/// (see <c>Program.cs</c>) after applying migrations.
+/// </remarks>
 public static class DbInitializer
 {
+    /// <summary>
+    /// Seeds the database with initial <see cref="Animal"/> data if no records exist.
+    /// </summary>
+    /// <param name="dbContext">The application's database context used to access and modify data.</param>
+    /// <returns>
+    /// A <see cref="Task"/> representing the asynchronous operation of seeding the database.
+    /// </returns>
+    /// <remarks>
+    /// This method checks whether the <see cref="AppDbContext.Animals"/> table already contains data.  
+    /// If it is empty, it inserts a predefined list of animals with various attributes and states.  
+    /// 
+    /// The method is designed to be idempotent — running it multiple times will not duplicate data.  
+    /// It is called during application startup, typically after migrations have been applied.
+    /// </remarks>
+
     public static async Task SeedData(AppDbContext dbContext)
     {
         if (dbContext.Animals.Any())
@@ -115,7 +142,7 @@ public static class DbInitializer
         new Animal
         {
             Name = "Rocky",
-            AnimalState = AnimalState.Available,
+            AnimalState = AnimalState.Inactive,
             Description = "Cão atlético e leal, ideal para quem gosta de caminhadas.",
             Species = Species.Dog,
             Size = SizeType.Medium,
@@ -131,7 +158,7 @@ public static class DbInitializer
         new Animal
         {
             Name = "Amora",
-            AnimalState = AnimalState.Available,
+            AnimalState = AnimalState.HasOwner,
             Description = "Gata jovem e curiosa, adora caçar brinquedos.",
             Species = Species.Cat,
             Size = SizeType.Small,
@@ -147,7 +174,7 @@ public static class DbInitializer
         new Animal
         {
             Name = "Zeus",
-            AnimalState = AnimalState.Available,
+            AnimalState = AnimalState.TotallyFostered,
             Description = "Cavalo calmo e bem treinado, ótimo para equitação.",
             Species = Species.Dog,
             Size = SizeType.Large,
@@ -163,7 +190,7 @@ public static class DbInitializer
         new Animal
         {
             Name = "Pipoca",
-            AnimalState = AnimalState.Available,
+            AnimalState = AnimalState.PartiallyFostered,
             Description = "Hamster pequena e simpática, ideal para crianças.",
             Species = Species.Dog,
             Size = SizeType.Small,
