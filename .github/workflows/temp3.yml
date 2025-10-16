@@ -530,11 +530,11 @@ jobs:
           
           if [ -z "$PR_NUMBER" ]; then
             echo "⚠️ Não é um Pull Request, a consultar branch..."
-            status=$(curl -s "https://sonarcloud.io/api/qualitygates/project_status?projectKey=see-paw_tests" \
+            status=$(curl -s "https://sonarcloud.io/api/qualitygates/project_status?projectKey=see-paw_backend" \
               -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}" | jq -r '.projectStatus.status')
           else
             echo "🔍 Consultando PR #$PR_NUMBER..."
-            status=$(curl -s "https://sonarcloud.io/api/qualitygates/project_status?projectKey=see-paw_tests&pullRequest=$PR_NUMBER" \
+            status=$(curl -s "https://sonarcloud.io/api/qualitygates/project_status?projectKey=see-paw_backend&pullRequest=$PR_NUMBER" \
               -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}" | jq -r '.projectStatus.status')
           fi
           
@@ -549,7 +549,7 @@ jobs:
             echo "⚠️ Status desconhecido: $status"
             echo ""
             echo "🔍 Debug - Response completa:"
-            curl -s "https://sonarcloud.io/api/qualitygates/project_status?projectKey=see-paw_tests&pullRequest=$PR_NUMBER" \
+            curl -s "https://sonarcloud.io/api/qualitygates/project_status?projectKey=see-paw_backend&pullRequest=$PR_NUMBER" \
               -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}" | jq '.'
             exit 1
           fi
@@ -563,10 +563,10 @@ jobs:
           PR_NUMBER="${{ github.event.pull_request.number }}"
 
           if [ -z "$PR_NUMBER" ]; then
-            response=$(curl -s "https://sonarcloud.io/api/measures/component?componentKey=see-paw_tests&metricKeys=coverage,complexity,code_smells,bugs,vulnerabilities" \
+            response=$(curl -s "https://sonarcloud.io/api/measures/component?componentKey=see-paw_backend&metricKeys=coverage,complexity,code_smells,bugs,vulnerabilities" \
               -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}")
           else
-            response=$(curl -s "https://sonarcloud.io/api/measures/component?componentKey=see-paw_tests&metricKeys=coverage,complexity,code_smells,bugs,vulnerabilities&pullRequest=$PR_NUMBER" \
+            response=$(curl -s "https://sonarcloud.io/api/measures/component?componentKey=see-paw_backend&metricKeys=coverage,complexity,code_smells,bugs,vulnerabilities&pullRequest=$PR_NUMBER" \
               -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}")
           fi
 
