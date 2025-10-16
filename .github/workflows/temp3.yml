@@ -526,7 +526,6 @@ jobs:
       - name: Quality Gate 3 - Verificar Codacy Quality Gate
         run: |
           echo "⏳ Aguardando que o Codacy analise o commit..."
-          echo "⏳ Aguardando que o Codacy analise o commit..."
 
           # Determinar o SHA correto
           if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -584,7 +583,7 @@ jobs:
           echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
           echo "📊 QUALITY GATE 4: MÉTRICAS PERSONALIZADAS SEEPAW"
           echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
-        
+
           # 1️⃣ Determinar o SHA correto
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
@@ -594,37 +593,38 @@ jobs:
             COMMIT_SHA="${{ github.sha }}"
             echo "📦 Evento: Push → SHA: $COMMIT_SHA"
           fi
-        
+
           TOKEN="${{ secrets.CODACY_TOKEN }}"
           if [ -z "$TOKEN" ]; then
-            echo "❌ CODACY_TOKEN não configurado"
+            echo "❌ CODACY_TOKEN não configurado (Settings → Secrets → Actions)"
             exit 1
           fi
-        
+
           # 2️⃣ Garantir jq instalado
           if ! command -v jq &> /dev/null; then
             sudo apt-get update -qq && sudo apt-get install -y jq
           fi
-        
+
           # 3️⃣ Obter métricas do COMMIT (não do repositório!)
           echo ""
           echo "🔍 A obter métricas do commit $COMMIT_SHA no Codacy..."
           commit_response=$(curl -s -w "\n%{http_code}" \
             "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
             -H "api-token: $TOKEN")
-        
+
           http_code=$(echo "$commit_response" | tail -n1)
           body=$(echo "$commit_response" | head -n-1)
-        
+
           if [ "$http_code" != "200" ]; then
             echo "❌ Erro ao consultar API do commit (HTTP $http_code)"
             echo "$body" | jq '.' 2>/dev/null || echo "$body"
             exit 1
           fi
-        
+
           echo "✅ Dados do commit obtidos com sucesso"
           echo "----------------------------------------"
-        
+          echo "$body" | jq '.' | head -n 60
+
           # 4️⃣ Extrair métricas do COMMIT
           grade_letter=$(echo "$body" | jq -r '.data.quality.grade // "N/A"')
           issues_count=$(echo "$body" | jq -r '.data.issues.newCount // 0')
@@ -635,26 +635,32 @@ jobs:
           duplication_percentage=$(echo "$body" | jq -r '.data.duplication.clonePercentage // 0')
           complex_files_count=$(echo "$body" | jq -r '.data.complexity.complexFilesCount // 0')
           total_files=$(echo "$body" | jq -r '.data.fileMetrics.totalFiles // 1')
-          complex_files_percentage=$((complex_files_count * 100 / total_files))
-        
+          
+          # Evitar divisão por zero
+          if [ "$total_files" -eq 0 ]; then
+            complex_files_percentage=0
+          else
+            complex_files_percentage=$((complex_files_count * 100 / total_files))
+          fi
+
           echo ""
           echo "📈 Métricas extraídas do commit:"
           echo "   Grade: $grade_letter"
           echo "   Issues novos: $issues_count"
           echo "   Cobertura: ${coverage}%"
           echo "   Duplicação: ${duplication_percentage}%"
-          echo "   Ficheiros Complexos: ${complex_files_percentage}%"
-        
+          echo "   Ficheiros Complexos: ${complex_files_count}/${total_files} (${complex_files_percentage}%)"
+
           # 5️⃣ Obter limites (goals) do repositório
           echo ""
           echo "🔍 A obter limites (goals) do repositório..."
           repo_response=$(curl -s -w "\n%{http_code}" \
             "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories" \
             -H "api-token: $TOKEN")
-        
+
           repo_http_code=$(echo "$repo_response" | tail -n1)
           repo_body=$(echo "$repo_response" | head -n-1)
-        
+
           if [ "$repo_http_code" != "200" ]; then
             echo "⚠️ Erro ao obter goals do repositório, usando valores padrão"
             min_coverage_percentage=60
@@ -667,21 +673,23 @@ jobs:
             max_duplication_percentage=$(echo "$repo_body" | jq -r '.data[0].goals.maxDuplicatedFilesPercentage // 10')
             max_complex_files_percentage=$(echo "$repo_body" | jq -r '.data[0].goals.maxComplexFilesPercentage // 10')
           fi
-        
+
           echo ""
-          echo "📋 Limites definidos:"
+          echo "📋 Limites definidos no Codacy:"
           echo "   Mín. Cobertura: ${min_coverage_percentage}%"
+          echo "   Máx. Issues: ${max_issue_percentage}%"
           echo "   Máx. Duplicação: ${max_duplication_percentage}%"
           echo "   Máx. Complexidade: ${max_complex_files_percentage}%"
-        
-          # 6️⃣ Validar métricas
+
+          # 6️⃣ Validar métricas personalizadas SeePaw
           failed=0
-        
+
           echo ""
           echo "🔍 Validando métricas..."
           
-          # Converter para inteiro para comparação
-          coverage_int=${coverage%.*}
+          # Converter para inteiro para comparação (remove casas decimais)
+          coverage_int=$(echo "$coverage" | cut -d. -f1)
+          duplication_int=$(echo "$duplication_percentage" | cut -d. -f1)
           
           if [ "$coverage_int" -lt "$min_coverage_percentage" ]; then
             echo "❌ Cobertura ${coverage}% < ${min_coverage_percentage}%"
@@ -689,22 +697,22 @@ jobs:
           else
             echo "✅ Cobertura OK (${coverage}%)"
           fi
-        
-          if [ "$duplication_percentage" -gt "$max_duplication_percentage" ]; then
+
+          if [ "$duplication_int" -gt "$max_duplication_percentage" ]; then
             echo "❌ Duplicação ${duplication_percentage}% > ${max_duplication_percentage}%"
             failed=1
           else
-            echo "✅ Duplicação OK"
+            echo "✅ Duplicação OK (${duplication_percentage}%)"
           fi
-        
+
           if [ "$complex_files_percentage" -gt "$max_complex_files_percentage" ]; then
             echo "❌ Complexidade ${complex_files_percentage}% > ${max_complex_files_percentage}%"
             failed=1
           else
-            echo "✅ Complexidade OK"
+            echo "✅ Complexidade OK (${complex_files_percentage}%)"
           fi
-        
-          # 7️⃣ Exportar métricas
+
+          # 7️⃣ Exportar métricas para metrics.json
           jq -n \
             --arg grade "$grade_letter" \
             --arg issues "$issues_count" \
@@ -721,10 +729,10 @@ jobs:
               min_coverage: $min_cov,
               timestamp: (now | todate)
             }' > metrics.json
-        
+
           echo ""
           if [ $failed -eq 1 ]; then
-            echo "❌ QUALITY GATE FALHOU: Métricas não atingidas"
+            echo "❌ QUALITY GATE FALHOU: Métricas personalizadas não atingidas"
             exit 1
           fi
           echo "✅ QUALITY GATE PASSOU: Todas as métricas atingidas"
@@ -739,7 +747,7 @@ jobs:
           echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
           echo "✅ Quality Gate 1: Testes Unitários"
           echo "✅ Quality Gate 2: Testes de Integração"
-          echo "✅ Quality Gate 3: SonarCloud"
+          echo "✅ Quality Gate 3: Codacy Analysis"
           echo "✅ Quality Gate 4: Métricas Personalizadas"
           echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
           echo "🎉 TODOS OS QUALITY GATES PASSARAM!"
