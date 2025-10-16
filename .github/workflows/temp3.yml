@@ -78,7 +78,7 @@ jobs:
         
       - name: Correr testes unitários (xUnit) + Cobertura
         run: |
-         mkdir -p TestResults
+          mkdir -p TestResults
 
           echo "🧪 A testar: Tests/Tests.csproj"
           
@@ -128,9 +128,9 @@ jobs:
             failed=$(grep -o 'outcome="Failed"' TestResults/test-results.trx | wc -l || echo "0")
             total=$((passed + failed))
             
-            echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+            echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
             echo "📊 RESUMO DOS TESTES UNITÁRIOS"
-            echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
+            echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
             echo "   Total: $total"
             echo "   ✅ Passaram: $passed"
             echo "   ❌ Falharam: $failed"
@@ -140,7 +140,7 @@ jobs:
             elif [ $failed -gt 0 ]; then
               echo "   ⚠️  Alguns testes falharam"
             fi
-            echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+            echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
           fi
 
       - name: Exportar resultados de testes
@@ -207,7 +207,7 @@ jobs:
           echo $! > server_pid.txt
           echo "⏳ A aguardar que a API fique pronta..."
           timeout 60 bash -c '
-             until nc -z localhost 5000; do
+            until nc -z localhost 5000; do
               echo "Aguardando..."
               sleep 3
           done
@@ -250,7 +250,7 @@ jobs:
           exit_code=${PIPESTATUS[0]}
           
           echo ""
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           
           # Processar resultados
           if [ -f TestResults/postman/results.json ]; then
@@ -287,7 +287,7 @@ jobs:
             exit 1
           fi
           
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           
           # Retornar o exit code original do Postman CLI
           exit $exit_code
@@ -352,7 +352,7 @@ jobs:
           kill $(cat server_pid.txt) || true
 
   # ======================================================
-  # 4️⃣ QUALITY GATE (SonarCloud)
+  # 4️⃣ QUALITY GATE
   # ======================================================
   quality_gate:
     runs-on: ubuntu-latest
@@ -364,13 +364,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download resultados de testes
+      - name: Download resultados de testes de integração
         uses: actions/download-artifact@v4
         with:
           name: integration-test-results
           path: TestResults/integration/
           
-      - name: Download resultados de testes
+      - name: Download resultados de testes unitários
         uses: actions/download-artifact@v4
         with:
           name: unit-test-results
@@ -504,7 +504,6 @@ jobs:
       - name: Build do projeto
         run: dotnet build SeePaw.sln --no-restore --configuration Release
       
-
       - name: Verificar e validar relatório de cobertura
         run: |
           echo "🔍 Verificando relatório de cobertura antes do envio..."
@@ -617,7 +616,7 @@ jobs:
                 commit_analyzed=true
                 
                 # Agora verificar cobertura
-                has_coverage=$(echo "$body" | jq -r '.data.coverage.coveragePercentage // "null"')
+                has_coverage=$(echo "$body" | jq -r '.coverage.totalCoveragePercentage // "null"')
                 
                 if [ "$has_coverage" != "null" ] && [ "$has_coverage" != "0" ]; then
                   echo "🎉 Cobertura também já está disponível: ${has_coverage}%"
@@ -652,7 +651,7 @@ jobs:
             echo "{}" > codacy_commit.json
           else
             # Verificar se tem cobertura
-            has_coverage=$(echo "$body" | jq -r '.data.coverage.coveragePercentage // "null"' 2>/dev/null || echo "null")
+            has_coverage=$(echo "$body" | jq -r '.coverage.totalCoveragePercentage // "null"' 2>/dev/null || echo "null")
             
             if [ "$has_coverage" = "null" ] || [ -z "$has_coverage" ]; then
               echo ""
@@ -713,16 +712,16 @@ jobs:
           echo "----------------------------------------"
           echo "$body" | jq '.' | head -n 60
 
-          # 4️⃣ Extrair métricas do COMMIT
-          grade_letter=$(echo "$body" | jq -r '.data.quality.grade // "N/A"')
-          issues_count=$(echo "$body" | jq -r '.data.issues.newCount // 0')
+          # 4️⃣ Extrair métricas do COMMIT (CORRIGIDO!)
+          grade_letter=$(echo "$body" | jq -r '.quality.grade // "N/A"')
+          issues_count=$(echo "$body" | jq -r '.quality.newIssues // 0')
           
-          # COBERTURA CORRETA! 🎯
-          coverage=$(echo "$body" | jq -r '.data.coverage.coveragePercentage // 0')
+          # 🎯 CORREÇÃO CRÍTICA: Usar .coverage.totalCoveragePercentage
+          coverage=$(echo "$body" | jq -r '.coverage.totalCoveragePercentage // 0')
           
-          duplication_percentage=$(echo "$body" | jq -r '.data.duplication.clonePercentage // 0')
-          complex_files_count=$(echo "$body" | jq -r '.data.complexity.complexFilesCount // 0')
-          total_files=$(echo "$body" | jq -r '.data.fileMetrics.totalFiles // 1')
+          duplication_percentage=$(echo "$body" | jq -r '.duplication.clonePercentage // 0')
+          complex_files_count=$(echo "$body" | jq -r '.complexity.complexFilesCount // 0')
+          total_files=$(echo "$body" | jq -r '.fileMetrics.totalFiles // 1')
           
           # Evitar divisão por zero
           if [ "$total_files" -eq 0 ]; then
