@@ -101,6 +101,16 @@ jobs:
             echo "⚠️ AVISO: Ficheiro de cobertura OpenCover não encontrado!"
             echo "🔍 Procurando outros formatos..."
             find TestResults -name "*.xml" -type f
+            
+            # ✅ ADICIONAR: Tentar formato Cobertura
+            cobertura_file=$(find TestResults -name "coverage.cobertura.xml" -type f | head -1)
+            if [ -n "$cobertura_file" ]; then
+              cp "$cobertura_file" TestResults/coverage.xml
+              echo "✅ Cobertura Cobertura copiada"
+            else
+              echo "❌ ERRO: Nenhum ficheiro de cobertura encontrado!"
+              exit 1
+            fi
           fi
           
           echo ""
@@ -140,8 +150,9 @@ jobs:
         with:
           name: unit-test-results
           path: |
-            TestResults/*.trx
-            TestResults/*.xml
+            TestResults/**/*.trx
+            TestResults/**/*.xml
+            TestResults/coverage.xml
           if-no-files-found: warn
 
   # ======================================================
@@ -395,13 +406,15 @@ jobs:
             exit 1
           fi
           
-          if ! ls TestResults/unit/*.trx >/dev/null 2>&1; then
+          if ! find TestResults/unit -name "*.trx" -type f | grep -q .; then
             echo "❌ Ficheiro .trx de testes unitários não encontrado"
             exit 1
           fi
           
-          if ! ls TestResults/unit/*.xml >/dev/null 2>&1; then
+          if ! find TestResults/unit -name "*.xml" -type f | grep -q .; then
             echo "❌ Ficheiro XML de cobertura não encontrado"
+            echo "🔍 Estrutura de TestResults/unit:"
+            find TestResults/unit -type f
             exit 1
           fi
           
