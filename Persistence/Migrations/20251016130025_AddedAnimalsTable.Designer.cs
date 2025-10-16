@@ -12,8 +12,8 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251016122238_AddedAnimalTable")]
-    partial class AddedAnimalTable
+    [Migration("20251016130025_AddedAnimalsTable")]
+    partial class AddedAnimalsTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

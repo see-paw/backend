@@ -45,7 +45,7 @@ public static class DbInitializer
     {
         new()
         {
-            AnimalId = 'f055cc31-fdeb-4c65-bb73-4f558f67dd8b'
+            AnimalId = "f055cc31-fdeb-4c65-bb73-4f558f67dd1b",
             Name = "Bolinhas",
             AnimalState = AnimalState.Available,
             Description = "Gato muito meigo e brincalhão, gosta de dormir ao sol.",
@@ -62,7 +62,7 @@ public static class DbInitializer
         },
         new()
         {
-            AnimalId = 'f055cc31-fdeb-4c65-bb73-4f558f67dd9b'
+            AnimalId = "f055cc31-fdeb-4c65-bb73-4f558f67dd2b",
             Name = "Luna",
             AnimalState = AnimalState.Available,
             Description = "Cadela jovem e energética, ideal para famílias com crianças.",
@@ -79,7 +79,7 @@ public static class DbInitializer
         },
         new()
         {
-            AnimalId = 'f055cc31-fdeb-4c65-bb73-4f558f67dd5b'
+            AnimalId = "f055cc31-fdeb-4c65-bb73-4f558f67dd3b",
             Name = "Tico",
             AnimalState = AnimalState.Available,
             Description = "Papagaio falador que adora companhia humana.",
@@ -96,7 +96,7 @@ public static class DbInitializer
         },
         new()
         {
-            AnimalId = 'f055cc31-fdeb-4c65-bb73-4f558f67dd2b'
+            AnimalId = "f055cc31-fdeb-4c65-bb73-4f558f67dd4b",
             Name = "Mika",
             AnimalState = AnimalState.Available,
             Description = "Gata calma e dócil, procura um lar tranquilo.",
@@ -113,7 +113,7 @@ public static class DbInitializer
         },
         new()
         {
-            AnimalId = 'f055cc31-fdeb-4c65-bb73-4f558f67dd5b'
+            AnimalId = "f055cc31-fdeb-4c65-bb73-4f558f67dd5b",
             Name = "Thor",
             AnimalState = AnimalState.Available,
             Description = "Cão de guarda muito protetor, mas fiel à família.",
@@ -130,7 +130,7 @@ public static class DbInitializer
         },
         new()
         {
-            AnimalId = 'f055cc31-fdeb-4c65-bb73-4f558f67dd6b'
+            AnimalId = "f055cc31-fdeb-4c65-bb73-4f558f67dd6b",
             Name = "Nina",
             AnimalState = AnimalState.Available,
             Description = "Coelha curiosa e afetuosa, gosta de cenouras e de brincar.",
@@ -147,7 +147,7 @@ public static class DbInitializer
         },
         new()
         {
-            AnimalId = 'f055cc31-fdeb-4c65-bb73-4f551f67dd8b'
+            AnimalId = "f055cc31-fdeb-4c65-bb73-4f558f67dd7b",
             Name = "Rocky",
             AnimalState = AnimalState.Inactive,
             Description = "Cão atlético e leal, ideal para quem gosta de caminhadas.",
@@ -164,7 +164,7 @@ public static class DbInitializer
         },
         new()
         {
-            AnimalId = 'f055cc31-fdeb-4c65-bb73-4f158f67dd8b'
+            AnimalId = "f055cc31-fdeb-4c65-bb73-4f558f67dd8b",
             Name = "Amora",
             AnimalState = AnimalState.HasOwner,
             Description = "Gata jovem e curiosa, adora caçar brinquedos.",
@@ -181,7 +181,7 @@ public static class DbInitializer
         },
         new()
         {
-            AnimalId = 'f055cc31-fdeb-4c65-bb73-1f558f67dd8b'
+            AnimalId = "f055cc31-fdeb-4c65-bb73-4f558f67dd9b",
             Name = "Zeus",
             AnimalState = AnimalState.TotallyFostered,
             Description = "Cavalo calmo e bem treinado, ótimo para equitação.",
@@ -198,7 +198,7 @@ public static class DbInitializer
         },
         new()
         {
-            AnimalId = 'f075cc31-fdeb-4c65-bb73-4f558f67dd8b'
+            AnimalId = "f055cc31-fdeb-4c65-bb73-4f558f67dd0c",
             Name = "Pipoca",
             AnimalState = AnimalState.PartiallyFostered,
             Description = "Hamster pequena e simpática, ideal para crianças.",
