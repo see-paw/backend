@@ -574,7 +574,17 @@ jobs:
             echo "$body" | jq '.' 2>/dev/null || echo "$body"
             exit 1
           fi
-
+          # 3️⃣ Se existir análise guardada, reutilizar
+          if [ -f "codacy_commit.json" ]; then
+            echo "📄 A usar análise existente (codacy_commit.json)"
+            body=$(cat codacy_commit.json)
+            echo ""
+            echo "🔍 Conteúdo bruto do codacy_commit.json:"
+            echo "$body" | jq '.' || echo "$body"
+            echo "----------------------------------------"
+          else
+            ...
+          fi
           echo "✅ Análise Codacy concluída e guardada em codacy_commit.json"
     
       - name: Quality Gate 4 – Validar Métricas Personalizadas (SeePaw)
