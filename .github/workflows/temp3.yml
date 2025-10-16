@@ -619,304 +619,304 @@ jobs:
             echo "CODACY_TOKEN_TYPE=$TOKEN_TYPE" >> $GITHUB_ENV
           fi
 
-    - name: Enviar cobertura para Codacy
-      run: |
-        echo "📤 Enviando relatório de cobertura para Codacy..."
-        
-        # Determinar qual token usar
-        if [ -n "${{ secrets.CODACY_TOKEN }}" ]; then
-          export CODACY_PROJECT_TOKEN="${{ secrets.CODACY_TOKEN }}"
-          echo "Usando CODACY_TOKEN"
-        elif [ -n "${{ secrets.CODACY_API_TOKEN }}" ]; then
-          export CODACY_PROJECT_TOKEN="${{ secrets.CODACY_API_TOKEN }}"
-          echo "Usando CODACY_API_TOKEN"
-        fi
-        
-        # Download do Codacy Coverage Reporter
-        curl -Ls https://coverage.codacy.com/get.sh -o codacy-coverage-reporter.sh
-        chmod +x codacy-coverage-reporter.sh
-        
-        # Enviar relatório de cobertura
-        ./codacy-coverage-reporter.sh report \
-          -r TestResults/unit/coverage.xml \
-          --commit-uuid ${{ github.sha }} || echo "⚠️ Falha ao enviar cobertura (não crítico)"
-        
-        echo "✅ Tentativa de envio concluída"
+      - name: Enviar cobertura para Codacy
+        run: |
+          echo "📤 Enviando relatório de cobertura para Codacy..."
+          
+          # Determinar qual token usar
+          if [ -n "${{ secrets.CODACY_TOKEN }}" ]; then
+            export CODACY_PROJECT_TOKEN="${{ secrets.CODACY_TOKEN }}"
+            echo "Usando CODACY_TOKEN"
+          elif [ -n "${{ secrets.CODACY_API_TOKEN }}" ]; then
+            export CODACY_PROJECT_TOKEN="${{ secrets.CODACY_API_TOKEN }}"
+            echo "Usando CODACY_API_TOKEN"
+          fi
+          
+          # Download do Codacy Coverage Reporter
+          curl -Ls https://coverage.codacy.com/get.sh -o codacy-coverage-reporter.sh
+          chmod +x codacy-coverage-reporter.sh
+          
+          # Enviar relatório de cobertura
+          ./codacy-coverage-reporter.sh report \
+            -r TestResults/unit/coverage.xml \
+            --commit-uuid ${{ github.sha }} || echo "⚠️ Falha ao enviar cobertura (não crítico)"
+          
+          echo "✅ Tentativa de envio concluída"
     
-    - name: Quality Gate 3 - Verificar Codacy Quality Gate
-      run: |
-        echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
-        echo "📊 QUALITY GATE 3: CODACY"
-        echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
-        
-        if ! command -v jq &> /dev/null; then
-          sudo apt-get update -qq
-          sudo apt-get install -y jq
-        fi
-        
-        echo "⏳ Aguardando análise do Codacy..."
-        sleep 15
-        
-        COMMIT_SHA="${{ github.sha }}"
-        TOKEN_TYPE="${CODACY_TOKEN_TYPE:-api-token}"
-        VALID_TOKEN="${CODACY_VALID_TOKEN}"
-        
-        # Se não tiver token válido do step anterior, tentar descobrir
-        if [ -z "$VALID_TOKEN" ]; then
-          echo "🔍 Tentando autenticar..."
+      - name: Quality Gate 3 - Verificar Codacy Quality Gate
+        run: |
+          echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+          echo "📊 QUALITY GATE 3: CODACY"
+          echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
           
-          if [ -n "${{ secrets.CODACY_API_TOKEN }}" ]; then
-            response=$(curl -s -w "\n%{http_code}" \
-              "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
-              -H "api-token: ${{ secrets.CODACY_API_TOKEN }}")
+          if ! command -v jq &> /dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y jq
+          fi
+          
+          echo "⏳ Aguardando análise do Codacy..."
+          sleep 15
+          
+          COMMIT_SHA="${{ github.sha }}"
+          TOKEN_TYPE="${CODACY_TOKEN_TYPE:-api-token}"
+          VALID_TOKEN="${CODACY_VALID_TOKEN}"
+          
+          # Se não tiver token válido do step anterior, tentar descobrir
+          if [ -z "$VALID_TOKEN" ]; then
+            echo "🔍 Tentando autenticar..."
             
-            http_code=$(echo "$response" | tail -n1)
-            if [ "$http_code" = "200" ]; then
-              VALID_TOKEN="${{ secrets.CODACY_API_TOKEN }}"
-              TOKEN_TYPE="api-token"
+            if [ -n "${{ secrets.CODACY_API_TOKEN }}" ]; then
+              response=$(curl -s -w "\n%{http_code}" \
+                "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
+                -H "api-token: ${{ secrets.CODACY_API_TOKEN }}")
+              
+              http_code=$(echo "$response" | tail -n1)
+              if [ "$http_code" = "200" ]; then
+                VALID_TOKEN="${{ secrets.CODACY_API_TOKEN }}"
+                TOKEN_TYPE="api-token"
+              fi
+            fi
+            
+            if [ -z "$VALID_TOKEN" ] && [ -n "${{ secrets.CODACY_TOKEN }}" ]; then
+              response=$(curl -s -w "\n%{http_code}" \
+                "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
+                -H "api-token: ${{ secrets.CODACY_TOKEN }}")
+              
+              http_code=$(echo "$response" | tail -n1)
+              if [ "$http_code" = "200" ]; then
+                VALID_TOKEN="${{ secrets.CODACY_TOKEN }}"
+                TOKEN_TYPE="api-token"
+              fi
             fi
           fi
           
-          if [ -z "$VALID_TOKEN" ] && [ -n "${{ secrets.CODACY_TOKEN }}" ]; then
-            response=$(curl -s -w "\n%{http_code}" \
-              "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
-              -H "api-token: ${{ secrets.CODACY_TOKEN }}")
-            
-            http_code=$(echo "$response" | tail -n1)
-            if [ "$http_code" = "200" ]; then
-              VALID_TOKEN="${{ secrets.CODACY_TOKEN }}"
-              TOKEN_TYPE="api-token"
-            fi
+          if [ -z "$VALID_TOKEN" ]; then
+            echo "❌ Erro: Nenhum token válido encontrado"
+            exit 1
           fi
-        fi
-        
-        if [ -z "$VALID_TOKEN" ]; then
-          echo "❌ Erro: Nenhum token válido encontrado"
-          exit 1
-        fi
-        
-        echo "🔍 Consultando commit $COMMIT_SHA..."
-        
-        response=$(curl -s -w "\n%{http_code}" \
-          "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
-          -H "$TOKEN_TYPE: $VALID_TOKEN")
-        
-        http_code=$(echo "$response" | tail -n1)
-        body=$(echo "$response" | head -n-1)
-        
-        echo "🔍 HTTP Status: $http_code"
-        echo "🔍 Debug - Response do Codacy:"
-        echo "$body" | jq '.' 2>/dev/null || echo "$body"
-        echo ""
-        
-        if [ "$http_code" != "200" ]; then
-          echo "❌ Erro ao consultar API do Codacy (HTTP $http_code)"
-          exit 1
-        fi
-        
-        # Verificar grade e status
-        grade=$(echo "$body" | jq -r '.data.grade // "unknown"')
-        quality_status=$(echo "$body" | jq -r '.data.qualityStatus // "unknown"')
-        
-        echo "📊 Grade: $grade"
-        echo "📊 Quality Status: $quality_status"
-        
-        if [ "$quality_status" = "Failed" ] || [ "$grade" = "F" ]; then
-          echo "❌ QUALITY GATE FALHOU: Codacy Quality Gate"
-          exit 1
-        elif [ "$quality_status" = "Success" ] || [ "$quality_status" = "Passed" ]; then
-          echo "✅ QUALITY GATE PASSOU: Codacy Quality Gate"
-        else
-          echo "⚠️ Status: $quality_status | Grade: $grade"
-          echo "✅ QUALITY GATE PASSOU: Análise concluída"
-        fi
+          
+          echo "🔍 Consultando commit $COMMIT_SHA..."
+          
+          response=$(curl -s -w "\n%{http_code}" \
+            "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
+            -H "$TOKEN_TYPE: $VALID_TOKEN")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          
+          echo "🔍 HTTP Status: $http_code"
+          echo "🔍 Debug - Response do Codacy:"
+          echo "$body" | jq '.' 2>/dev/null || echo "$body"
+          echo ""
+          
+          if [ "$http_code" != "200" ]; then
+            echo "❌ Erro ao consultar API do Codacy (HTTP $http_code)"
+            exit 1
+          fi
+          
+          # Verificar grade e status
+          grade=$(echo "$body" | jq -r '.data.grade // "unknown"')
+          quality_status=$(echo "$body" | jq -r '.data.qualityStatus // "unknown"')
+          
+          echo "📊 Grade: $grade"
+          echo "📊 Quality Status: $quality_status"
+          
+          if [ "$quality_status" = "Failed" ] || [ "$grade" = "F" ]; then
+            echo "❌ QUALITY GATE FALHOU: Codacy Quality Gate"
+            exit 1
+          elif [ "$quality_status" = "Success" ] || [ "$quality_status" = "Passed" ]; then
+            echo "✅ QUALITY GATE PASSOU: Codacy Quality Gate"
+          else
+            echo "⚠️ Status: $quality_status | Grade: $grade"
+            echo "✅ QUALITY GATE PASSOU: Análise concluída"
+          fi
     
-    - name: Quality Gate 4 - Validar Métricas Personalizadas (SeePaw)
-      run: |
-        echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
-        echo "📊 QUALITY GATE 4: MÉTRICAS PERSONALIZADAS SEEPAW"
-        echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
-        
-        COMMIT_SHA="${{ github.sha }}"
-        TOKEN_TYPE="${CODACY_TOKEN_TYPE:-api-token}"
-        VALID_TOKEN="${CODACY_VALID_TOKEN}"
-        
-        # Se não tiver token válido do step anterior, tentar descobrir
-        if [ -z "$VALID_TOKEN" ]; then
-          if [ -n "${{ secrets.CODACY_API_TOKEN }}" ]; then
-            response=$(curl -s -w "\n%{http_code}" \
-              "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
-              -H "api-token: ${{ secrets.CODACY_API_TOKEN }}")
+      - name: Quality Gate 4 - Validar Métricas Personalizadas (SeePaw)
+        run: |
+          echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+          echo "📊 QUALITY GATE 4: MÉTRICAS PERSONALIZADAS SEEPAW"
+          echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+          
+          COMMIT_SHA="${{ github.sha }}"
+          TOKEN_TYPE="${CODACY_TOKEN_TYPE:-api-token}"
+          VALID_TOKEN="${CODACY_VALID_TOKEN}"
+          
+          # Se não tiver token válido do step anterior, tentar descobrir
+          if [ -z "$VALID_TOKEN" ]; then
+            if [ -n "${{ secrets.CODACY_API_TOKEN }}" ]; then
+              response=$(curl -s -w "\n%{http_code}" \
+                "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
+                -H "api-token: ${{ secrets.CODACY_API_TOKEN }}")
+              
+              http_code=$(echo "$response" | tail -n1)
+              if [ "$http_code" = "200" ]; then
+                VALID_TOKEN="${{ secrets.CODACY_API_TOKEN }}"
+                TOKEN_TYPE="api-token"
+              fi
+            fi
             
-            http_code=$(echo "$response" | tail -n1)
-            if [ "$http_code" = "200" ]; then
-              VALID_TOKEN="${{ secrets.CODACY_API_TOKEN }}"
-              TOKEN_TYPE="api-token"
+            if [ -z "$VALID_TOKEN" ] && [ -n "${{ secrets.CODACY_TOKEN }}" ]; then
+              response=$(curl -s -w "\n%{http_code}" \
+                "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
+                -H "api-token: ${{ secrets.CODACY_TOKEN }}")
+              
+              http_code=$(echo "$response" | tail -n1)
+              if [ "$http_code" = "200" ]; then
+                VALID_TOKEN="${{ secrets.CODACY_TOKEN }}"
+                TOKEN_TYPE="api-token"
+              fi
             fi
           fi
           
-          if [ -z "$VALID_TOKEN" ] && [ -n "${{ secrets.CODACY_TOKEN }}" ]; then
-            response=$(curl -s -w "\n%{http_code}" \
-              "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
-              -H "api-token: ${{ secrets.CODACY_TOKEN }}")
-            
-            http_code=$(echo "$response" | tail -n1)
-            if [ "$http_code" = "200" ]; then
-              VALID_TOKEN="${{ secrets.CODACY_TOKEN }}"
-              TOKEN_TYPE="api-token"
-            fi
+          if [ -z "$VALID_TOKEN" ]; then
+            echo "❌ Erro: Nenhum token válido encontrado"
+            exit 1
           fi
-        fi
-        
-        if [ -z "$VALID_TOKEN" ]; then
-          echo "❌ Erro: Nenhum token válido encontrado"
-          exit 1
-        fi
-        
-        # Obter métricas do Codacy
-        response=$(curl -s -w "\n%{http_code}" \
-          "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
-          -H "$TOKEN_TYPE: $VALID_TOKEN")
-        
-        http_code=$(echo "$response" | tail -n1)
-        body=$(echo "$response" | head -n-1)
-        
-        echo "🔍 Debug - Response do Codacy (HTTP $http_code):"
-        echo "$body" | jq '.' 2>/dev/null || echo "$body"
-        echo ""
-        
-        if [ "$http_code" != "200" ]; then
-          echo "❌ Erro ao consultar API do Codacy"
-          exit 1
-        fi
-        
-        # Extrair métricas
-        coverage=$(echo "$body" | jq -r '.data.coverage.coveragePercentage // 0' | cut -d'.' -f1)
-        complexity=$(echo "$body" | jq -r '.data.complexity.value // 0' | cut -d'.' -f1)
-        issues=$(echo "$body" | jq -r '.data.issues.total // 0')
-        
-        # Obter detalhes das issues por categoria
-        issues_response=$(curl -s -w "\n%{http_code}" \
-          "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/issues?commit=$COMMIT_SHA&limit=1000" \
-          -H "$TOKEN_TYPE: $VALID_TOKEN")
-        
-        issues_http_code=$(echo "$issues_response" | tail -n1)
-        issues_body=$(echo "$issues_response" | head -n-1)
-        
-        if [ "$issues_http_code" = "200" ]; then
-          bugs=$(echo "$issues_body" | jq '[.data[] | select(.category=="Error Prone")] | length')
-          vulnerabilities=$(echo "$issues_body" | jq '[.data[] | select(.category=="Security")] | length')
-          smells=$(echo "$issues_body" | jq '[.data[] | select(.category=="Code Style")] | length')
           
-          # Se não conseguir categorizar, tentar outros nomes de categorias
-          if [ "$bugs" = "0" ] && [ "$vulnerabilities" = "0" ] && [ "$smells" = "0" ] && [ "$issues" -gt 0 ]; then
-            echo "⚠️ Tentando categorias alternativas..."
-            bugs=$(echo "$issues_body" | jq '[.data[] | select(.level=="Error")] | length')
-            vulnerabilities=$(echo "$issues_body" | jq '[.data[] | select(.level=="Warning" and (.category | contains("Security")))] | length')
-            smells=$(echo "$issues_body" | jq '[.data[] | select(.level=="Info" or .level=="Warning")] | length')
+          # Obter métricas do Codacy
+          response=$(curl -s -w "\n%{http_code}" \
+            "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
+            -H "$TOKEN_TYPE: $VALID_TOKEN")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          
+          echo "🔍 Debug - Response do Codacy (HTTP $http_code):"
+          echo "$body" | jq '.' 2>/dev/null || echo "$body"
+          echo ""
+          
+          if [ "$http_code" != "200" ]; then
+            echo "❌ Erro ao consultar API do Codacy"
+            exit 1
           fi
-        else
-          echo "⚠️ Não foi possível obter detalhes das issues (HTTP $issues_http_code)"
-          bugs=0
-          vulnerabilities=0
-          smells=$issues
-        fi
-        
-        # Garantir valores numéricos
-        if [ "$bugs" = "null" ] || [ -z "$bugs" ]; then bugs=0; fi
-        if [ "$vulnerabilities" = "null" ] || [ -z "$vulnerabilities" ]; then vulnerabilities=0; fi
-        if [ "$smells" = "null" ] || [ -z "$smells" ]; then smells=$issues; fi
-        
-        pr_title="${{ github.event.pull_request.title || 'Basic' }}"
-        
-        category="Basic"
-        min_coverage=40
-        
-        if echo "$pr_title" | grep -iq "intermediate"; then
-          category="Intermediate"
-          min_coverage=50
-        elif echo "$pr_title" | grep -iq "critical"; then
-          category="Critical"
-          min_coverage=80
-        fi
-        
-        echo "📋 Categoria detectada: $category"
-        echo "📊 Cobertura mínima requerida: ${min_coverage}%"
-        echo ""
-        echo "📈 Métricas obtidas:"
-        echo "   Cobertura de código: ${coverage}%"
-        echo "   Complexidade ciclomática: $complexity"
-        echo "   Code Smells: $smells"
-        echo "   Bugs: $bugs"
-        echo "   Vulnerabilidades: $vulnerabilities"
-        echo "   Total de issues: $issues"
-        echo ""
-        
-        failed=0
-        
-        echo "🔍 Validando métricas..."
-        
-        if [ "$coverage" -lt "$min_coverage" ]; then
-          echo "   ❌ Cobertura: ${coverage}% < ${min_coverage}% (mínimo para $category)"
-          failed=1
-        else
-          echo "   ✅ Cobertura: ${coverage}% >= ${min_coverage}%"
-        fi
-        
-        if [ "$complexity" -gt 14 ]; then
-          echo "   ❌ Complexidade: $complexity > 14 (máximo)"
-          failed=1
-        else
-          echo "   ✅ Complexidade: $complexity <= 14"
-        fi
-        
-        if [ "$bugs" -gt 0 ]; then
-          echo "   ❌ Bugs: $bugs > 0 (máximo)"
-          failed=1
-        else
-          echo "   ✅ Bugs: $bugs = 0"
-        fi
-        
-        if [ "$vulnerabilities" -gt 0 ]; then
-          echo "   ❌ Vulnerabilidades: $vulnerabilities > 0 (máximo)"
-          failed=1
-        else
-          echo "   ✅ Vulnerabilidades: $vulnerabilities = 0"
-        fi
-        
-        if [ "$smells" -gt 10 ]; then
-          echo "   ❌ Code Smells: $smells > 10 (máximo)"
-          failed=1
-        else
-          echo "   ✅ Code Smells: $smells <= 10"
-        fi
-        
-        jq -n \
-          --arg coverage "$coverage" \
-          --arg complexity "$complexity" \
-          --arg smells "$smells" \
-          --arg bugs "$bugs" \
-          --arg vulnerabilities "$vulnerabilities" \
-          --arg category "$category" \
-          --arg min_cov "$min_coverage" \
-          '{
-            coverage: $coverage,
-            complexity: $complexity,
-            code_smells: $smells,
-            bugs: $bugs,
-            vulnerabilities: $vulnerabilities,
-            category: $category,
-            min_coverage: $min_cov,
-            timestamp: (now | todate)
-          }' > metrics.json
-        
-        echo ""
-        if [ $failed -eq 1 ]; then
-          echo "❌ QUALITY GATE FALHOU: Métricas personalizadas não atingidas"
-          exit 1
-        else
-          echo "✅ QUALITY GATE PASSOU: Todas as métricas personalizadas atingidas"
-        fi
+          
+          # Extrair métricas
+          coverage=$(echo "$body" | jq -r '.data.coverage.coveragePercentage // 0' | cut -d'.' -f1)
+          complexity=$(echo "$body" | jq -r '.data.complexity.value // 0' | cut -d'.' -f1)
+          issues=$(echo "$body" | jq -r '.data.issues.total // 0')
+          
+          # Obter detalhes das issues por categoria
+          issues_response=$(curl -s -w "\n%{http_code}" \
+            "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/issues?commit=$COMMIT_SHA&limit=1000" \
+            -H "$TOKEN_TYPE: $VALID_TOKEN")
+          
+          issues_http_code=$(echo "$issues_response" | tail -n1)
+          issues_body=$(echo "$issues_response" | head -n-1)
+          
+          if [ "$issues_http_code" = "200" ]; then
+            bugs=$(echo "$issues_body" | jq '[.data[] | select(.category=="Error Prone")] | length')
+            vulnerabilities=$(echo "$issues_body" | jq '[.data[] | select(.category=="Security")] | length')
+            smells=$(echo "$issues_body" | jq '[.data[] | select(.category=="Code Style")] | length')
+            
+            # Se não conseguir categorizar, tentar outros nomes de categorias
+            if [ "$bugs" = "0" ] && [ "$vulnerabilities" = "0" ] && [ "$smells" = "0" ] && [ "$issues" -gt 0 ]; then
+              echo "⚠️ Tentando categorias alternativas..."
+              bugs=$(echo "$issues_body" | jq '[.data[] | select(.level=="Error")] | length')
+              vulnerabilities=$(echo "$issues_body" | jq '[.data[] | select(.level=="Warning" and (.category | contains("Security")))] | length')
+              smells=$(echo "$issues_body" | jq '[.data[] | select(.level=="Info" or .level=="Warning")] | length')
+            fi
+          else
+            echo "⚠️ Não foi possível obter detalhes das issues (HTTP $issues_http_code)"
+            bugs=0
+            vulnerabilities=0
+            smells=$issues
+          fi
+          
+          # Garantir valores numéricos
+          if [ "$bugs" = "null" ] || [ -z "$bugs" ]; then bugs=0; fi
+          if [ "$vulnerabilities" = "null" ] || [ -z "$vulnerabilities" ]; then vulnerabilities=0; fi
+          if [ "$smells" = "null" ] || [ -z "$smells" ]; then smells=$issues; fi
+          
+          pr_title="${{ github.event.pull_request.title || 'Basic' }}"
+          
+          category="Basic"
+          min_coverage=40
+          
+          if echo "$pr_title" | grep -iq "intermediate"; then
+            category="Intermediate"
+            min_coverage=50
+          elif echo "$pr_title" | grep -iq "critical"; then
+            category="Critical"
+            min_coverage=80
+          fi
+          
+          echo "📋 Categoria detectada: $category"
+          echo "📊 Cobertura mínima requerida: ${min_coverage}%"
+          echo ""
+          echo "📈 Métricas obtidas:"
+          echo "   Cobertura de código: ${coverage}%"
+          echo "   Complexidade ciclomática: $complexity"
+          echo "   Code Smells: $smells"
+          echo "   Bugs: $bugs"
+          echo "   Vulnerabilidades: $vulnerabilities"
+          echo "   Total de issues: $issues"
+          echo ""
+          
+          failed=0
+          
+          echo "🔍 Validando métricas..."
+          
+          if [ "$coverage" -lt "$min_coverage" ]; then
+            echo "   ❌ Cobertura: ${coverage}% < ${min_coverage}% (mínimo para $category)"
+            failed=1
+          else
+            echo "   ✅ Cobertura: ${coverage}% >= ${min_coverage}%"
+          fi
+          
+          if [ "$complexity" -gt 14 ]; then
+            echo "   ❌ Complexidade: $complexity > 14 (máximo)"
+            failed=1
+          else
+            echo "   ✅ Complexidade: $complexity <= 14"
+          fi
+          
+          if [ "$bugs" -gt 0 ]; then
+            echo "   ❌ Bugs: $bugs > 0 (máximo)"
+            failed=1
+          else
+            echo "   ✅ Bugs: $bugs = 0"
+          fi
+          
+          if [ "$vulnerabilities" -gt 0 ]; then
+            echo "   ❌ Vulnerabilidades: $vulnerabilities > 0 (máximo)"
+            failed=1
+          else
+            echo "   ✅ Vulnerabilidades: $vulnerabilities = 0"
+          fi
+          
+          if [ "$smells" -gt 10 ]; then
+            echo "   ❌ Code Smells: $smells > 10 (máximo)"
+            failed=1
+          else
+            echo "   ✅ Code Smells: $smells <= 10"
+          fi
+          
+          jq -n \
+            --arg coverage "$coverage" \
+            --arg complexity "$complexity" \
+            --arg smells "$smells" \
+            --arg bugs "$bugs" \
+            --arg vulnerabilities "$vulnerabilities" \
+            --arg category "$category" \
+            --arg min_cov "$min_coverage" \
+            '{
+              coverage: $coverage,
+              complexity: $complexity,
+              code_smells: $smells,
+              bugs: $bugs,
+              vulnerabilities: $vulnerabilities,
+              category: $category,
+              min_coverage: $min_cov,
+              timestamp: (now | todate)
+            }' > metrics.json
+          
+          echo ""
+          if [ $failed -eq 1 ]; then
+            echo "❌ QUALITY GATE FALHOU: Métricas personalizadas não atingidas"
+            exit 1
+          else
+            echo "✅ QUALITY GATE PASSOU: Todas as métricas personalizadas atingidas"
+          fi
 
       - name: Resumo Final dos Quality Gates
         if: always()
