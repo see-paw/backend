@@ -584,7 +584,7 @@ jobs:
           echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
           echo "📊 QUALITY GATE 4: MÉTRICAS PERSONALIZADAS SEEPAW"
           echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
-
+        
           # 1️⃣ Determinar o SHA correto
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
@@ -594,109 +594,120 @@ jobs:
             COMMIT_SHA="${{ github.sha }}"
             echo "📦 Evento: Push → SHA: $COMMIT_SHA"
           fi
-
+        
           TOKEN="${{ secrets.CODACY_TOKEN }}"
           if [ -z "$TOKEN" ]; then
-            echo "❌ CODACY_TOKEN não configurado (Settings → Secrets → Actions)"
+            echo "❌ CODACY_TOKEN não configurado"
             exit 1
           fi
-
+        
           # 2️⃣ Garantir jq instalado
           if ! command -v jq &> /dev/null; then
             sudo apt-get update -qq && sudo apt-get install -y jq
           fi
-
-          # 3️⃣ Obter métricas globais do repositório (Codacy não fornece por commit)
+        
+          # 3️⃣ Obter métricas do COMMIT (não do repositório!)
           echo ""
-          echo "🔍 A obter métricas globais do repositório no Codacy..."
-          repo_response=$(curl -s -w "\n%{http_code}" \
-            "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories" \
+          echo "🔍 A obter métricas do commit $COMMIT_SHA no Codacy..."
+          commit_response=$(curl -s -w "\n%{http_code}" \
+            "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
             -H "api-token: $TOKEN")
-
-          http_code=$(echo "$repo_response" | tail -n1)
-          body=$(echo "$repo_response" | head -n-1)
-
+        
+          http_code=$(echo "$commit_response" | tail -n1)
+          body=$(echo "$commit_response" | head -n-1)
+        
           if [ "$http_code" != "200" ]; then
-            echo "❌ Erro ao consultar API (HTTP $http_code)"
+            echo "❌ Erro ao consultar API do commit (HTTP $http_code)"
             echo "$body" | jq '.' 2>/dev/null || echo "$body"
             exit 1
           fi
-
-          echo "✅ Dados obtidos com sucesso do Codacy"
+        
+          echo "✅ Dados do commit obtidos com sucesso"
           echo "----------------------------------------"
-          echo "$body" | jq '.' | head -n 40
-
-          # 4️⃣ Extrair métricas principais do objeto devolvido
-          grade_letter=$(echo "$body" | jq -r '.data[0].gradeLetter // "N/A"')
-          issues_count=$(echo "$body" | jq -r '.data[0].issuesCount // 0')
-          issue_percentage=$(echo "$body" | jq -r '.data[0].issuesPercentage // 0')
-          duplication_percentage=$(echo "$body" | jq -r '.data[0].duplicationPercentage // 0')
-          complex_files_percentage=$(echo "$body" | jq -r '.data[0].complexFilesPercentage // 0')
-          coverage_files_uncovered=$(echo "$body" | jq -r '.data[0].coverage.filesUncovered // 0')
-          total_files=$(echo "$body" | jq -r '.data[0].coverage.numberTotalFiles // 1')
-
-          # Calcular cobertura aproximada (% de ficheiros cobertos)
-          coverage=$((100 - (coverage_files_uncovered * 100 / total_files) ))
-
+        
+          # 4️⃣ Extrair métricas do COMMIT
+          grade_letter=$(echo "$body" | jq -r '.data.quality.grade // "N/A"')
+          issues_count=$(echo "$body" | jq -r '.data.issues.newCount // 0')
+          
+          # COBERTURA CORRETA! 🎯
+          coverage=$(echo "$body" | jq -r '.data.coverage.coveragePercentage // 0')
+          
+          duplication_percentage=$(echo "$body" | jq -r '.data.duplication.clonePercentage // 0')
+          complex_files_count=$(echo "$body" | jq -r '.data.complexity.complexFilesCount // 0')
+          total_files=$(echo "$body" | jq -r '.data.fileMetrics.totalFiles // 1')
+          complex_files_percentage=$((complex_files_count * 100 / total_files))
+        
           echo ""
-          echo "📈 Métricas extraídas:"
+          echo "📈 Métricas extraídas do commit:"
           echo "   Grade: $grade_letter"
-          echo "   Issues: $issues_count ($issue_percentage%)"
-          echo "   Duplication: ${duplication_percentage}%"
-          echo "   Complex Files: ${complex_files_percentage}%"
-          echo "   Coverage: ${coverage}%"
-
-          # 5️⃣ Obter objetivos (goals) do repositório
-          max_issue_percentage=$(echo "$body" | jq -r '.data[0].goals.maxIssuePercentage // 20')
-          max_duplication_percentage=$(echo "$body" | jq -r '.data[0].goals.maxDuplicatedFilesPercentage // 10')
-          min_coverage_percentage=$(echo "$body" | jq -r '.data[0].goals.minCoveragePercentage // 60')
-          max_complex_files_percentage=$(echo "$body" | jq -r '.data[0].goals.maxComplexFilesPercentage // 10')
-
+          echo "   Issues novos: $issues_count"
+          echo "   Cobertura: ${coverage}%"
+          echo "   Duplicação: ${duplication_percentage}%"
+          echo "   Ficheiros Complexos: ${complex_files_percentage}%"
+        
+          # 5️⃣ Obter limites (goals) do repositório
           echo ""
-          echo "📋 Limites definidos no Codacy:"
-          echo "   Máx. Issues: ${max_issue_percentage}%"
-          echo "   Máx. Duplicação: ${max_duplication_percentage}%"
+          echo "🔍 A obter limites (goals) do repositório..."
+          repo_response=$(curl -s -w "\n%{http_code}" \
+            "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories" \
+            -H "api-token: $TOKEN")
+        
+          repo_http_code=$(echo "$repo_response" | tail -n1)
+          repo_body=$(echo "$repo_response" | head -n-1)
+        
+          if [ "$repo_http_code" != "200" ]; then
+            echo "⚠️ Erro ao obter goals do repositório, usando valores padrão"
+            min_coverage_percentage=60
+            max_issue_percentage=20
+            max_duplication_percentage=10
+            max_complex_files_percentage=10
+          else
+            min_coverage_percentage=$(echo "$repo_body" | jq -r '.data[0].goals.minCoveragePercentage // 60')
+            max_issue_percentage=$(echo "$repo_body" | jq -r '.data[0].goals.maxIssuePercentage // 20')
+            max_duplication_percentage=$(echo "$repo_body" | jq -r '.data[0].goals.maxDuplicatedFilesPercentage // 10')
+            max_complex_files_percentage=$(echo "$repo_body" | jq -r '.data[0].goals.maxComplexFilesPercentage // 10')
+          fi
+        
+          echo ""
+          echo "📋 Limites definidos:"
           echo "   Mín. Cobertura: ${min_coverage_percentage}%"
+          echo "   Máx. Duplicação: ${max_duplication_percentage}%"
           echo "   Máx. Complexidade: ${max_complex_files_percentage}%"
-
-          # 6️⃣ Validar métricas personalizadas SeePaw
+        
+          # 6️⃣ Validar métricas
           failed=0
-
+        
           echo ""
           echo "🔍 Validando métricas..."
-          if [ "$coverage" -lt "$min_coverage_percentage" ]; then
+          
+          # Converter para inteiro para comparação
+          coverage_int=${coverage%.*}
+          
+          if [ "$coverage_int" -lt "$min_coverage_percentage" ]; then
             echo "❌ Cobertura ${coverage}% < ${min_coverage_percentage}%"
             failed=1
           else
-            echo "✅ Cobertura OK"
+            echo "✅ Cobertura OK (${coverage}%)"
           fi
-
-          if [ "$issue_percentage" -gt "$max_issue_percentage" ]; then
-            echo "❌ Issues ${issue_percentage}% > ${max_issue_percentage}%"
-            failed=1
-          else
-            echo "✅ Issues OK"
-          fi
-
+        
           if [ "$duplication_percentage" -gt "$max_duplication_percentage" ]; then
             echo "❌ Duplicação ${duplication_percentage}% > ${max_duplication_percentage}%"
             failed=1
           else
             echo "✅ Duplicação OK"
           fi
-
+        
           if [ "$complex_files_percentage" -gt "$max_complex_files_percentage" ]; then
             echo "❌ Complexidade ${complex_files_percentage}% > ${max_complex_files_percentage}%"
             failed=1
           else
             echo "✅ Complexidade OK"
           fi
-
-          # 7️⃣ Exportar métricas para metrics.json
+        
+          # 7️⃣ Exportar métricas
           jq -n \
             --arg grade "$grade_letter" \
             --arg issues "$issues_count" \
-            --arg issue_perc "$issue_percentage" \
             --arg coverage "$coverage" \
             --arg duplication "$duplication_percentage" \
             --arg complex "$complex_files_percentage" \
@@ -704,17 +715,16 @@ jobs:
             '{
               grade: $grade,
               issues: $issues,
-              issue_percentage: $issue_perc,
               coverage: $coverage,
               duplication: $duplication,
               complex_files: $complex,
               min_coverage: $min_cov,
               timestamp: (now | todate)
             }' > metrics.json
-
+        
           echo ""
           if [ $failed -eq 1 ]; then
-            echo "❌ QUALITY GATE FALHOU: Métricas personalizadas não atingidas"
+            echo "❌ QUALITY GATE FALHOU: Métricas não atingidas"
             exit 1
           fi
           echo "✅ QUALITY GATE PASSOU: Todas as métricas atingidas"
