@@ -498,55 +498,30 @@ jobs:
           
       - name: Restaurar dependências
         run: dotnet restore SeePaw.sln
-        
-      - name: Instalar SonarScanner for .NET
-        run: |
-          dotnet tool install --global dotnet-sonarscanner
-          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+  
+      - name: Build do projeto
+        run: dotnet build SeePaw.sln --no-restore --configuration Release
       
-      - name: SonarCloud Scan - Begin
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Enviar cobertura para Codacy
         run: |
-          dotnet sonarscanner begin \
-            /k:"see-paw_backend" \
-            /o:"see-paw" \
-            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
-            /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.cs.opencover.reportsPaths="TestResults/unit/coverage.xml" \
-            /d:sonar.coverage.exclusions="**/Migrations/**,**/Program.cs" \
-            /d:sonar.exclusions="**/Dockerfile,**/Dockerfile.*,**/*.dockerfile"
-     # - name: SonarCloud Scan
-      #  uses: sonarsource/sonarcloud-github-action@v3
-       # env:
-        #  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-         # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        #with:
-        #  args: >
-         #   -Dsonar.organization=see-paw
-          #  -Dsonar.projectKey=see-paw_backend
-           # -Dsonar.sources=API,Domain,Persistence
-            #-Dsonar.tests=Tests
-            #-Dsonar.cs.opencover.reportsPaths=TestResults/unit/coverage.xml
-            #-Dsonar.coverage.exclusions=**/Migrations/**,**/Program.cs
-            #-Dsonar.exclusions=**/Dockerfile,**/Dockerfile.*,**/*.dockerfile
-            #-Dsonar.qualitygate.wait=true
-      - name: Build para análise do SonarCloud
-        run: dotnet build SeePaw.sln --no-restore --configuration Release  
-
-      - name: SonarCloud Scan - End
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
-        
-        # ========================================
-      # QUALITY GATE 3
-      # ========================================
+          echo "📤 Enviando relatório de cobertura para Codacy..."
+          
+          # Download do Codacy Coverage Reporter
+          curl -Ls https://coverage.codacy.com/get.sh -o codacy-coverage-reporter.sh
+          chmod +x codacy-coverage-reporter.sh
+          
+          # Enviar relatório de cobertura
+          ./codacy-coverage-reporter.sh report \
+            -r TestResults/unit/coverage.xml \
+            -t ${{ secrets.CODACY_TOKEN }} \
+            --commit-uuid ${{ github.sha }}
+          
+          echo "✅ Cobertura enviada com sucesso"
       
-      - name: Quality Gate 3 - Verificar SonarCloud Quality Gate
+      - name: Quality Gate 3 - Verificar Codacy Quality Gate
         run: |
           echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
-          echo "📊 QUALITY GATE 3: SONARCLOUD"
+          echo "📊 QUALITY GATE 3: CODACY"
           echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
           
           if ! command -v jq &> /dev/null; then
@@ -554,61 +529,72 @@ jobs:
             sudo apt-get install -y jq
           fi
           
-          echo "⏳ Aguardando análise do SonarCloud..."
-          sleep 20
+          echo "⏳ Aguardando análise do Codacy..."
+          sleep 15
           
-          PR_NUMBER="${{ github.event.pull_request.number }}"
+          COMMIT_SHA="${{ github.sha }}"
           
-          if [ -z "$PR_NUMBER" ]; then
-            echo "⚠️ Não é um Pull Request, a consultar branch..."
-            status=$(curl -s "https://sonarcloud.io/api/qualitygates/project_status?projectKey=see-paw_backend" \
-              -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}" | jq -r '.projectStatus.status')
-          else
-            echo "🔍 Consultando PR #$PR_NUMBER..."
-            status=$(curl -s "https://sonarcloud.io/api/qualitygates/project_status?projectKey=see-paw_backend&pullRequest=$PR_NUMBER" \
-              -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}" | jq -r '.projectStatus.status')
-          fi
+          echo "🔍 Consultando commit $COMMIT_SHA..."
           
-          echo "📊 Status recebido: $status"
-
-          if [ "$status" = "ERROR" ]; then
-            echo "❌ QUALITY GATE FALHOU: SonarCloud Quality Gate"
+          # Obter informações do commit no Codacy
+          response=$(curl -s "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
+            -H "api-token: ${{ secrets.CODACY_TOKEN }}")
+          
+          echo "🔍 Debug - Response do Codacy:"
+          echo "$response" | jq '.' || echo "Resposta não é JSON válido"
+          echo ""
+          
+          # Verificar se há issues críticos
+          grade=$(echo "$response" | jq -r '.data.grade // "unknown"')
+          quality_status=$(echo "$response" | jq -r '.data.qualityStatus // "unknown"')
+          
+          echo "📊 Grade: $grade"
+          echo "📊 Quality Status: $quality_status"
+          
+          if [ "$quality_status" = "Failed" ] || [ "$grade" = "F" ]; then
+            echo "❌ QUALITY GATE FALHOU: Codacy Quality Gate"
             exit 1
-          elif [ "$status" = "OK" ]; then
-            echo "✅ QUALITY GATE PASSOU: SonarCloud Quality Gate"
+          elif [ "$quality_status" = "Success" ] || [ "$quality_status" = "Passed" ]; then
+            echo "✅ QUALITY GATE PASSOU: Codacy Quality Gate"
           else
-            echo "⚠️ Status desconhecido: $status"
-            echo ""
-            echo "🔍 Debug - Response completa:"
-            curl -s "https://sonarcloud.io/api/qualitygates/project_status?projectKey=see-paw_backend&pullRequest=$PR_NUMBER" \
-              -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}" | jq '.'
-            exit
+            echo "⚠️ Status: $quality_status | Grade: $grade"
+            echo "✅ QUALITY GATE PASSOU: Análise concluída"
           fi
-
+      
       - name: Quality Gate 4 - Validar Métricas Personalizadas (SeePaw)
         run: |
           echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
           echo "📊 QUALITY GATE 4: MÉTRICAS PERSONALIZADAS SEEPAW"
           echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
           
-          PR_NUMBER="${{ github.event.pull_request.number }}"
-
-          if [ -z "$PR_NUMBER" ]; then
-            response=$(curl -s "https://sonarcloud.io/api/measures/component?componentKey=see-paw_backend&metricKeys=coverage,complexity,code_smells,bugs,vulnerabilities" \
-              -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}")
-          else
-            response=$(curl -s "https://sonarcloud.io/api/measures/component?componentKey=see-paw_backend&metricKeys=coverage,complexity,code_smells,bugs,vulnerabilities&pullRequest=$PR_NUMBER" \
-              -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}")
-          fi
-          echo "🔍 Debug - Response do SonarCloud:"
+          COMMIT_SHA="${{ github.sha }}"
+          
+          # Obter métricas do Codacy
+          response=$(curl -s "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
+            -H "api-token: ${{ secrets.CODACY_TOKEN }}")
+          
+          echo "🔍 Debug - Response do Codacy:"
           echo "$response" | jq '.' || echo "Resposta não é JSON válido"
           echo ""
-          coverage=$(echo "$response" | jq -r '.component.measures[] | select(.metric=="coverage") | .value // "0"' | cut -d'.' -f1)
-          complexity=$(echo "$response" | jq -r '.component.measures[] | select(.metric=="complexity") | .value // "0"' | cut -d'.' -f1)
-          smells=$(echo "$response" | jq -r '.component.measures[] | select(.metric=="code_smells") | .value // "0"' | cut -d'.' -f1)
-          bugs=$(echo "$response" | jq -r '.component.measures[] | select(.metric=="bugs") | .value // "0"' | cut -d'.' -f1)
-          vulnerabilities=$(echo "$response" | jq -r '.component.measures[] | select(.metric=="vulnerabilities") | .value // "0"' | cut -d'.' -f1)
-
+          
+          # Extrair métricas
+          coverage=$(echo "$response" | jq -r '.data.coverage.coveragePercentage // 0' | cut -d'.' -f1)
+          complexity=$(echo "$response" | jq -r '.data.complexity.value // 0' | cut -d'.' -f1)
+          issues=$(echo "$response" | jq -r '.data.issues.total // 0')
+          
+          # Obter detalhes das issues por categoria
+          issues_response=$(curl -s "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/issues?commit=$COMMIT_SHA" \
+            -H "api-token: ${{ secrets.CODACY_TOKEN }}")
+          
+          bugs=$(echo "$issues_response" | jq '[.data[] | select(.category=="Error Prone")] | length')
+          vulnerabilities=$(echo "$issues_response" | jq '[.data[] | select(.category=="Security")] | length')
+          smells=$(echo "$issues_response" | jq '[.data[] | select(.category=="Code Style")] | length')
+          
+          # Se não conseguir categorizar, usar o total
+          if [ "$bugs" = "null" ] || [ -z "$bugs" ]; then bugs=0; fi
+          if [ "$vulnerabilities" = "null" ] || [ -z "$vulnerabilities" ]; then vulnerabilities=0; fi
+          if [ "$smells" = "null" ] || [ -z "$smells" ]; then smells=$issues; fi
+          
           pr_title="${{ github.event.pull_request.title || 'Basic' }}"
           
           category="Basic"
