@@ -86,7 +86,6 @@ jobs:
           
           # Correr testes com cobertura em formato OpenCover
           dotnet test Tests/Tests.csproj \
-            --no-restore \
             --configuration Release \
             --logger "trx;LogFileName=test-results.trx" \
             --results-directory TestResults \
