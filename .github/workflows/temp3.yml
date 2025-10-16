@@ -505,6 +505,27 @@ jobs:
         run: dotnet build SeePaw.sln --no-restore --configuration Release
       
 
+      - name: Verificar e validar relatório de cobertura
+        run: |
+          echo "🔍 Verificando relatório de cobertura antes do envio..."
+          
+          if [ ! -f TestResults/unit/coverage.xml ]; then
+            echo "❌ ERRO: Ficheiro coverage.xml não encontrado!"
+            exit 1
+          fi
+          
+          echo "✅ Ficheiro existe"
+          echo "📊 Tamanho: $(wc -c < TestResults/unit/coverage.xml) bytes"
+          echo "📝 Primeiras linhas:"
+          head -n 20 TestResults/unit/coverage.xml
+          
+          # Verificar se é OpenCover válido
+          if grep -q "<CoverageSession" TestResults/unit/coverage.xml; then
+            echo "✅ Formato OpenCover detectado"
+          else
+            echo "⚠️ Formato OpenCover não detectado claramente"
+          fi
+      
       - name: Enviar cobertura para Codacy
         run: |
           echo "📤 Enviando relatório de cobertura para Codacy..."
@@ -515,16 +536,34 @@ jobs:
             exit 1
           fi
           
+          # Determinar SHA correto
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
+          else
+            COMMIT_SHA="${{ github.sha }}"
+          fi
+          
+          echo "🔍 Enviando para commit: $COMMIT_SHA"
+          
           curl -Ls https://coverage.codacy.com/get.sh -o codacy-coverage-reporter.sh
           chmod +x codacy-coverage-reporter.sh
 
           echo "📊 Enviando relatório de cobertura..."
           ./codacy-coverage-reporter.sh report \
             -r TestResults/unit/coverage.xml \
-            --commit-uuid ${{ github.sha }} \
-            || echo "⚠️ Envio falhou (não crítico)"
+            --commit-uuid "$COMMIT_SHA" \
+            2>&1 | tee codacy-upload.log
           
-          echo "✅ Tentativa de envio concluída"
+          exit_code=${PIPESTATUS[0]}
+          
+          if [ $exit_code -eq 0 ]; then
+            echo "✅ Envio bem-sucedido!"
+          else
+            echo "❌ Envio falhou com código $exit_code"
+            echo "📄 Log completo:"
+            cat codacy-upload.log
+            exit 1
+          fi
     
       - name: Quality Gate 3 - Verificar Codacy Quality Gate e Cobertura
         run: |
@@ -541,8 +580,8 @@ jobs:
           echo "🔍 Commit alvo: $COMMIT_SHA"
           
           TOKEN="${{ secrets.CODACY_TOKEN }}"
-          MAX_RETRIES=20   # tenta até 20 vezes (20 min)
-          DELAY=60         # intervalo entre tentativas em segundos
+          MAX_RETRIES=10   # 10 tentativas = 5 minutos
+          DELAY=30         # 30 segundos entre tentativas
           
           if [ -z "$TOKEN" ]; then
             echo "❌ CODACY_TOKEN não configurado!"
@@ -555,6 +594,7 @@ jobs:
           fi
           
           echo "🔍 Aguardando análise E processamento de cobertura..."
+          echo "⏱️  Timeout: $((MAX_RETRIES * DELAY / 60)) minutos"
           
           for ((i=1; i<=MAX_RETRIES; i++)); do
             response=$(curl -s -w "\n%{http_code}" \
@@ -568,41 +608,64 @@ jobs:
               # Verificar se tem dados de cobertura
               has_coverage=$(echo "$body" | jq -r '.data.coverage.coveragePercentage // "null"')
               
-              if [ "$has_coverage" != "null" ]; then
+              if [ "$has_coverage" != "null" ] && [ "$has_coverage" != "0" ]; then
                 echo "✅ Commit analisado E cobertura processada! (tentativa $i)"
+                echo "📊 Cobertura encontrada: ${has_coverage}%"
                 echo "$body" | jq '.' > codacy_commit.json
                 break
               else
-                echo "🔄 [$i/$MAX_RETRIES] Commit analisado mas cobertura ainda a processar..."
+                echo "🔄 [$i/$MAX_RETRIES] Análise OK mas cobertura=$has_coverage (aguardando processamento...)"
+                
+                # Debug: mostrar o que o Codacy tem
+                if [ $i -eq 5 ]; then
+                  echo "📋 Debug - Resposta do Codacy (tentativa 5):"
+                  echo "$body" | jq '.data | keys'
+                fi
+                
                 sleep $DELAY
               fi
             else
-              echo "🔄 [$i/$MAX_RETRIES] Ainda não analisado... (HTTP $http_code)"
+              echo "🔄 [$i/$MAX_RETRIES] Ainda não analisado (HTTP $http_code)"
               sleep $DELAY
             fi
           done
           
+          # Verificação final
           if [ "$http_code" != "200" ]; then
-            echo "❌ Timeout: Codacy não terminou a análise após $((MAX_RETRIES*DELAY/60)) min"
-            echo "Última resposta do Codacy:"
+            echo "❌ FALHA: Codacy não analisou o commit após $((MAX_RETRIES*DELAY/60)) min"
+            echo "Última resposta:"
             echo "$body" | jq '.' 2>/dev/null || echo "$body"
             exit 1
           fi
           
-          # Verificar novamente se tem cobertura
+          # Verificar se tem cobertura
           has_coverage=$(echo "$body" | jq -r '.data.coverage.coveragePercentage // "null"')
-          if [ "$has_coverage" = "null" ]; then
-            echo "⚠️ AVISO: Codacy não processou a cobertura após $((MAX_RETRIES*DELAY/60)) min"
-            echo "Isto pode indicar que:"
-            echo "  1. O relatório de cobertura não foi enviado corretamente"
-            echo "  2. O Codacy está com atrasos no processamento"
-            echo "  3. O formato do relatório não é compatível"
+          
+          if [ "$has_coverage" = "null" ] || [ "$has_coverage" = "0" ]; then
             echo ""
-            echo "Última resposta do Codacy:"
+            echo "⚠️⚠️⚠️ PROBLEMA DETECTADO ⚠️⚠️⚠️"
+            echo "❌ Codacy NÃO processou a cobertura após $((MAX_RETRIES*DELAY/60)) min"
+            echo ""
+            echo "📋 Estrutura da resposta do Codacy:"
+            echo "$body" | jq '.data | keys'
+            echo ""
+            echo "🔍 Dados completos do commit:"
             echo "$body" | jq '.'
+            echo ""
+            echo "💡 Possíveis causas:"
+            echo "  1. O relatório não foi enviado para o commit correto"
+            echo "  2. O Codacy rejeitou o formato do relatório"
+            echo "  3. Há um problema de configuração no Codacy"
+            echo "  4. O CODACY_API_TOKEN está incorreto/expirado"
+            echo ""
+            echo "🔧 Ações sugeridas:"
+            echo "  1. Verifica os logs do step 'Enviar cobertura para Codacy'"
+            echo "  2. Verifica se o commit SHA está correto: $COMMIT_SHA"
+            echo "  3. Verifica manualmente no Codacy: https://app.codacy.com/gh/see-paw/backend/commit/$COMMIT_SHA"
+            exit 1
           fi
          
-          echo "✅ Análise Codacy concluída e guardada em codacy_commit.json"
+          echo "✅ Análise Codacy concluída com cobertura de ${has_coverage}%"
     
       - name: Quality Gate 4 – Validar Métricas Personalizadas (SeePaw)
         run: |
