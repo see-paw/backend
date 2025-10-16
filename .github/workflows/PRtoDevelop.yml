@@ -51,26 +51,59 @@ jobs:
     container:
       image: mcr.microsoft.com/dotnet/sdk:8.0
     needs: build
-
+    
     steps:
+      - name: 🧹 Limpar cache NuGet
+        run: dotnet nuget locals all --clear
+        
       - name: Checkout código
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: 🐛 DEBUG - Verificar estrutura
+      - name: 🐛 DEBUG COMPLETO - Verificar compilação e referências
         run: |
-          echo "📂 Ficheiros .csproj encontrados:"
-          find . -name "*.csproj" -type f
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🔍 VERIFICAÇÃO DETALHADA DE DEPENDÊNCIAS"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
           echo ""
-          echo "📂 Conteúdo de Tests/:"
-          ls -la Tests/
+          echo "📂 1. Estrutura de ficheiros:"
+          find . -name "*.csproj" -o -name "*.cs" | grep -E "(Tests|API|Domain)" | head -30
+          
+          echo ""
+          echo "📦 2. Conteúdo do Tests.csproj:"
+          cat Tests/Tests.csproj
+          
+          echo ""
+          echo "📦 3. Primeiras linhas do AnimalsDetailsTests.cs:"
+          head -40 Tests/AnimalsDetailsTests.cs
+          
+          echo ""
+          echo "🔨 4. Compilar APENAS o projeto API:"
+          dotnet build API/API.csproj --configuration Release -v detailed 2>&1 | tail -50
+          
+          echo ""
+          echo "🔨 5. Compilar APENAS o projeto Tests (sem rodar):"
+          dotnet build Tests/Tests.csproj --configuration Release -v detailed 2>&1 | tail -100
+          
+          echo ""
+          echo "📊 6. Verificar DLLs geradas:"
+          ls -lah API/bin/Release/net8.0/*.dll 2>/dev/null || echo "API DLLs não encontradas"
+          ls -lah Tests/bin/Release/net8.0/*.dll 2>/dev/null || echo "Tests DLLs não encontradas"
+          
+          echo ""
+          echo "🔍 7. Verificar referências no Tests.dll:"
+          dotnet --version
+          
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         
-      #- name: Descarregar artefactos
-       # uses: actions/download-artifact@v4
-        #with:
-         # name: build-artifacts
-          #path: ./
+      - name: Descarregar artefactos
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: ./
           
       - name: Restaurar dependências dos testes
         run: |
