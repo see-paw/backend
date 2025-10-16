@@ -524,15 +524,32 @@ jobs:
       - name: Quality Gate 3 - Verificar Codacy Quality Gate
         run: |
           echo "⏳ Aguardando que o Codacy analise o commit..."
-          COMMIT_SHA="${{ github.sha }}"
-          TOKEN="${{ secrets.CODACY_TOKEN }}"
-          MAX_RETRIES=15   # tenta até 15 vezes
-          DELAY=60         # 60 segundos entre tentativas
+          echo "⏳ Aguardando que o Codacy analise o commit..."
 
+          # Determinar o SHA correto
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
+            echo "📦 Detetado evento pull_request → Usar HEAD SHA do PR"
+          else
+            COMMIT_SHA="${{ github.sha }}"
+            echo "📦 Detetado evento push → Usar commit SHA normal"
+          fi
+          echo "🔍 Commit alvo: $COMMIT_SHA"
+          
+          TOKEN="${{ secrets.CODACY_TOKEN }}"
+          MAX_RETRIES=15   # tenta até 15 vezes (15 min)
+          DELAY=60         # intervalo entre tentativas em segundos
+          
           if [ -z "$TOKEN" ]; then
             echo "❌ CODACY_TOKEN não configurado!"
             exit 1
           fi
+          
+          # Instalar jq se necessário
+          if ! command -v jq &> /dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y jq
+          fi
+          
           for ((i=1; i<=MAX_RETRIES; i++)); do
             response=$(curl -s -w "\n%{http_code}" \
               "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
@@ -542,7 +559,7 @@ jobs:
             body=$(echo "$response" | head -n-1)
 
             if [ "$http_code" = "200" ]; then
-              echo "✅ Commit analisado pelo Codacy!"
+              echo "✅ Commit analisado pelo Codacy (tentativa $i)"
               echo "$body" | jq '.' > codacy_commit.json
               break
             else
@@ -550,12 +567,15 @@ jobs:
               sleep $DELAY
             fi
           done
-
+          
           if [ "$http_code" != "200" ]; then
             echo "❌ Timeout: Codacy não terminou a análise após $((MAX_RETRIES*DELAY/60)) min"
+            echo "Última resposta do Codacy:"
+            echo "$body" | jq '.' 2>/dev/null || echo "$body"
             exit 1
           fi
-          echo "✅ Dados gravados em codacy_commit.json"
+
+          echo "✅ Análise Codacy concluída e guardada em codacy_commit.json"
     
       - name: Quality Gate 4 - Validar Métricas Personalizadas (SeePaw)
         run: |
