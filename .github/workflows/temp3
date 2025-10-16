@@ -2,7 +2,7 @@ name: CI - Tests And Inspection
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: [ "develop" ]
     paths-ignore:
        - '.github/workflows/**'
 
