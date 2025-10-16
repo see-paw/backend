@@ -460,7 +460,9 @@ jobs:
           echo "📊 QUALITY GATE 2: TESTES DE INTEGRAÇÃO"
           echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
           
-          summary_file="TestResults/integration/postman/summary.json"
+          summary_file="TestResults/integration/TestResults/postman/summary.json"
+          echo "📂 Conteúdo extraído do artefacto:"
+          ls -R TestResults/integration
           
           if [ ! -f "$summary_file" ]; then
             echo "⚠️ Ficheiro summary.json não encontrado"
@@ -574,17 +576,7 @@ jobs:
             echo "$body" | jq '.' 2>/dev/null || echo "$body"
             exit 1
           fi
-          # 3️⃣ Se existir análise guardada, reutilizar
-          if [ -f "codacy_commit.json" ]; then
-            echo "📄 A usar análise existente (codacy_commit.json)"
-            body=$(cat codacy_commit.json)
-            echo ""
-            echo "🔍 Conteúdo bruto do codacy_commit.json:"
-            echo "$body" | jq '.' || echo "$body"
-            echo "----------------------------------------"
-          else
-            ...
-          fi
+         
           echo "✅ Análise Codacy concluída e guardada em codacy_commit.json"
     
       - name: Quality Gate 4 – Validar Métricas Personalizadas (SeePaw)
@@ -614,31 +606,63 @@ jobs:
             sudo apt-get update -qq && sudo apt-get install -y jq
           fi
 
-          # 3️⃣ Se existir análise guardada, reutilizar
-          if [ -f "codacy_commit.json" ]; then
-            echo "📄 A usar análise existente (codacy_commit.json)"
-            body=$(cat codacy_commit.json)
-          else
-            echo "⚠️ codacy_commit.json não encontrado – a obter novamente..."
-            body=$(curl -s "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
-              -H "api-token: $TOKEN")
+          # 3️⃣ Obter ID do repositório no Codacy
+          echo ""
+          echo "🔍 A obter ID do repositório no Codacy..."
+          repo_response=$(curl -s "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories" \
+            -H "api-token: $TOKEN")
+
+          repo_id=$(echo "$repo_response" | jq -r '.data[] | select(.name=="backend") | .id')
+
+          if [ -z "$repo_id" ] || [ "$repo_id" = "null" ]; then
+            echo "❌ Não foi possível encontrar o repositório 'backend' no Codacy."
+            echo "$repo_response" | jq '.' || echo "$repo_response"
+            exit 1
           fi
 
-          # 4️⃣ Extrair métricas principais
+          echo "📦 Repositório Codacy ID: $repo_id"
+
+          # 4️⃣ Obter análise detalhada do commit
+          echo ""
+          echo "🔍 A obter análise detalhada do commit..."
+          detailed=$(curl -s -w "\n%{http_code}" \
+            "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/$repo_id/commits/$COMMIT_SHA/analysis" \
+            -H "api-token: $TOKEN")
+
+          http_code=$(echo "$detailed" | tail -n1)
+          body=$(echo "$detailed" | head -n-1)
+
+          if [ "$http_code" != "200" ]; then
+            echo "❌ Erro ao obter análise detalhada (HTTP $http_code)"
+            echo "$body" | jq '.' 2>/dev/null || echo "$body"
+            exit 1
+          fi
+
+          echo "✅ Análise detalhada obtida com sucesso"
+          echo "----------------------------------------"
+          echo "$body" | jq '.' | head -n 50
+          echo "----------------------------------------"
+
+          # 5️⃣ Extrair métricas principais
           coverage=$(echo "$body" | jq -r '.data.coverage.coveragePercentage // 0' | cut -d'.' -f1)
           complexity=$(echo "$body" | jq -r '.data.complexity.value // 0' | cut -d'.' -f1)
           issues=$(echo "$body" | jq -r '.data.issues.total // 0')
+          grade=$(echo "$body" | jq -r '.data.grade // "N/A"')
+          quality_status=$(echo "$body" | jq -r '.data.qualityStatus // "unknown"')
+
           echo ""
           echo "📈 Métricas base do Codacy:"
           echo "   Cobertura: ${coverage}%"
           echo "   Complexidade: ${complexity}"
           echo "   Total Issues: ${issues}"
+          echo "   Grade: ${grade}"
+          echo "   Quality Status: ${quality_status}"
 
-          # 5️⃣ Obter detalhes das issues (pode devolver 404 se não houver)
+          # 6️⃣ Obter detalhes das issues
           echo ""
           echo "🔍 A obter detalhes das issues..."
           issues_resp=$(curl -s -w "\n%{http_code}" \
-            "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/issues?commit=$COMMIT_SHA&limit=1000" \
+            "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/$repo_id/issues?commit=$COMMIT_SHA&limit=1000" \
             -H "api-token: $TOKEN")
 
           issues_code=$(echo "$issues_resp" | tail -n1)
@@ -657,12 +681,12 @@ jobs:
             bugs=0; vulnerabilities=0; smells=$issues
           fi
 
-          # 6️⃣ Normalizar valores
+          # 7️⃣ Normalizar valores
           [ -z "$bugs" ] && bugs=0
           [ -z "$vulnerabilities" ] && vulnerabilities=0
           [ -z "$smells" ] && smells=$issues
 
-          # 7️⃣ Definir categoria do PR e limites
+          # 8️⃣ Definir categoria do PR e limites
           pr_title="${{ github.event.pull_request.title || 'Basic' }}"
           category="Basic"; min_cov=40
           if echo "$pr_title" | grep -iq "intermediate"; then
@@ -684,7 +708,7 @@ jobs:
           echo "   Total de Issues: $issues"
           echo ""
 
-          # 8️⃣ Validar métricas personalizadas SeePaw
+          # 9️⃣ Validar métricas personalizadas SeePaw
           failed=0
 
           if [ "$coverage" -lt "$min_cov" ]; then
@@ -722,7 +746,7 @@ jobs:
             echo "✅ Code Smells OK"
           fi
 
-          # 9️⃣ Exportar métricas como JSON (podes guardar como artefacto)
+          # 🔟 Exportar métricas como JSON
           jq -n \
             --arg coverage "$coverage" \
             --arg complexity "$complexity" \
@@ -731,6 +755,8 @@ jobs:
             --arg vulnerabilities "$vulnerabilities" \
             --arg category "$category" \
             --arg min_cov "$min_cov" \
+            --arg grade "$grade" \
+            --arg quality_status "$quality_status" \
             '{
               coverage: $coverage,
               complexity: $complexity,
@@ -739,6 +765,8 @@ jobs:
               vulnerabilities: $vulnerabilities,
               category: $category,
               min_coverage: $min_cov,
+              grade: $grade,
+              quality_status: $quality_status,
               timestamp: (now | todate)
             }' > metrics.json
 
@@ -748,7 +776,6 @@ jobs:
             exit 1
           fi
           echo "✅ QUALITY GATE PASSOU: Todas as métricas atingidas"
-
       
 
       - name: Resumo Final dos Quality Gates
