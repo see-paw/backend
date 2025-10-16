@@ -67,6 +67,7 @@ artifacts/
 
 # Tye
 .tye/
+*.avi
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
