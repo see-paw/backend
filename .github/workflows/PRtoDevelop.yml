@@ -50,80 +50,66 @@ jobs:
   # 2️⃣ UNIT TESTS - Usa os binários já compilados
   # ======================================================
   unit_tests:
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-
-      - name: Descarregar artefactos do build
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          path: ./
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0.x
-
-      - name: Correr testes unitários (xUnit) + Cobertura
-        run: |
-          mkdir -p TestResults
-          echo "🧪 A testar: Tests/Tests.csproj"
-          
-          dotnet test Tests/Tests.csproj \
-            --no-build \
-            --configuration Release \
-            --logger "trx;LogFileName=test-results.trx" \
-            --results-directory TestResults \
-            --collect:"XPlat Code Coverage" \
-            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
-          
-          echo "✅ Testes concluídos"
-          
-          # Encontrar e copiar ficheiro de cobertura
-          coverage_file=$(find TestResults -name "coverage.opencover.xml" -type f | head -1)
-          
-          if [ -n "$coverage_file" ]; then
-            cp "$coverage_file" TestResults/coverage.xml
-            echo "✅ Cobertura copiada para: TestResults/coverage.xml"
-          else
-            echo "⚠️ AVISO: Ficheiro de cobertura não encontrado"
-          fi
-
-      - name: Mostrar resumo dos testes
-        if: always()
-        run: |
-          if [ -f TestResults/test-results.trx ]; then
-            passed=$(grep -o 'outcome="Passed"' TestResults/test-results.trx | wc -l || echo "0")
-            failed=$(grep -o 'outcome="Failed"' TestResults/test-results.trx | wc -l || echo "0")
-            total=$((passed + failed))
+      runs-on: ubuntu-latest
+      needs: build  # Mantém a dependência para garantir que build passou
+    
+      steps:
+        - name: Checkout código
+          uses: actions/checkout@v4
+    
+        - name: Setup .NET
+          uses: actions/setup-dotnet@v4
+          with:
+            dotnet-version: 8.0.x
+    
+        - name: Restaurar e compilar
+          run: |
+            dotnet restore SeePaw.sln
+            dotnet build SeePaw.sln --no-restore --configuration Release
+    
+        - name: Correr testes unitários + Cobertura
+          run: |
+            mkdir -p TestResults
             
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "📊 RESUMO DOS TESTES UNITÁRIOS"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "   Total: $total"
-            echo "   ✅ Passaram: $passed"
-            echo "   ❌ Falharam: $failed"
-            
-            if [ $failed -eq 0 ] && [ $total -gt 0 ]; then
-              echo "   🎉 Todos os testes passaram!"
-            elif [ $failed -gt 0 ]; then
-              echo "   ⚠️  Alguns testes falharam"
-            fi
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          fi
+            dotnet test Tests/Tests.csproj \
+              --no-build \
+              --configuration Release \
+              --logger "trx;LogFileName=test-results.trx" \
+              --results-directory TestResults \
+              --collect:"XPlat Code Coverage" \
+              -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+    
+        - name: Mostrar resumo dos testes
+          if: always()
+          run: |
+              if [ -f TestResults/test-results.trx ]; then
+                passed=$(grep -o 'outcome="Passed"' TestResults/test-results.trx | wc -l || echo "0")
+                failed=$(grep -o 'outcome="Failed"' TestResults/test-results.trx | wc -l || echo "0")
+                total=$((passed + failed))
+                
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                echo "📊 RESUMO DOS TESTES UNITÁRIOS"
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                echo "   Total: $total"
+                echo "   ✅ Passaram: $passed"
+                echo "   ❌ Falharam: $failed"
+                
+                if [ $failed -eq 0 ] && [ $total -gt 0 ]; then
+                  echo "   🎉 Todos os testes passaram!"
+                elif [ $failed -gt 0 ]; then
+                  echo "   ⚠️  Alguns testes falharam"
+                fi
+                echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              fi
 
-      - name: Exportar resultados de testes
-        uses: actions/upload-artifact@v4
-        with:
-          name: unit-test-results
-          path: |
-            TestResults/*.trx
-            TestResults/*.xml
-          if-no-files-found: warn
+        - name: Exportar resultados de testes
+          uses: actions/upload-artifact@v4
+          with:
+            name: unit-test-results
+            path: |
+              TestResults/*.trx
+              TestResults/*.xml
+            if-no-files-found: warn
 
   # ======================================================
   # 3️⃣ INTEGRATION TESTS
