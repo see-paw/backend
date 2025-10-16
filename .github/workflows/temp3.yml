@@ -506,7 +506,7 @@ jobs:
       - name: Enviar cobertura para Codacy
         run: |
           echo "📤 Enviando relatório de cobertura para Codacy..."
-          export CODACY_PROJECT_TOKEN="${{ secrets.CODACY_PROJECT_TOKEN }}"
+          export CODACY_PROJECT_TOKEN="${{ secrets.CODACY_API_TOKEN }}"
           
           if [ -z "$CODACY_PROJECT_TOKEN" ]; then
             echo "❌ Erro: CODACY_PROJECT_TOKEN não configurado"
