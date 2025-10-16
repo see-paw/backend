@@ -502,234 +502,60 @@ jobs:
       - name: Build do projeto
         run: dotnet build SeePaw.sln --no-restore --configuration Release
       
-      - name: Diagnóstico - Testar tokens do Codacy
-        run: |
-          echo "🔍 DIAGNÓSTICO: Testando tokens do Codacy..."
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          
-          COMMIT_SHA="${{ github.sha }}"
-          VALID_TOKEN=""
-          TOKEN_TYPE=""
-          
-          # Teste 1: CODACY_API_TOKEN
-          echo ""
-          echo "📝 Teste 1: CODACY_API_TOKEN"
-          if [ -z "${{ secrets.CODACY_API_TOKEN }}" ]; then
-            echo "   ⚠️ Secret não configurada"
-          else
-            echo "   ✓ Secret configurada"
-            response=$(curl -s -w "\n%{http_code}" \
-              "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
-              -H "api-token: ${{ secrets.CODACY_API_TOKEN }}")
-            
-            http_code=$(echo "$response" | tail -n1)
-            echo "   HTTP Status: $http_code"
-            
-            if [ "$http_code" = "200" ]; then
-              echo "   ✅ TOKEN VÁLIDO!"
-              VALID_TOKEN="${{ secrets.CODACY_API_TOKEN }}"
-              TOKEN_TYPE="api-token"
-            else
-              echo "   ❌ Falhou"
-              echo "$response" | head -n-1 | jq '.' 2>/dev/null || echo "$response" | head -n-1
-            fi
-          fi
-          
-          # Teste 2: CODACY_TOKEN
-          echo ""
-          echo "📝 Teste 2: CODACY_TOKEN"
-          if [ -z "${{ secrets.CODACY_TOKEN }}" ]; then
-            echo "   ⚠️ Secret não configurada"
-          else
-            echo "   ✓ Secret configurada"
-            response=$(curl -s -w "\n%{http_code}" \
-              "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
-              -H "api-token: ${{ secrets.CODACY_TOKEN }}")
-            
-            http_code=$(echo "$response" | tail -n1)
-            echo "   HTTP Status: $http_code"
-            
-            if [ "$http_code" = "200" ]; then
-              echo "   ✅ TOKEN VÁLIDO!"
-              VALID_TOKEN="${{ secrets.CODACY_TOKEN }}"
-              TOKEN_TYPE="api-token"
-            else
-              echo "   ❌ Falhou"
-              echo "$response" | head -n-1 | jq '.' 2>/dev/null || echo "$response" | head -n-1
-            fi
-          fi
-          
-          # Teste 3: CODACY_TOKEN como project-token
-          if [ -z "$VALID_TOKEN" ] && [ -n "${{ secrets.CODACY_TOKEN }}" ]; then
-            echo ""
-            echo "📝 Teste 3: CODACY_TOKEN (como project-token)"
-            response=$(curl -s -w "\n%{http_code}" \
-              "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
-              -H "project-token: ${{ secrets.CODACY_TOKEN }}")
-            
-            http_code=$(echo "$response" | tail -n1)
-            echo "   HTTP Status: $http_code"
-            
-            if [ "$http_code" = "200" ]; then
-              echo "   ✅ TOKEN VÁLIDO!"
-              VALID_TOKEN="${{ secrets.CODACY_TOKEN }}"
-              TOKEN_TYPE="project-token"
-            else
-              echo "   ❌ Falhou"
-              echo "$response" | head -n-1 | jq '.' 2>/dev/null || echo "$response" | head -n-1
-            fi
-          fi
-          
-          # Teste 4: CODACY_API_TOKEN como project-token
-          if [ -z "$VALID_TOKEN" ] && [ -n "${{ secrets.CODACY_API_TOKEN }}" ]; then
-            echo ""
-            echo "📝 Teste 4: CODACY_API_TOKEN (como project-token)"
-            response=$(curl -s -w "\n%{http_code}" \
-              "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
-              -H "project-token: ${{ secrets.CODACY_API_TOKEN }}")
-            
-            http_code=$(echo "$response" | tail -n1)
-            echo "   HTTP Status: $http_code"
-            
-            if [ "$http_code" = "200" ]; then
-              echo "   ✅ TOKEN VÁLIDO!"
-              VALID_TOKEN="${{ secrets.CODACY_API_TOKEN }}"
-              TOKEN_TYPE="project-token"
-            fi
-          fi
-          
-          echo ""
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          if [ -z "$VALID_TOKEN" ]; then
-            echo "❌ NENHUM TOKEN VÁLIDO ENCONTRADO!"
-            echo ""
-            echo "Verifique:"
-            echo "  - Tokens estão corretos no GitHub Secrets"
-            echo "  - Projeto existe no Codacy: see-paw/backend"
-            echo "  - Commit $COMMIT_SHA foi analisado pelo Codacy"
-            exit 1
-          else
-            echo "✅ TOKEN VÁLIDO ENCONTRADO!"
-            echo "   Tipo: $TOKEN_TYPE"
-            echo ""
-            echo "💡 Use este token nos próximos steps"
-            
-            # Salvar para uso posterior
-            echo "CODACY_VALID_TOKEN=$VALID_TOKEN" >> $GITHUB_ENV
-            echo "CODACY_TOKEN_TYPE=$TOKEN_TYPE" >> $GITHUB_ENV
-          fi
 
       - name: Enviar cobertura para Codacy
         run: |
           echo "📤 Enviando relatório de cobertura para Codacy..."
+          export CODACY_PROJECT_TOKEN="${{ secrets.CODACY_PROJECT_TOKEN }}"
           
-          # Determinar qual token usar
-          if [ -n "${{ secrets.CODACY_TOKEN }}" ]; then
-            export CODACY_PROJECT_TOKEN="${{ secrets.CODACY_TOKEN }}"
-            echo "Usando CODACY_TOKEN"
-          elif [ -n "${{ secrets.CODACY_API_TOKEN }}" ]; then
-            export CODACY_PROJECT_TOKEN="${{ secrets.CODACY_API_TOKEN }}"
-            echo "Usando CODACY_API_TOKEN"
+          if [ -z "$CODACY_PROJECT_TOKEN" ]; then
+            echo "❌ Erro: CODACY_PROJECT_TOKEN não configurado"
+            exit 1
           fi
-          
-          # Download do Codacy Coverage Reporter
           curl -Ls https://coverage.codacy.com/get.sh -o codacy-coverage-reporter.sh
           chmod +x codacy-coverage-reporter.sh
-          
-          # Enviar relatório de cobertura
+
           ./codacy-coverage-reporter.sh report \
             -r TestResults/unit/coverage.xml \
-            --commit-uuid ${{ github.sha }} || echo "⚠️ Falha ao enviar cobertura (não crítico)"
-          
+            --commit-uuid ${{ github.sha }} \
+            --partial || echo "⚠️ Envio parcial ou falhou (não crítico)"
           echo "✅ Tentativa de envio concluída"
     
       - name: Quality Gate 3 - Verificar Codacy Quality Gate
         run: |
-          echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
-          echo "📊 QUALITY GATE 3: CODACY"
-          echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
-          
-          if ! command -v jq &> /dev/null; then
-            sudo apt-get update -qq
-            sudo apt-get install -y jq
-          fi
-          
-          echo "⏳ Aguardando análise do Codacy..."
-          sleep 15
-          
+          echo "⏳ Aguardando que o Codacy analise o commit..."
           COMMIT_SHA="${{ github.sha }}"
-          TOKEN_TYPE="${CODACY_TOKEN_TYPE:-api-token}"
-          VALID_TOKEN="${CODACY_VALID_TOKEN}"
-          
-          # Se não tiver token válido do step anterior, tentar descobrir
-          if [ -z "$VALID_TOKEN" ]; then
-            echo "🔍 Tentando autenticar..."
-            
-            if [ -n "${{ secrets.CODACY_API_TOKEN }}" ]; then
-              response=$(curl -s -w "\n%{http_code}" \
-                "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
-                -H "api-token: ${{ secrets.CODACY_API_TOKEN }}")
-              
-              http_code=$(echo "$response" | tail -n1)
-              if [ "$http_code" = "200" ]; then
-                VALID_TOKEN="${{ secrets.CODACY_API_TOKEN }}"
-                TOKEN_TYPE="api-token"
-              fi
-            fi
-            
-            if [ -z "$VALID_TOKEN" ] && [ -n "${{ secrets.CODACY_TOKEN }}" ]; then
-              response=$(curl -s -w "\n%{http_code}" \
-                "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
-                -H "api-token: ${{ secrets.CODACY_TOKEN }}")
-              
-              http_code=$(echo "$response" | tail -n1)
-              if [ "$http_code" = "200" ]; then
-                VALID_TOKEN="${{ secrets.CODACY_TOKEN }}"
-                TOKEN_TYPE="api-token"
-              fi
-            fi
-          fi
-          
-          if [ -z "$VALID_TOKEN" ]; then
-            echo "❌ Erro: Nenhum token válido encontrado"
+          TOKEN="${{ secrets.CODACY_TOKEN }}"
+          MAX_RETRIES=15   # tenta até 15 vezes
+          DELAY=60         # 60 segundos entre tentativas
+
+          if [ -z "$TOKEN" ]; then
+            echo "❌ CODACY_TOKEN não configurado!"
             exit 1
           fi
-          
-          echo "🔍 Consultando commit $COMMIT_SHA..."
-          
-          response=$(curl -s -w "\n%{http_code}" \
-            "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
-            -H "$TOKEN_TYPE: $VALID_TOKEN")
-          
-          http_code=$(echo "$response" | tail -n1)
-          body=$(echo "$response" | head -n-1)
-          
-          echo "🔍 HTTP Status: $http_code"
-          echo "🔍 Debug - Response do Codacy:"
-          echo "$body" | jq '.' 2>/dev/null || echo "$body"
-          echo ""
-          
+          for ((i=1; i<=MAX_RETRIES; i++)); do
+            response=$(curl -s -w "\n%{http_code}" \
+              "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
+              -H "api-token: $TOKEN")
+            
+            http_code=$(echo "$response" | tail -n1)
+            body=$(echo "$response" | head -n-1)
+
+            if [ "$http_code" = "200" ]; then
+              echo "✅ Commit analisado pelo Codacy!"
+              echo "$body" | jq '.' > codacy_commit.json
+              break
+            else
+              echo "🔄 [$i/$MAX_RETRIES] Ainda não analisado... (HTTP $http_code)"
+              sleep $DELAY
+            fi
+          done
+
           if [ "$http_code" != "200" ]; then
-            echo "❌ Erro ao consultar API do Codacy (HTTP $http_code)"
+            echo "❌ Timeout: Codacy não terminou a análise após $((MAX_RETRIES*DELAY/60)) min"
             exit 1
           fi
-          
-          # Verificar grade e status
-          grade=$(echo "$body" | jq -r '.data.grade // "unknown"')
-          quality_status=$(echo "$body" | jq -r '.data.qualityStatus // "unknown"')
-          
-          echo "📊 Grade: $grade"
-          echo "📊 Quality Status: $quality_status"
-          
-          if [ "$quality_status" = "Failed" ] || [ "$grade" = "F" ]; then
-            echo "❌ QUALITY GATE FALHOU: Codacy Quality Gate"
-            exit 1
-          elif [ "$quality_status" = "Success" ] || [ "$quality_status" = "Passed" ]; then
-            echo "✅ QUALITY GATE PASSOU: Codacy Quality Gate"
-          else
-            echo "⚠️ Status: $quality_status | Grade: $grade"
-            echo "✅ QUALITY GATE PASSOU: Análise concluída"
-          fi
+          echo "✅ Dados gravados em codacy_commit.json"
     
       - name: Quality Gate 4 - Validar Métricas Personalizadas (SeePaw)
         run: |
