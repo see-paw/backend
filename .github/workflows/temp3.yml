@@ -583,10 +583,11 @@ jobs:
           echo "📊 QUALITY GATE 4: MÉTRICAS PERSONALIZADAS SEEPAW"
           echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
 
-          # 1️⃣ Determinar o SHA correto
+          # 1️⃣ Determinar o SHA correto (Codacy analisa commits, não PRs)
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
-            echo "📦 Evento: Pull Request → SHA: $COMMIT_SHA"
+            PR_NUMBER="${{ github.event.pull_request.number }}"
+            echo "📦 Evento: Pull Request #$PR_NUMBER → HEAD SHA: $COMMIT_SHA"
           else
             COMMIT_SHA="${{ github.sha }}"
             echo "📦 Evento: Push → SHA: $COMMIT_SHA"
@@ -603,12 +604,12 @@ jobs:
             sudo apt-get update -qq && sudo apt-get install -y jq
           fi
 
-          # 3️⃣ Se já existe codacy_commit.json do step anterior, usa-o
+          # 3️⃣ Se existir análise guardada, reutilizar
           if [ -f "codacy_commit.json" ]; then
-            echo "📄 A usar análise existente: codacy_commit.json"
+            echo "📄 A usar análise existente (codacy_commit.json)"
             body=$(cat codacy_commit.json)
           else
-            echo "⚠️ Ficheiro codacy_commit.json não encontrado, a pedir novamente à API..."
+            echo "⚠️ codacy_commit.json não encontrado – a obter novamente..."
             body=$(curl -s "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
               -H "api-token: $TOKEN")
           fi
@@ -617,8 +618,14 @@ jobs:
           coverage=$(echo "$body" | jq -r '.data.coverage.coveragePercentage // 0' | cut -d'.' -f1)
           complexity=$(echo "$body" | jq -r '.data.complexity.value // 0' | cut -d'.' -f1)
           issues=$(echo "$body" | jq -r '.data.issues.total // 0')
+          echo ""
+          echo "📈 Métricas base do Codacy:"
+          echo "   Cobertura: ${coverage}%"
+          echo "   Complexidade: ${complexity}"
+          echo "   Total Issues: ${issues}"
 
-          # 5️⃣ Obter detalhes das issues por categoria
+          # 5️⃣ Obter detalhes das issues (pode devolver 404 se não houver)
+          echo ""
           echo "🔍 A obter detalhes das issues..."
           issues_resp=$(curl -s -w "\n%{http_code}" \
             "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/issues?commit=$COMMIT_SHA&limit=1000" \
@@ -631,15 +638,21 @@ jobs:
             bugs=$(echo "$issues_body" | jq '[.data[] | select(.category=="Error Prone")] | length')
             vulnerabilities=$(echo "$issues_body" | jq '[.data[] | select(.category=="Security")] | length')
             smells=$(echo "$issues_body" | jq '[.data[] | select(.category=="Code Style")] | length')
-            [ -z "$bugs" ] && bugs=0
-            [ -z "$vulnerabilities" ] && vulnerabilities=0
-            [ -z "$smells" ] && smells=$issues
+            echo "✅ Issues detalhadas obtidas com sucesso."
+          elif [ "$issues_code" = "404" ]; then
+            echo "ℹ️ Nenhuma issue encontrada (HTTP 404 normal)."
+            bugs=0; vulnerabilities=0; smells=0
           else
-            echo "⚠️ Falha ao obter detalhes (HTTP $issues_code)"
+            echo "⚠️ Não foi possível obter detalhes das issues (HTTP $issues_code)"
             bugs=0; vulnerabilities=0; smells=$issues
           fi
 
-          # 6️⃣ Determinar categoria pela branch/PR title
+          # 6️⃣ Normalizar valores
+          [ -z "$bugs" ] && bugs=0
+          [ -z "$vulnerabilities" ] && vulnerabilities=0
+          [ -z "$smells" ] && smells=$issues
+
+          # 7️⃣ Definir categoria do PR e limites
           pr_title="${{ github.event.pull_request.title || 'Basic' }}"
           category="Basic"; min_cov=40
           if echo "$pr_title" | grep -iq "intermediate"; then
@@ -648,15 +661,20 @@ jobs:
             category="Critical"; min_cov=80
           fi
 
-          echo "📋 Categoria: $category (mín. cobertura ${min_cov}%)"
-          echo "📈 Cobertura: ${coverage}%"
-          echo "📈 Complexidade: ${complexity}"
-          echo "🐞 Bugs: $bugs"
-          echo "🛡️ Vulnerabilidades: $vulnerabilities"
-          echo "🧹 Code Smells: $smells"
-          echo "🔢 Total Issues: $issues"
+          echo ""
+          echo "📋 Categoria: $category"
+          echo "📊 Cobertura mínima: ${min_cov}%"
+          echo ""
+          echo "📈 Métricas obtidas:"
+          echo "   Cobertura: ${coverage}%"
+          echo "   Complexidade: ${complexity}"
+          echo "   Bugs: $bugs"
+          echo "   Vulnerabilidades: $vulnerabilities"
+          echo "   Code Smells: $smells"
+          echo "   Total de Issues: $issues"
+          echo ""
 
-          # 7️⃣ Avaliar métricas personalizadas
+          # 8️⃣ Validar métricas personalizadas SeePaw
           failed=0
 
           if [ "$coverage" -lt "$min_cov" ]; then
@@ -667,21 +685,21 @@ jobs:
           fi
 
           if [ "$complexity" -gt 14 ]; then
-            echo "❌ Complexidade $complexity > 14"
+            echo "❌ Complexidade ${complexity} > 14"
             failed=1
           else
             echo "✅ Complexidade OK"
           fi
 
           if [ "$bugs" -gt 0 ]; then
-            echo "❌ Existem Bugs ($bugs)"
+            echo "❌ Bugs ($bugs) > 0"
             failed=1
           else
             echo "✅ Sem Bugs"
           fi
 
           if [ "$vulnerabilities" -gt 0 ]; then
-            echo "❌ Existem Vulnerabilidades ($vulnerabilities)"
+            echo "❌ Vulnerabilidades ($vulnerabilities) > 0"
             failed=1
           else
             echo "✅ Sem Vulnerabilidades"
@@ -694,7 +712,7 @@ jobs:
             echo "✅ Code Smells OK"
           fi
 
-          # 8️⃣ Exportar métricas
+          # 9️⃣ Exportar métricas como JSON (podes guardar como artefacto)
           jq -n \
             --arg coverage "$coverage" \
             --arg complexity "$complexity" \
@@ -720,6 +738,7 @@ jobs:
             exit 1
           fi
           echo "✅ QUALITY GATE PASSOU: Todas as métricas atingidas"
+
       
 
       - name: Resumo Final dos Quality Gates
