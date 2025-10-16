@@ -18,6 +18,7 @@
 
 # Mono auto generated files
 mono_crash.*
+*.avi
 
 # Build results
 [Dd]ebug/
