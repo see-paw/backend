@@ -514,18 +514,21 @@ jobs:
             echo "❌ Erro: CODACY_PROJECT_TOKEN não configurado"
             exit 1
           fi
+          
           curl -Ls https://coverage.codacy.com/get.sh -o codacy-coverage-reporter.sh
           chmod +x codacy-coverage-reporter.sh
 
+          echo "📊 Enviando relatório de cobertura..."
           ./codacy-coverage-reporter.sh report \
             -r TestResults/unit/coverage.xml \
             --commit-uuid ${{ github.sha }} \
-            --partial || echo "⚠️ Envio parcial ou falhou (não crítico)"
+            || echo "⚠️ Envio falhou (não crítico)"
+          
           echo "✅ Tentativa de envio concluída"
     
-      - name: Quality Gate 3 - Verificar Codacy Quality Gate
+      - name: Quality Gate 3 - Verificar Codacy Quality Gate e Cobertura
         run: |
-          echo "⏳ Aguardando que o Codacy analise o commit..."
+          echo "⏳ Aguardando que o Codacy processe análise + cobertura..."
 
           # Determinar o SHA correto
           if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -538,7 +541,7 @@ jobs:
           echo "🔍 Commit alvo: $COMMIT_SHA"
           
           TOKEN="${{ secrets.CODACY_TOKEN }}"
-          MAX_RETRIES=15   # tenta até 15 vezes (15 min)
+          MAX_RETRIES=20   # tenta até 20 vezes (20 min)
           DELAY=60         # intervalo entre tentativas em segundos
           
           if [ -z "$TOKEN" ]; then
@@ -551,6 +554,8 @@ jobs:
             sudo apt-get update -qq && sudo apt-get install -y jq
           fi
           
+          echo "🔍 Aguardando análise E processamento de cobertura..."
+          
           for ((i=1; i<=MAX_RETRIES; i++)); do
             response=$(curl -s -w "\n%{http_code}" \
               "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
@@ -560,9 +565,17 @@ jobs:
             body=$(echo "$response" | head -n-1)
 
             if [ "$http_code" = "200" ]; then
-              echo "✅ Commit analisado pelo Codacy (tentativa $i)"
-              echo "$body" | jq '.' > codacy_commit.json
-              break
+              # Verificar se tem dados de cobertura
+              has_coverage=$(echo "$body" | jq -r '.data.coverage.coveragePercentage // "null"')
+              
+              if [ "$has_coverage" != "null" ]; then
+                echo "✅ Commit analisado E cobertura processada! (tentativa $i)"
+                echo "$body" | jq '.' > codacy_commit.json
+                break
+              else
+                echo "🔄 [$i/$MAX_RETRIES] Commit analisado mas cobertura ainda a processar..."
+                sleep $DELAY
+              fi
             else
               echo "🔄 [$i/$MAX_RETRIES] Ainda não analisado... (HTTP $http_code)"
               sleep $DELAY
@@ -574,6 +587,19 @@ jobs:
             echo "Última resposta do Codacy:"
             echo "$body" | jq '.' 2>/dev/null || echo "$body"
             exit 1
+          fi
+          
+          # Verificar novamente se tem cobertura
+          has_coverage=$(echo "$body" | jq -r '.data.coverage.coveragePercentage // "null"')
+          if [ "$has_coverage" = "null" ]; then
+            echo "⚠️ AVISO: Codacy não processou a cobertura após $((MAX_RETRIES*DELAY/60)) min"
+            echo "Isto pode indicar que:"
+            echo "  1. O relatório de cobertura não foi enviado corretamente"
+            echo "  2. O Codacy está com atrasos no processamento"
+            echo "  3. O formato do relatório não é compatível"
+            echo ""
+            echo "Última resposta do Codacy:"
+            echo "$body" | jq '.'
           fi
          
           echo "✅ Análise Codacy concluída e guardada em codacy_commit.json"
