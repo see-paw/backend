@@ -62,10 +62,12 @@ jobs:
           with:
             dotnet-version: 8.0.x
     
-        - name: Restaurar e compilar
+        - name: Restaurar dependencias
           run: |
             dotnet restore SeePaw.sln
-            dotnet build SeePaw.sln --no-restore --configuration Release
+        
+        - name: Compilar projetos
+          run: dotnet build SeePaw.sln --no-restore --configuration Release
     
         - name: Correr testes unitários + Cobertura
           run: |
