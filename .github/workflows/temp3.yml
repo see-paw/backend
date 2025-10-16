@@ -73,6 +73,9 @@ jobs:
       - name: Compilar solução completa
         run: dotnet build SeePaw.sln --no-restore --configuration Release
 
+      - name: Instalar ferramenta de cobertura
+        run: dotnet tool install --global coverlet.console
+        
       - name: Correr testes unitários (xUnit) + Cobertura
         run: |
          mkdir -p TestResults
