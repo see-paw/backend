@@ -16,23 +16,17 @@ namespace API.Controllers
     /// This controller interacts directly with the database through <see cref="AppDbContext"/>,
     /// applies business logic and uses <see cref="AutoMapper"/> to map DTOs to entities.
     /// </remarks>
-    [Route("api/[controller]")]
-    [ApiController]
-    public class AnimalsController : ControllerBase
+    
+    public class AnimalsController : BaseApiController
     {
-        private readonly AppDbContext dbContext;
-        private readonly IMapper mapper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AnimalsController"/> class.
         /// </summary>
         /// <param name="context">Database context used to access and manage animal data.</param>
         /// <param name="mapper">AutoMapper instance used for DTO-to-entity conversions.</param>
-        public AnimalsController(AppDbContext context, IMapper mapper)
-        {
-            this.dbContext = context;
-            this.mapper = mapper;
-        }
+        public AnimalsController(AppDbContext context, IMapper mapper) : base(context, mapper) { }
+        
 
         /// <summary>
         /// Retrieves a paginated list of available or partially fostered animals.
@@ -54,7 +48,7 @@ namespace API.Controllers
 
             const int pageSize = 20; // Default page size
 
-            var query = dbContext.Animals
+            var query = _dbContext.Animals
                 .Where(a => a.AnimalState == AnimalState.Available
                          || a.AnimalState == AnimalState.PartiallyFostered)
                 .OrderBy(a => a.Name)
@@ -90,23 +84,23 @@ namespace API.Controllers
                 return Unauthorized("Invalid shelter token");
 
             // Check if the shelter exists in the database
-            var shelterExists = await dbContext.Shelters
+            var shelterExists = await _dbContext.Shelters
                 .AnyAsync(s => s.ShelterId == shelterId);
 
             if (!shelterExists)
                 return NotFound("Shelter not found");
 
             // Create animal entity from the DTO
-            var animal = mapper.Map<Animal>(animalDTO);
+            var animal = _mapper.Map<Animal>(animalDTO);
             animal.AnimalState = AnimalState.Available;
             animal.CreatedAt = DateTime.UtcNow;
             animal.UpdatedAt = DateTime.UtcNow;
             animal.ShelterId = shelterId;
 
             // Add animal to the database
-            dbContext.Animals.Add(animal);
+            _dbContext.Animals.Add(animal);
 
-            var result = await dbContext.SaveChangesAsync() > 0;
+            var result = await _dbContext.SaveChangesAsync() > 0;
 
             if (!result)
                 return BadRequest("Failed to create the animal");

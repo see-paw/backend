@@ -72,4 +72,7 @@ public class Animal
 
     [JsonIgnore]
     public ICollection<Photo>? Images { get; set; }
+
+
+    //falta ownerId, OwnerStartDate, OwnerFinishDate
 }

@@ -6,6 +6,7 @@ using Persistence;
 
 namespace API.Controllers
 {
+
     /// <summary>
     /// Controller responsible for managing shelter-related operations.
     /// </summary>
@@ -13,20 +14,14 @@ namespace API.Controllers
     /// This controller provides endpoints to query shelters and their related animals.
     /// It interacts directly with the database through <see cref="AppDbContext"/>.
     /// </remarks>
-    [Route("api/[controller]")]
-    [ApiController]
-    public class SheltersController : ControllerBase
+    public class SheltersController : BaseApiController
     {
-        private readonly AppDbContext dbContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SheltersController"/> class.
         /// </summary>
         /// <param name="context">Database context used to access shelter and animal data.</param>
-        public SheltersController(AppDbContext context)
-        {
-            this.dbContext = context;
-        }
+        public SheltersController(AppDbContext dbContext) : base(dbContext) { }
 
         /// <summary>
         /// Retrieves all animals that belong to a specific shelter, using pagination.
@@ -50,14 +45,14 @@ namespace API.Controllers
             const int pageSize = 20; // Default page size
 
             // Check if the shelter exists
-            var shelter = await dbContext.Shelters.FindAsync(shelterId);
+            var shelter = await _dbContext.Shelters.FindAsync(shelterId);
             if (shelter == null)
             {
                 return NotFound("Shelter not found");
             }
 
             // Filter animals by shelter
-            var query = dbContext.Animals
+            var query = _dbContext.Animals
                 .Where(a => a.ShelterId == shelterId)
                 .OrderBy(a => a.Name)
                 .AsQueryable();

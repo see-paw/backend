@@ -1,19 +1,18 @@
-﻿using Xunit;
-using API.DTOs; // Adjust namespace
-using API.Validators; // Adjust namespace
-using Domain.Enums; // Adjust namespace
+﻿using API.DTOs; 
+using API.Validators; 
+using Domain.Enums; 
 
 namespace Tests
 {
     public class CreateAnimalTests
     {
-        private readonly CreateAnimalValidator validator;
+        private readonly CreateAnimalValidator _validator;
 
         // Constructor runs before each test to ensure test isolation
-        // Each test gets a fresh validator instance with no shared state
+        // Each test gets a fresh _validator instance with no shared state
         public CreateAnimalTests()
         {
-            validator = new CreateAnimalValidator();
+            _validator = new CreateAnimalValidator();
         }
 
         [Theory]
@@ -33,7 +32,7 @@ namespace Tests
             dto.Name = name;
 
             // Validate is a FluentValidation method that executes all validation rules and returns a ValidationResult
-            var result = validator.Validate(dto);
+            var result = _validator.Validate(dto);
             Assert.False(result.IsValid);
             
         }
@@ -52,13 +51,13 @@ namespace Tests
             var dto = CreateValidAnimalDTO();
             dto.Name = name;
 
-            var result = validator.Validate(dto);
+            var result = _validator.Validate(dto);
             Assert.True(result.IsValid); ;
         }
 
         // Note: It is not possible to test null for non-nullable enums because:
         // 1. C# doesn't allow assigning null to non-nullable enums at compile time
-        // 2. JSON deserialization fails with 400 Bad Request before reaching the validator
+        // 2. JSON deserialization fails with 400 Bad Request before reaching the _validator
         // It is only possible to test valid enum values to ensure IsInEnum() validation works correctly
 
         [Theory]
@@ -70,7 +69,7 @@ namespace Tests
             var dto = CreateValidAnimalDTO();
             dto.Species = species;
 
-            var result = validator.Validate(dto);
+            var result = _validator.Validate(dto);
             Assert.True(result.IsValid);
         }
 
@@ -84,7 +83,7 @@ namespace Tests
             var dto = CreateValidAnimalDTO();
             dto.Size = size;
 
-            var result = validator.Validate(dto);
+            var result = _validator.Validate(dto);
             Assert.True(result.IsValid);
         }
 
@@ -97,7 +96,7 @@ namespace Tests
             var dto = CreateValidAnimalDTO();
             dto.Sex = sex;
 
-            var result = validator.Validate(dto);
+            var result = _validator.Validate(dto);
             Assert.True(result.IsValid);
         }
 
@@ -115,7 +114,7 @@ namespace Tests
             var dto = CreateValidAnimalDTO();
             dto.Breed = breed;
 
-            var result = validator.Validate(dto);
+            var result = _validator.Validate(dto);
             Assert.True(result.IsValid);
         }
 
@@ -129,7 +128,7 @@ namespace Tests
             var dto = CreateValidAnimalDTO();
             dto.Colour = colour;
 
-            var result = validator.Validate(dto);
+            var result = _validator.Validate(dto);
             Assert.False(result.IsValid);
         }
 
@@ -142,7 +141,7 @@ namespace Tests
             var dto = CreateValidAnimalDTO();
             dto.Colour = colour;
 
-            var result = validator.Validate(dto);
+            var result = _validator.Validate(dto);
             Assert.True(result.IsValid);
         }
 
@@ -152,7 +151,7 @@ namespace Tests
         {
             // default DateOnly is 0001-01-01 - equivalent to "empty" for other types like string or int
             var animalDTO = new CreateAnimalDTO { BirthDate = default };
-            var result = validator.Validate(animalDTO);
+            var result = _validator.Validate(animalDTO);
 
             Assert.False(result.IsValid);
         }
@@ -168,7 +167,7 @@ namespace Tests
             {
                 BirthDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(daysInFuture))
             };
-            var result = validator.Validate(animalDTO);
+            var result = _validator.Validate(animalDTO);
 
             Assert.False(result.IsValid);
         }
@@ -182,7 +181,7 @@ namespace Tests
             var dto = CreateValidAnimalDTO();
             dto.BirthDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-years));
 
-            var result = validator.Validate(dto);
+            var result = _validator.Validate(dto);
             Assert.False(result.IsValid);
         }
 
@@ -197,14 +196,14 @@ namespace Tests
             var dto = CreateValidAnimalDTO();
             dto.BirthDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-yearsAgo));
 
-            var result = validator.Validate(dto);
+            var result = _validator.Validate(dto);
             Assert.True(result.IsValid);
         }
 
         // Note: Sterilized is a non-nullable bool, so null values are rejected at deserialization level
         // bool is non-nullable, so it always has a value (default is false)
         // It's not possible to test null because C# won't allow assigning null to a non-nullable bool
-        // And JSON deserialization fails with 400 Bad Request before reaching the validator
+        // And JSON deserialization fails with 400 Bad Request before reaching the _validator
         // So it's only possible to test valid values to ensure no validation errors occur
 
         [Theory]
@@ -215,13 +214,13 @@ namespace Tests
             var dto = CreateValidAnimalDTO();
             dto.Sterilized = sterilized;
 
-            var result = validator.Validate(dto);
+            var result = _validator.Validate(dto);
             Assert.True(result.IsValid);
         }
 
         // Note: Cost is a non-nullable decimal, so null values cannot be tested because:
         // 1. C# doesn't allow assigning null to non-nullable value types at compile time
-        // 2. JSON deserialization fails with 400 Bad Request before reaching the validator
+        // 2. JSON deserialization fails with 400 Bad Request before reaching the _validator
 
         [Theory]
         [InlineData(-1)] // negative value
@@ -232,7 +231,7 @@ namespace Tests
             var dto = CreateValidAnimalDTO();
             dto.Cost = cost;
 
-            var result = validator.Validate(dto);
+            var result = _validator.Validate(dto);
             Assert.False(result.IsValid);
         }
 
@@ -245,7 +244,7 @@ namespace Tests
             var dto = CreateValidAnimalDTO();
             dto.Cost = cost;
 
-            var result = validator.Validate(dto);
+            var result = _validator.Validate(dto);
             Assert.False(result.IsValid);
         }
 
@@ -257,7 +256,7 @@ namespace Tests
             var dto = CreateValidAnimalDTO();
             dto.Cost = cost;
 
-            var result = validator.Validate(dto);
+            var result = _validator.Validate(dto);
             Assert.False(result.IsValid);
         }
 
@@ -272,7 +271,7 @@ namespace Tests
             var dto = CreateValidAnimalDTO();
             dto.Cost = cost;
 
-            var result = validator.Validate(dto);
+            var result = _validator.Validate(dto);
             Assert.True(result.IsValid);
         }
 
@@ -286,7 +285,7 @@ namespace Tests
             var dto = CreateValidAnimalDTO();
             dto.MainImageUrl = url;
 
-            var result = validator.Validate(dto);
+            var result = _validator.Validate(dto);
             Assert.False(result.IsValid);
         }
 
@@ -299,7 +298,7 @@ namespace Tests
             var dto = CreateValidAnimalDTO();
             dto.MainImageUrl = url;
 
-            var result = validator.Validate(dto);
+            var result = _validator.Validate(dto);
             Assert.False(result.IsValid);
         }
 
@@ -312,7 +311,7 @@ namespace Tests
             var dto = CreateValidAnimalDTO();
             dto.MainImageUrl = url;
 
-            var result = validator.Validate(dto);
+            var result = _validator.Validate(dto);
             Assert.True(result.IsValid);
         }
 
