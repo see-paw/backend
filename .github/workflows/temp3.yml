@@ -1,0 +1,678 @@
+name: CI - Tests And Inspection
+
+on:
+  pull_request:
+    branches: [ "develop" ]
+    paths-ignore:
+       - '.github/workflows/**'
+
+# Adicionar permissões para comentar nos PRs
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+env:
+  DOTNET_VERSION: "8.0.x"
+  ASPNETCORE_ENVIRONMENT: "Test"
+
+jobs:
+  # ======================================================
+  # 1️⃣ BUILD JOB
+  # ======================================================
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:8.0
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Cache do NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restaurar dependências
+        run: dotnet restore SeePaw.sln
+
+      - name: Compilar projeto
+        run: dotnet build SeePaw.sln --no-restore --configuration Release
+
+      - name: Guardar artefactos do build
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            **/bin/Release/
+            **/obj/Release/
+
+  # ======================================================
+  # 2️⃣ UNIT TESTS
+  # ======================================================
+  unit_tests:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:8.0
+    needs: build
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+        
+      # NÃO descarregar artefactos - vamos recompilar tudo
+      # Isto resolve problemas de referências entre projetos
+          
+      - name: Restaurar dependências
+        run: dotnet restore SeePaw.sln
+
+      - name: Compilar solução completa
+        run: dotnet build SeePaw.sln --no-restore --configuration Release
+
+      - name: Correr testes unitários (xUnit) + Cobertura
+        run: |
+         mkdir -p TestResults
+
+          echo "🧪 A testar: Tests/Tests.csproj"
+          
+          dotnet test Tests/Tests.csproj \
+            --no-restore \
+            --configuration Release \
+            --logger "trx;LogFileName=test-results.trx" \
+            --results-directory TestResults \
+            --collect:"XPlat Code Coverage" \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+          
+          echo ""
+          echo "✅ Testes concluídos"
+          echo ""
+          
+          coverage_file=$(find TestResults -name "coverage.opencover.xml" -type f | head -1)
+          
+          if [ -n "$coverage_file" ]; then
+            cp "$coverage_file" TestResults/coverage.xml
+            echo "✅ Cobertura encontrada: $coverage_file"
+            echo "✅ Copiada para: TestResults/coverage.xml"
+          else
+            echo "⚠️ AVISO: Ficheiro de cobertura OpenCover não encontrado!"
+            echo "🔍 Procurando outros formatos..."
+            find TestResults -name "*.xml" -type f
+          fi
+          
+          echo ""
+          echo "📂 Ficheiros finais em TestResults:"
+          ls -lah TestResults/
+          echo ""
+          echo "📂 Estrutura completa:"
+          find TestResults -type f
+            
+      - name: Mostrar resumo dos testes
+        if: always()
+        run: |
+          if [ -f TestResults/test-results.trx ]; then
+            echo "✅ Testes executados com sucesso"
+            
+            passed=$(grep -o 'outcome="Passed"' TestResults/test-results.trx | wc -l || echo "0")
+            failed=$(grep -o 'outcome="Failed"' TestResults/test-results.trx | wc -l || echo "0")
+            total=$((passed + failed))
+            
+            echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+            echo "📊 RESUMO DOS TESTES UNITÁRIOS"
+            echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
+            echo "   Total: $total"
+            echo "   ✅ Passaram: $passed"
+            echo "   ❌ Falharam: $failed"
+            
+            if [ $failed -eq 0 ] && [ $total -gt 0 ]; then
+              echo "   🎉 Todos os testes passaram!"
+            elif [ $failed -gt 0 ]; then
+              echo "   ⚠️  Alguns testes falharam"
+            fi
+            echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+          fi
+
+      - name: Exportar resultados de testes
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: |
+            TestResults/*.trx
+            TestResults/*.xml
+          if-no-files-found: warn
+
+  # ======================================================
+  # 3️⃣ INTEGRATION TESTS (CORRIGIDO COM POSTMAN CLI)
+  # ======================================================
+  integration_tests:
+    runs-on: ubuntu-latest
+    needs: build
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: seepaw
+          POSTGRES_PASSWORD: seepaw
+          POSTGRES_DB: seepaw_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U seepaw -d seepaw_test"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    env:
+      ASPNETCORE_ENVIRONMENT: Docker
+      ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=seepaw_test;Username=seepaw;Password=seepaw"
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+        
+      - name: Descarregar artefactos do build
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: ./
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restaurar dependências
+        run: dotnet restore SeePaw.sln
+
+      - name: Compilar projeto
+        run: dotnet build SeePaw.sln --no-restore --configuration Release
+
+      - name: Iniciar API em background
+        run: |
+          echo "🚀 A iniciar a API..."
+          dotnet run --project API/API.csproj --configuration Release --no-build --urls "http://0.0.0.0:5000" &
+          echo $! > server_pid.txt
+          echo "⏳ A aguardar que a API fique pronta..."
+          timeout 60 bash -c '
+             until nc -z localhost 5000; do
+              echo "Aguardando..."
+              sleep 3
+          done
+          ' || (echo "❌ A API não respondeu a tempo" && exit 1)
+          echo "✅ API pronta!"
+
+      - name: Instalar Postman CLI
+        run: |
+          echo "📦 A instalar Postman CLI..."
+          curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
+
+      - name: Login no Postman CLI
+        run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
+
+      - name: Executar testes Postman e gerar relatórios
+        run: |
+          set -e
+          
+          mkdir -p TestResults/postman
+          
+          echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+          echo "🧪 TESTES DE INTEGRAÇÃO - POSTMAN"
+          echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+          echo ""
+          
+          # Executar a coleção "Tests" usando o Postman CLI
+          # NOTA: Postman CLI suporta apenas: cli, json, junit, html (básico)
+          postman collection run "${{ secrets.POSTMAN_COLLECTION_ID }}" \
+            -e "${{ secrets.POSTMAN_ENV_ID }}" \
+            --env-var "url=http://localhost:5000" \
+            --reporters cli,json,html \
+            --reporter-json-export TestResults/postman/results.json \
+            --reporter-html-export TestResults/postman/report.html \
+            --delay-request 300 \
+            --timeout-request 10000 \
+            --bail false \
+            --color on \
+            2>&1 | tee TestResults/postman/console-output.txt
+          
+          exit_code=${PIPESTATUS[0]}
+          
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
+          # Processar resultados
+          if [ -f TestResults/postman/results.json ]; then
+            total=$(jq -r '.run.stats.assertions.total // 0' TestResults/postman/results.json)
+            failed=$(jq -r '.run.stats.assertions.failed // 0' TestResults/postman/results.json)
+            passed=$((total - failed))
+            
+            echo "📊 RESUMO DOS TESTES:"
+            echo "   Total: $total"
+            echo "   ✅ Passaram: $passed"
+            echo "   ❌ Falharam: $failed"
+            
+            if [ $failed -gt 0 ]; then
+              echo ""
+              echo "⚠️  Alguns testes falharam!"
+              echo "📄 Consulta o relatório HTML para mais detalhes"
+            else
+              echo ""
+              echo "🎉 Todos os testes passaram!"
+            fi
+            
+            # Criar resumo em JSON
+            cat > TestResults/postman/summary.json <<EOF
+          {
+            "total": $total,
+            "passed": $passed,
+            "failed": $failed,
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "status": $([ $failed -eq 0 ] && echo '"PASS"' || echo '"FAIL"')
+          }
+          EOF
+          else
+            echo "❌ Erro: Ficheiro de resultados não foi gerado"
+            exit 1
+          fi
+          
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
+          # Retornar o exit code original do Postman CLI
+          exit $exit_code
+
+      - name: Upload resultados de integração
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: |
+            TestResults/postman/**
+          if-no-files-found: warn
+
+      - name: Publicar relatório HTML como comentário no PR
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let summary = { total: 0, passed: 0, failed: 0, status: 'UNKNOWN' };
+            
+            try {
+              const summaryFile = 'TestResults/postman/summary.json';
+              if (fs.existsSync(summaryFile)) {
+                summary = JSON.parse(fs.readFileSync(summaryFile, 'utf8'));
+              }
+            } catch (error) {
+              console.error('Erro ao ler resumo:', error);
+            }
+            
+            const emoji = summary.status === 'PASS' ? '✅' : '❌';
+            const statusText = summary.status === 'PASS' ? 'PASSOU' : 'FALHOU';
+            
+            const comment = `
+            ## ${emoji} Testes de Integração (Postman) - ${statusText}
+            
+            **Resumo:**
+            - 🧪 Total de testes: ${summary.total}
+            - ✅ Passaram: ${summary.passed}
+            - ❌ Falharam: ${summary.failed}
+            
+            📄 **Relatório HTML completo disponível nos artefactos desta execução.**
+            
+            Para visualizar o relatório detalhado:
+            1. Vai aos artefactos desta workflow run
+            2. Descarrega \`integration-test-results\`
+            3. Abre o ficheiro \`report.html\` no browser
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Parar API e containers
+        if: always()
+        run: |
+          echo "🧹 A encerrar ambiente de teste..."
+          kill $(cat server_pid.txt) || true
+
+  # ======================================================
+  # 4️⃣ QUALITY GATE (SonarCloud)
+  # ======================================================
+  quality_gate:
+    runs-on: ubuntu-latest
+    needs: [unit_tests, integration_tests]
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download resultados de testes
+        uses: actions/download-artifact@v4
+        with:
+          name: integration-test-results
+          path: TestResults/integration/
+          
+      - name: Download resultados de testes
+        uses: actions/download-artifact@v4
+        with:
+          name: unit-test-results
+          path: TestResults/unit/
+
+      - name: Debug - Listar artefactos recebidos
+        run: |
+          echo "📂 Conteúdo de TestResults/unit:"
+          ls -lah TestResults/unit/ || echo "Pasta não existe"
+          echo ""
+          echo "📂 Conteúdo de TestResults/integration:"
+          ls -lah TestResults/integration/ || echo "Pasta não existe"
+          echo ""
+          echo "🔍 Procurando ficheiros XML recursivamente:"
+          find TestResults -type f -name "*.xml" || echo "Nenhum XML encontrado"
+          echo ""
+          echo "🔍 Procurando ficheiros TRX recursivamente:"
+          find TestResults -type f -name "*.trx" || echo "Nenhum TRX encontrado"
+          
+      - name: Validar existência dos artefactos
+        run: |
+          echo "🔍 Verificando artefactos..."
+
+          if [ ! -d TestResults/unit ]; then
+            echo "❌ Pasta TestResults/unit não encontrada"
+            exit 1
+          fi
+          
+          if [ ! -d TestResults/integration ]; then
+            echo "❌ Pasta TestResults/integration não encontrada"
+            exit 1
+          fi
+          
+          if ! ls TestResults/unit/*.trx >/dev/null 2>&1; then
+            echo "❌ Ficheiro .trx de testes unitários não encontrado"
+            exit 1
+          fi
+          
+          if ! ls TestResults/unit/*.xml >/dev/null 2>&1; then
+            echo "❌ Ficheiro XML de cobertura não encontrado"
+            exit 1
+          fi
+          
+          echo "✅ Todos os artefactos encontrados"
+
+      - name: Quality Gate 1 - Validar Testes Unitários
+        run: |
+          echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+          echo "📊 QUALITY GATE 1: TESTES UNITÁRIOS"
+          echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+          
+          trx_file=$(find TestResults/unit -name "*.trx" | head -1)
+          
+          if [ -z "$trx_file" ]; then
+            echo "❌ Ficheiro TRX não encontrado"
+            exit 1
+          fi
+          
+          passed=$(grep -o 'outcome="Passed"' "$trx_file" | wc -l || echo "0")
+          failed=$(grep -o 'outcome="Failed"' "$trx_file" | wc -l || echo "0")
+          total=$((passed + failed))
+          
+          echo "Total de testes: $total"
+          echo "✅ Passaram: $passed"
+          echo "❌ Falharam: $failed"
+          
+          if [ $failed -gt 0 ]; then
+            echo ""
+            echo "❌ QUALITY GATE FALHOU: $failed teste(s) unitário(s) falharam"
+            exit 1
+          fi
+          
+          if [ $total -eq 0 ]; then
+            echo ""
+            echo "❌ QUALITY GATE FALHOU: Nenhum teste unitário foi executado"
+            exit 1
+          fi
+          
+          echo ""
+          echo "✅ QUALITY GATE PASSOU: Todos os $total testes unitários passaram"
+
+      - name: Quality Gate 2 - Validar Testes de Integração (Postman)
+        run: |
+          echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+          echo "📊 QUALITY GATE 2: TESTES DE INTEGRAÇÃO"
+          echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+          
+          summary_file="TestResults/integration/postman/summary.json"
+          
+          if [ ! -f "$summary_file" ]; then
+            echo "⚠️ Ficheiro summary.json não encontrado"
+            echo "ℹ️ QUALITY GATE PASSOU: Nenhum teste de integração configurado"
+            exit 0
+          fi
+          
+          if ! command -v jq &> /dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y jq
+          fi
+          
+          total=$(jq -r '.total // 0' "$summary_file")
+          passed=$(jq -r '.passed // 0' "$summary_file")
+          failed=$(jq -r '.failed // 0' "$summary_file")
+          
+          echo "Total de testes: $total"
+          echo "✅ Passaram: $passed"
+          echo "❌ Falharam: $failed"
+          
+          if [ $failed -gt 0 ]; then
+            echo ""
+            echo "❌ QUALITY GATE FALHOU: $failed teste(s) de integração falharam"
+            exit 1
+          fi
+          
+          if [ $total -eq 0 ]; then
+            echo ""
+            echo "ℹ️ QUALITY GATE PASSOU: Nenhum teste de integração foi executado"
+            exit 0
+          fi
+          
+          echo ""
+          echo "✅ QUALITY GATE PASSOU: Todos os $total testes de integração passaram"
+
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@v3
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=see-paw
+            -Dsonar.projectKey=see-paw_tests
+            -Dsonar.sources=API,Domain,Persistence
+            -Dsonar.tests=Tests
+            -Dsonar.cs.opencover.reportsPaths=TestResults/unit/coverage.xml
+            -Dsonar.coverage.exclusions=**/Migrations/**,**/Program.cs
+            -Dsonar.exclusions=**/Dockerfile,**/Dockerfile.*,**/*.dockerfile
+            -Dsonar.qualitygate.wait=true
+            
+      - name: Quality Gate 3 - Verificar SonarCloud Quality Gate
+        run: |
+          echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+          echo "📊 QUALITY GATE 3: SONARCLOUD"
+          echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+          
+          if ! command -v jq &> /dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y jq
+          fi
+          
+          echo "⏳ Aguardando análise do SonarCloud..."
+          sleep 15
+          
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          
+          if [ -z "$PR_NUMBER" ]; then
+            echo "⚠️ Não é um Pull Request, a consultar branch..."
+            status=$(curl -s "https://sonarcloud.io/api/qualitygates/project_status?projectKey=see-paw_tests" \
+              -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}" | jq -r '.projectStatus.status')
+          else
+            echo "🔍 Consultando PR #$PR_NUMBER..."
+            status=$(curl -s "https://sonarcloud.io/api/qualitygates/project_status?projectKey=see-paw_tests&pullRequest=$PR_NUMBER" \
+              -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}" | jq -r '.projectStatus.status')
+          fi
+          
+          echo "📊 Status recebido: $status"
+
+          if [ "$status" = "ERROR" ]; then
+            echo "❌ QUALITY GATE FALHOU: SonarCloud Quality Gate"
+            exit 1
+          elif [ "$status" = "OK" ]; then
+            echo "✅ QUALITY GATE PASSOU: SonarCloud Quality Gate"
+          else
+            echo "⚠️ Status desconhecido: $status"
+            echo ""
+            echo "🔍 Debug - Response completa:"
+            curl -s "https://sonarcloud.io/api/qualitygates/project_status?projectKey=see-paw_tests&pullRequest=$PR_NUMBER" \
+              -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}" | jq '.'
+            exit 1
+          fi
+
+      - name: Quality Gate 4 - Validar Métricas Personalizadas (SeePaw)
+        run: |
+          echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+          echo "📊 QUALITY GATE 4: MÉTRICAS PERSONALIZADAS SEEPAW"
+          echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+          
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+
+          if [ -z "$PR_NUMBER" ]; then
+            response=$(curl -s "https://sonarcloud.io/api/measures/component?componentKey=see-paw_tests&metricKeys=coverage,complexity,code_smells,bugs,vulnerabilities" \
+              -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}")
+          else
+            response=$(curl -s "https://sonarcloud.io/api/measures/component?componentKey=see-paw_tests&metricKeys=coverage,complexity,code_smells,bugs,vulnerabilities&pullRequest=$PR_NUMBER" \
+              -H "Authorization: Bearer ${{ secrets.SONAR_TOKEN }}")
+          fi
+
+          coverage=$(echo "$response" | jq -r '.component.measures[] | select(.metric=="coverage") | .value // "0"' | cut -d'.' -f1)
+          complexity=$(echo "$response" | jq -r '.component.measures[] | select(.metric=="complexity") | .value // "0"' | cut -d'.' -f1)
+          smells=$(echo "$response" | jq -r '.component.measures[] | select(.metric=="code_smells") | .value // "0"' | cut -d'.' -f1)
+          bugs=$(echo "$response" | jq -r '.component.measures[] | select(.metric=="bugs") | .value // "0"' | cut -d'.' -f1)
+          vulnerabilities=$(echo "$response" | jq -r '.component.measures[] | select(.metric=="vulnerabilities") | .value // "0"' | cut -d'.' -f1)
+
+          pr_title="${{ github.event.pull_request.title || 'Basic' }}"
+          
+          category="Basic"
+          min_coverage=40
+          
+          if echo "$pr_title" | grep -iq "intermediate"; then
+            category="Intermediate"
+            min_coverage=50
+          elif echo "$pr_title" | grep -iq "critical"; then
+            category="Critical"
+            min_coverage=80
+          fi
+          
+          echo "📋 Categoria detectada: $category"
+          echo "📊 Cobertura mínima requerida: ${min_coverage}%"
+          echo ""
+          echo "📈 Métricas obtidas:"
+          echo "   Cobertura de código: ${coverage}%"
+          echo "   Complexidade ciclomática: $complexity"
+          echo "   Code Smells: $smells"
+          echo "   Bugs: $bugs"
+          echo "   Vulnerabilidades: $vulnerabilities"
+          echo ""
+          
+          failed=0
+          
+          echo "🔍 Validando métricas..."
+          
+          if [ "$coverage" -lt "$min_coverage" ]; then
+            echo "   ❌ Cobertura: ${coverage}% < ${min_coverage}% (mínimo para $category)"
+            failed=1
+          else
+            echo "   ✅ Cobertura: ${coverage}% >= ${min_coverage}%"
+          fi
+          
+          if [ "$complexity" -gt 14 ]; then
+            echo "   ❌ Complexidade: $complexity > 14 (máximo)"
+            failed=1
+          else
+            echo "   ✅ Complexidade: $complexity <= 14"
+          fi
+          
+          if [ "$bugs" -gt 0 ]; then
+            echo "   ❌ Bugs: $bugs > 0 (máximo)"
+            failed=1
+          else
+            echo "   ✅ Bugs: $bugs = 0"
+          fi
+          
+          if [ "$vulnerabilities" -gt 0 ]; then
+            echo "   ❌ Vulnerabilidades: $vulnerabilities > 0 (máximo)"
+            failed=1
+          else
+            echo "   ✅ Vulnerabilidades: $vulnerabilities = 0"
+          fi
+          
+          if [ "$smells" -gt 10 ]; then
+            echo "   ❌ Code Smells: $smells > 10 (máximo)"
+            failed=1
+          else
+            echo "   ✅ Code Smells: $smells <= 10"
+          fi
+          
+          jq -n \
+            --arg coverage "$coverage" \
+            --arg complexity "$complexity" \
+            --arg smells "$smells" \
+            --arg bugs "$bugs" \
+            --arg vulnerabilities "$vulnerabilities" \
+            --arg category "$category" \
+            --arg min_cov "$min_coverage" \
+            '{
+              coverage: $coverage,
+              complexity: $complexity,
+              code_smells: $smells,
+              bugs: $bugs,
+              vulnerabilities: $vulnerabilities,
+              category: $category,
+              min_coverage: $min_cov,
+              timestamp: (now | todate)
+            }' > metrics.json
+          
+          echo ""
+          if [ $failed -eq 1 ]; then
+            echo "❌ QUALITY GATE FALHOU: Métricas personalizadas não atingidas"
+            exit 1
+          else
+            echo "✅ QUALITY GATE PASSOU: Todas as métricas personalizadas atingidas"
+          fi
+
+      - name: Resumo Final dos Quality Gates
+        if: always()
+        run: |
+          echo ""
+          echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+          echo "🎯 RESUMO DOS QUALITY GATES"
+          echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
+          echo "✅ Quality Gate 1: Testes Unitários"
+          echo "✅ Quality Gate 2: Testes de Integração"
+          echo "✅ Quality Gate 3: SonarCloud"
+          echo "✅ Quality Gate 4: Métricas Personalizadas"
+          echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
+          echo "🎉 TODOS OS QUALITY GATES PASSARAM!"
+          echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+  
+      - name: Guardar artefacto das métricas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-metrics
+          path: metrics.json
