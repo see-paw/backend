@@ -43,146 +43,107 @@ jobs:
             **/bin/Release/
             **/obj/Release/
 
-  # ======================================================
-  # 2️⃣ UNIT TESTS
-  # ======================================================
+ # ======================================================
+# 2️⃣ UNIT TESTS
+# ======================================================
   unit_tests:
-    runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/dotnet/sdk:8.0
-    needs: build
+      runs-on: ubuntu-latest
+      needs: build
+
+      steps:
+        - name: Checkout código
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
+
+        - name: Setup .NET
+          uses: actions/setup-dotnet@v4
+          with:
+            dotnet-version: 8.0.x
     
-    steps:
-      - name: 🧹 Limpar cache NuGet
-        run: dotnet nuget locals all --clear
-        
-      - name: Checkout código
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: 🐛 DEBUG COMPLETO - Verificar compilação e referências
-        run: |
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "🔍 VERIFICAÇÃO DETALHADA DE DEPENDÊNCIAS"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          
-          echo ""
-          echo "📂 1. Estrutura de ficheiros:"
-          find . -name "*.csproj" -o -name "*.cs" | grep -E "(Tests|API|Domain)" | head -30
-          
-          echo ""
-          echo "📦 2. Conteúdo do Tests.csproj:"
-          cat Tests/Tests.csproj
-          
-          echo ""
-          echo "📦 3. Primeiras linhas do AnimalsDetailsTests.cs:"
-          head -40 Tests/AnimalsDetailsTests.cs
-          
-          echo ""
-          echo "🔨 4. Compilar APENAS o projeto API:"
-          dotnet build API/API.csproj --configuration Release -v detailed 2>&1 | tail -50
-          
-          echo ""
-          echo "🔨 5. Compilar APENAS o projeto Tests (sem rodar):"
-          dotnet build Tests/Tests.csproj --configuration Release -v detailed 2>&1 | tail -100
-          
-          echo ""
-          echo "📊 6. Verificar DLLs geradas:"
-          ls -lah API/bin/Release/net8.0/*.dll 2>/dev/null || echo "API DLLs não encontradas"
-          ls -lah Tests/bin/Release/net8.0/*.dll 2>/dev/null || echo "Tests DLLs não encontradas"
-          
-          echo ""
-          echo "🔍 7. Verificar referências no Tests.dll:"
-          dotnet --version
-          
-          echo ""
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        
-      - name: Descarregar artefactos
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          path: ./
-          
-      - name: Restaurar dependências dos testes
-        run: |
-          echo "📦 Restaurar dependências do projeto de testes..."
-          ls -R
-          dotnet restore Tests/Tests.csproj
-
-      - name: Correr testes unitários (xUnit) + Cobertura
-        run: |
-          mkdir -p TestResults
-
-          echo "🧪 A testar: Tests/Tests.csproj"
-          
-          # Correr testes com cobertura em formato OpenCover
-          dotnet test Tests/Tests.csproj \
-            --configuration Release \
-            --logger "trx;LogFileName=test-results.trx" \
-            --results-directory TestResults \
-            --collect:"XPlat Code Coverage" \
-            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
-          
-          echo ""
-          echo "✅ Testes concluídos"
-          echo ""
-          
-          # Encontrar e copiar ficheiro de cobertura
-          echo "🔍 Procurando ficheiros de cobertura OpenCover..."
-          coverage_file=$(find TestResults -name "coverage.opencover.xml" -type f | head -1)
-          
-          if [ -n "$coverage_file" ]; then
-            cp "$coverage_file" TestResults/coverage.xml
-            echo "✅ Cobertura encontrada: $coverage_file"
-            echo "✅ Copiada para: TestResults/coverage.xml"
-          else
-            echo "⚠️ AVISO: Ficheiro de cobertura OpenCover não encontrado!"
-            echo "🔍 Procurando outros formatos..."
-            find TestResults -name "*.xml" -type f
-          fi
-          
-          echo ""
-          echo "📂 Ficheiros finais em TestResults:"
-          ls -lah TestResults/
-          echo ""
-          echo "📂 Estrutura completa:"
-          find TestResults -type f
+        - name: Restaurar dependências
+          run: dotnet restore SeePaw.sln
+    
+        - name: 🔨 Compilar todos os projetos explicitamente
+          run: |
+            echo "🔨 Compilando projetos em ordem..."
+            dotnet build Domain/Domain.csproj --configuration Release --no-restore
+            dotnet build Persistence/Persistence.csproj --configuration Release --no-restore
+            dotnet build API/API.csproj --configuration Release --no-restore
+            dotnet build Tests/Tests.csproj --configuration Release --no-restore
+    
+        - name: Correr testes unitários (xUnit) + Cobertura
+          run: |
+            mkdir -p TestResults
+    
+            echo "🧪 A testar: Tests/Tests.csproj"
             
-      - name: Mostrar resumo dos testes
-        if: always()
-        run: |
-          if [ -f TestResults/test-results.trx ]; then
-            echo "✅ Testes executados com sucesso"
+            dotnet test Tests/Tests.csproj \
+              --no-build \
+              --configuration Release \
+              --logger "trx;LogFileName=test-results.trx" \
+              --results-directory TestResults \
+              --collect:"XPlat Code Coverage" \
+              -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
             
-            passed=$(grep -o 'outcome="Passed"' TestResults/test-results.trx | wc -l || echo "0")
-            failed=$(grep -o 'outcome="Failed"' TestResults/test-results.trx | wc -l || echo "0")
-            total=$((passed + failed))
+            echo ""
+            echo "✅ Testes concluídos"
+            echo ""
             
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "📊 RESUMO DOS TESTES UNITÁRIOS"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "   Total: $total"
-            echo "   ✅ Passaram: $passed"
-            echo "   ❌ Falharam: $failed"
+            # Encontrar e copiar ficheiro de cobertura
+            echo "🔍 Procurando ficheiros de cobertura OpenCover..."
+            coverage_file=$(find TestResults -name "coverage.opencover.xml" -type f | head -1)
             
-            if [ $failed -eq 0 ] && [ $total -gt 0 ]; then
-              echo "   🎉 Todos os testes passaram!"
-            elif [ $failed -gt 0 ]; then
-              echo "   ⚠️  Alguns testes falharam"
+            if [ -n "$coverage_file" ]; then
+              cp "$coverage_file" TestResults/coverage.xml
+              echo "✅ Cobertura encontrada: $coverage_file"
+              echo "✅ Copiada para: TestResults/coverage.xml"
+            else
+              echo "⚠️ AVISO: Ficheiro de cobertura OpenCover não encontrado!"
+              echo "🔍 Procurando outros formatos..."
+              find TestResults -name "*.xml" -type f
             fi
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          fi
-
-      - name: Exportar resultados de testes
-        uses: actions/upload-artifact@v4
-        with:
-          name: unit-test-results
-          path: |
-            TestResults/*.trx
-            TestResults/*.xml
-          if-no-files-found: warn
+            
+            echo ""
+            echo "📂 Ficheiros finais em TestResults:"
+            ls -lah TestResults/
+            echo ""
+            echo "📂 Estrutura completa:"
+            find TestResults -type f
+              
+        - name: Mostrar resumo dos testes
+          if: always()
+          run: |
+            if [ -f TestResults/test-results.trx ]; then
+              echo "✅ Testes executados com sucesso"
+              
+              passed=$(grep -o 'outcome="Passed"' TestResults/test-results.trx | wc -l || echo "0")
+              failed=$(grep -o 'outcome="Failed"' TestResults/test-results.trx | wc -l || echo "0")
+              total=$((passed + failed))
+              
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              echo "📊 RESUMO DOS TESTES UNITÁRIOS"
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              echo "   Total: $total"
+              echo "   ✅ Passaram: $passed"
+              echo "   ❌ Falharam: $failed"
+              
+              if [ $failed -eq 0 ] && [ $total -gt 0 ]; then
+                echo "   🎉 Todos os testes passaram!"
+              elif [ $failed -gt 0 ]; then
+                echo "   ⚠️  Alguns testes falharam"
+              fi
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            fi
+    
+        - name: Exportar resultados de testes
+          uses: actions/upload-artifact@v4
+          with:
+            name: unit-test-results
+            path: |
+              TestResults/*.trx
+              TestResults/*.xml
+            if-no-files-found: warn
 
   # ======================================================
   # 3️⃣ INTEGRATION TESTS
