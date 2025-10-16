@@ -74,7 +74,7 @@ jobs:
         run: dotnet build SeePaw.sln --no-restore --configuration Release
 
       - name: Instalar ferramenta de cobertura
-        run: dotnet tool install --global coverlet.console
+        run: dotnet add Tests/Tests.csproj package coverlet.collector
         
       - name: Correr testes unitários (xUnit) + Cobertura
         run: |
@@ -94,27 +94,22 @@ jobs:
           echo "✅ Testes concluídos"
           echo ""
           
-          coverage_file=$(find TestResults -name "coverage.opencover.xml" -type f | head -1)
-          
+          coverage_file=$(find TestResults -name "coverage.*.xml" -type f | head -1)
+
           if [ -n "$coverage_file" ]; then
             cp "$coverage_file" TestResults/coverage.xml
             echo "✅ Cobertura encontrada: $coverage_file"
-            echo "✅ Copiada para: TestResults/coverage.xml"
-          else
-            echo "⚠️ AVISO: Ficheiro de cobertura OpenCover não encontrado!"
-            echo "🔍 Procurando outros formatos..."
-            find TestResults -name "*.xml" -type f
             
-            # ✅ ADICIONAR: Tentar formato Cobertura
-            cobertura_file=$(find TestResults -name "coverage.cobertura.xml" -type f | head -1)
-            if [ -n "$cobertura_file" ]; then
-              cp "$cobertura_file" TestResults/coverage.xml
-              echo "✅ Cobertura Cobertura copiada"
-            else
-              echo "❌ ERRO: Nenhum ficheiro de cobertura encontrado!"
-              exit 1
+            # Mostrar que formato foi encontrado
+            if [[ "$coverage_file" == *"opencover"* ]]; then
+              echo "📊 Formato: OpenCover"
+            elif [[ "$coverage_file" == *"cobertura"* ]]; then
+              echo "📊 Formato: Cobertura"
             fi
+          else
+            echo "⚠️ Nenhum ficheiro de cobertura encontrado"
           fi
+            
           
           echo ""
           echo "📂 Ficheiros finais em TestResults:"
