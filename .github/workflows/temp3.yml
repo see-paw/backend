@@ -538,7 +538,7 @@ jobs:
           
           # Obter informações do commit no Codacy
           response=$(curl -s "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
-            -H "api-token: ${{ secrets.CODACY_TOKEN }}")
+            -H "api-token: ${{ secrets.CODACY_API_TOKEN }}")
           
           echo "🔍 Debug - Response do Codacy:"
           echo "$response" | jq '.' || echo "Resposta não é JSON válido"
