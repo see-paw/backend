@@ -504,7 +504,7 @@ jobs:
         with:
           args: >
             -Dsonar.organization=see-paw
-            -Dsonar.projectKey=see-paw_tests
+            -Dsonar.projectKey=see-paw_backend
             -Dsonar.sources=API,Domain,Persistence
             -Dsonar.tests=Tests
             -Dsonar.cs.opencover.reportsPaths=TestResults/unit/coverage.xml
