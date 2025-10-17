@@ -1,17 +1,16 @@
-﻿namespace Domain.Enums;
-
-/// <summary>
-/// Defines the biological sex of an animal.
-/// </summary>
-public enum SexType
+﻿namespace Domain.Enums
 {
     /// <summary>
-    /// Represents a male animal.
+    /// Represents the biological sex of an animal.
     /// </summary>
-    Male,
-
-    /// <summary>
-    /// Represents a female animal.
-    /// </summary>
-    Female
+    /// <remarks>
+    /// Used to indicate whether the animal is male or female.  
+    /// Additional options (e.g., unknown or unspecified) can be added in the future if required.
+    /// </remarks>
+    public enum SexType
+    {
+       
+        Male,
+        Female
+    }
 }

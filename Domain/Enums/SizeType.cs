@@ -1,22 +1,15 @@
-﻿namespace Domain.Enums;
-
-/// <summary>
-/// Defines the size classification of an animal.
-/// </summary>
-public enum SizeType
+﻿namespace Domain.Enums
 {
     /// <summary>
-    /// Represents a small-sized animal.
+    /// Represents the general size category of an animal.
     /// </summary>
-    Small,
-
-    /// <summary>
-    /// Represents a medium-sized animal.
-    /// </summary>
-    Medium,
-
-    /// <summary>
-    /// Represents a large-sized animal.
-    /// </summary>
-    Large
+    /// <remarks>
+    /// Commonly used to classify animals by physical build or weight range.
+    /// </remarks>
+    public enum SizeType
+    {
+        Small,
+        Medium,
+        Large
+    }
 }

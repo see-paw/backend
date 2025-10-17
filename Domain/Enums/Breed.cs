@@ -1,26 +1,80 @@
-﻿namespace Domain.Enums;
-/// <summary>
-/// Defines the breed classification of an animal.
-/// </summary>
-public enum Breed
+﻿namespace Domain.Enums
 {
     /// <summary>
-    /// Represents a breed not listed or unspecified.
+    /// Represents the breed of an animal.
     /// </summary>
-    Other,
+    /// <remarks>
+    /// Includes a selection of the most common dog and cat breeds, 
+    /// as well as generic options such as <see cref="Unknown"/>, <see cref="MixedBreed"/>, and <see cref="Mongrel"/>.
+    /// This list can be expanded or localized according to shelter or regional needs.
+    /// </remarks>
+    public enum Breed
+    {
+        /// <summary>
+        /// Breed is unknown or not specified.
+        /// </summary>
+        Unknown,
 
-    /// <summary>
-    /// Represents a Dobermann breed.
-    /// </summary>
-    Dobermann,
+        /// <summary>
+        /// The animal is of mixed or indeterminate breed.
+        /// </summary>
+        MixedBreed,
 
-    /// <summary>
-    /// Represents a Husky breed.
-    /// </summary>
-    Husky,
+        /// <summary>
+        /// A mongrel or mixed-breed dog (commonly referred to as "rafeiro").
+        /// </summary>
+        Mongrel,
 
-    /// <summary>
-    /// Represents a Pit Bull breed.
-    /// </summary>
-    PitBull
+        // Common dog breeds
+        LabradorRetriever,
+        GermanShepherd,
+        GoldenRetriever,
+        FrenchBulldog,
+        Bulldog,
+        Labrador,
+        Poodle,
+        Beagle,
+        Rottweiler,
+        YorkshireTerrier,
+        Boxer,
+        Dachshund,
+        SiberianHusky,
+        Chihuahua,
+        Doberman,
+        DobermanPinscher,
+        ShihTzu,
+        BorderCollie,
+        Pug,
+        CockerSpaniel,
+        AustralianShepherd,
+        Pomeranian,
+        GreatDane,
+        Maltese,
+        BerneseMountainDog,
+        CavalierKingCharlesSpaniel,
+        ShibaInu,
+        BostonTerrier,
+
+        // Common cat breeds
+        Persian,
+        MaineCoon,
+        Siamese,
+        Ragdoll,
+        BritishShorthair,
+        Bengal,
+        Sphynx,
+        ScottishFold,
+        Abyssinian,
+        RussianBlue,
+        NorwegianForestCat,
+        Birman,
+        OrientalShorthair,
+        DevonRex,
+        AmericanShorthair,
+        ExoticShorthair,
+        Burmese,
+        TurkishAngora,
+        DomesticShorthair,
+        DomesticLonghair
+    }
 }

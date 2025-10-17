@@ -1,32 +1,19 @@
-﻿namespace Domain.Enums;
-
-/// <summary>
-/// Represents the current availability or ownership state of an animal within the system.
-/// </summary>
-public enum AnimalState
+﻿namespace Domain.Enums
 {
     /// <summary>
-    /// The animal is available for ownership or fostering.
+    /// Represents the current adoption or fostering state of an animal.
     /// </summary>
-    Available,
-
-    /// <summary>
-    /// The animal is currently being partially fostered.
-    /// </summary>
-    PartiallyFostered,
-
-    /// <summary>
-    /// The animal is fully fostered and not available for new sponsorships.
-    /// </summary>
-    TotallyFostered,
-
-    /// <summary>
-    /// The animal has an owner and is not available for fostering.
-    /// </summary>
-    HasOwner,
-
-    /// <summary>
-    /// The animal is inactive or temporarily unavailable for public viewing.
-    /// </summary>
-    Inactive
+    /// <remarks>
+    /// This enumeration defines the lifecycle states that describe the availability
+    /// and adoption/fostering status of an animal within the SeePaw system.
+    /// </remarks>
+    public enum AnimalState
+    {
+        
+        Available,// The animal is available for ownership or fostering.
+        PartiallyFostered,// The animal is currently being partially fostered (not fully sponsored).
+        TotallyFostered,// The animal is fully fostered (completely sponsored).
+        HasOwner, // The animal has been adopted and has an official owner.
+        Inactive  // The animal record is inactive (e.g., unavailable or deceased).
+    }
 }

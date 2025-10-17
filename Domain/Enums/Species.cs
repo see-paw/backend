@@ -1,17 +1,14 @@
-﻿namespace Domain.Enums;
-
-/// <summary>
-/// Defines the species of the animal.
-/// </summary>
-public enum Species
+﻿namespace Domain.Enums
 {
     /// <summary>
-    /// Represents a dog.
+    /// Represents the species classification of an animal.
     /// </summary>
-    Dog,
-
-    /// <summary>
-    /// Represents a cat.
-    /// </summary>
-    Cat
+    /// <remarks>
+    /// Defines the primary animal types supported by the system.
+    /// </remarks>
+    public enum Species
+    {
+        Dog,
+        Cat
+    }
 }
