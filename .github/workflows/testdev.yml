@@ -88,7 +88,25 @@ jobs:
             --results-directory TestResults \
             --collect:"XPlat Code Coverage" \
             -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover \
-               DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/Persistence/**,**/Tests/**,**/Domain/**,**/bin/**,**/obj/**,**/*.csproj,**/appsettings*.json,**/*.yml,**/*.yaml,**/*.dcproj,**/*.sln,**/*.http"
+                DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/Persistence/**,\
+          **/Tests/**,\
+          **/Domain/**,\
+          **/bin/**,\
+          **/obj/**,\
+          **/Properties/**,\
+          **/*.csproj,\
+          **/*.sln,\
+          **/*.dcproj,\
+          **/*.yml,\
+          **/*.yaml,\
+          **/*.http,\
+          **/Dockerfile,\
+          **/docker-compose*,\
+          **/Program.cs,\
+          **/appsettings*.json,\
+          **/.gitignore,\
+          **/.dockerignore"
+          
           echo ""
           echo "✅ Testes concluídos"
           echo ""
