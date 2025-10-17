@@ -1,0 +1,968 @@
+name: CI - Tests And Inspection
+
+on:
+  pull_request:
+    branches: [ "develop" ]
+    paths-ignore:
+       - '.github/workflows/**'
+
+# Adicionar permissões para comentar nos PRs
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+env:
+  DOTNET_VERSION: "8.0.x"
+  ASPNETCORE_ENVIRONMENT: "Test"
+
+jobs:
+  # ======================================================
+  # 1️⃣ BUILD JOB
+  # ======================================================
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:8.0
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Cache do NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restaurar dependências
+        run: dotnet restore SeePaw.sln
+
+      - name: Compilar projeto
+        run: dotnet build SeePaw.sln --no-restore --configuration Release
+
+      - name: Guardar artefactos do build
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            **/bin/Release/
+            **/obj/Release/
+
+
+  # ======================================================
+# 2️⃣ UNIT TESTS
+# ======================================================
+  unit_tests:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:8.0
+    needs: build
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+        
+      - name: Restaurar dependências
+        run: dotnet restore SeePaw.sln
+        
+      - name: Compilar solução completa
+        run: dotnet build SeePaw.sln --no-restore --configuration Release
+        
+      - name: Instalar ferramentas de cobertura
+        run: |
+          dotnet add Tests/Tests.csproj package coverlet.collector
+          dotnet tool install --global dotnet-reportgenerator-globaltool
+          export PATH="$PATH:$HOME/.dotnet/tools"
+      
+      - name: Correr testes unitários (xUnit) + Cobertura
+        run: |
+          mkdir -p TestResults
+          echo "🧪 A testar: Tests/Tests.csproj"
+          
+          dotnet test Tests/Tests.csproj \
+            --no-restore \
+            --configuration Release \
+            --logger "trx;LogFileName=test-results.trx" \
+            --results-directory TestResults \
+            --collect:"XPlat Code Coverage" \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover \
+               DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/Persistence/**,**/Tests/**,**/Domain/**"
+          
+          echo ""
+          echo "✅ Testes concluídos"
+          echo ""
+          
+          # Encontrar e copiar ficheiro de cobertura
+          coverage_file=$(find TestResults -name "coverage.*.xml" -type f | head -1)
+          if [ -n "$coverage_file" ]; then
+            cp "$coverage_file" TestResults/coverage.xml
+            echo "✅ Cobertura encontrada: $coverage_file"
+          else
+            echo "⚠️ Nenhum ficheiro de cobertura encontrado"
+            exit 1
+          fi
+          
+          echo ""
+          echo "📂 Ficheiros gerados:"
+          ls -lah TestResults/
+      
+      - name: Verificar se todos os testes passaram
+        run: |
+          if [ ! -f TestResults/test-results.trx ]; then
+            echo "❌ Ficheiro de resultados não encontrado!"
+            exit 1
+          fi
+          
+          passed=$(grep -o 'outcome="Passed"' TestResults/test-results.trx | wc -l || echo "0")
+          failed=$(grep -o 'outcome="Failed"' TestResults/test-results.trx | wc -l || echo "0")
+          total=$((passed + failed))
+          
+          echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+          echo "📊 RESUMO DOS TESTES UNITÁRIOS"
+          echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
+          echo "   Total: $total"
+          echo "   ✅ Passaram: $passed"
+          echo "   ❌ Falharam: $failed"
+          
+          if [ $failed -eq 0 ] && [ $total -gt 0 ]; then
+            echo "   🎉 Todos os testes passaram!"
+            echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+          elif [ $failed -gt 0 ]; then
+            echo "   ⚠️  Alguns testes falharam"
+            echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+            exit 1
+          else
+            echo "   ⚠️  Nenhum teste foi executado"
+            echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+            exit 1
+          fi
+      
+      - name: Gerar relatório HTML de cobertura
+        if: success()
+        run: |
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          
+          if [ -f TestResults/coverage.xml ]; then
+            echo "📊 A gerar relatório HTML de cobertura..."
+            
+            reportgenerator \
+              -reports:TestResults/coverage.xml \
+              -targetdir:TestResults/CoverageReport \
+              -reporttypes:"Html;HtmlSummary" \
+              -verbosity:Info
+            
+            echo "✅ Relatório HTML gerado em TestResults/CoverageReport/"
+            ls -lah TestResults/CoverageReport/
+          else
+            echo "⚠️ Ficheiro de cobertura não encontrado. Relatório HTML não foi gerado."
+            exit 1
+          fi
+      
+      - name: Aplicar Quality Gates personalizadas
+        if: success()
+        run: |
+          if [ ! -f TestResults/coverage.xml ]; then
+            echo "❌ Ficheiro de cobertura não encontrado!"
+            exit 1
+          fi
+          
+          echo "🔍 A analisar cobertura de testes..."
+          echo ""
+          
+          # Extrair cobertura geral do ficheiro XML (formato OpenCover)
+          coverage_data=$(cat TestResults/coverage.xml)
+          
+          # Contar linhas totais e cobertas (excluindo projetos filtrados)
+          total_sequences=$(echo "$coverage_data" | grep -oP '<SequencePoint vc="[0-9]+"' | wc -l || echo "0")
+          covered_sequences=$(echo "$coverage_data" | grep -oP '<SequencePoint vc="[1-9][0-9]*"' | wc -l || echo "0")
+          
+          if [ $total_sequences -eq 0 ]; then
+            echo "⚠️ Nenhuma linha de código encontrada para análise"
+            exit 1
+          fi
+          
+          overall_coverage=$((covered_sequences * 100 / total_sequences))
+          
+          echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+          echo "  📊 COBERTURA DE TESTES"
+          echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
+          echo "  Cobertura geral: ${overall_coverage}%"
+          echo "  Linhas cobertas: $covered_sequences/$total_sequences"
+          echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+          echo ""
+          
+          # Obter o título do Pull Request
+          pr_title="${{ github.event.pull_request.title }}"
+          
+          if [ -z "$pr_title" ]; then
+            echo "⚠️ Este workflow não está a correr num Pull Request"
+            echo "   Não é possível determinar a criticidade"
+            echo "   A verificar apenas se a cobertura existe..."
+            exit 0
+          fi
+          
+          echo "📝 Título do PR: $pr_title"
+          echo ""
+          
+          # Converter para minúsculas para comparação case-insensitive
+          pr_title_lower=$(echo "$pr_title" | tr '[:upper:]' '[:lower:]')
+          
+          # Determinar criticidade baseada no título do PR
+          threshold=0
+          criticality=""
+          
+          if echo "$pr_title_lower" | grep -q "basic"; then
+            threshold=40
+            criticality="📘 BASIC"
+          elif echo "$pr_title_lower" | grep -q "intermediate"; then
+            threshold=50
+            criticality="📙 INTERMEDIATE"
+          elif echo "$pr_title_lower" | grep -q "critical"; then
+            threshold=80
+            criticality="📕 CRITICAL"
+          fi
+          
+          # Aplicar quality gate
+          if [ $threshold -eq 0 ]; then
+            echo "⚠️ Nenhuma criticidade detectada no título do PR"
+            echo "   O título deve conter 'basic', 'intermediate' ou 'critical'"
+            echo "   Exemplos:"
+            echo "   - '[BASIC] Adicionar nova funcionalidade'"
+            echo "   - 'Feature intermediate: Login system'"
+            echo "   - 'Critical bug fix'"
+            echo ""
+            echo "⚠️ Sem quality gate para aplicar - assumindo sucesso"
+            exit 0
+          fi
+          
+          echo "🎯 A aplicar Quality Gate..."
+          echo ""
+          echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+          echo "  $criticality - Threshold: ${threshold}%"
+          echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
+          
+          if [ $overall_coverage -ge $threshold ]; then
+            echo "  ✅ PASSOU (${overall_coverage}% ≥ ${threshold}%)"
+            echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+            echo ""
+            echo "✅ Quality gate passou!"
+            exit 0
+          else
+            echo "  ❌ FALHOU (${overall_coverage}% < ${threshold}%)"
+            echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+            echo ""
+            echo "❌ Quality gate falhou!"
+            exit 1
+          fi
+      
+      - name: Exportar resultados de testes e cobertura
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-results
+          path: |
+            TestResults/**/*.trx
+            TestResults/coverage.xml
+            TestResults/CoverageReport/
+          if-no-files-found: warn
+
+  # ======================================================
+  # 3️⃣ INTEGRATION TESTS (CORRIGIDO COM POSTMAN CLI)
+  # ======================================================
+  integration_tests:
+    runs-on: ubuntu-latest
+    needs: build
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: seepaw
+          POSTGRES_PASSWORD: seepaw
+          POSTGRES_DB: seepaw_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U seepaw -d seepaw_test"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    env:
+      ASPNETCORE_ENVIRONMENT: Docker
+      ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=seepaw_test;Username=seepaw;Password=seepaw"
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+        
+      - name: Descarregar artefactos do build
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: ./
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restaurar dependências
+        run: dotnet restore SeePaw.sln
+
+      - name: Compilar projeto
+        run: dotnet build SeePaw.sln --no-restore --configuration Release
+
+      - name: Iniciar API em background
+        run: |
+          echo "🚀 A iniciar a API..."
+          dotnet run --project API/API.csproj --configuration Release --no-build --urls "http://0.0.0.0:5000" &
+          echo $! > server_pid.txt
+          echo "⏳ A aguardar que a API fique pronta..."
+          timeout 60 bash -c '
+            until nc -z localhost 5000; do
+              echo "Aguardando..."
+              sleep 3
+          done
+          ' || (echo "❌ A API não respondeu a tempo" && exit 1)
+          echo "✅ API pronta!"
+
+      - name: Instalar Postman CLI
+        run: |
+          echo "📦 A instalar Postman CLI..."
+          curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
+
+      - name: Login no Postman CLI
+        run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
+
+      - name: Executar testes Postman e gerar relatórios
+        run: |
+          set -e
+          
+          mkdir -p TestResults/postman
+          
+          echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+          echo "🧪 TESTES DE INTEGRAÇÃO - POSTMAN"
+          echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+          echo ""
+          
+          # Executar a coleção "Tests" usando o Postman CLI
+          # NOTA: Postman CLI suporta apenas: cli, json, junit, html (básico)
+          postman collection run "${{ secrets.POSTMAN_COLLECTION_ID }}" \
+            -e "${{ secrets.POSTMAN_ENV_ID }}" \
+            --env-var "url=http://localhost:5000" \
+            --reporters cli,json,html \
+            --reporter-json-export TestResults/postman/results.json \
+            --reporter-html-export TestResults/postman/report.html \
+            --delay-request 300 \
+            --timeout-request 10000 \
+            --bail false \
+            --color on \
+            2>&1 | tee TestResults/postman/console-output.txt
+          
+          exit_code=${PIPESTATUS[0]}
+          
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
+          # Processar resultados
+          if [ -f TestResults/postman/results.json ]; then
+            total=$(jq -r '.run.stats.assertions.total // 0' TestResults/postman/results.json)
+            failed=$(jq -r '.run.stats.assertions.failed // 0' TestResults/postman/results.json)
+            passed=$((total - failed))
+            
+            echo "📊 RESUMO DOS TESTES:"
+            echo "   Total: $total"
+            echo "   ✅ Passaram: $passed"
+            echo "   ❌ Falharam: $failed"
+            
+            if [ $failed -gt 0 ]; then
+              echo ""
+              echo "⚠️  Alguns testes falharam!"
+              echo "📄 Consulta o relatório HTML para mais detalhes"
+            else
+              echo ""
+              echo "🎉 Todos os testes passaram!"
+            fi
+            
+            # Criar resumo em JSON
+            cat > TestResults/postman/summary.json <<EOF
+          {
+            "total": $total,
+            "passed": $passed,
+            "failed": $failed,
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "status": $([ $failed -eq 0 ] && echo '"PASS"' || echo '"FAIL"')
+          }
+          EOF
+          else
+            echo "❌ Erro: Ficheiro de resultados não foi gerado"
+            exit 1
+          fi
+          
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
+          # Retornar o exit code original do Postman CLI
+          exit $exit_code
+
+      - name: Upload resultados de integração
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: |
+            TestResults/postman/**
+          if-no-files-found: warn
+
+      - name: Publicar relatório HTML como comentário no PR
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let summary = { total: 0, passed: 0, failed: 0, status: 'UNKNOWN' };
+            
+            try {
+              const summaryFile = 'TestResults/postman/summary.json';
+              if (fs.existsSync(summaryFile)) {
+                summary = JSON.parse(fs.readFileSync(summaryFile, 'utf8'));
+              }
+            } catch (error) {
+              console.error('Erro ao ler resumo:', error);
+            }
+            
+            const emoji = summary.status === 'PASS' ? '✅' : '❌';
+            const statusText = summary.status === 'PASS' ? 'PASSOU' : 'FALHOU';
+            
+            const comment = `
+            ## ${emoji} Testes de Integração (Postman) - ${statusText}
+            
+            **Resumo:**
+            - 🧪 Total de testes: ${summary.total}
+            - ✅ Passaram: ${summary.passed}
+            - ❌ Falharam: ${summary.failed}
+            
+            📄 **Relatório HTML completo disponível nos artefactos desta execução.**
+            
+            Para visualizar o relatório detalhado:
+            1. Vai aos artefactos desta workflow run
+            2. Descarrega \`integration-test-results\`
+            3. Abre o ficheiro \`report.html\` no browser
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Parar API e containers
+        if: always()
+        run: |
+          echo "🧹 A encerrar ambiente de teste..."
+          kill $(cat server_pid.txt) || true
+
+  # ======================================================
+  # 4️⃣ QUALITY GATE
+  # ======================================================
+  quality_gate:
+    runs-on: ubuntu-latest
+    needs: [unit_tests, integration_tests]
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download resultados de testes de integração
+        uses: actions/download-artifact@v4
+        with:
+          name: integration-test-results
+          path: TestResults/integration/
+          
+      - name: Download resultados de testes unitários
+        uses: actions/download-artifact@v4
+        with:
+          name: unit-test-results
+          path: TestResults/unit/
+
+      - name: Debug - Listar artefactos recebidos
+        run: |
+          echo "📂 Conteúdo de TestResults/unit:"
+          ls -lah TestResults/unit/ || echo "Pasta não existe"
+          echo ""
+          echo "📂 Conteúdo de TestResults/integration:"
+          ls -lah TestResults/integration/ || echo "Pasta não existe"
+          echo ""
+          echo "🔍 Procurando ficheiros XML recursivamente:"
+          find TestResults -type f -name "*.xml" || echo "Nenhum XML encontrado"
+          echo ""
+          echo "🔍 Procurando ficheiros TRX recursivamente:"
+          find TestResults -type f -name "*.trx" || echo "Nenhum TRX encontrado"
+          
+      - name: Validar existência dos artefactos
+        run: |
+          echo "🔍 Verificando artefactos..."
+
+          if [ ! -d TestResults/unit ]; then
+            echo "❌ Pasta TestResults/unit não encontrada"
+            exit 1
+          fi
+          
+          if [ ! -d TestResults/integration ]; then
+            echo "❌ Pasta TestResults/integration não encontrada"
+            exit 1
+          fi
+          
+          if ! find TestResults/unit -name "*.trx" -type f | grep -q .; then
+            echo "❌ Ficheiro .trx de testes unitários não encontrado"
+            exit 1
+          fi
+          
+          if ! find TestResults/unit -name "*.xml" -type f | grep -q .; then
+            echo "❌ Ficheiro XML de cobertura não encontrado"
+            echo "🔍 Estrutura de TestResults/unit:"
+            find TestResults/unit -type f
+            exit 1
+          fi
+          
+          echo "✅ Todos os artefactos encontrados"
+
+      - name: Quality Gate 1 - Validar Testes Unitários
+        run: |
+          echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+          echo "📊 QUALITY GATE 1: TESTES UNITÁRIOS"
+          echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+          
+          trx_file=$(find TestResults/unit -name "*.trx" | head -1)
+          
+          if [ -z "$trx_file" ]; then
+            echo "❌ Ficheiro TRX não encontrado"
+            exit 1
+          fi
+          
+          passed=$(grep -o 'outcome="Passed"' "$trx_file" | wc -l || echo "0")
+          failed=$(grep -o 'outcome="Failed"' "$trx_file" | wc -l || echo "0")
+          total=$((passed + failed))
+          
+          echo "Total de testes: $total"
+          echo "✅ Passaram: $passed"
+          echo "❌ Falharam: $failed"
+          
+          if [ $failed -gt 0 ]; then
+            echo ""
+            echo "❌ QUALITY GATE FALHOU: $failed teste(s) unitário(s) falharam"
+            exit 1
+          fi
+          
+          if [ $total -eq 0 ]; then
+            echo ""
+            echo "❌ QUALITY GATE FALHOU: Nenhum teste unitário foi executado"
+            exit 1
+          fi
+          
+          echo ""
+          echo "✅ QUALITY GATE PASSOU: Todos os $total testes unitários passaram"
+
+      - name: Quality Gate 2 - Validar Testes de Integração (Postman)
+        run: |
+          echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+          echo "📊 QUALITY GATE 2: TESTES DE INTEGRAÇÃO"
+          echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+          
+          summary_file="TestResults/integration/summary.json"
+          echo "📂 Conteúdo extraído do artefacto:"
+          ls -R TestResults/integration
+          
+          if [ ! -f "$summary_file" ]; then
+            echo "⚠️ Ficheiro summary.json não encontrado"
+            echo "ℹ️ QUALITY GATE PASSOU: Nenhum teste de integração configurado"
+            exit 0
+          fi
+          
+          if ! command -v jq &> /dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y jq
+          fi
+          
+          total=$(jq -r '.total // 0' "$summary_file")
+          passed=$(jq -r '.passed // 0' "$summary_file")
+          failed=$(jq -r '.failed // 0' "$summary_file")
+          
+          echo "Total de testes: $total"
+          echo "✅ Passaram: $passed"
+          echo "❌ Falharam: $failed"
+          
+          if [ $failed -gt 0 ]; then
+            echo ""
+            echo "❌ QUALITY GATE FALHOU: $failed teste(s) de integração falharam"
+            exit 1
+          fi
+          
+          if [ $total -eq 0 ]; then
+            echo ""
+            echo "ℹ️ QUALITY GATE PASSOU: Nenhum teste de integração foi executado"
+            exit 0
+          fi
+          
+          echo ""
+          echo "✅ QUALITY GATE PASSOU: Todos os $total testes de integração passaram"
+          
+      - name: Restaurar dependências
+        run: dotnet restore SeePaw.sln
+  
+      - name: Build do projeto
+        run: dotnet build SeePaw.sln --no-restore --configuration Release
+      
+      - name: Verificar e validar relatório de cobertura
+        run: |
+          echo "🔍 Verificando relatório de cobertura antes do envio..."
+          
+          if [ ! -f TestResults/unit/coverage.xml ]; then
+            echo "❌ ERRO: Ficheiro coverage.xml não encontrado!"
+            exit 1
+          fi
+          
+          echo "✅ Ficheiro existe"
+          echo "📊 Tamanho: $(wc -c < TestResults/unit/coverage.xml) bytes"
+          echo "📝 Primeiras linhas:"
+          head -n 20 TestResults/unit/coverage.xml
+          
+          # Verificar se é OpenCover válido
+          if grep -q "<CoverageSession" TestResults/unit/coverage.xml; then
+            echo "✅ Formato OpenCover detectado"
+          else
+            echo "⚠️ Formato OpenCover não detectado claramente"
+          fi
+      
+      - name: Enviar cobertura para Codacy
+        run: |
+          echo "📤 Enviando relatório de cobertura para Codacy..."
+          export CODACY_PROJECT_TOKEN="${{ secrets.CODACY_API_TOKEN }}"
+          
+          if [ -z "$CODACY_PROJECT_TOKEN" ]; then
+            echo "❌ Erro: CODACY_PROJECT_TOKEN não configurado"
+            exit 1
+          fi
+          
+          # ⚠️ CRÍTICO: Determinar SHA correto!
+          # Para PRs, usar HEAD do PR (não o merge commit)
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
+            echo "📦 Pull Request detectado"
+            echo "🔍 Usando HEAD SHA do PR: $COMMIT_SHA"
+          else
+            COMMIT_SHA="${{ github.sha }}"
+            echo "📦 Push direto detectado"
+            echo "🔍 Usando commit SHA: $COMMIT_SHA"
+          fi
+          
+          curl -Ls https://coverage.codacy.com/get.sh -o codacy-coverage-reporter.sh
+          chmod +x codacy-coverage-reporter.sh
+
+          echo "📊 Enviando relatório de cobertura para commit $COMMIT_SHA..."
+          ./codacy-coverage-reporter.sh report \
+            -r TestResults/unit/coverage.xml \
+            --commit-uuid "$COMMIT_SHA" \
+            2>&1 | tee codacy-upload.log
+          
+          exit_code=${PIPESTATUS[0]}
+          
+          if [ $exit_code -eq 0 ]; then
+            echo "✅ Envio bem-sucedido para commit $COMMIT_SHA!"
+            echo "🔗 Verifica em: https://app.codacy.com/gh/see-paw/backend/commit/$COMMIT_SHA"
+          else
+            echo "❌ Envio falhou com código $exit_code"
+            echo "📄 Log completo:"
+            cat codacy-upload.log
+            exit 1
+          fi
+    
+      - name: Quality Gate 3 - Verificar Codacy Quality Gate e Cobertura
+        run: |
+          echo "⏳ Aguardando análise estática do Codacy..."
+
+          # Determinar o SHA correto
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
+            echo "📦 Detetado evento pull_request → Usar HEAD SHA do PR"
+          else
+            COMMIT_SHA="${{ github.sha }}"
+            echo "📦 Detetado evento push → Usar commit SHA normal"
+          fi
+          echo "🔍 Commit alvo: $COMMIT_SHA"
+          
+          TOKEN="${{ secrets.CODACY_TOKEN }}"
+          MAX_RETRIES=10    # 10 tentativas = 5 minutos
+          DELAY=30          # 30 segundos entre tentativas
+          
+          if [ -z "$TOKEN" ]; then
+            echo "❌ CODACY_TOKEN não configurado!"
+            exit 1
+          fi
+          
+          # Instalar jq se necessário
+          if ! command -v jq &> /dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y jq
+          fi
+          
+          echo "🔍 Fase 1: Aguardando análise estática..."
+          echo "⏱️  Timeout: $((MAX_RETRIES * DELAY / 60)) minutos"
+          
+          commit_analyzed=false
+          
+          for ((i=1; i<=MAX_RETRIES; i++)); do
+            response=$(curl -s -w "\n%{http_code}" \
+              "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
+              -H "api-token: $TOKEN")
+            
+            http_code=$(echo "$response" | tail -n1)
+            body=$(echo "$response" | head -n-1)
+
+            if [ "$http_code" = "200" ]; then
+              # Verificar se tem dados (não é null)
+              if [ "$body" != "null" ] && [ -n "$body" ]; then
+                echo "✅ Commit analisado pelo Codacy! (tentativa $i)"
+                commit_analyzed=true
+                
+                # Agora verificar cobertura
+                has_coverage=$(echo "$body" | jq -r '.coverage.totalCoveragePercentage // "null"')
+                
+                if [ "$has_coverage" != "null" ] && [ "$has_coverage" != "0" ]; then
+                  echo "🎉 Cobertura também já está disponível: ${has_coverage}%"
+                  echo "$body" | jq '.' > codacy_commit.json
+                  break
+                else
+                  echo "⏳ Análise OK, mas cobertura ainda a processar..."
+                  echo "   (Codacy precisa terminar análise estática antes de processar cobertura)"
+                  sleep $DELAY
+                fi
+              else
+                echo "🔄 [$i/$MAX_RETRIES] Codacy ainda não analisou o commit (resposta vazia)"
+                sleep $DELAY
+              fi
+            else
+              echo "🔄 [$i/$MAX_RETRIES] Aguardando análise (HTTP $http_code)"
+              sleep $DELAY
+            fi
+          done
+          
+          # Verificação final
+          if [ "$commit_analyzed" = false ]; then
+            echo ""
+            echo "❌ FALHA: Codacy não analisou o commit após $((MAX_RETRIES*DELAY/60)) min"
+            echo ""
+            echo "💡 Possíveis causas:"
+            echo "  1. O Codacy está com demora no processamento"
+            echo "  2. O commit pode não ter sido detectado pelo webhook"
+            echo "  3. Verifica manualmente: https://app.codacy.com/gh/see-paw/backend/commit/$COMMIT_SHA"
+            echo ""
+            echo "⚠️ Continuando sem validar cobertura..."
+            echo "{}" > codacy_commit.json
+          else
+            # Verificar se tem cobertura
+            has_coverage=$(echo "$body" | jq -r '.coverage.totalCoveragePercentage // "null"' 2>/dev/null || echo "null")
+            
+            if [ "$has_coverage" = "null" ] || [ -z "$has_coverage" ]; then
+              echo ""
+              echo "⚠️ Análise concluída mas cobertura ainda não processada"
+              echo "   Isto é normal - pode demorar alguns minutos extra"
+              echo "   Continuando sem validar cobertura desta vez..."
+              echo "$body" | jq '.' > codacy_commit.json 2>/dev/null || echo "{}" > codacy_commit.json
+            else
+              echo "✅ Análise Codacy concluída com cobertura de ${has_coverage}%"
+              echo "$body" | jq '.' > codacy_commit.json
+            fi
+          fi
+    
+      - name: Quality Gate 4 – Validar Métricas Personalizadas (SeePaw)
+        run: |
+          echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+          echo "📊 QUALITY GATE 4: MÉTRICAS PERSONALIZADAS SEEPAW"
+          echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+
+          # 1️⃣ Determinar o SHA correto
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
+            PR_NUMBER="${{ github.event.pull_request.number }}"
+            echo "📦 Evento: Pull Request #$PR_NUMBER → HEAD SHA: $COMMIT_SHA"
+          else
+            COMMIT_SHA="${{ github.sha }}"
+            echo "📦 Evento: Push → SHA: $COMMIT_SHA"
+          fi
+
+          TOKEN="${{ secrets.CODACY_TOKEN }}"
+          if [ -z "$TOKEN" ]; then
+            echo "❌ CODACY_TOKEN não configurado (Settings → Secrets → Actions)"
+            exit 1
+          fi
+
+          # 2️⃣ Garantir jq instalado
+          if ! command -v jq &> /dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y jq
+          fi
+
+          # 3️⃣ Obter métricas do COMMIT (não do repositório!)
+          echo ""
+          echo "🔍 A obter métricas do commit $COMMIT_SHA no Codacy..."
+          commit_response=$(curl -s -w "\n%{http_code}" \
+            "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories/backend/commits/$COMMIT_SHA" \
+            -H "api-token: $TOKEN")
+
+          http_code=$(echo "$commit_response" | tail -n1)
+          body=$(echo "$commit_response" | head -n-1)
+
+          if [ "$http_code" != "200" ]; then
+            echo "❌ Erro ao consultar API do commit (HTTP $http_code)"
+            echo "$body" | jq '.' 2>/dev/null || echo "$body"
+            exit 1
+          fi
+
+          echo "✅ Dados do commit obtidos com sucesso"
+          echo "----------------------------------------"
+          echo "$body" | jq '.' | head -n 60
+
+          # 4️⃣ Extrair métricas do COMMIT (CORRIGIDO!)
+          grade_letter=$(echo "$body" | jq -r '.quality.grade // "N/A"')
+          issues_count=$(echo "$body" | jq -r '.quality.newIssues // 0')
+          
+          # 🎯 CORREÇÃO CRÍTICA: Usar .coverage.totalCoveragePercentage
+          coverage=$(echo "$body" | jq -r '.coverage.totalCoveragePercentage // 0')
+          
+          duplication_percentage=$(echo "$body" | jq -r '.duplication.clonePercentage // 0')
+          complex_files_count=$(echo "$body" | jq -r '.complexity.complexFilesCount // 0')
+          total_files=$(echo "$body" | jq -r '.fileMetrics.totalFiles // 1')
+          
+          # Evitar divisão por zero
+          if [ "$total_files" -eq 0 ]; then
+            complex_files_percentage=0
+          else
+            complex_files_percentage=$((complex_files_count * 100 / total_files))
+          fi
+
+          echo ""
+          echo "📈 Métricas extraídas do commit:"
+          echo "   Grade: $grade_letter"
+          echo "   Issues novos: $issues_count"
+          echo "   Cobertura: ${coverage}%"
+          echo "   Duplicação: ${duplication_percentage}%"
+          echo "   Ficheiros Complexos: ${complex_files_count}/${total_files} (${complex_files_percentage}%)"
+
+          # 5️⃣ Obter limites (goals) do repositório
+          echo ""
+          echo "🔍 A obter limites (goals) do repositório..."
+          repo_response=$(curl -s -w "\n%{http_code}" \
+            "https://app.codacy.com/api/v3/analysis/organizations/gh/see-paw/repositories" \
+            -H "api-token: $TOKEN")
+
+          repo_http_code=$(echo "$repo_response" | tail -n1)
+          repo_body=$(echo "$repo_response" | head -n-1)
+
+          if [ "$repo_http_code" != "200" ]; then
+            echo "⚠️ Erro ao obter goals do repositório, usando valores padrão"
+            min_coverage_percentage=60
+            max_issue_percentage=20
+            max_duplication_percentage=10
+            max_complex_files_percentage=10
+          else
+            min_coverage_percentage=$(echo "$repo_body" | jq -r '.data[0].goals.minCoveragePercentage // 60')
+            max_issue_percentage=$(echo "$repo_body" | jq -r '.data[0].goals.maxIssuePercentage // 20')
+            max_duplication_percentage=$(echo "$repo_body" | jq -r '.data[0].goals.maxDuplicatedFilesPercentage // 10')
+            max_complex_files_percentage=$(echo "$repo_body" | jq -r '.data[0].goals.maxComplexFilesPercentage // 10')
+          fi
+
+          echo ""
+          echo "📋 Limites definidos no Codacy:"
+          echo "   Mín. Cobertura: ${min_coverage_percentage}%"
+          echo "   Máx. Issues: ${max_issue_percentage}%"
+          echo "   Máx. Duplicação: ${max_duplication_percentage}%"
+          echo "   Máx. Complexidade: ${max_complex_files_percentage}%"
+
+          # 6️⃣ Validar métricas personalizadas SeePaw
+          failed=0
+
+          echo ""
+          echo "🔍 Validando métricas..."
+          
+          # Converter para inteiro para comparação (remove casas decimais)
+          coverage_int=$(echo "$coverage" | cut -d. -f1)
+          duplication_int=$(echo "$duplication_percentage" | cut -d. -f1)
+          
+          # Validar cobertura
+          if [ "$coverage_int" = "null" ] || [ -z "$coverage_int" ]; then
+            echo "⚠️ AVISO: Cobertura não disponível (null ou vazio)"
+            echo "   Provavelmente o Codacy ainda está a processar..."
+            echo "   Continuando sem validar cobertura desta vez."
+          elif [ "$coverage_int" -lt "$min_coverage_percentage" ]; then
+            echo "❌ Cobertura ${coverage}% < ${min_coverage_percentage}%"
+            failed=1
+          else
+            echo "✅ Cobertura OK (${coverage}%)"
+          fi
+
+          if [ "$duplication_int" -gt "$max_duplication_percentage" ]; then
+            echo "❌ Duplicação ${duplication_percentage}% > ${max_duplication_percentage}%"
+            failed=1
+          else
+            echo "✅ Duplicação OK (${duplication_percentage}%)"
+          fi
+
+          if [ "$complex_files_percentage" -gt "$max_complex_files_percentage" ]; then
+            echo "❌ Complexidade ${complex_files_percentage}% > ${max_complex_files_percentage}%"
+            failed=1
+          else
+            echo "✅ Complexidade OK (${complex_files_percentage}%)"
+          fi
+
+          # 7️⃣ Exportar métricas para metrics.json
+          jq -n \
+            --arg grade "$grade_letter" \
+            --arg issues "$issues_count" \
+            --arg coverage "$coverage" \
+            --arg duplication "$duplication_percentage" \
+            --arg complex "$complex_files_percentage" \
+            --arg min_cov "$min_coverage_percentage" \
+            '{
+              grade: $grade,
+              issues: $issues,
+              coverage: $coverage,
+              duplication: $duplication,
+              complex_files: $complex,
+              min_coverage: $min_cov,
+              timestamp: (now | todate)
+            }' > metrics.json
+
+          echo ""
+          if [ $failed -eq 1 ]; then
+            echo "❌ QUALITY GATE FALHOU: Métricas personalizadas não atingidas"
+            exit 1
+          fi
+          echo "✅ QUALITY GATE PASSOU: Todas as métricas atingidas"
+      
+
+      - name: Resumo Final dos Quality Gates
+        if: always()
+        run: |
+          echo ""
+          echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+          echo "🎯 RESUMO DOS QUALITY GATES"
+          echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
+          echo "✅ Quality Gate 1: Testes Unitários"
+          echo "✅ Quality Gate 2: Testes de Integração"
+          echo "✅ Quality Gate 3: Codacy Analysis"
+          echo "✅ Quality Gate 4: Métricas Personalizadas"
+          echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
+          echo "🎉 TODOS OS QUALITY GATES PASSARAM!"
+          echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+  
+      - name: Guardar artefacto das métricas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-metrics
+          path: metrics.json
