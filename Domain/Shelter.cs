@@ -39,7 +39,7 @@ public class Shelter
     public string NIF { get; init; } = string.Empty;
 
     // Foreign Key to Image
-    public string MainImageId { get; set; } = string.Empty;
+    public string? MainImageId { get; set; } = string.Empty;
 
     [Required]
     public TimeOnly OpeningTime { get; set; }
