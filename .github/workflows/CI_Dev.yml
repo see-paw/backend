@@ -1,0 +1,486 @@
+name: CI - Tests And Inspection
+
+on:
+  pull_request:
+    branches: [ "develop" ]
+    paths-ignore:
+       - '.github/workflows/**'
+
+# Adicionar permissões para comentar nos PRs
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+env:
+  DOTNET_VERSION: "8.0.x"
+  ASPNETCORE_ENVIRONMENT: "Test"
+
+jobs:
+  # ======================================================
+  # 1️⃣ BUILD JOB
+  # ======================================================
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:8.0
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Cache do NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restaurar dependências
+        run: dotnet restore SeePaw.sln
+
+      - name: Compilar projeto
+        run: dotnet build SeePaw.sln --no-restore --configuration Release
+
+      - name: Guardar artefactos do build
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            **/bin/Release/
+            **/obj/Release/
+
+
+  # ======================================================
+# 2️⃣ UNIT TESTS
+# ======================================================
+  unit_tests:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:8.0
+    needs: build
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+        
+      - name: Restaurar dependências
+        run: dotnet restore SeePaw.sln
+        
+      - name: Compilar solução completa
+        run: dotnet build SeePaw.sln --no-restore --configuration Release
+        
+      - name: Instalar ferramentas de cobertura
+        run: |
+          dotnet add Tests/Tests.csproj package coverlet.collector
+          dotnet tool install --global dotnet-reportgenerator-globaltool
+          export PATH="$PATH:$HOME/.dotnet/tools"
+      
+      - name: Correr testes unitários (xUnit) + Cobertura
+        run: |
+          mkdir -p TestResults
+          echo "🧪 A testar: Tests/Tests.csproj"
+          
+          dotnet test Tests/Tests.csproj \
+            --no-restore \
+            --configuration Release \
+            --logger "trx;LogFileName=test-results.trx" \
+            --results-directory TestResults \
+            --collect:"XPlat Code Coverage" \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover \
+                DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.ExcludeByFile="**/Persistence/**,\
+          **/Tests/**,\
+          **/Domain/**,\
+          **/bin/**,\
+          **/obj/**,\
+          **/Properties/**,\
+          **/*.csproj,\
+          **/*.sln,\
+          **/*.dcproj,\
+          **/*.yml,\
+          **/*.yaml,\
+          **/*.http,\
+          **/Dockerfile,\
+          **/docker-compose*,\
+          **/Program.cs,\
+          **/appsettings*.json,\
+          **/.gitignore,\
+          **/.dockerignore"
+          
+          echo ""
+          echo "✅ Testes concluídos"
+          echo ""
+          
+          # Encontrar e copiar ficheiro de cobertura
+          coverage_file=$(find TestResults -name "coverage.*.xml" -type f | head -1)
+          if [ -n "$coverage_file" ]; then
+            cp "$coverage_file" TestResults/coverage.xml
+            echo "✅ Cobertura encontrada: $coverage_file"
+          else
+            echo "⚠️ Nenhum ficheiro de cobertura encontrado"
+            exit 1
+          fi
+          
+          echo ""
+          echo "📂 Ficheiros gerados:"
+          ls -lah TestResults/
+      
+      - name: Verificar se todos os testes passaram
+        run: |
+          if [ ! -f TestResults/test-results.trx ]; then
+            echo "❌ Ficheiro de resultados não encontrado!"
+            exit 1
+          fi
+          
+          passed=$(grep -o 'outcome="Passed"' TestResults/test-results.trx | wc -l || echo "0")
+          failed=$(grep -o 'outcome="Failed"' TestResults/test-results.trx | wc -l || echo "0")
+          total=$((passed + failed))
+          
+          echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+          echo "📊 RESUMO DOS TESTES UNITÁRIOS"
+          echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
+          echo "   Total: $total"
+          echo "   ✅ Passaram: $passed"
+          echo "   ❌ Falharam: $failed"
+          
+          if [ $failed -eq 0 ] && [ $total -gt 0 ]; then
+            echo "   🎉 Todos os testes passaram!"
+            echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+          elif [ $failed -gt 0 ]; then
+            echo "   ⚠️  Alguns testes falharam"
+            echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+            exit 1
+          else
+            echo "   ⚠️  Nenhum teste foi executado"
+            echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+            exit 1
+          fi
+      
+      - name: Gerar relatório HTML de cobertura
+        if: success()
+        run: |
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          
+          if [ -f TestResults/coverage.xml ]; then
+            echo "📊 A gerar relatório HTML de cobertura..."
+            
+            reportgenerator \
+              -reports:TestResults/coverage.xml \
+              -targetdir:TestResults/CoverageReport \
+              -reporttypes:"Html;HtmlSummary" \
+              -verbosity:Info
+            
+            echo "✅ Relatório HTML gerado em TestResults/CoverageReport/"
+            ls -lah TestResults/CoverageReport/
+          else
+            echo "⚠️ Ficheiro de cobertura não encontrado. Relatório HTML não foi gerado."
+            exit 1
+          fi
+      
+      - name: Aplicar Quality Gates personalizadas
+        if: success()
+        run: |
+          if [ ! -f TestResults/coverage.xml ]; then
+            echo "❌ Ficheiro de cobertura não encontrado!"
+            exit 1
+          fi
+          
+          echo "🔍 A analisar cobertura de testes..."
+          echo ""
+          
+          # Extrair cobertura geral do ficheiro XML (formato OpenCover)
+          coverage_data=$(cat TestResults/coverage.xml)
+          
+          # Contar linhas totais e cobertas (excluindo projetos filtrados)
+          total_sequences=$(echo "$coverage_data" | grep -oP '<SequencePoint vc="[0-9]+"' | wc -l || echo "0")
+          covered_sequences=$(echo "$coverage_data" | grep -oP '<SequencePoint vc="[1-9][0-9]*"' | wc -l || echo "0")
+          
+          if [ $total_sequences -eq 0 ]; then
+            echo "⚠️ Nenhuma linha de código encontrada para análise"
+            exit 1
+          fi
+          
+          overall_coverage=$((covered_sequences * 100 / total_sequences))
+          
+          echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+          echo "  📊 COBERTURA DE TESTES"
+          echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
+          echo "  Cobertura geral: ${overall_coverage}%"
+          echo "  Linhas cobertas: $covered_sequences/$total_sequences"
+          echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+          echo ""
+          
+          # Obter o título do Pull Request
+          pr_title="${{ github.event.pull_request.title }}"
+          
+          if [ -z "$pr_title" ]; then
+            echo "⚠️ Este workflow não está a correr num Pull Request"
+            echo "   Não é possível determinar a criticidade"
+            echo "   A verificar apenas se a cobertura existe..."
+            exit 0
+          fi
+          
+          echo "📝 Título do PR: $pr_title"
+          echo ""
+          
+          # Converter para minúsculas para comparação case-insensitive
+          pr_title_lower=$(echo "$pr_title" | tr '[:upper:]' '[:lower:]')
+          
+          # Determinar criticidade baseada no título do PR
+          threshold=0
+          criticality=""
+          
+          if echo "$pr_title_lower" | grep -q "basic"; then
+            threshold=40
+            criticality="📘 BASIC"
+          elif echo "$pr_title_lower" | grep -q "intermediate"; then
+            threshold=50
+            criticality="📙 INTERMEDIATE"
+          elif echo "$pr_title_lower" | grep -q "critical"; then
+            threshold=80
+            criticality="📕 CRITICAL"
+          fi
+          
+          # Aplicar quality gate
+          if [ $threshold -eq 0 ]; then
+            echo "⚠️ Nenhuma criticidade detectada no título do PR"
+            echo "   O título deve conter 'basic', 'intermediate' ou 'critical'"
+            echo "   Exemplos:"
+            echo "   - '[BASIC] Adicionar nova funcionalidade'"
+            echo "   - 'Feature intermediate: Login system'"
+            echo "   - 'Critical bug fix'"
+            echo ""
+            echo "⚠️ Sem quality gate para aplicar - assumindo sucesso"
+            exit 0
+          fi
+          
+          echo "🎯 A aplicar Quality Gate..."
+          echo ""
+          echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+          echo "  $criticality - Threshold: ${threshold}%"
+          echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
+          
+          if [ $overall_coverage -ge $threshold ]; then
+            echo "  ✅ PASSOU (${overall_coverage}% ≥ ${threshold}%)"
+            echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+            echo ""
+            echo "✅ Quality gate passou!"
+            exit 0
+          else
+            echo "  ❌ FALHOU (${overall_coverage}% < ${threshold}%)"
+            echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+            echo ""
+            echo "❌ Quality gate falhou!"
+            exit 1
+          fi
+      
+      - name: Exportar resultados de testes e cobertura
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-results
+          path: |
+            TestResults/**/*.trx
+            TestResults/coverage.xml
+            TestResults/CoverageReport/
+          if-no-files-found: warn
+
+  # ======================================================
+  # 3️⃣ INTEGRATION TESTS (POSTMAN CLI)
+  # ======================================================
+  integration_tests:
+    runs-on: ubuntu-latest
+    needs: build
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: seepaw
+          POSTGRES_PASSWORD: seepaw
+          POSTGRES_DB: seepaw_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U seepaw -d seepaw_test"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    env:
+      ASPNETCORE_ENVIRONMENT: Docker
+      ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=seepaw_test;Username=seepaw;Password=seepaw"
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+        
+      - name: Descarregar artefactos do build
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: ./
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restaurar dependências
+        run: dotnet restore SeePaw.sln
+
+      - name: Compilar projeto
+        run: dotnet build SeePaw.sln --no-restore --configuration Release
+
+      - name: Iniciar API em background
+        run: |
+          echo "🚀 A iniciar a API..."
+          dotnet run --project API/API.csproj --configuration Release --no-build --urls "http://0.0.0.0:5000" &
+          echo $! > server_pid.txt
+          echo "⏳ A aguardar que a API fique pronta..."
+          timeout 60 bash -c '
+            until nc -z localhost 5000; do
+              echo "Aguardando..."
+              sleep 3
+          done
+          ' || (echo "❌ A API não respondeu a tempo" && exit 1)
+          echo "✅ API pronta!"
+
+      - name: Instalar Postman CLI
+        run: |
+          echo "📦 A instalar Postman CLI..."
+          curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
+
+      - name: Login no Postman CLI
+        run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
+
+      - name: Executar testes Postman e gerar relatórios
+        run: |
+          set -e
+          
+          mkdir -p TestResults/postman
+          
+          echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+          echo "🧪 TESTES DE INTEGRAÇÃO - POSTMAN"
+          echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+          echo ""
+          
+          # Executar a coleção "Tests" usando o Postman CLI
+          # NOTA: Postman CLI suporta apenas: cli, json, junit, html (básico)
+          postman collection run "${{ secrets.POSTMAN_COLLECTION_ID }}" \
+            -e "${{ secrets.POSTMAN_ENV_ID }}" \
+            --env-var "url=http://localhost:5000" \
+            --reporters cli,json,html \
+            --reporter-json-export TestResults/postman/results.json \
+            --reporter-html-export TestResults/postman/report.html \
+            --delay-request 300 \
+            --timeout-request 10000 \
+            --bail false \
+            --color on \
+            2>&1 | tee TestResults/postman/console-output.txt
+          
+          exit_code=${PIPESTATUS[0]}
+          
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
+          # Processar resultados
+          if [ -f TestResults/postman/results.json ]; then
+            total=$(jq -r '.run.stats.assertions.total // 0' TestResults/postman/results.json)
+            failed=$(jq -r '.run.stats.assertions.failed // 0' TestResults/postman/results.json)
+            passed=$((total - failed))
+            
+            echo "📊 RESUMO DOS TESTES:"
+            echo "   Total: $total"
+            echo "   ✅ Passaram: $passed"
+            echo "   ❌ Falharam: $failed"
+            
+            if [ $failed -gt 0 ]; then
+              echo ""
+              echo "⚠️  Alguns testes falharam!"
+              echo "📄 Consulta o relatório HTML para mais detalhes"
+            else
+              echo ""
+              echo "🎉 Todos os testes passaram!"
+            fi
+            
+            # Criar resumo em JSON
+            cat > TestResults/postman/summary.json <<EOF
+          {
+            "total": $total,
+            "passed": $passed,
+            "failed": $failed,
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "status": $([ $failed -eq 0 ] && echo '"PASS"' || echo '"FAIL"')
+          }
+          EOF
+          else
+            echo "❌ Erro: Ficheiro de resultados não foi gerado"
+            exit 1
+          fi
+          
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
+          # Retornar o exit code original do Postman CLI
+          exit $exit_code
+
+      - name: Upload resultados de integração
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: |
+            TestResults/postman/**
+          if-no-files-found: warn
+
+      - name: Publicar relatório HTML como comentário no PR
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let summary = { total: 0, passed: 0, failed: 0, status: 'UNKNOWN' };
+            
+            try {
+              const summaryFile = 'TestResults/postman/summary.json';
+              if (fs.existsSync(summaryFile)) {
+                summary = JSON.parse(fs.readFileSync(summaryFile, 'utf8'));
+              }
+            } catch (error) {
+              console.error('Erro ao ler resumo:', error);
+            }
+            
+            const emoji = summary.status === 'PASS' ? '✅' : '❌';
+            const statusText = summary.status === 'PASS' ? 'PASSOU' : 'FALHOU';
+            
+            const comment = `
+            ## ${emoji} Testes de Integração (Postman) - ${statusText}
+            
+            **Resumo:**
+            - 🧪 Total de testes: ${summary.total}
+            - ✅ Passaram: ${summary.passed}
+            - ❌ Falharam: ${summary.failed}
+            
+            📄 **Relatório HTML completo disponível nos artefactos desta execução.**
+            
+            Para visualizar o relatório detalhado:
+            1. Vai aos artefactos desta workflow run
+            2. Descarrega \`integration-test-results\`
+            3. Abre o ficheiro \`report.html\` no browser
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Parar API e containers
+        if: always()
+        run: |
+          echo "🧹 A encerrar ambiente de teste..."
+          kill $(cat server_pid.txt) || true
+
+  
