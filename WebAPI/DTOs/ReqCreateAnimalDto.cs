@@ -5,15 +5,15 @@ using Domain.Enums;
 
 public class ReqCreateAnimalDto
 {
-    public required string Name { get; set; }
-    public required Species Species { get; set; }
-    public required string BreedId { get; set; }
-    public required SizeType Size { get; set; }
-    public required SexType Sex { get; set; }
-    public required string Colour { get; set; }
-    public required DateOnly BirthDate { get; set; }
-    public required bool Sterilized { get; set; }
-    public required decimal Cost { get; set; }
+    public string Name { get; set; }
+    public Species Species { get; set; }
+    public string BreedId { get; set; }
+    public SizeType Size { get; set; }
+    public SexType Sex { get; set; }
+    public string Colour { get; set; }
+    public DateOnly BirthDate { get; set; }
+    public bool Sterilized { get; set; }
+    public decimal Cost { get; set; }
     public string? Features { get; set; }
     public string? Description { get; set; }
 

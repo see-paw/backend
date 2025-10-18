@@ -24,8 +24,7 @@ public class AnimalsController(IMapper mapper) : BaseApiController
 
         var result = await Mediator.Send(new GetAnimalList.Query
         {
-            PageNumber = pageNumber,
-            PageSize = pageSize
+            PageNumber = pageNumber
         });
 
         if (!result.IsSuccess)

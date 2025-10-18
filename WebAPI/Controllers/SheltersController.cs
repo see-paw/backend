@@ -25,8 +25,7 @@ namespace API.Controllers
             var result = await Mediator.Send(new GetAnimalsByShelter.Query
             {
                 ShelterId = shelterId,
-                PageNumber = pageNumber,
-                PageSize = pageSize
+                PageNumber = pageNumber
             });
 
             // Return failure result if the handler reports an error

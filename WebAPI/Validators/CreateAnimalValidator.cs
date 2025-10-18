@@ -52,7 +52,12 @@ namespace WebAPI.Validators
                 .MaximumLength(250)
                 .WithMessage("Description cannot exceed 250 characters.");
 
-            // Later, when images are implemented, add:
+            RuleFor(x => x.BreedId)
+            .NotNull().WithMessage("BreedId cannot be null")
+            .NotEmpty().WithMessage("BreedId is required");
+
+
+            // quando as imagens estiverem implementadas add:
             // RuleForEach(x => x.Images).SetValidator(new ImageValidator());
         }
     }

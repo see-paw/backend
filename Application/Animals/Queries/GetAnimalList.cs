@@ -38,7 +38,7 @@ public class GetAnimalList
             );
 
             //Return consistent Result object
-            if (pagedList == null || pagedList.Count == 0)
+            if (pagedList == null || !pagedList.Any())
                 return Result<PagedList<Animal>>.Failure("No animals found", 404);
 
             return Result<PagedList<Animal>>.Success(pagedList);
