@@ -68,7 +68,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             entity.HasIndex(user => user.Email).IsUnique();
         });
 
-        // User - Shelter (N:1, só 1 Admin CAA)
+        // User - Shelter (N:1, only one Admin CAA)
         modelBuilder.Entity<User>()
             .HasOne(user => user.Shelter)
             .WithOne()
@@ -119,7 +119,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
 
         modelBuilder.Entity<Image>(entity =>
         {
-            // Apenas uma imagem principal por animal
+            // Only one main image per animal
             entity.HasIndex(i => new { i.AnimalId, i.IsPrincipal })
                   .IsUnique()
                   .HasFilter("\"IsPrincipal\" = true");

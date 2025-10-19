@@ -54,7 +54,9 @@ namespace Domain;
 
         public DateTime? UpdatedAt { get; set; }
 
-        // Navigation Properties
-        public ICollection<Animal> Animals { get; set; } = new List<Animal>();
+    // Navigation Properties
+        [JsonIgnore]
+        [MinLength(1, ErrorMessage = "Shelter must have at least one image.")]
         public ICollection<Image> Images { get; set; } = new List<Image>();
+        public ICollection<Animal> Animals { get; set; } = new List<Animal>();
 }
