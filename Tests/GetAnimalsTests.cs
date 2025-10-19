@@ -38,7 +38,8 @@ public class GetAnimalListHandlerTests
 
         return context;
     }
-
+    // ===== Helper method =====
+    // Creates a fully valid Animal for testing purposes.
     private Animal CreateAnimal(string name, AnimalState state = AnimalState.Available)
     {
         return new Animal
@@ -59,7 +60,10 @@ public class GetAnimalListHandlerTests
         };
     }
 
-   
+    // ===== Tests =====
+
+    // Test: Ensure all animals are returned when page number is valid.
+
     [Fact]
     public async Task ReturnAllAnimalsWithPageNumberValid()
     {
@@ -78,9 +82,9 @@ public class GetAnimalListHandlerTests
         Assert.Equal(2, result.Value.Count);
     }
 
-
+    // Test: Ensure only animals with Available or PartiallyFostered states are returned.
     [Fact]
-    public async Task ReturnOnlyAvailableAndPartiallyFostered()
+    public async Task OnlyAvailableAndPartiallyFostered()
     {
         var animals = new List<Animal>
         {
@@ -99,9 +103,10 @@ public class GetAnimalListHandlerTests
         Assert.Equal(2, result.Value.Count);
     }
 
-       
-        [Fact]
-        public async Task ReturnAnimalsInAlphabeticalOrder()
+    // Test: Ensure animals are returned in alphabetical order by name.
+
+    [Fact]
+        public async Task AnimalsInAlphabeticalOrder()
         {
             var animals = new List<Animal>
             {
@@ -119,10 +124,11 @@ public class GetAnimalListHandlerTests
             Assert.Equal("Bella", ordered[0].Name);
             Assert.Equal("Zara", ordered[1].Name);
         }
-  
+
+    // Test: Ensure failure is returned when no animals exist.
 
     [Fact]
-    public async Task ReturnFailureWhenNoAnimalsExist()
+    public async Task NoAnimalsExist()
     {
         var context = CreateInMemoryContext(new List<Animal>());
         var handler = new GetAnimalList.Handler(context);
@@ -133,6 +139,7 @@ public class GetAnimalListHandlerTests
         Assert.Equal("No animals found", result.Error);
     }
 
+    // Test: Ensure pagination works correctly when multiple pages of results exist.
     [Fact]
     public async Task PaginateResultsCorrectly()
     {
@@ -150,6 +157,7 @@ public class GetAnimalListHandlerTests
         Assert.Equal(10, result.Value.Count);
     }
 
+    // Test: Ensure total pages are calculated correctly when multiple pages of results exist.
     [Fact]
     public async Task ShouldCalculateTotalPagesCorrectly()
     {  

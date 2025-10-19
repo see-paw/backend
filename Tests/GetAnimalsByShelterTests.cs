@@ -9,26 +9,41 @@ namespace Tests;
 
 public class GetAnimalsByShelterTests
 {
+    // ===== Helper method =====
+    // Creates an AnimalsController with an in-memory database.
+    // This avoids the need for a real SQL Server and makes tests fast and isolated.
     private AppDbContext CreateInMemoryContext(List<Animal> animals, List<Shelter>? shelters = null, List<Breed>? breeds = null)
     {
+        // Create in-memory database options.
+        // Each test uses a unique database name (via Guid) so they never share data.
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(databaseName: "TestDb_" + Guid.NewGuid())
             .Options;
 
+        // Create the in-memory context.
         var context = new AppDbContext(options);
 
+        // Add breeds if provided.
         if (breeds != null)
             context.Breeds.AddRange(breeds);
 
+        // Add a shelter if provided.
         if (shelters != null)
             context.Shelters.AddRange(shelters);
 
+        // Add animals to the context.
         context.Animals.AddRange(animals);
+
+        // Save all changes to the in-memory store.
         context.SaveChanges();
 
+        // Return the ready-to-use context.
         return context;
     }
 
+
+    // ===== Helper method =====
+    // Creates a valid shelter that satisfies all validation rules from the Shelter entity.
     private Shelter CreateShelter(string shelterId)
     {
         return new Shelter
@@ -46,6 +61,8 @@ public class GetAnimalsByShelterTests
         };
     }
 
+    // ===== Helper method =====
+    // Creates a valid breed that satisfies all validation rules from the Breed entity.
     private Breed CreateBreed(string breedId)
     {
         return new Breed
@@ -55,6 +72,8 @@ public class GetAnimalsByShelterTests
         };
     }
 
+    // ===== Helper method =====
+    // Creates a fully valid Animal for testing purposes.
     private Animal CreateAnimal(string name, string shelterId, string breedId, AnimalState state = AnimalState.Available)
     {
         return new Animal
@@ -75,28 +94,10 @@ public class GetAnimalsByShelterTests
         };
     }
 
-    [Fact]
-    public async Task GetAnimalsForValidShelter()
-    {
-        var shelterId = "shelter1";
-        var breedId = "breed1";
-        var animals = new List<Animal>
-        {
-            CreateAnimal("Charlie", shelterId, breedId),
-            CreateAnimal("Buddy", shelterId, breedId)
-        };
-        var shelters = new List<Shelter> { CreateShelter(shelterId) };
-        var breeds = new List<Breed> { CreateBreed(breedId) };
+    // ===== Tests =====
 
-        var context = CreateInMemoryContext(animals, shelters, breeds);
-        var handler = new GetAnimalsByShelter.Handler(context);
-        var query = new GetAnimalsByShelter.Query { ShelterId = shelterId, PageNumber = 1 };//valid page number
-
-        var result = await handler.Handle(query, CancellationToken.None);
-
-        Assert.True(result.IsSuccess);
-    }
-
+  
+    // Test: Ensure animals are returned in alphabetical order by name.
     [Fact]
     public async Task GetAnimalsByShelterInAlphabeticalOrder()
     {
@@ -120,6 +121,7 @@ public class GetAnimalsByShelterTests
         Assert.Equal("Alpha", result.Value.First().Name);
     }
 
+    // Test: Ensure pagination works correctly.
     [Fact]
     public async Task PaginateResultsCorrectlly()
     {
@@ -140,8 +142,9 @@ public class GetAnimalsByShelterTests
         Assert.Equal(10, result.Value.Count);
     }
 
+    // Test: Ensure total pages are calculated correctly.
     [Fact]
-    public async Task ShouldCalculateTotalPagesCorrectly()
+    public async Task CalculateTotalPagesCorrectly()
     {
         var shelterId = "shelter1";
         var breedId = "breed1";
@@ -160,6 +163,7 @@ public class GetAnimalsByShelterTests
         Assert.Equal(2, result.Value.TotalPages);
     }
 
+    // Test: Get all animals for a valid shelter and valid page number.
     [Fact]
     public async Task GetAnimalsByShelter()
     {
@@ -184,6 +188,7 @@ public class GetAnimalsByShelterTests
         Assert.Equal(4, result.Value.Count);
     }
 
+    // Test: No animals found for the given shelter.
     [Fact]
     public async Task NoAnimalsFoundForShelter()
     {
@@ -200,6 +205,7 @@ public class GetAnimalsByShelterTests
         Assert.False(result.IsSuccess);
     }
 
+    // Test: Ensure animals from other shelters are not returned.
     [Fact]
     public async Task ShouldNotReturnAnimalsFromOtherShelters()
     {
@@ -227,6 +233,7 @@ public class GetAnimalsByShelterTests
         Assert.Equal(1, result.Value.Count);
     }
 
+    // Test: Shelter does not exist.
     [Fact]
     public async Task ShelterDoesNotExist()
     {

@@ -9,10 +9,34 @@ using WebAPI.DTOs;
 
 namespace API.Controllers
 {
-    public class SheltersController (IMapper mapper) : BaseApiController
+    /// <summary>
+    /// API controller responsible for handling operations related to shelters.
+    /// Provides endpoints for retrieving animals associated with a specific shelter.
+    /// </summary>
+    [ApiController]
+    [Route("api/[controller]")]
+    public class SheltersController : BaseApiController
     {
+        private readonly IMapper _mapper;
 
-     
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SheltersController"/> class.
+        /// </summary>
+        /// <param name="mapper">AutoMapper instance used for mapping between domain models and DTOs.</param>
+        public SheltersController(IMapper mapper)
+        {
+            _mapper = mapper;
+        }
+
+        /// <summary>
+        /// Retrieves a paginated list of animals that belong to a specified shelter.
+        /// </summary>
+        /// <param name="shelterId">The unique identifier of the shelter.</param>
+        /// <param name="pageNumber">The page number to retrieve (default is 1).</param>
+        /// <returns>
+        /// A paginated <see cref="PagedList{T}"/> of <see cref="ResAnimalDto"/> objects representing the animals.
+        /// Returns <c>400</c> if the page number is invalid or an appropriate error message if the shelter or animals are not found.
+        /// </returns>
         [HttpGet("{shelterId}/animals")]
         public async Task<ActionResult<PagedList<Animal>>> GetAnimalsByShelter(string shelterId, [FromQuery] int pageNumber = 1)
         {
@@ -32,9 +56,10 @@ namespace API.Controllers
             if (!result.IsSuccess)
                 return HandleResult(result);
 
-            //Map Animal → ResGetAnimalsDto
-            var dtoList = mapper.Map<List<ResAnimalDto>>(result.Value);
+            // Map Animal → ResAnimalDto for the API response
+            var dtoList = _mapper.Map<List<ResAnimalDto>>(result.Value);
 
+            // Wrap the DTO list in a paginated structure with metadata
             var pagedDtoList = new PagedList<ResAnimalDto>(
                 dtoList,
                 result.Value.TotalCount,
@@ -42,6 +67,7 @@ namespace API.Controllers
                 result.Value.PageSize
             );
 
+            // Return the standardized result using the base handler
             return HandleResult(Result<PagedList<ResAnimalDto>>.Success(pagedDtoList));
         }
     }

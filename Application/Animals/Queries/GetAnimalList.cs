@@ -5,43 +5,82 @@ using Microsoft.EntityFrameworkCore;
 using Persistence;
 using Application.Core;
 
-namespace Application.Animals.Queries;
-
-public class GetAnimalList
+namespace Application.Animals.Queries
 {
-    public class Query : IRequest<Result<PagedList<Animal>>>
+    /// <summary>
+    /// Query and handler responsible for retrieving a paginated list of available or partially fostered animals.
+    /// </summary>
+    public class GetAnimalList
     {
-        public int PageNumber { get; set; } = 1;
-        public int PageSize { get; set; } = 20;
-    }
-
-    public class Handler(AppDbContext context)
-        : IRequestHandler<Query, Result<PagedList<Animal>>>
-    {
-        public async Task<Result<PagedList<Animal>>> Handle(Query request, CancellationToken cancellationToken)
+        /// <summary>
+        /// Represents the query parameters for retrieving animals.
+        /// Supports pagination through <see cref="PageNumber"/> and <see cref="PageSize"/>.
+        /// </summary>
+        public class Query : IRequest<Result<PagedList<Animal>>>
         {
-            //Base query with filters
-            var query = context.Animals
-                .Include(a => a.Breed)        // object breed
-                .Include(a => a.Shelter)      // shelter's data
-                .Include(a => a.Images)     
-                .Where(a => a.AnimalState == AnimalState.Available
-                         || a.AnimalState == AnimalState.PartiallyFostered)
-                .OrderBy(a => a.Name)
-                .AsQueryable();
+            /// <summary>
+            /// The number of the page to be retrieved. Defaults to 1.
+            /// </summary>
+            public int PageNumber { get; set; } = 1;
 
-            //Apply pagination using your PagedList helper
-            var pagedList = await PagedList<Animal>.CreateAsync(
-                query,
-                request.PageNumber,
-                request.PageSize
-            );
+            /// <summary>
+            /// The number of records per page. Defaults to 20.
+            /// </summary>
+            public int PageSize { get; set; } = 20;
+        }
 
-            //Return consistent Result object
-            if (pagedList == null || !pagedList.Any())
-                return Result<PagedList<Animal>>.Failure("No animals found", 404);
+        /// <summary>
+        /// Handles the execution of the query to fetch a paginated list of animals.
+        /// Includes related entities (Breed, Shelter, Images) and filters by animal availability.
+        /// </summary>
+        public class Handler : IRequestHandler<Query, Result<PagedList<Animal>>>
+        {
+            private readonly AppDbContext _context;
 
-            return Result<PagedList<Animal>>.Success(pagedList);
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Handler"/> class using the provided database context.
+            /// </summary>
+            /// <param name="context">Entity Framework Core database context.</param>
+            public Handler(AppDbContext context)
+            {
+                _context = context;
+            }
+
+            /// <summary>
+            /// Executes the query by retrieving a paginated list of animals that are either available
+            /// or partially fostered. The results include related data for breed, shelter, and images.
+            /// </summary>
+            /// <param name="request">The query containing pagination parameters.</param>
+            /// <param name="cancellationToken">Token used to cancel the asynchronous operation if needed.</param>
+            /// <returns>
+            /// A <see cref="Result{T}"/> containing the paginated list of animals on success,
+            /// or an error message and status code if no results are found.
+            /// </returns>
+            public async Task<Result<PagedList<Animal>>> Handle(Query request, CancellationToken cancellationToken)
+            {
+                // Base query with related entities
+                var query = _context.Animals
+                    .Include(a => a.Breed)        // Include breed information
+                    .Include(a => a.Shelter)      // Include shelter data
+                    .Include(a => a.Images)       // Include associated images
+                    .Where(a => a.AnimalState == AnimalState.Available
+                             || a.AnimalState == AnimalState.PartiallyFostered)
+                    .OrderBy(a => a.Name)
+                    .AsQueryable();
+
+                // Apply pagination using the PagedList helper
+                var pagedList = await PagedList<Animal>.CreateAsync(
+                    query,
+                    request.PageNumber,
+                    request.PageSize
+                );
+
+                // Return consistent Result object
+                if (pagedList == null || !pagedList.Any())
+                    return Result<PagedList<Animal>>.Failure("No animals found", 404);
+
+                return Result<PagedList<Animal>>.Success(pagedList);
+            }
         }
     }
 }

@@ -343,8 +343,8 @@ namespace Tests
         }
 
         [Theory]
-        [InlineData(null)]
-        [InlineData("")]
+        [InlineData(null)]//null
+        [InlineData("")]//empty string
         [InlineData("   ")]
         public void ImageUrlEmptyOrNull(string url)
         {
