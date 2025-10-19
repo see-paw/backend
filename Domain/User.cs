@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 using System;
+=======
+﻿using System;
+>>>>>>> feature/create-and-list-animals
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 

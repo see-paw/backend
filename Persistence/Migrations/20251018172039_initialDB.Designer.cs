@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Persistence;
@@ -11,9 +12,11 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251018172039_initialDB")]
+    partial class initialDB
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -245,6 +248,7 @@ namespace Persistence.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("AnimalId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
@@ -257,17 +261,12 @@ namespace Persistence.Migrations
                     b.Property<bool>("IsPrincipal")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("ShelterId")
-                        .HasColumnType("text");
-
                     b.Property<string>("Url")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ShelterId");
 
                     b.HasIndex("AnimalId", "IsPrincipal")
                         .IsUnique()
@@ -335,12 +334,10 @@ namespace Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 
-<<<<<<< HEAD
                     b.Property<string>("MainImageId")
+                        .IsRequired()
                         .HasColumnType("text");
 
-=======
->>>>>>> feature/create-and-list-animals
                     b.Property<string>("NIF")
                         .IsRequired()
                         .HasColumnType("text");
@@ -370,6 +367,8 @@ namespace Persistence.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MainImageId");
 
                     b.HasIndex("NIF")
                         .IsUnique();
@@ -529,16 +528,10 @@ namespace Persistence.Migrations
                     b.HasOne("Domain.Animal", "Animal")
                         .WithMany("Images")
                         .HasForeignKey("AnimalId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Domain.Shelter", "Shelter")
-                        .WithMany("Images")
-                        .HasForeignKey("ShelterId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Animal");
-
-                    b.Navigation("Shelter");
                 });
 
             modelBuilder.Entity("Domain.OwnershipRequest", b =>
@@ -558,6 +551,17 @@ namespace Persistence.Migrations
                     b.Navigation("Animal");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Shelter", b =>
+                {
+                    b.HasOne("Domain.Image", "MainImage")
+                        .WithMany()
+                        .HasForeignKey("MainImageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MainImage");
                 });
 
             modelBuilder.Entity("Domain.User", b =>
@@ -591,8 +595,6 @@ namespace Persistence.Migrations
             modelBuilder.Entity("Domain.Shelter", b =>
                 {
                     b.Navigation("Animals");
-
-                    b.Navigation("Images");
                 });
 
             modelBuilder.Entity("Domain.User", b =>

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Persistence;
@@ -11,9 +12,11 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251019094335_UpdatedImageEntity")]
+    partial class UpdatedImageEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -335,12 +338,9 @@ namespace Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 
-<<<<<<< HEAD
                     b.Property<string>("MainImageId")
                         .HasColumnType("text");
 
-=======
->>>>>>> feature/create-and-list-animals
                     b.Property<string>("NIF")
                         .IsRequired()
                         .HasColumnType("text");
@@ -370,6 +370,9 @@ namespace Persistence.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MainImageId")
+                        .IsUnique();
 
                     b.HasIndex("NIF")
                         .IsUnique();
@@ -558,6 +561,16 @@ namespace Persistence.Migrations
                     b.Navigation("Animal");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Shelter", b =>
+                {
+                    b.HasOne("Domain.Image", "MainImage")
+                        .WithOne()
+                        .HasForeignKey("Domain.Shelter", "MainImageId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("MainImage");
                 });
 
             modelBuilder.Entity("Domain.User", b =>

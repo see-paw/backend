@@ -2,7 +2,13 @@
 using Domain.Enums;
 using System.Text.Json.Serialization;
 
+
 namespace Domain;
+
+/// <summary>
+/// Represents an animal within the system, including its biological attributes,
+/// adoption details, shelter association, and ownership information.
+/// </summary>
 
 public class Animal
 {
@@ -62,6 +68,7 @@ public class Animal
     [JsonIgnore]
     public Shelter Shelter { get; set; } = null!;
 
+    // Foreign Key - Breed (required)
     [Required]
     public string BreedId { get; set; } = string.Empty;
 

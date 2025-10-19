@@ -132,12 +132,6 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             .HasForeignKey(i => i.AnimalId)
             .OnDelete(DeleteBehavior.Cascade);  // If animal is deleted, deletes its images
 
-        modelBuilder.Entity<Image>()
-            .HasOne(i => i.Shelter)
-            .WithMany(s => s.Images)
-            .HasForeignKey(i => i.ShelterId)
-            .OnDelete(DeleteBehavior.Cascade);
-
         // ========== FOSTERING CONFIGURATIONS ==========
 
         modelBuilder.Entity<Fostering>(entity =>
@@ -226,4 +220,3 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             .OnDelete(DeleteBehavior.Cascade);  // If user is deleted, deletes user's favorite animals
     }
 }
-
