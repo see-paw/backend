@@ -32,6 +32,7 @@ public class GetAnimalsByShelter
             // Build the query to retrieve animals belonging to this shelter
             var query = context.Animals
                 .Include(a => a.Breed)//breed object
+                .Include (a => a.Images)
                 .Where(a => a.ShelterId == request.ShelterId)
                 .OrderBy(a => a.Name)
                 .AsQueryable();

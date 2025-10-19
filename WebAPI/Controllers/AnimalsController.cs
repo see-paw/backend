@@ -20,8 +20,6 @@ public class AnimalsController(IMapper mapper) : BaseApiController
         if (pageNumber < 1)
             return BadRequest("Page number must be 1 or greater.");
 
-        const int pageSize = 20;
-
         var result = await Mediator.Send(new GetAnimalList.Query
         {
             PageNumber = pageNumber
@@ -57,12 +55,19 @@ public class AnimalsController(IMapper mapper) : BaseApiController
 
         // Map the validated DTO to the domain entity
         var animal = mapper.Map<Animal>(reqAnimalDto);
-       
+
+        List<Image>? images = null;
+        if (reqAnimalDto.Images != null && reqAnimalDto.Images.Any())
+        {
+            images = mapper.Map<List<Image>>(reqAnimalDto.Images);
+        }
+
         // Send command to Application layer 
-        var command = new CreateAnimal.Command { Animal = animal, ShelterId = shelterId };
+        var command = new CreateAnimal.Command { Animal = animal, ShelterId = shelterId, Images = images };
 
         //Centralized result handling (200, 400, 404, etc.)
         return HandleResult(await Mediator.Send(command));
+
     }
 
 

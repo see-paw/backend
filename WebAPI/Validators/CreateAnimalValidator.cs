@@ -35,9 +35,6 @@ namespace WebAPI.Validators
                 .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow)).WithMessage("Birth date cannot be in the future.")
                 .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-30))).WithMessage("Birth date seems unrealistic (more than 30 years ago).");
 
-            RuleFor(x => x.Sterilized)
-                .NotNull().WithMessage("Sterilization status is required.");
-
             RuleFor(x => x.Cost)
                 .NotNull().WithMessage("Cost is required")
                 .GreaterThanOrEqualTo(0).WithMessage("Cost must be zero or positive.")
@@ -56,9 +53,23 @@ namespace WebAPI.Validators
             .NotNull().WithMessage("BreedId cannot be null")
             .NotEmpty().WithMessage("BreedId is required");
 
+            When(dto => dto.Images != null, () =>  
+            {
+                RuleForEach(x => x.Images).SetValidator(new ImageValidator());
 
-            // quando as imagens estiverem implementadas add:
-            // RuleForEach(x => x.Images).SetValidator(new ImageValidator());
+                RuleFor(x => x.Images)
+                    .Must(images => images!.Any(img => img.isPrincipal))
+                    .WithMessage("At least one image must be marked as principal.");
+
+                RuleFor(x => x.Images)
+                    .Must(images => images!.Count(img => img.isPrincipal) == 1)
+                    .WithMessage("Only one image can be marked as principal.");
+
+                RuleFor(dto => dto.Images)
+                    .Must(images => images!.Count >= 1)
+                    .WithMessage("At least one image is required.");
+
+            });
         }
     }
 }

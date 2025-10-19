@@ -8,8 +8,8 @@ public class MappingProfiles : Profile
 {
     public MappingProfiles()
     {
-        CreateMap<ReqCreateAnimalDto, Animal>()
-            .ForMember(dest => dest.Breed, opt => opt.Ignore()); // FK
+        CreateMap<ReqCreateAnimalDto, Animal>();
+            
 
         CreateMap<Breed, ResBreedDto>();
 
@@ -18,7 +18,16 @@ public class MappingProfiles : Profile
             .ForMember(dest => dest.Age, 
                 opt => opt.MapFrom(src => DateTime.Today.Year - src.BirthDate.Year))
             .ForMember(dest => dest.Breed,
-                opt => opt.MapFrom(src => src.Breed));
+                opt => opt.MapFrom(src => src.Breed))
+            .ForMember(dest => dest.Images,
+                opt => opt.MapFrom(src => src.Images));
+
+        CreateMap<ReqImageDTO, Image>();
+      
+        CreateMap<Image, ResImageDto>()
+            .ForMember(dest => dest.ImageId, opt => opt.MapFrom(src => src.Id));// Maps the 'Id' property from Image to the 'ImageId' property in ResImageDto.
+
+
 
 
     }

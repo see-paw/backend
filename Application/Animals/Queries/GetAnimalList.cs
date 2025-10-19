@@ -24,7 +24,7 @@ public class GetAnimalList
             var query = context.Animals
                 .Include(a => a.Breed)        // object breed
                 .Include(a => a.Shelter)      // shelter's data
-                //.Include(a => a.Images)     // quando tiver imagens
+                .Include(a => a.Images)     
                 .Where(a => a.AnimalState == AnimalState.Available
                          || a.AnimalState == AnimalState.PartiallyFostered)
                 .OrderBy(a => a.Name)

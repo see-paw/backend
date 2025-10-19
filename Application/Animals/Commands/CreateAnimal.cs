@@ -13,6 +13,8 @@ public class CreateAnimal
     {
         public required Animal Animal { get; set; }
         public required string ShelterId { get; set; }
+
+        public List<Image>? Images { get; set; }
     }
 
     public class Handler(AppDbContext context) : IRequestHandler<Command, Result<string>>
@@ -26,8 +28,24 @@ public class CreateAnimal
             if (!shelterExists)
                 return Result<string>.Failure("Shelter not found", 404);
 
+
+            // Validate that the breed exists 
+            if (!string.IsNullOrEmpty(request.Animal.BreedId))
+            {
+                var breedExists = await context.Breeds
+                    .AnyAsync(b => b.Id == request.Animal.BreedId, cancellationToken);
+
+                if (!breedExists)
+                    return Result<string>.Failure("Breed not found", 404);
+            }
+
             request.Animal.ShelterId = request.ShelterId;
 
+            // Associate images with the animal
+            if (request.Images != null && request.Images.Any())
+            {
+                request.Animal.Images = request.Images;
+            }
 
             //Persist the entity
             context.Animals.Add(request.Animal);

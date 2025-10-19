@@ -2,7 +2,7 @@
 
 public class ResBreedDto
 {
-    public required string Id { get; set; }
-    public required string Name { get; set; }
-    public string? Description { get; set; }
+    public string Id { get; set; } = null!;
+    public string Name { get; set; } = null!;
+    public string? Description { get; set; } 
 }

@@ -60,6 +60,15 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             .HasForeignKey(animal => animal.ShelterId)
             .OnDelete(DeleteBehavior.Restrict);
 
+
+        // Shelter -> Images (1:Many relationship)
+        modelBuilder.Entity<Shelter>()
+           .HasMany(s => s.Images)
+           .WithOne(i => i.Shelter)
+           .HasForeignKey(i => i.ShelterId)
+           .OnDelete(DeleteBehavior.Cascade);
+
+
         // ========== USER CONFIGURATIONS ==========
 
         modelBuilder.Entity<User>(entity =>

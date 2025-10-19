@@ -1,6 +1,6 @@
-﻿using WebAPI.DTOs; 
+﻿using Domain.Enums; 
+using WebAPI.DTOs; 
 using WebAPI.Validators; 
-using Domain.Enums; 
 
 namespace Tests
 {
@@ -118,7 +118,7 @@ namespace Tests
         public void AnimalBreedValid()
         {
             var dto = CreateValidAnimalDTO();
-            dto.BreedId = "b1"; 
+            dto.BreedId = Guid.NewGuid().ToString(); 
 
             var result = _validator.Validate(dto);
             Assert.True(result.IsValid);
@@ -282,6 +282,131 @@ namespace Tests
             Assert.True(result.IsValid);
         }
 
+        public void AnimalsWithImagesListEmpty()//Images list needs 1 image min
+        {
+            var dto = CreateValidAnimalDTO();
+            dto.Images = null;
+
+            var result = _validator.Validate(dto);
+            Assert.False(result.IsValid);
+        }
+
+        public void AnimalsListCannotHaveToIsPrincipalImages()
+        {
+            var dto = CreateValidAnimalDTO();
+            dto.Images = new List<ReqImageDTO>
+            {
+                new()
+                {
+                    Url = "https://example.com/img1.jpg",
+                    Description = "Main photo",
+                    isPrincipal = true
+                },
+                new()
+                {
+                    Url = "https://example.com/img1.jpg",
+                    Description = "Main photo",
+                    isPrincipal = true
+                }
+            };
+
+            var result = _validator.Validate(dto);
+            Assert.False(result.IsValid);
+        }
+
+        [Fact]
+        public void NoPrincipalImage()
+        {
+            var dto = CreateValidAnimalDTO();
+            dto.Images = new List<ReqImageDTO>
+            {
+                new() { Url = "https://example.com/img1.jpg", Description = "Main photo", isPrincipal = false },
+                new() { Url = "https://example.com/img2.jpg", Description = "Second photo", isPrincipal = false }
+            };
+
+            var result = _validator.Validate(dto);
+            Assert.False(result.IsValid);
+        }
+
+        [Fact]
+        public void ValidListOfImages()
+        {
+            var dto = CreateValidAnimalDTO();
+            dto.Images = new List<ReqImageDTO>
+            {
+                new() { Url = "https://example.com/img1.jpg", isPrincipal = true },
+                new() { Url = "https://example.com/img2.jpg", isPrincipal = false }
+            };
+
+            var result = _validator.Validate(dto);
+            Assert.True(result.IsValid);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void ImageUrlEmptyOrNull(string url)
+        {
+            var dto = CreateValidAnimalDTO();
+            dto.Images = new List<ReqImageDTO>
+            {
+                new() { Url = url, isPrincipal = true }
+            };
+
+            var result = _validator.Validate(dto);
+            Assert.False(result.IsValid);
+        }
+
+        [Theory]
+        [InlineData("not-a-url")]
+        [InlineData("just text")]
+        [InlineData("www.example.com")] // missing protocol
+        [InlineData("ftp://example.com/image.jpg")] // wrong protocol
+        public void ImageUrlInvalidFormat(string url)
+        {
+            var dto = CreateValidAnimalDTO();
+            dto.Images = new List<ReqImageDTO>
+            {
+                new() { Url = url, isPrincipal = true }
+            };
+
+            var result = _validator.Validate(dto);
+            Assert.False(result.IsValid);
+        }
+
+        [Theory]
+        [InlineData("https://example.com/image.jpg")]
+        [InlineData("http://example.com/image.jpg")]
+        [InlineData("https://cdn.example.com/path/to/image.png")]
+        [InlineData("https://s3.amazonaws.com/bucket/image.jpg")]
+        public void ImageUrlValidFormat(string url)
+        {
+            var dto = CreateValidAnimalDTO();
+            dto.Images = new List<ReqImageDTO>
+            {
+                new() { Url = url, isPrincipal = true }
+            };
+
+            var result = _validator.Validate(dto);
+            Assert.True(result.IsValid);
+        }
+
+        [Fact]
+        public void ImageUrlTooLong()
+        {
+            var dto = CreateValidAnimalDTO();
+            var longUrl = "https://example.com/" + new string('a', 500); // > 500 chars
+
+            dto.Images = new List<ReqImageDTO>
+            {
+                new() { Url = longUrl, isPrincipal = true }
+            };
+
+            var result = _validator.Validate(dto);
+            Assert.False(result.IsValid);
+        }
+
 
 
         private ReqCreateAnimalDto CreateValidAnimalDTO()
@@ -294,7 +419,7 @@ namespace Tests
                 Colour = "Brown",
                 BirthDate = new DateOnly(2020, 1, 1),
                 Sterilized = true,
-                BreedId = "b2",
+                BreedId = Guid.NewGuid().ToString(),
                 Cost = 100m,
                 Features = "Healthy and friendly",
                 Description = "Healthy and friendly",

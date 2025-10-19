@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 namespace Domain;
 
 /// <summary>
@@ -38,9 +39,6 @@ public class Shelter
     [RegularExpression(@"^\d{9}$", ErrorMessage = "NIF must contain exactly 9 digits.")]
     public string NIF { get; init; } = string.Empty;
 
-    // Foreign Key to Image
-    public string? MainImageId { get; set; } = string.Empty;
-
     [Required]
     public TimeOnly OpeningTime { get; set; }
 
@@ -53,6 +51,9 @@ public class Shelter
     public DateTime? UpdatedAt { get; set; }
 
     // Navigation Properties
-    public Image MainImage { get; set; } = null!;
+
+    [JsonIgnore]
+    [MinLength(1, ErrorMessage = "Shelter must have at least one image.")]
+    public ICollection<Image> Images { get; set; } = new List<Image>();
     public ICollection<Animal> Animals { get; set; } = new List<Animal>();
 }
