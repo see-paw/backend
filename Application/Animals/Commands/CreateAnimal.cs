@@ -108,4 +108,3 @@ namespace Application.Animals.Commands
         }
     }
 }
-s

@@ -3,6 +3,7 @@ using WebAPI.Validators;
 using FluentValidation;
 using Persistence;
 using System.Text.Json.Serialization;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using WebAPI.Core;
 using WebAPI.Middleware;
@@ -42,6 +43,9 @@ builder.Services.AddControllers().AddJsonOptions(o =>
     o.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
 });
 
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
+
 builder.Services.AddCors();
 builder.Services.AddMediatR(x => {
     x.RegisterServicesFromAssemblyContaining<GetAnimalList.Handler>();
@@ -69,12 +73,10 @@ var services = scope.ServiceProvider;
 
 try
 {
-    if (app.Environment.IsDevelopment())
-    {
         var context = services.GetRequiredService<AppDbContext>();
         await context.Database.MigrateAsync();
         await DbInitializer.SeedData(context);
-    }
+    
 }
 catch (Exception ex)
 {

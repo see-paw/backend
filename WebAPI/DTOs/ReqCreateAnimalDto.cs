@@ -67,6 +67,6 @@
         /// <summary>
         /// A list of images associated with the animal at creation.
         /// </summary>
-        public List<ReqImageDTO>? Images { get; set; }
+        public List<ReqImageDTO> Images { get; set; } = new();
     }
 }

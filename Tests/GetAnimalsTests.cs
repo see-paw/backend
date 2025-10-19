@@ -6,7 +6,7 @@ using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
-public class GetAnimalListHandlerTests
+public class GetAnimalListTests
 {
     // ===== Helper method =====
     // Creates an isolated in-memory AppDbContext for testing.

@@ -202,7 +202,6 @@ namespace Tests
         {
             var dto = CreateValidAnimalDTO();
             dto.BirthDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-yearsAgo));
-
             var result = _validator.Validate(dto);
             Assert.True(result.IsValid);
         }
@@ -423,7 +422,15 @@ namespace Tests
                 Cost = 100m,
                 Features = "Healthy and friendly",
                 Description = "Healthy and friendly",
-                Sex = SexType.Male
+                Sex = SexType.Male,
+                Images = new List<ReqImageDTO>
+                {
+                    new ReqImageDTO
+                    {
+                        Url = "https://example.com/valid-image.jpg",
+                        isPrincipal = true
+                    }
+                }
             };
         }
 

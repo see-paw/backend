@@ -48,9 +48,9 @@ namespace WebAPI.Validators
             // Validate BirthDate
             RuleFor(x => x.BirthDate)
                 .NotEmpty().WithMessage("Birth date is required")
-                .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow))
+                .LessThanOrEqualTo(_ => DateOnly.FromDateTime(DateTime.UtcNow.Date))
                 .WithMessage("Birth date cannot be in the future.")
-                .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-30)))
+                .GreaterThanOrEqualTo(_ => DateOnly.FromDateTime(DateTime.UtcNow.Date.AddYears(-30)))
                 .WithMessage("Birth date seems unrealistic (more than 30 years ago).");
 
             // Validate Cost
@@ -75,27 +75,22 @@ namespace WebAPI.Validators
                 .NotNull().WithMessage("BreedId cannot be null")
                 .NotEmpty().WithMessage("BreedId is required");
 
-            // Conditional validation for images
-            When(dto => dto.Images != null, () =>
-            {
-                // Apply ImageValidator to each image in the collection
-                RuleForEach(x => x.Images).SetValidator(new ImageValidator());
+            //Must have one image at least
+            RuleFor(x => x.Images)
+                .NotNull().WithMessage("Images cannot be null.")
+                .Must(images => images != null && images.Count > 0)
+                .WithMessage("At least one image is required.");
 
-                // Ensure at least one image is marked as principal
-                RuleFor(x => x.Images)
-                    .Must(images => images!.Any(img => img.isPrincipal))
-                    .WithMessage("At least one image must be marked as principal.");
+            // Apply the image validator to each image in the collection
+            RuleForEach(x => x.Images)
+                .SetValidator(new ImageValidator())
+                .When(x => x.Images != null && x.Images.Any());
 
-                // Ensure only one image is marked as principal
-                RuleFor(x => x.Images)
-                    .Must(images => images!.Count(img => img.isPrincipal) == 1)
-                    .WithMessage("Only one image can be marked as principal.");
-
-                // Ensure there is at least one image in the collection
-                RuleFor(dto => dto.Images)
-                    .Must(images => images!.Count >= 1)
-                    .WithMessage("At least one image is required.");
-            });
+            // Ensure exactly one image is marked as principal
+            RuleFor(x => x.Images)
+                .Must(images => images != null && images.Count(img => img.isPrincipal) == 1)
+                .WithMessage("Exactly one image must be marked as principal.")
+                .When(x => x.Images != null && x.Images.Any());
         }
     }
 }
