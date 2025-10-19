@@ -1,68 +1,90 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Domain.Enums;
+using System.Text.Json.Serialization;
 
 namespace Domain;
-
-/// <summary>
-/// Represents an animal entity managed by the application.
-/// </summary>
-/// <remarks>
-/// The <see cref="Animal"/> class defines the core attributes of an animal stored in the system’s database,
-/// including identification, biological characteristics, state, and adoption-related metadata.  
-/// 
-/// Each instance corresponds to a record in the <c>Animals</c> table and includes validation attributes
-/// that enforce data integrity at both model and database levels.  
-/// 
-/// The entity also includes creation and update timestamps to support auditability and change tracking.
-/// </remarks>
 
 public class Animal
 {
     [Key]
-    public string AnimalId { get; init; } = Guid.NewGuid().ToString();
-
-    [Required, StringLength(100, MinimumLength = 2)]
-    public required string Name { get; init; }
+    public string Id { get; init; } = Guid.NewGuid().ToString();
 
     [Required]
-    public required AnimalState AnimalState { get; set; } = AnimalState.Available;
-
-    [StringLength(1000)]
-    public string? Description { get; init; }
+    [StringLength(100, MinimumLength = 2)]
+    public string Name { get; set; } = string.Empty;
 
     [Required]
-    public required Species Species { get; init; }
+    public AnimalState AnimalState { get; set; } = AnimalState.Available;
+
+    [StringLength(250)]
+    public string? Description { get; set; }
 
     [Required]
-    public required SizeType Size { get; init; }
+    public Species Species { get; set; }
 
     [Required]
-    public required SexType Sex { get; init; }
-
-    [Required, StringLength(50)]
-    public required string Colour { get; init; }
+    public SizeType Size { get; set; }
 
     [Required]
-    public required DateOnly BirthDate { get; init; }
+    public SexType Sex { get; set; }
 
     [Required]
-    public required bool Sterilized { get; init; }
+    [StringLength(50)]
+    public string Colour { get; set; } = string.Empty;
 
     [Required]
-    public required Breed Breed { get; init; }
+    public DateOnly BirthDate { get; set; }
 
-    [Required, Range(0, 1000, ErrorMessage = "Cost must be between 0 and 1000.")]
-    public required decimal Cost { get; init; }
+    [Required]
+    public bool Sterilized { get; set; }
+
+    [Required]
+    [Range(0, 1000, ErrorMessage = "Cost must be between 0 and 1000.")]
+    public decimal Cost { get; set; }
 
     [StringLength(300)]
-    public required string? Features { get; init; }
+    public string? Features { get; set; }
 
     [Required]
-    public  DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+
+    public DateTime? UpdatedAt { get; set; }
+
+    // Images - At least one required, with one marked as IsPrincipal in the Image entity
+    [JsonIgnore]
+    [MinLength(1, ErrorMessage = "Animal must have at least one image.")]
+    public ICollection<Image> Images { get; set; } = new List<Image>();
+
+    // Foreign Key - Shelter (required)
+    [Required]
+    public string ShelterId { get; set; } = string.Empty;
+
+    [JsonIgnore]
+    public Shelter Shelter { get; set; } = null!;
 
     [Required]
-    public  DateTime UpdatedAt { get; init; } = DateTime.UtcNow;
+    public string BreedId { get; set; } = string.Empty;
 
-    [Required, Url, StringLength(500)]
-    public required string MainImageUrl { get; init; }
+    [JsonIgnore]
+    public Breed Breed { get; set; } = null!;
+    public string? OwnerId { get; set; }
+
+    [JsonIgnore]
+    public User? Owner { get; set; }
+
+    public DateTime? OwnershipStartDate { get; set; }
+    public DateTime? OwnershipEndDate { get; set; }
+
+    // Navigation Properties
+    [JsonIgnore]
+    public ICollection<Fostering> Fosterings { get; set; } = new List<Fostering>();
+
+    [JsonIgnore]
+    public ICollection<OwnershipRequest> OwnershipRequests { get; set; } = new List<OwnershipRequest>();
+
+    [JsonIgnore]
+    public ICollection<Activity> Activities { get; set; } = new List<Activity>();
+
+    [JsonIgnore]
+    public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
 }

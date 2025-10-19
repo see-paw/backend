@@ -16,7 +16,10 @@ public class GetAnimalList
             Query request,
             CancellationToken cancellationToken)
         {
-            var animals = await context.Animals.ToListAsync(cancellationToken);
+            var animals = await context.Animals
+                .Include(x => x.Breed)
+                .Include(x => x.Images)
+                .ToListAsync(cancellationToken);
 
             return animals;
         }

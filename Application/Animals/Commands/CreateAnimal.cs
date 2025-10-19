@@ -17,17 +17,29 @@ public class CreateAnimal
     {
         public async Task<Result<string>> Handle(Command request, CancellationToken cancellationToken)
         {
+            var shelter = await context.Shelters.FindAsync([request.Animal.ShelterId], cancellationToken);
+
+            if (shelter == null)
+            {
+                return Result<string>.Failure("Shelter not found", 404);
+            }
+
+            var breed = await context.Breeds.FindAsync([request.Animal.BreedId], cancellationToken);
+
+            if (breed == null)
+            {
+                return Result<string>.Failure("Breed not found", 404);
+            }
+
+            request.Animal.Breed = breed;
+            request.Animal.Shelter = shelter;
 
             context.Animals.Add(request.Animal); //não é necessária a versão assíncrona
 
             var result = await context.SaveChangesAsync(cancellationToken) > 0;
 
-            if (!result)
-            {
-                return Result<string>.Failure("Failed to add the animal", 400);
-            }
-
-            return Result<string>.Success(request.Animal.AnimalId);
+            return result ? Result<string>.Success(request.Animal.Id) 
+                : Result<string>.Failure("Failed to add the animal", 400);
         }
     }
 }

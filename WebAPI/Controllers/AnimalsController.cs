@@ -25,6 +25,13 @@ public class AnimalsController(IMapper mapper) : BaseApiController
     public async Task<ActionResult<string>> CreateAnimal([FromBody] ReqAnimalDto reqAnimalDto)
         {
             var animal = mapper.Map<Animal>(reqAnimalDto);
+
+            animal.Images.Add(new Image()
+            {
+                IsPrincipal = true,
+                Description = reqAnimalDto.MainImageDesc,
+                Url = reqAnimalDto.MainImageUrl
+            });
                 
             return HandleResult(await Mediator.Send(new CreateAnimal.Command() {Animal = animal}));
         }

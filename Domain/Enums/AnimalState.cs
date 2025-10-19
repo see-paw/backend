@@ -1,7 +1,7 @@
 ﻿namespace Domain.Enums;
 
 /// <summary>
-/// Represents the current availability or ownership state of an animal within the system.
+/// Represents the current state of an animal within the system.
 /// </summary>
 public enum AnimalState
 {
