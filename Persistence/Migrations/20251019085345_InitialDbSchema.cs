@@ -368,7 +368,7 @@ namespace Persistence.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Shelters_NIF",
                 table: "Shelters",
-                column: "NIF",
+                column: "Nif",
                 unique: true);
 
             migrationBuilder.CreateIndex(

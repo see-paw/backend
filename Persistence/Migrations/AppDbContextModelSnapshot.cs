@@ -338,7 +338,7 @@ namespace Persistence.Migrations
                     b.Property<string>("MainImageId")
                         .HasColumnType("text");
 
-                    b.Property<string>("NIF")
+                    b.Property<string>("Nif")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -368,7 +368,7 @@ namespace Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("NIF")
+                    b.HasIndex("Nif")
                         .IsUnique();
 
                     b.ToTable("Shelters");
