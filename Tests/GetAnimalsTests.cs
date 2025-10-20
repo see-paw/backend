@@ -6,6 +6,7 @@ using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
+//codacy: ignore[complexity]
 public class GetAnimalListTests
 {
     // ===== Helper method =====
