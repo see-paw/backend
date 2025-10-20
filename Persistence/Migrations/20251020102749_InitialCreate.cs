@@ -6,78 +6,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialDbSchema : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_Animals",
-                table: "Animals");
-
-            migrationBuilder.DropColumn(
-                name: "MainImageUrl",
-                table: "Animals");
-
-            migrationBuilder.RenameColumn(
-                name: "Breed",
-                table: "Animals",
-                newName: "ShelterId");
-
-            migrationBuilder.RenameColumn(
-                name: "AnimalId",
-                table: "Animals",
-                newName: "BreedId");
-
-            migrationBuilder.AlterColumn<DateTime>(
-                name: "UpdatedAt",
-                table: "Animals",
-                type: "timestamp without time zone",
-                nullable: true,
-                oldClrType: typeof(DateTime),
-                oldType: "timestamp without time zone");
-
-            migrationBuilder.AlterColumn<string>(
-                name: "Description",
-                table: "Animals",
-                type: "character varying(250)",
-                maxLength: 250,
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "character varying(1000)",
-                oldMaxLength: 1000,
-                oldNullable: true);
-
-            migrationBuilder.AddColumn<string>(
-                name: "Id",
-                table: "Animals",
-                type: "text",
-                nullable: false,
-                defaultValue: "");
-
-            migrationBuilder.AddColumn<string>(
-                name: "OwnerId",
-                table: "Animals",
-                type: "text",
-                nullable: true);
-
-            migrationBuilder.AddColumn<DateTime>(
-                name: "OwnershipEndDate",
-                table: "Animals",
-                type: "timestamp without time zone",
-                nullable: true);
-
-            migrationBuilder.AddColumn<DateTime>(
-                name: "OwnershipStartDate",
-                table: "Animals",
-                type: "timestamp without time zone",
-                nullable: true);
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_Animals",
-                table: "Animals",
-                column: "Id");
-
             migrationBuilder.CreateTable(
                 name: "Breeds",
                 columns: table => new
@@ -93,28 +26,6 @@ namespace Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Images",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "text", nullable: false),
-                    IsPrincipal = table.Column<bool>(type: "boolean", nullable: false),
-                    AnimalId = table.Column<string>(type: "text", nullable: false),
-                    Url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Images", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Images_Animals_AnimalId",
-                        column: x => x.AnimalId,
-                        principalTable: "Animals",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Shelters",
                 columns: table => new
                 {
@@ -125,7 +36,7 @@ namespace Persistence.Migrations
                     PostalCode = table.Column<string>(type: "text", nullable: false),
                     Phone = table.Column<string>(type: "text", nullable: false),
                     NIF = table.Column<string>(type: "text", nullable: false),
-                    MainImageId = table.Column<string>(type: "text", nullable: false),
+                    MainImageId = table.Column<string>(type: "text", nullable: true),
                     OpeningTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
                     ClosingTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
@@ -134,12 +45,6 @@ namespace Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Shelters", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Shelters_Images_MainImageId",
-                        column: x => x.MainImageId,
-                        principalTable: "Images",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -166,6 +71,53 @@ namespace Persistence.Migrations
                         name: "FK_Users_Shelters_ShelterId",
                         column: x => x.ShelterId,
                         principalTable: "Shelters",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Animals",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    AnimalState = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
+                    Species = table.Column<string>(type: "text", nullable: false),
+                    Size = table.Column<string>(type: "text", nullable: false),
+                    Sex = table.Column<string>(type: "text", nullable: false),
+                    Colour = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    BirthDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    Sterilized = table.Column<bool>(type: "boolean", nullable: false),
+                    Cost = table.Column<decimal>(type: "numeric", nullable: false),
+                    Features = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    ShelterId = table.Column<string>(type: "text", nullable: false),
+                    BreedId = table.Column<string>(type: "text", nullable: false),
+                    OwnerId = table.Column<string>(type: "text", nullable: true),
+                    OwnershipStartDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    OwnershipEndDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Animals", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Animals_Breeds_BreedId",
+                        column: x => x.BreedId,
+                        principalTable: "Breeds",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Animals_Shelters_ShelterId",
+                        column: x => x.ShelterId,
+                        principalTable: "Shelters",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Animals_Users_OwnerId",
+                        column: x => x.OwnerId,
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
                 });
@@ -259,6 +211,35 @@ namespace Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Images",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    IsPrincipal = table.Column<bool>(type: "boolean", nullable: false),
+                    AnimalId = table.Column<string>(type: "text", nullable: true),
+                    ShelterId = table.Column<string>(type: "text", nullable: true),
+                    Url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Images", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Images_Animals_AnimalId",
+                        column: x => x.AnimalId,
+                        principalTable: "Animals",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Images_Shelters_ShelterId",
+                        column: x => x.ShelterId,
+                        principalTable: "Shelters",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OwnershipRequests",
                 columns: table => new
                 {
@@ -290,6 +271,17 @@ namespace Persistence.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Activities_AnimalId_StartDate",
+                table: "Activities",
+                columns: new[] { "AnimalId", "StartDate" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Activities_UserId",
+                table: "Activities",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Animals_BreedId",
                 table: "Animals",
                 column: "BreedId");
@@ -303,17 +295,6 @@ namespace Persistence.Migrations
                 name: "IX_Animals_ShelterId",
                 table: "Animals",
                 column: "ShelterId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Activities_AnimalId_StartDate",
-                table: "Activities",
-                columns: new[] { "AnimalId", "StartDate" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Activities_UserId",
-                table: "Activities",
-                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Breeds_Name",
@@ -350,6 +331,11 @@ namespace Persistence.Migrations
                 filter: "\"IsPrincipal\" = true");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Images_ShelterId",
+                table: "Images",
+                column: "ShelterId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OwnershipRequests_AnimalId_UserId",
                 table: "OwnershipRequests",
                 columns: new[] { "AnimalId", "UserId" },
@@ -361,14 +347,9 @@ namespace Persistence.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Shelters_MainImageId",
-                table: "Shelters",
-                column: "MainImageId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Shelters_NIF",
                 table: "Shelters",
-                column: "Nif",
+                column: "NIF",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -383,52 +364,13 @@ namespace Persistence.Migrations
                 column: "ShelterId",
                 unique: true,
                 filter: "\"ShelterId\" IS NOT NULL");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Animals_Breeds_BreedId",
-                table: "Animals",
-                column: "BreedId",
-                principalTable: "Breeds",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Animals_Shelters_ShelterId",
-                table: "Animals",
-                column: "ShelterId",
-                principalTable: "Shelters",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Animals_Users_OwnerId",
-                table: "Animals",
-                column: "OwnerId",
-                principalTable: "Users",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.SetNull);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Animals_Breeds_BreedId",
-                table: "Animals");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Animals_Shelters_ShelterId",
-                table: "Animals");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Animals_Users_OwnerId",
-                table: "Animals");
-
             migrationBuilder.DropTable(
                 name: "Activities");
-
-            migrationBuilder.DropTable(
-                name: "Breeds");
 
             migrationBuilder.DropTable(
                 name: "Favorites");
@@ -437,92 +379,22 @@ namespace Persistence.Migrations
                 name: "Fosterings");
 
             migrationBuilder.DropTable(
+                name: "Images");
+
+            migrationBuilder.DropTable(
                 name: "OwnershipRequests");
+
+            migrationBuilder.DropTable(
+                name: "Animals");
+
+            migrationBuilder.DropTable(
+                name: "Breeds");
 
             migrationBuilder.DropTable(
                 name: "Users");
 
             migrationBuilder.DropTable(
                 name: "Shelters");
-
-            migrationBuilder.DropTable(
-                name: "Images");
-
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_Animals",
-                table: "Animals");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Animals_BreedId",
-                table: "Animals");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Animals_OwnerId",
-                table: "Animals");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Animals_ShelterId",
-                table: "Animals");
-
-            migrationBuilder.DropColumn(
-                name: "Id",
-                table: "Animals");
-
-            migrationBuilder.DropColumn(
-                name: "OwnerId",
-                table: "Animals");
-
-            migrationBuilder.DropColumn(
-                name: "OwnershipEndDate",
-                table: "Animals");
-
-            migrationBuilder.DropColumn(
-                name: "OwnershipStartDate",
-                table: "Animals");
-
-            migrationBuilder.RenameColumn(
-                name: "ShelterId",
-                table: "Animals",
-                newName: "Breed");
-
-            migrationBuilder.RenameColumn(
-                name: "BreedId",
-                table: "Animals",
-                newName: "AnimalId");
-
-            migrationBuilder.AlterColumn<DateTime>(
-                name: "UpdatedAt",
-                table: "Animals",
-                type: "timestamp without time zone",
-                nullable: false,
-                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                oldClrType: typeof(DateTime),
-                oldType: "timestamp without time zone",
-                oldNullable: true);
-
-            migrationBuilder.AlterColumn<string>(
-                name: "Description",
-                table: "Animals",
-                type: "character varying(1000)",
-                maxLength: 1000,
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "character varying(250)",
-                oldMaxLength: 250,
-                oldNullable: true);
-
-            migrationBuilder.AddColumn<string>(
-                name: "MainImageUrl",
-                table: "Animals",
-                type: "character varying(500)",
-                maxLength: 500,
-                nullable: false,
-                defaultValue: "");
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_Animals",
-                table: "Animals",
-                column: "AnimalId");
         }
     }
 }
