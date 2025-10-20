@@ -65,7 +65,7 @@ namespace Tests
         [InlineData(Species.Cat)]
         public void AnimalSpeciesValid(Species species)
         {
-            // Use a valid base DTO and modify only the property being tested.
+            //Use a valid base DTO and modify only the property being tested.
             var dto = CreateValidAnimalDTO();
             dto.Species = species;
 
