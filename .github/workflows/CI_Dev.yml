@@ -38,10 +38,10 @@ jobs:
             ${{ runner.os }}-nuget-
 
       - name: Restaurar dependências
-        run: dotnet restore SeePaw.sln
+        run: dotnet restore backend.sln
 
       - name: Compilar projeto
-        run: dotnet build SeePaw.sln --no-restore --configuration Release
+        run: dotnet build beckend.sln --no-restore --configuration Release
 
       - name: Guardar artefactos do build
         uses: actions/upload-artifact@v4
