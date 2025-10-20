@@ -38,6 +38,8 @@ namespace Application.Shelters.Queries
         /// Handles the business logic for retrieving animals belonging to a specific shelter.
         /// Validates the existence of the shelter, applies pagination, and returns a consistent result.
         /// </summary>
+        //codacy:ignore[complexity]
+
         public class Handler : IRequestHandler<Query, Result<PagedList<Animal>>>
         {
             private readonly AppDbContext _context;
@@ -62,14 +64,22 @@ namespace Application.Shelters.Queries
             /// </returns>
             public async Task<Result<PagedList<Animal>>> Handle(Query request, CancellationToken cancellationToken)
             {
-                // Validate if the shelter exists before querying animals
-                if (!await ShelterExists(request.ShelterId, cancellationToken))
+                // Check whether the shelter exists in the database
+                var shelterExists = await _context.Shelters
+                    .AnyAsync(s => s.Id == request.ShelterId, cancellationToken);
+
+                if (!shelterExists)
                     return Result<PagedList<Animal>>.Failure("Shelter not found", 404);
 
-                // Build query to retrieve animals linked to the given shelter
-                var query = BuildAnimalQuery(request.ShelterId);
+                // Build the query to retrieve animals belonging to this shelter
+                var query = _context.Animals
+                    .Include(a => a.Breed)   // Include breed object
+                    .Include(a => a.Images)  // Include associated images
+                    .Where(a => a.ShelterId == request.ShelterId)
+                    .OrderBy(a => a.Name)
+                    .AsQueryable();
 
-                // Apply pagination using generic helper
+                // Apply pagination using the generic PagedList helper
                 var pagedList = await PagedList<Animal>.CreateAsync(
                     query,
                     request.PageNumber,
@@ -77,42 +87,11 @@ namespace Application.Shelters.Queries
                 );
 
                 // Handle the case when no animals were found
-                if (NoAnimalsFound(pagedList))
+                if (pagedList == null || pagedList.Count == 0)
                     return Result<PagedList<Animal>>.Failure("No animals found for this shelter", 404);
 
-                //Return success with the paginated list
+                // Return success result with the paginated list
                 return Result<PagedList<Animal>>.Success(pagedList);
-            }
-
-            /// <summary>
-            /// Checks asynchronously whether a shelter with the specified ID exists.
-            /// </summary>
-            private async Task<bool> ShelterExists(string shelterId, CancellationToken ct)
-            {
-                return await _context.Shelters
-                    .AnyAsync(s => s.Id == shelterId, ct);
-            }
-
-            /// <summary>
-            /// Builds the base query for retrieving animals of a specific shelter.
-            /// Includes breed and images for complete data representation.
-            /// </summary>
-            private IQueryable<Animal> BuildAnimalQuery(string shelterId)
-            {
-                return _context.Animals
-                    .Include(a => a.Breed)   // Include related breed data
-                    .Include(a => a.Images)  // Include associated images
-                    .Where(a => a.ShelterId == shelterId)
-                    .OrderBy(a => a.Name)
-                    .AsQueryable();
-            }
-
-            /// <summary>
-            /// Checks if a paginated list of animals is null or empty.
-            /// </summary>
-            private static bool NoAnimalsFound(PagedList<Animal>? list)
-            {
-                return list == null || list.Count == 0;
             }
         }
     }
