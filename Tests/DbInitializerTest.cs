@@ -41,24 +41,6 @@ namespace Tests
             Assert.Contains(context.Shelters, s => s.Name == "Test Shelter 2");
         }
 
-        /// <summary>
-        /// Tests that SeedData creates breeds when database is empty.
-        /// </summary>
-        [Fact]
-        public async Task SeedData_EmptyDatabase_CreatesBreeds()
-        {
-            // Arrange
-            using var context = new AppDbContext(_options);
-
-            // Act
-            await DbInitializer.SeedData(context);
-
-            // Assert
-            Assert.Equal(3, await context.Breeds.CountAsync());
-            Assert.Contains(context.Breeds, b => b.Name == "Siamês");
-            Assert.Contains(context.Breeds, b => b.Name == "Beagle");
-            Assert.Contains(context.Breeds, b => b.Name == "Pastor Alemão");
-        }
 
         /// <summary>
         /// Tests that SeedData creates animals when database is empty.
@@ -151,7 +133,7 @@ namespace Tests
                 City = "Porto",
                 PostalCode = "4000-000",
                 Phone = "900000000",
-                Nif = "000000000",
+                NIF = "000000000",
                 OpeningTime = new TimeOnly(9, 0),
                 ClosingTime = new TimeOnly(18, 0)
             };

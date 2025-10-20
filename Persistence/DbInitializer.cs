@@ -52,7 +52,7 @@ public static class DbInitializer
                     City = "Porto",
                     PostalCode = "4000-123",
                     Phone = "912345678",
-                    Nif = "123456789",
+                    NIF = "123456789",
                     OpeningTime = new TimeOnly(9, 0, 0),
                     ClosingTime = new TimeOnly(18, 0, 0),
                     CreatedAt = DateTime.UtcNow
@@ -65,7 +65,7 @@ public static class DbInitializer
                     City = "Porto",
                     PostalCode = "4000-125",
                     Phone = "224589631",
-                    Nif = "999999999",
+                    NIF = "999999999",
                     OpeningTime = new TimeOnly(9, 0, 0),
                     ClosingTime = new TimeOnly(18, 0, 0),
                     CreatedAt = DateTime.UtcNow

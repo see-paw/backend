@@ -60,7 +60,7 @@ public class Shelter
     /// </summary>
     [Required]
     [RegularExpression(@"^\d{9}$", ErrorMessage = "Nif must contain exactly 9 digits.")]
-    public string Nif { get; init; } = string.Empty;
+    public string NIF { get; init; } = string.Empty;
 
     /// <summary>
     /// The identifier of the main image representing the shelter.
