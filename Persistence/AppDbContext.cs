@@ -49,7 +49,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
         modelBuilder.Entity<Shelter>(entity =>
         {
             // Nif unique
-            entity.HasIndex(s => s.Nif).IsUnique();
+            entity.HasIndex(s => s.NIF).IsUnique();
         });
 
         // Shelter - Animal (1:N)

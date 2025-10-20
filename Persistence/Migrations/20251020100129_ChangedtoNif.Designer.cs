@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Persistence;
@@ -11,9 +12,11 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251020100129_ChangedtoNif")]
+    partial class ChangedtoNif
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -338,14 +341,14 @@ namespace Persistence.Migrations
                     b.Property<string>("MainImageId")
                         .HasColumnType("text");
 
-                    b.Property<string>("NIF")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
+
+                    b.Property<string>("Nif")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<TimeOnly>("OpeningTime")
                         .HasColumnType("time without time zone");
@@ -368,7 +371,7 @@ namespace Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("NIF")
+                    b.HasIndex("Nif")
                         .IsUnique();
 
                     b.ToTable("Shelters");
