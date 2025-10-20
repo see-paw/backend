@@ -85,22 +85,17 @@ namespace WebAPI.Controllers
             // Map the validated DTO to the domain entity
             var animal = _mapper.Map<Animal>(reqAnimalDto);
 
-            List<Image>? images = null;
-            if (reqAnimalDto.Images != null && reqAnimalDto.Images.Any())
-            {
-                images = _mapper.Map<List<Image>>(reqAnimalDto.Images);
-            }
 
             // Build the command to send to the Application layer
             var command = new CreateAnimal.Command
             {
                 Animal = animal,
-                ShelterId = shelterId,
-                Images = images
+                ShelterId = shelterId
             };
 
             // Centralized result handling (200, 400, 404, etc.)
             return HandleResult(await Mediator.Send(command));
         }
+
     }
 }

@@ -30,11 +30,6 @@ namespace Application.Animals.Commands
             /// The unique identifier of the shelter where the animal is hosted.
             /// </summary>
             public required string ShelterId { get; set; }
-
-            /// <summary>
-            ///  List of images associated with the animal.
-            /// </summary>
-            public List<Image> Images { get; set; }
         }
 
         /// <summary>
@@ -88,12 +83,6 @@ namespace Application.Animals.Commands
 
                 //Assign the shelter ID to the animal
                 request.Animal.ShelterId = request.ShelterId;
-
-                // Associate images with the animal if provided
-                if (request.Images != null && request.Images.Any())
-                {
-                    request.Animal.Images = request.Images;
-                }
 
                 // Persist the entity in the database
                 _context.Animals.Add(request.Animal);
