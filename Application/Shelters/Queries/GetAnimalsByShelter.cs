@@ -38,7 +38,6 @@ namespace Application.Shelters.Queries
         /// Handles the business logic for retrieving animals belonging to a specific shelter.
         /// Validates the existence of the shelter, applies pagination, and returns a consistent result.
         /// </summary>
-        //codacy:ignore[complexity]
 
         public class Handler : IRequestHandler<Query, Result<PagedList<Animal>>>
         {
