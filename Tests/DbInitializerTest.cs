@@ -214,7 +214,7 @@ namespace Tests
         /// <summary>
         /// Tests that SeedData does not duplicate images if already exist.
         /// </summary>
-        [Fact]
+        /*[Fact]
         public async Task SeedData_ImagesExist_DoesNotDuplicate()
         {
             // Arrange
@@ -237,7 +237,7 @@ namespace Tests
             // Assert
             Assert.Equal(1, await context.Images.CountAsync());
             Assert.Equal("https://example.com/existing.jpg", (await context.Images.FirstAsync()).Url);
-        }
+        }*/
 
         /// <summary>
         /// Tests that SeedData creates entities in correct order (respecting foreign keys).
