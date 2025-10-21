@@ -60,7 +60,7 @@ namespace WebAPI.Controllers
             );
 
             // Return the successful paginated result
-            return HandleResult(Result<PagedList<ResAnimalDTO>>.Success(dtoPagedList));
+            return HandleResult(Result<PagedList<ResAnimalDTO>>.Success(dtoPagedList, 200));
         }
 
         /// <summary>

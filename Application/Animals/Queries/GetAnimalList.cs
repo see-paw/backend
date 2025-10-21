@@ -83,7 +83,7 @@ namespace Application.Animals.Queries
                 if (pagedList == null || !pagedList.Any())
                     return Result<PagedList<Animal>>.Failure("No animals found", 404);
 
-                return Result<PagedList<Animal>>.Success(pagedList);
+                return Result<PagedList<Animal>>.Success(pagedList, 200);
             }
         }
     }

@@ -1,4 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using System.ComponentModel.DataAnnotations;
 
 namespace Domain;
 
@@ -63,11 +67,6 @@ public class Shelter
     public string NIF { get; init; } = string.Empty;
 
     /// <summary>
-    /// The identifier of the main image representing the shelter.
-    /// </summary>
-    public string? MainImageId { get; set; }
-
-    /// <summary>
     /// The opening time of the shelter.
     /// </summary>
     [Required]
@@ -95,10 +94,10 @@ public class Shelter
     /// </summary>
     public ICollection<Animal> Animals { get; set; } = new List<Animal>();
 
-        // Navigation Properties
-
-        [JsonIgnore]
-        [MinLength(1, ErrorMessage = "Shelter must have at least one image.")]
-        public ICollection<Image> Images { get; set; } = new List<Image>();
-        public ICollection<Animal> Animals { get; set; } = new List<Animal>();
+    /// <summary>
+    /// The list of images of the shelter.
+    /// </summary>
+    [JsonIgnore]
+    [MinLength(1, ErrorMessage = "Shelter must have at least one image.")]
+    public ICollection<Image> Images { get; set; } = new List<Image>();
 }

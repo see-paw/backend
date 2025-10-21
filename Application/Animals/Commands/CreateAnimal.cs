@@ -91,7 +91,7 @@ namespace Application.Animals.Commands
                     return Result<string>.Failure("Failed to create animal", 400);
 
                 // Return success with the new animal ID
-                return Result<string>.Success(request.Animal.Id);
+                return Result<string>.Success(request.Animal.Id, 201);
             }
         }
     }

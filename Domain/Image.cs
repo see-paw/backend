@@ -47,7 +47,7 @@ public class Image
     /// </summary>
     [Required]
     [MaxLength(500)]
-    public string Url { get; set; } = null!;
+    public string Url { get; set; } = string.Empty;
 
     [Required]
 

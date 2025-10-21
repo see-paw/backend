@@ -112,7 +112,7 @@ public class Animal
     /// The foreign key referencing the shelter where the animal is located.
     /// </summary>
     [Required]
-    public string ShelterId { get; init; } = string.Empty;
+    public string ShelterId { get; set; } = string.Empty;
 
     /// <summary>
     /// The shelter entity associated with the animal.

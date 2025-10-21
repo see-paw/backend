@@ -3,98 +3,89 @@
 namespace WebAPI.DTOs;
 
 /// <summary>
-/// Data Transfer Object (DTO) representing detailed information about an animal.
+/// Data Transfer Object (DTO) used to return detailed information about an animal.
+/// Includes biological data, shelter association, and related entities such as breed and images.
 /// </summary>
-/// <remarks>
-/// Used in API responses to return animal details, including identification,
-/// biological attributes, description, cost, and associated images.
-/// </remarks>
-public class ResAnimalDto
+public class ResAnimalDTO
 {
     /// <summary>
-    /// Data Transfer Object (DTO) used to return detailed information about an animal.
-    /// Includes biological data, shelter association, and related entities such as breed and images.
+    /// The unique identifier of the animal.
     /// </summary>
-    public class ResAnimalDTO
-    {
-        /// <summary>
-        /// The unique identifier of the animal.
-        /// </summary>
-        public string AnimalId { get; set; } = null!;
+    public string AnimalId { get; set; } = null!;
 
-        /// <summary>
-        /// The name of the animal.
-        /// </summary>
-        public string Name { get; set; } = null!;
+    /// <summary>
+    /// The name of the animal.
+    /// </summary>
+    public string Name { get; set; } = null!;
 
-        /// <summary>
-        /// The biological species of the animal (e.g., Dog, Cat).
-        /// </summary>
-        public Species Species { get; set; }
+    /// <summary>
+    /// The biological species of the animal (e.g., Dog, Cat).
+    /// </summary>
+    public Species Species { get; set; }
 
-        /// <summary>
-        /// The size classification of the animal (e.g., Small, Medium, Large).
-        /// </summary>
-        public SizeType Size { get; set; }
+    /// <summary>
+    /// The size classification of the animal (e.g., Small, Medium, Large).
+    /// </summary>
+    public SizeType Size { get; set; }
 
-        /// <summary>
-        /// The biological sex of the animal (e.g., Male, Female).
-        /// </summary>
-        public SexType Sex { get; set; }
+    /// <summary>
+    /// The biological sex of the animal (e.g., Male, Female).
+    /// </summary>
+    public SexType Sex { get; set; }
 
-        /// <summary>
-        /// The breed information associated with the animal.
-        /// </summary>
-        public ResBreedDTO Breed { get; set; }
+    /// <summary>
+    /// The breed information associated with the animal.
+    /// </summary>
+    public ResBreedDTO Breed { get; set; }
 
-        /// <summary>
-        /// The current state of the animal (e.g., Available, Fostered, Adopted).
-        /// </summary>
-        public AnimalState AnimalState { get; set; }
+    /// <summary>
+    /// The current state of the animal (e.g., Available, Fostered, Adopted).
+    /// </summary>
+    public AnimalState AnimalState { get; set; }
 
-        /// <summary>
-        /// The predominant color of the animal's fur or skin.
-        /// </summary>
-        public string Colour { get; set; } = null!;
+    /// <summary>
+    /// The predominant color of the animal's fur or skin.
+    /// </summary>
+    public string Colour { get; set; } = null!;
 
-        /// <summary>
-        /// The date of birth of the animal.
-        /// </summary>
-        public DateOnly BirthDate { get; set; }
+    /// <summary>
+    /// The date of birth of the animal.
+    /// </summary>
+    public DateOnly BirthDate { get; set; }
 
-        /// <summary>
-        /// The calculated age of the animal in years.
-        /// </summary>
-        public int Age { get; set; }
+    /// <summary>
+    /// The calculated age of the animal in years.
+    /// </summary>
+    public int Age { get; set; }
 
-        /// <summary>
-        /// A textual description or summary providing details about the animal.
-        /// </summary>
-        public string? Description { get; set; }
+    /// <summary>
+    /// A textual description or summary providing details about the animal.
+    /// </summary>
+    public string? Description { get; set; }
 
-        /// <summary>
-        /// Indicates whether the animal has been sterilized.
-        /// </summary>
-        public bool Sterilized { get; set; }
+    /// <summary>
+    /// Indicates whether the animal has been sterilized.
+    /// </summary>
+    public bool Sterilized { get; set; }
 
-        /// <summary>
-        /// Additional physical or behavioral features of the animal.
-        /// </summary>
-        public string? Features { get; set; }
+    /// <summary>
+    /// Additional physical or behavioral features of the animal.
+    /// </summary>
+    public string? Features { get; set; }
 
-        /// <summary>
-        /// The adoption or maintenance cost associated with the animal.
-        /// </summary>
-        public decimal Cost { get; set; }
+    /// <summary>
+    /// The adoption or maintenance cost associated with the animal.
+    /// </summary>
+    public decimal Cost { get; set; }
 
-        /// <summary>
-        /// The unique identifier of the shelter where the animal is hosted.
-        /// </summary>
-        public string shelterId { get; set; } = null!;
+    /// <summary>
+    /// The unique identifier of the shelter where the animal is hosted.
+    /// </summary>
+    public string shelterId { get; set; } = null!;
 
-        /// <summary>
-        /// A list of images associated with the animal.
-        /// </summary>
-        public List<ResImageDTO>? Images { get; set; }
-    }
+    /// <summary>
+    /// A list of images associated with the animal.
+    /// </summary>
+    public List<ResImageDTO>? Images { get; set; }
 }
+

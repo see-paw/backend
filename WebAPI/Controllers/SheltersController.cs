@@ -64,7 +64,7 @@ namespace API.Controllers
             );
 
             // Return the standardized result using the base handler
-            return HandleResult(Result<PagedList<ResAnimalDTO>>.Success(pagedDtoList));
+            return HandleResult(Result<PagedList<ResAnimalDTO>>.Success(pagedDtoList, 200));
         }
     }
 }
