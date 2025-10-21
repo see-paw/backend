@@ -19,16 +19,6 @@ namespace WebAPI.Controllers;
 /// </remarks>
 public class AnimalsController(IMapper mapper) : BaseApiController
 {
-    /// <summary>
-    /// Retrieves a list of all animals available in the system.
-    /// </summary>
-    /// <returns>
-    /// A list of <see cref="ResAnimalDto"/> objects representing the animals.
-    /// </returns>
-    /// <remarks>
-    /// Sends a <see cref="GetAnimalList.Query"/> request through MediatR to fetch all animals,
-    /// maps the result to DTOs using AutoMapper, and returns the list in a standardized API response.
-    /// </remarks>
     //[HttpGet]
     //public async Task<ActionResult<List<ResAnimalDto>>> GetAnimals()
     //{
@@ -51,8 +41,6 @@ public class AnimalsController(IMapper mapper) : BaseApiController
     /// If the animal is not found or unavailable, returns a standardized error response.
     /// Successfully retrieved entities are mapped to <see cref="ResAnimalDto"/> using AutoMapper.
     /// </remarks>
-    
-    [Authorize(Roles = "AdminCAA")]
     [HttpGet("{id}")]
     public async Task<ActionResult<ResAnimalDto>> GetAnimalDetails(string id)
     {
