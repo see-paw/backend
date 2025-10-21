@@ -33,7 +33,7 @@ public class OwnershipRequest
     [Required]
     public DateTime RequestedAt { get; init; } = DateTime.UtcNow;
 
-    public DateTime? ApprovedAt { get; set; }
+    public DateTime? ApprovedAt { get; set; } 
 
     public DateTime? UpdatedAt { get; set; }
 

@@ -16,23 +16,22 @@ public class Image
     [Required]
     public bool IsPrincipal { get; set; }
 
-    // Foreign Key for animal
-    public string? AnimalId { get; set; } 
+    // Foreign Key
+    public string? AnimalId { get; set; }
 
     [JsonIgnore]
     public Animal? Animal { get; set; }
 
     // Foreign Key for Shelter 
-    public string? ShelterId { get; set; } 
+    public string? ShelterId { get; set; }
     [JsonIgnore]
     public Shelter? Shelter { get; set; }
 
     [Required]
     [MaxLength(500)]
-    public string Url { get; set; } = null!;
 
     [MaxLength(255)]
-    public string? Description { get; set; } 
+    public string? Description { get; set; }
 
     [Required]
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;

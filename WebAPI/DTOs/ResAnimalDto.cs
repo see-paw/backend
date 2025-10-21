@@ -1,4 +1,5 @@
-﻿using Domain.Enums;
+﻿using Domain;
+using Domain.Enums;
 
 namespace WebAPI.DTOs
 {

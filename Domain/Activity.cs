@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Domain;
 
 public class Activity
-{
+{   
     [Key] // There is a constraint in AppDbContext.OnModelCreating that makes sure that (AnimalId, StartDate) is unique
     public string Id { get; init; } = Guid.NewGuid().ToString(); // Init instead of set to prevent changes after creation
 
