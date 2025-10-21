@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 using System.ComponentModel.DataAnnotations;
-=======
-﻿using System.ComponentModel.DataAnnotations;
->>>>>>> feature/create-and-list-animals
 using Domain.Enums;
 
 namespace Domain;
@@ -37,17 +33,11 @@ public class OwnershipRequest
     [Required]
     public DateTime RequestedAt { get; init; } = DateTime.UtcNow;
 
-<<<<<<< HEAD
     public DateTime? ApprovedAt { get; set; } 
-=======
-    public DateTime? ApprovedAt { get; set; }
->>>>>>> feature/create-and-list-animals
 
     public DateTime? UpdatedAt { get; set; }
 
     // Navigation Properties
     public Animal Animal { get; set; } = null!;
     public User User { get; set; } = null!;
-
-
 }

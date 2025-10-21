@@ -21,29 +21,10 @@ namespace Application.Animals.Commands
         /// </summary>
         public class Command : IRequest<Result<string>>
         {
-<<<<<<< HEAD
-            var shelter = await context.Shelters.FindAsync([request.Animal.ShelterId], cancellationToken);
-
-            if (shelter == null)
-            {
-                return Result<string>.Failure("Shelter not found", 404);
-            }
-
-            var breed = await context.Breeds.FindAsync([request.Animal.BreedId], cancellationToken);
-
-            if (breed == null)
-            {
-                return Result<string>.Failure("Breed not found", 404);
-            }
-
-            request.Animal.Breed = breed;
-            request.Animal.Shelter = shelter;
-=======
             /// <summary>
             /// The animal entity containing all its biological and adoption attributes.
             /// </summary>
             public required Animal Animal { get; set; }
->>>>>>> feature/create-and-list-animals
 
             /// <summary>
             /// The unique identifier of the shelter where the animal is hosted.
@@ -56,10 +37,6 @@ namespace Application.Animals.Commands
             public List<Image> Images { get; set; }
         }
 
-<<<<<<< HEAD
-            return result ? Result<string>.Success(request.Animal.Id) 
-                : Result<string>.Failure("Failed to add the animal", 400);
-=======
         /// <summary>
         /// Handles the creation of an <see cref="Animal"/> by validating
         /// related entities (Shelter, Breed) and saving the entity into the database.
@@ -128,7 +105,6 @@ namespace Application.Animals.Commands
                 // Return success with the new animal ID
                 return Result<string>.Success(request.Animal.Id);
             }
->>>>>>> feature/create-and-list-animals
         }
     }
 }

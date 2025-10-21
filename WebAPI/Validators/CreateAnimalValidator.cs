@@ -11,11 +11,6 @@ namespace WebAPI.Validators
     /// </summary>
     public class CreateAnimalValidator : AbstractValidator<ReqCreateAnimalDto>
     {
-<<<<<<< HEAD
-        RuleFor(x => x.Animal.Name).NotEmpty().WithMessage("Name is required");
-        RuleFor(x => x.Animal.ShelterId).MustBeValidGuidString("Shelter ID");
-        RuleFor(x => x.Animal.BreedId).MustBeValidGuidString("Shelter ID");
-=======
         /// <summary>
         /// Initializes a new instance of the <see cref="CreateAnimalValidator"/> class.
         /// Defines validation rules for animal creation requests.
@@ -97,6 +92,5 @@ namespace WebAPI.Validators
                 .WithMessage("Exactly one image must be marked as principal.")
                 .When(x => x.Images != null && x.Images.Any());
         }
->>>>>>> feature/create-and-list-animals
     }
 }

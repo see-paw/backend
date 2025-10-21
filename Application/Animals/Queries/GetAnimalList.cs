@@ -18,17 +18,10 @@ namespace Application.Animals.Queries
         /// </summary>
         public class Query : IRequest<Result<PagedList<Animal>>>
         {
-<<<<<<< HEAD
-            var animals = await context.Animals
-                .Include(x => x.Breed)
-                .Include(x => x.Images)
-                .ToListAsync(cancellationToken);
-=======
             /// <summary>
             /// The number of the page to be retrieved. Defaults to 1.
             /// </summary>
             public int PageNumber { get; set; } = 1;
->>>>>>> feature/create-and-list-animals
 
             /// <summary>
             /// The number of records per page. Defaults to 20.

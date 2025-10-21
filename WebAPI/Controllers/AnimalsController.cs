@@ -25,20 +25,7 @@ namespace WebAPI.Controllers
         /// <param name="mapper">The AutoMapper instance used for DTO-to-domain and domain-to-DTO mapping.</param>
         public AnimalsController(IMapper mapper)
         {
-<<<<<<< HEAD
-            var animal = mapper.Map<Animal>(reqAnimalDto);
-
-            animal.Images.Add(new Image()
-            {
-                IsPrincipal = true,
-                Description = reqAnimalDto.MainImageDesc,
-                Url = reqAnimalDto.MainImageUrl
-            });
-                
-            return HandleResult(await Mediator.Send(new CreateAnimal.Command() {Animal = animal}));
-=======
             _mapper = mapper;
->>>>>>> feature/create-and-list-animals
         }
 
         /// <summary>

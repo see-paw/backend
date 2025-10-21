@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Folder Include="Animals\Commands\" />
+    <Folder Include="OwnershipRequests\Queries\" />
   </ItemGroup>
 
 </Project>
