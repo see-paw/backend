@@ -53,10 +53,10 @@ namespace API.Controllers
                 return HandleResult(result);
 
             // Map Animal → ResAnimalDto for the API response
-            var dtoList = _mapper.Map<List<ResAnimalDto>>(result.Value);
+            var dtoList = _mapper.Map<List<ResAnimalDTO>>(result.Value);
 
             // Wrap the DTO list in a paginated structure with metadata
-            var pagedDtoList = new PagedList<ResAnimalDto>(
+            var pagedDtoList = new PagedList<ResAnimalDTO>(
                 dtoList,
                 result.Value.TotalCount,
                 result.Value.CurrentPage,
@@ -64,7 +64,7 @@ namespace API.Controllers
             );
 
             // Return the standardized result using the base handler
-            return HandleResult(Result<PagedList<ResAnimalDto>>.Success(pagedDtoList));
+            return HandleResult(Result<PagedList<ResAnimalDTO>>.Success(pagedDtoList));
         }
     }
 }

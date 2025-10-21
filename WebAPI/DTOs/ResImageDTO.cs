@@ -4,7 +4,7 @@ namespace WebAPI.DTOs
     /// Data Transfer Object (DTO) representing an image associated with an animal.
     /// Returned in API responses to provide image details and metadata.
     /// </summary>
-    public class ResImageDto
+    public class ResImageDTO
     {
         /// <summary>
         /// The unique identifier of the image.

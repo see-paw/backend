@@ -6,7 +6,7 @@ namespace WebAPI.DTOs
     /// Data Transfer Object (DTO) used to return detailed information about an animal.
     /// Includes biological data, shelter association, and related entities such as breed and images.
     /// </summary>
-    public class ResAnimalDto
+    public class ResAnimalDTO
     {
         /// <summary>
         /// The unique identifier of the animal.
@@ -36,7 +36,7 @@ namespace WebAPI.DTOs
         /// <summary>
         /// The breed information associated with the animal.
         /// </summary>
-        public ResBreedDto Breed { get; set; }
+        public ResBreedDTO Breed { get; set; }
 
         /// <summary>
         /// The current state of the animal (e.g., Available, Fostered, Adopted).
@@ -86,6 +86,6 @@ namespace WebAPI.DTOs
         /// <summary>
         /// A list of images associated with the animal.
         /// </summary>
-        public List<ResImageDto>? Images { get; set; }
+        public List<ResImageDTO>? Images { get; set; }
     }
 }

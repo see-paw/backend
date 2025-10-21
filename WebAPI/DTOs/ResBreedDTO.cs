@@ -4,7 +4,7 @@
     /// Data Transfer Object (DTO) representing the breed information of an animal.
     /// Used in responses to provide details about the animal's breed.
     /// </summary>
-    public class ResBreedDto
+    public class ResBreedDTO
     {
         /// <summary>
         /// The unique identifier of the breed.

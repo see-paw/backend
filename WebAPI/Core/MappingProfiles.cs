@@ -8,14 +8,14 @@ public class MappingProfiles : Profile
 {
     public MappingProfiles()
     {
-        CreateMap<ReqCreateAnimalDto, Animal>()
+        CreateMap<ReqCreateAnimalDTO, Animal>()
             // Maps the 'Images' collection from the request DTO to the 'Images' navigation property in the Animal domain entity
             .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.Images));
 
 
-        CreateMap<Breed, ResBreedDto>();
+        CreateMap<Breed, ResBreedDTO>();
 
-        CreateMap<Animal, ResAnimalDto>()
+        CreateMap<Animal, ResAnimalDTO>()
             .ForMember(dest => dest.AnimalId, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.Age, 
                 opt => opt.MapFrom(src => DateTime.Today.Year - src.BirthDate.Year))
@@ -26,7 +26,7 @@ public class MappingProfiles : Profile
 
         CreateMap<ReqImageDTO, Image>();
       
-        CreateMap<Image, ResImageDto>()
+        CreateMap<Image, ResImageDTO>()
             .ForMember(dest => dest.ImageId, opt => opt.MapFrom(src => src.Id));// Maps the 'Id' property from Image to the 'ImageId' property in ResImageDto.
 
 

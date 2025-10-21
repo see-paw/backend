@@ -7,7 +7,7 @@
     /// Data Transfer Object (DTO) used to receive animal creation requests from the client.
     /// Maps directly to the <see cref="Animal"/> domain entity through AutoMapper.
     /// </summary>
-    public class ReqCreateAnimalDto
+    public class ReqCreateAnimalDTO
     {
         /// <summary>
         /// The name of the animal.

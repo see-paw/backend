@@ -9,7 +9,7 @@ namespace WebAPI.Validators
     /// Ensures that all required fields meet business and formatting rules
     /// before the animal creation request is processed.
     /// </summary>
-    public class CreateAnimalValidator : AbstractValidator<ReqCreateAnimalDto>
+    public class CreateAnimalValidator : AbstractValidator<ReqCreateAnimalDTO>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CreateAnimalValidator"/> class.

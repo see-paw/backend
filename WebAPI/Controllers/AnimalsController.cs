@@ -37,7 +37,7 @@ namespace WebAPI.Controllers
         /// Returns <c>400</c> if the page number is invalid or an appropriate error message on failure.
         /// </returns>
         [HttpGet]
-        public async Task<ActionResult<PagedList<ResAnimalDto>>> GetAnimals([FromQuery] int pageNumber = 1)
+        public async Task<ActionResult<PagedList<ResAnimalDTO>>> GetAnimals([FromQuery] int pageNumber = 1)
         {
 
             var result = await Mediator.Send(new GetAnimalList.Query
@@ -49,10 +49,10 @@ namespace WebAPI.Controllers
                 return HandleResult(result);
 
             // Map the list of Animal entities to response DTOs
-            var dtoList = _mapper.Map<List<ResAnimalDto>>(result.Value);
+            var dtoList = _mapper.Map<List<ResAnimalDTO>>(result.Value);
 
             // Create a new paginated list with the DTOs
-            var dtoPagedList = new PagedList<ResAnimalDto>(
+            var dtoPagedList = new PagedList<ResAnimalDTO>(
                 dtoList,
                 result.Value.TotalCount,
                 result.Value.CurrentPage,
@@ -60,7 +60,7 @@ namespace WebAPI.Controllers
             );
 
             // Return the successful paginated result
-            return HandleResult(Result<PagedList<ResAnimalDto>>.Success(dtoPagedList));
+            return HandleResult(Result<PagedList<ResAnimalDTO>>.Success(dtoPagedList));
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace WebAPI.Controllers
         /// or an error response (400, 404, 401) depending on the failure condition.
         /// </returns>
         [HttpPost]
-        public async Task<ActionResult<string>> CreateAnimal([FromBody] ReqCreateAnimalDto reqAnimalDto)
+        public async Task<ActionResult<string>> CreateAnimal([FromBody] ReqCreateAnimalDTO reqAnimalDto)
         {
             // Temporary shelter ID (to be replaced when JWT authentication is implemented)
             var shelterId = "22222222-2222-2222-2222-222222222222";

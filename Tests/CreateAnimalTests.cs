@@ -158,7 +158,7 @@ namespace Tests
         public void AnimalBirthDateEmpty()
         {
             // default DateOnly is 0001-01-01 - equivalent to "empty" for other types like string or int
-            var animalDTO = new ReqCreateAnimalDto { BirthDate = default };
+            var animalDTO = new ReqCreateAnimalDTO { BirthDate = default };
             var result = _validator.Validate(animalDTO);
 
             Assert.False(result.IsValid);
@@ -171,7 +171,7 @@ namespace Tests
         [InlineData(365)] // 1 year in the future
         public void AnimalBirthDateInFuture(int daysInFuture)
         {
-            var animalDTO = new ReqCreateAnimalDto
+            var animalDTO = new ReqCreateAnimalDTO
             {
                 BirthDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(daysInFuture))
             };
@@ -409,9 +409,9 @@ namespace Tests
 
 
 
-        private ReqCreateAnimalDto CreateValidAnimalDTO()
+        private ReqCreateAnimalDTO CreateValidAnimalDTO()
         {
-            return new ReqCreateAnimalDto
+            return new ReqCreateAnimalDTO
             {
                 Name = "Test Animal",
                 Species = Species.Dog,
