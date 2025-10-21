@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Application.Animals.Queries;
+﻿using Application.Animals.Queries;
 using WebAPI.Validators;
 using FluentValidation;
 using Persistence;
@@ -7,10 +6,9 @@ using System.Text.Json.Serialization;
 using Application.Interfaces;
 using Domain;
 using Infrastructure;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using WebAPI.Core;
 using WebAPI.Middleware;
 
@@ -52,6 +50,7 @@ builder.Services.AddMediatR(x => {
     x.RegisterServicesFromAssemblyContaining<GetAnimalDetails.Handler>();
     x.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
+
 builder.Services.AddScoped<IUserAcessor, UserAccessor>();
 builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 builder.Services.AddValidatorsFromAssemblyContaining<GetAnimalDetailsValidator>();
@@ -67,6 +66,7 @@ builder.Services.AddAuthentication(options =>
     options.DefaultAuthenticateScheme = IdentityConstants.BearerScheme;
     options.DefaultChallengeScheme = IdentityConstants.BearerScheme;
 });
+builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthMiddlewareHandler>();
 
 var app = builder.Build();
 
@@ -83,7 +83,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapGroup("api").MapIdentityApi<User>();
-
 
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;

@@ -82,7 +82,7 @@ public class UserAccessorTest
         Assert.Equal("TestUser", result.UserName);
         Assert.Equal(userId, result.Id);
     }
-    
+
     [Fact]
     public async Task GetUserAsync_ShouldThrowUnauthorizedAccess_WhenUserDoesNotExist()
     {
@@ -101,6 +101,4 @@ public class UserAccessorTest
         var ex = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => userAccessor.GetUserAsync());
         Assert.Equal("No user logged in", ex.Message);
     }
-    
-    
 }
