@@ -1,9 +1,14 @@
-﻿using Application.Animals.Queries;
+﻿using System.Text;
+using Application.Animals.Queries;
 using WebAPI.Validators;
 using FluentValidation;
 using Persistence;
 using System.Text.Json.Serialization;
+using Domain;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using WebAPI.Core;
 using WebAPI.Middleware;
 
@@ -12,19 +17,20 @@ var inContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINE
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
     Args = args,
-    EnvironmentName = inContainer ? "Docker" : null
+    EnvironmentName = inContainer ? "Docker" : "Development"
 });
 
-// Config: base + por ambiente + env vars; secrets só em Dev local (não Docker)
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false)
+    .AddUserSecrets<Program>(optional: true)
     .AddEnvironmentVariables();
 
+/*
 if (builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironment("Docker"))
     builder.Configuration.AddUserSecrets<Program>(optional: true);
+    */
 
-// Connection string (config → env fallback)
 var connectionString =
     builder.Configuration.GetConnectionString("DefaultConnection") ??
     Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
@@ -50,6 +56,17 @@ builder.Services.AddMediatR(x => {
 builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 builder.Services.AddValidatorsFromAssemblyContaining<GetAnimalDetailsValidator>();
 builder.Services.AddTransient<ExceptionMiddleware>();
+builder.Services.AddIdentityApiEndpoints<User>(opt =>
+    {
+        opt.User.RequireUniqueEmail = true;
+    }).AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<AppDbContext>();
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = IdentityConstants.BearerScheme;
+    options.DefaultAuthenticateScheme = IdentityConstants.BearerScheme;
+    options.DefaultChallengeScheme = IdentityConstants.BearerScheme;
+});
 
 var app = builder.Build();
 
@@ -61,7 +78,11 @@ app.UseCors(c => c
 
 app.UseMiddleware<ExceptionMiddleware>();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
+app.MapGroup("api").MapIdentityApi<User>();
 
 
 using var scope = app.Services.CreateScope();
@@ -70,8 +91,11 @@ var services = scope.ServiceProvider;
 try
 {
     var context = services.GetRequiredService<AppDbContext>();
+    var userManager = services.GetRequiredService<UserManager<User>>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var loggerFactory = services.GetRequiredService<ILoggerFactory>();
     await context.Database.MigrateAsync();
-    await DbInitializer.SeedData(context);
+    await DbInitializer.SeedData(context, userManager, roleManager, loggerFactory);
 }
 catch (Exception ex)
 {

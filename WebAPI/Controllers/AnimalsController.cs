@@ -3,6 +3,7 @@ using Application.Animals.Queries;
 using Application.Core;
 using AutoMapper;
 using Domain;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs;
 
@@ -50,6 +51,8 @@ public class AnimalsController(IMapper mapper) : BaseApiController
     /// If the animal is not found or unavailable, returns a standardized error response.
     /// Successfully retrieved entities are mapped to <see cref="ResAnimalDto"/> using AutoMapper.
     /// </remarks>
+    
+    [Authorize]
     [HttpGet("{id}")]
     public async Task<ActionResult<ResAnimalDto>> GetAnimalDetails(string id)
     {

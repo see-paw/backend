@@ -152,10 +152,13 @@ public class GetAnimalDetailsHandlerTest
         // Assert
         Assert.True(result.IsSuccess);
         Assert.Equal("Golden Retriever", result?.Value?.Breed.Name);
-        Assert.Equal(2, result.Value.Images.Count);
-        Assert.Contains(result.Value.Images, img => img.IsPrincipal);
-        Assert.Equal(200, result.Code);
-        Assert.NotNull(result.Value);
-        Assert.Equal(animalId, result.Value.Id);
+        if (result != null)
+        {
+            Assert.Equal(2, result.Value.Images.Count);
+            Assert.Contains(result.Value.Images, img => img.IsPrincipal);
+            Assert.Equal(200, result.Code);
+            Assert.NotNull(result.Value);
+            Assert.Equal(animalId, result.Value.Id);
+        }
     }
 }

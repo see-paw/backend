@@ -1,6 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 
 namespace Domain;
 
@@ -11,17 +11,14 @@ namespace Domain;
 /// Contains personal, contact, and authentication information,  
 /// as well as relationships to shelters, animals, and user-related activities.
 /// </remarks>
-public class User
-{
-    /// <summary>
-    /// Unique identifier of the user (GUID).
-    /// </summary>
-    [Key]
-    public string Id { get; init; } = Guid.NewGuid().ToString();
 
+[Table("Users")]
+public class User : IdentityUser
+{
     /// <summary>
     /// The identifier of the shelter managed by the user, if the user is an Admin CAA.
     /// </summary>
+    [MaxLength(36)]
     public string? ShelterId { get; set; }
 
     /// <summary>
@@ -30,15 +27,7 @@ public class User
     [Required]
     [MaxLength(255)]
     public string Name { get; set; } = string.Empty;
-
-    /// <summary>
-    /// The user’s email address.
-    /// </summary>
-    [Required]
-    [EmailAddress]
-    [MaxLength(255)]
-    public string Email { get; set; } = string.Empty;
-
+    
     /// <summary>
     /// The date of birth of the user.
     /// </summary>
@@ -60,33 +49,17 @@ public class User
     public string City { get; set; } = string.Empty;
 
     /// <summary>
-    /// The postal code of the user’s address.
+    /// The postal code of the userï¿½s address.
     /// </summary>
     [Required]
     [MaxLength(255)]
     public string PostalCode { get; set; } = string.Empty;
 
     /// <summary>
-    /// The user’s phone number.  
-    /// Must contain 9 digits.
-    /// </summary>
-    [Required]
-    [Phone]
-    [MaxLength(9)]
-    public string PhoneNumber { get; set; } = string.Empty;
-
-    /// <summary>
-    /// The hashed password used for user authentication.
-    /// </summary>
-    [Required]
-    [MaxLength(255)]
-    public string PasswordHash { get; set; } = string.Empty;
-
-    /// <summary>
     /// The UTC timestamp when the user account was created.
     /// </summary>
     [Required]
-    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// The UTC timestamp when the user account was last updated.

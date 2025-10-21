@@ -1,4 +1,5 @@
 ﻿using Domain;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Persistence;
@@ -15,11 +16,10 @@ namespace Persistence;
 /// The context also configures the mapping of enumeration properties to string values
 /// to ensure data readability and consistency across database records.
 /// </remarks>
-public class AppDbContext(DbContextOptions options) : DbContext(options)
+public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(options)
 {
     public DbSet<Animal> Animals { get; set; }
     public DbSet<Shelter> Shelters { get; set; }
-    public DbSet<User> Users { get; set; }
     public DbSet<Fostering> Fosterings { get; set; }
     public DbSet<OwnershipRequest> OwnershipRequests { get; set; }
     public DbSet<Activity> Activities { get; set; }
