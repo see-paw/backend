@@ -11,7 +11,7 @@ public class ResAnimalDTO
     /// <summary>
     /// The unique identifier of the animal.
     /// </summary>
-    public string AnimalId { get; set; } = null!;
+    public string Id { get; set; } = null!;
 
     /// <summary>
     /// The name of the animal.

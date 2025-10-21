@@ -33,7 +33,7 @@ namespace WebAPI.Controllers
         /// </summary>
         /// <param name="pageNumber">The page number to retrieve. Defaults to 1.</param>
         /// <returns>
-        /// A paginated <see cref="PagedList{T}"/> of <see cref="ResAnimalDto"/> objects representing the animals.
+        /// A paginated <see cref="PagedList{T}"/> of <see cref="ResAnimalDTO"/> objects representing the animals.
         /// Returns <c>400</c> if the page number is invalid or an appropriate error message on failure.
         /// </returns>
         [HttpGet]
@@ -61,6 +61,33 @@ namespace WebAPI.Controllers
 
             // Return the successful paginated result
             return HandleResult(Result<PagedList<ResAnimalDTO>>.Success(dtoPagedList, 200));
+        }
+
+        /// <summary>
+        /// Retrieves detailed information about a specific animal by its unique identifier.
+        /// </summary>
+        /// <param name="id">The unique identifier (GUID) of the animal.</param>
+        /// <returns>
+        /// A <see cref="ResAnimalDTO"/> containing the animal details if found; otherwise, an appropriate error response.
+        /// </returns>
+        /// <remarks>
+        /// Sends a <see cref="GetAnimalDetails.Query"/> through MediatR to fetch the animal data.
+        /// If the animal is not found or unavailable, returns a standardized error response.
+        /// Successfully retrieved entities are mapped to <see cref="ResAnimalDTO"/> using AutoMapper.
+        /// </remarks>
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ResAnimalDTO>> GetAnimalDetails(string id)
+        {
+            var result = await Mediator.Send(new GetAnimalDetails.Query() { Id = id });
+
+            if (!result.IsSuccess)
+            {
+                return HandleResult(result);
+            }
+
+            var animalDto = _mapper.Map<ResAnimalDTO>(result.Value);
+
+            return HandleResult(Result<ResAnimalDTO>.Success(animalDto, 200));
         }
 
         /// <summary>
