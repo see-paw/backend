@@ -1,7 +1,15 @@
-﻿using Domain;
-using Domain.Enums;
+﻿using Domain.Enums;
 
-namespace WebAPI.DTOs
+namespace WebAPI.DTOs;
+
+/// <summary>
+/// Data Transfer Object (DTO) representing detailed information about an animal.
+/// </summary>
+/// <remarks>
+/// Used in API responses to return animal details, including identification,
+/// biological attributes, description, cost, and associated images.
+/// </remarks>
+public class ResAnimalDto
 {
     /// <summary>
     /// Data Transfer Object (DTO) used to return detailed information about an animal.
