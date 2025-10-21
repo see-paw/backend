@@ -77,6 +77,7 @@ app.UseCors(c => c
     .WithOrigins("http://localhost:3000", "https://localhost:3000"));
 
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<IdentityResponseMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
