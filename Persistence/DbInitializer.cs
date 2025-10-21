@@ -5,9 +5,26 @@ using Microsoft.Extensions.Logging;
 
 namespace Persistence;
 
+/// <summary>
+/// Provides initial seeding logic for the application's database.
+/// 
+/// This class is responsible for populating the database with essential data, 
+/// including roles, users, shelters, breeds, animals, and images, ensuring 
+/// the system starts with a consistent baseline dataset for development, testing, or demonstration.
+/// </summary>
 public static class DbInitializer
 {
- 
+    /// <summary>
+    /// Seeds the database with default data such as user roles, users, shelters, breeds, animals, and images.
+    /// 
+    /// This method ensures that core entities are created only when they do not already exist, 
+    /// preventing duplication and maintaining idempotent execution.
+    /// </summary>
+    /// <param name="dbContext">The application's database context used to persist entities.</param>
+    /// <param name="userManager">The <see cref="UserManager{TUser}"/> used to manage user creation and role assignment.</param>
+    /// <param name="roleManager">The <see cref="RoleManager{TRole}"/> used to manage roles in the identity system.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging seeding operations and errors.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public static async Task SeedData(AppDbContext dbContext, 
         UserManager<User> userManager, 
         RoleManager<IdentityRole> roleManager,

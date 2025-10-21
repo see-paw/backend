@@ -8,11 +8,24 @@ using Persistence;
 
 namespace Tests;
 
+/// <summary>
+/// Unit tests for the <see cref="UserAccessor"/> class.
+/// 
+/// This test suite verifies that the <see cref="UserAccessor"/> behaves correctly 
+/// when retrieving user identifiers and user entities from the current HTTP context 
+/// and the application database.
+/// </summary>
 public class UserAccessorTest
 {
     private readonly DbContextOptions<AppDbContext> _options;
     private readonly Mock<IHttpContextAccessor> _httpContextAccessor;
     
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UserAccessorTest"/> class.
+    /// 
+    /// Sets up an in-memory database and a mocked <see cref="IHttpContextAccessor"/> 
+    /// to simulate various authentication states in a controlled test environment.
+    /// </summary>
     public UserAccessorTest()
     {
         _options = new DbContextOptionsBuilder<AppDbContext>()
@@ -21,6 +34,10 @@ public class UserAccessorTest
         _httpContextAccessor = new Mock<IHttpContextAccessor>();
     }
 
+    /// <summary>
+    /// Verifies that <see cref="UserAccessor.GetUserId"/> returns the expected user ID
+    /// when a valid authenticated user exists in the HTTP context.
+    /// </summary>
     [Fact]
     public void GetUserId_ShouldReturnUserId_WhenUserIsAuthenticated()
     {
@@ -41,6 +58,10 @@ public class UserAccessorTest
         Assert.Equal("user123", result);
     }
     
+    /// <summary>
+    /// Verifies that <see cref="UserAccessor.GetUserId"/> throws an <see cref="Exception"/>
+    /// when there is no authenticated user present in the HTTP context.
+    /// </summary>
     [Fact]
     public void GetUserId_ShouldThrowException_WhenUserIsNotAuthenticated()
     {
@@ -56,6 +77,10 @@ public class UserAccessorTest
         Assert.Equal("User not found", ex.Message);
     }
     
+    /// <summary>
+    /// Verifies that <see cref="UserAccessor.GetUserAsync"/> returns the correct <see cref="User"/> entity
+    /// when the authenticated user's ID exists in the database.
+    /// </summary>
     [Fact]
     public async Task GetUserAsync_ShouldReturnUser_WhenUserExists()
     {
@@ -83,6 +108,10 @@ public class UserAccessorTest
         Assert.Equal(userId, result.Id);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="UserAccessor.GetUserAsync"/> throws an <see cref="UnauthorizedAccessException"/>
+    /// when the authenticated user's ID does not exist in the database.
+    /// </summary>
     [Fact]
     public async Task GetUserAsync_ShouldThrowUnauthorizedAccess_WhenUserDoesNotExist()
     {
@@ -94,7 +123,7 @@ public class UserAccessorTest
         var httpContext = new DefaultHttpContext { User = principal };
         _httpContextAccessor.Setup(x => x.HttpContext).Returns(httpContext);
 
-        using var context = new AppDbContext(_options);
+        await using var context = new AppDbContext(_options);
         var userAccessor = new UserAccessor(_httpContextAccessor.Object, context);
 
         // Act & Assert

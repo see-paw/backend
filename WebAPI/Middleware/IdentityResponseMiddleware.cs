@@ -2,15 +2,33 @@
 
 namespace WebAPI.Middleware;
 
+/// <summary>
+/// Middleware that intercepts HTTP 401 (Unauthorized) responses produced by ASP.NET Identity 
+/// or authentication components and replaces them with standardized JSON responses.
+/// 
+/// This ensures consistent API behavior by returning clear and structured error messages 
+/// for all authentication-related failures.
+/// </summary>
 public class IdentityResponseMiddleware
 {
     private readonly RequestDelegate _next;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="IdentityResponseMiddleware"/> class.
+    /// </summary>
+    /// <param name="next">
+    /// The next delegate/middleware in the HTTP request pipeline.
+    /// </param>
     public IdentityResponseMiddleware(RequestDelegate next)
     {
         _next = next;
     }
 
+    /// <summary>
+    /// Intercepts unauthorized responses (HTTP 401) and replaces the response body 
+    /// with a custom JSON message based on the Identity error type.
+    /// </summary>
+    /// <param name="context">The current HTTP request and response context.</param>
     public async Task InvokeAsync(HttpContext context)
     {
         // Intercepta apenas respostas 401 (Unauthorized)
