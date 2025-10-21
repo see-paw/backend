@@ -52,7 +52,7 @@ public class AnimalsController(IMapper mapper) : BaseApiController
     /// Successfully retrieved entities are mapped to <see cref="ResAnimalDto"/> using AutoMapper.
     /// </remarks>
     
-    [Authorize]
+    [Authorize(Roles = "AdminCAA")]
     [HttpGet("{id}")]
     public async Task<ActionResult<ResAnimalDto>> GetAnimalDetails(string id)
     {

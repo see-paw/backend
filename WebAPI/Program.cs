@@ -4,7 +4,9 @@ using WebAPI.Validators;
 using FluentValidation;
 using Persistence;
 using System.Text.Json.Serialization;
+using Application.Interfaces;
 using Domain;
+using Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -23,13 +25,10 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false)
-    .AddUserSecrets<Program>(optional: true)
     .AddEnvironmentVariables();
 
-/*
 if (builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironment("Docker"))
     builder.Configuration.AddUserSecrets<Program>(optional: true);
-    */
 
 var connectionString =
     builder.Configuration.GetConnectionString("DefaultConnection") ??
@@ -53,6 +52,7 @@ builder.Services.AddMediatR(x => {
     x.RegisterServicesFromAssemblyContaining<GetAnimalDetails.Handler>();
     x.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
+builder.Services.AddScoped<IUserAcessor, UserAcessor>();
 builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 builder.Services.AddValidatorsFromAssemblyContaining<GetAnimalDetailsValidator>();
 builder.Services.AddTransient<ExceptionMiddleware>();
