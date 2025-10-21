@@ -29,6 +29,9 @@ public class Image
 
     [Required]
     [MaxLength(500)]
+    public string Url { get; set; } = null!;
+
+    [Required]
 
     [MaxLength(255)]
     public string? Description { get; set; }

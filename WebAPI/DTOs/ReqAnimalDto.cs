@@ -3,7 +3,7 @@
 using Domain.Enums;
 
 
-public class ReqAnimalDto
+public class ReqAnimalDTO
 {
     public required string Name { get; set; }
     public AnimalState? AnimalState { get; set; }

@@ -1,6 +1,5 @@
 ﻿using Domain;
 using Domain.Enums;
-using Microsoft.EntityFrameworkCore;
 
 namespace Persistence;
 
@@ -412,4 +411,3 @@ public static class DbInitializer
         }
     }
 }
-
