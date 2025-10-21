@@ -63,6 +63,9 @@ namespace Application.Shelters.Queries
             /// </returns>
             public async Task<Result<PagedList<Animal>>> Handle(Query request, CancellationToken cancellationToken)
             {
+                if (request.PageNumber < 1)
+                    return Result<PagedList<Animal>>.Failure("Page number must be 1 or greater", 404);
+
                 // Check whether the shelter exists in the database
                 var shelterExists = await _context.Shelters
                     .AnyAsync(s => s.Id == request.ShelterId, cancellationToken);

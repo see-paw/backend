@@ -58,6 +58,10 @@ namespace Application.Animals.Queries
             /// </returns>
             public async Task<Result<PagedList<Animal>>> Handle(Query request, CancellationToken cancellationToken)
             {
+
+                if (request.PageNumber < 1)
+                    return Result<PagedList<Animal>>.Failure("Page number must be 1 or greater", 404);
+
                 // Base query with related entities
                 var query = _context.Animals
                     .Include(a => a.Breed)        // Include breed information

@@ -40,12 +40,8 @@ namespace API.Controllers
         [HttpGet("{shelterId}/animals")]
         public async Task<ActionResult<PagedList<Animal>>> GetAnimalsByShelter(string shelterId, [FromQuery] int pageNumber = 1)
         {
-            if (pageNumber < 1)
-                return BadRequest("Page number must be 1 or greater");
 
-            const int pageSize = 20; // Default page size
-
-            // Send the query to the Application layer through MediatR
+            // Send the query to the Application layer 
             var result = await Mediator.Send(new GetAnimalsByShelter.Query
             {
                 ShelterId = shelterId,

@@ -39,8 +39,6 @@ namespace WebAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<PagedList<ResAnimalDto>>> GetAnimals([FromQuery] int pageNumber = 1)
         {
-            if (pageNumber < 1)
-                return BadRequest("Page number must be 1 or greater.");
 
             var result = await Mediator.Send(new GetAnimalList.Query
             {
