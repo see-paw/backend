@@ -12,8 +12,8 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251019085345_InitialDbSchema")]
-    partial class InitialDbSchema
+    [Migration("20251020102749_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -248,7 +248,6 @@ namespace Persistence.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("AnimalId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
@@ -261,12 +260,17 @@ namespace Persistence.Migrations
                     b.Property<bool>("IsPrincipal")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("ShelterId")
+                        .HasColumnType("text");
+
                     b.Property<string>("Url")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ShelterId");
 
                     b.HasIndex("AnimalId", "IsPrincipal")
                         .IsUnique()
@@ -335,7 +339,6 @@ namespace Persistence.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("MainImageId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("NIF")
@@ -367,8 +370,6 @@ namespace Persistence.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("MainImageId");
 
                     b.HasIndex("NIF")
                         .IsUnique();
@@ -528,10 +529,16 @@ namespace Persistence.Migrations
                     b.HasOne("Domain.Animal", "Animal")
                         .WithMany("Images")
                         .HasForeignKey("AnimalId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Domain.Shelter", "Shelter")
+                        .WithMany("Images")
+                        .HasForeignKey("ShelterId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Animal");
+
+                    b.Navigation("Shelter");
                 });
 
             modelBuilder.Entity("Domain.OwnershipRequest", b =>
@@ -551,17 +558,6 @@ namespace Persistence.Migrations
                     b.Navigation("Animal");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Domain.Shelter", b =>
-                {
-                    b.HasOne("Domain.Image", "MainImage")
-                        .WithMany()
-                        .HasForeignKey("MainImageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MainImage");
                 });
 
             modelBuilder.Entity("Domain.User", b =>
@@ -595,6 +591,8 @@ namespace Persistence.Migrations
             modelBuilder.Entity("Domain.Shelter", b =>
                 {
                     b.Navigation("Animals");
+
+                    b.Navigation("Images");
                 });
 
             modelBuilder.Entity("Domain.User", b =>

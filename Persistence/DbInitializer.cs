@@ -3,9 +3,24 @@ using Domain.Enums;
 
 namespace Persistence;
 
+/// <summary>
+/// Provides methods for seeding initial data into the database.
+/// </summary>
+/// <remarks>
+/// Populates the database with predefined entities such as shelters, breeds, animals, and images.  
+/// Used primarily for development and testing environments to ensure the application starts with sample data.
+/// </remarks>
 public static class DbInitializer
 {
-
+    /// <summary>
+    /// Seeds the database with initial data if the corresponding tables are empty.
+    /// </summary>
+    /// <param name="dbContext">The application database context used to access and populate entities.</param>
+    /// <returns>A task representing the asynchronous seeding operation.</returns>
+    /// <remarks>
+    /// Inserts default records for shelters, breeds, animals, and images.  
+    /// Ensures the database is pre-populated with consistent data for development, testing, or demonstration purposes.
+    /// </remarks>
     public static async Task SeedData(AppDbContext dbContext)
     {
         const string breed1Id = "1a1a1111-1111-1111-1111-111111111111";

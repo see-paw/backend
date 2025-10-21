@@ -15,7 +15,6 @@ namespace Persistence;
 /// The context also configures the mapping of enumeration properties to string values
 /// to ensure data readability and consistency across database records.
 /// </remarks>
-
 public class AppDbContext(DbContextOptions options) : DbContext(options)
 {
     public DbSet<Animal> Animals { get; set; }
@@ -49,7 +48,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
 
         modelBuilder.Entity<Shelter>(entity =>
         {
-            // NIF único
+            // Nif unique
             entity.HasIndex(s => s.NIF).IsUnique();
         });
 
@@ -104,7 +103,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
 
         modelBuilder.Entity<Breed>(entity =>
         {
-            // Breed name único
+            // Breed name unique
             entity.HasIndex(b => b.Name).IsUnique();
         });
 
@@ -119,7 +118,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
 
         modelBuilder.Entity<Image>(entity =>
         {
-            // Apenas uma imagem principal por animal
+            // One Main image for each animal
             entity.HasIndex(i => new { i.AnimalId, i.IsPrincipal })
                   .IsUnique()
                   .HasFilter("\"IsPrincipal\" = true");

@@ -44,11 +44,11 @@ builder.Services.AddControllers().AddJsonOptions(o =>
 
 builder.Services.AddCors();
 builder.Services.AddMediatR(x => {
-    x.RegisterServicesFromAssemblyContaining<GetAnimalList.Handler>();
+    x.RegisterServicesFromAssemblyContaining<GetAnimalDetails.Handler>();
     x.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
-builder.Services.AddValidatorsFromAssemblyContaining<CreateAnimalValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<GetAnimalDetailsValidator>();
 builder.Services.AddTransient<ExceptionMiddleware>();
 
 var app = builder.Build();
