@@ -6,7 +6,7 @@ using Persistence;
 
 namespace Infrastructure;
 
-public class UserAcessor(IHttpContextAccessor httpContextAccessor,
+public class UserAccessor(IHttpContextAccessor httpContextAccessor,
     AppDbContext dbContext): IUserAcessor
 {
     public string GetUserId()
@@ -18,6 +18,6 @@ public class UserAcessor(IHttpContextAccessor httpContextAccessor,
     public async Task<User> GetUserAsync()
     {
         return await dbContext.Users.FindAsync(GetUserId())
-            ?? throw new UnauthorizedAccessException("No user loggeg in");
+            ?? throw new UnauthorizedAccessException("No user logged in");
     }
 }
