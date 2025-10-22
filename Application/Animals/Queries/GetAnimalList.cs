@@ -26,7 +26,7 @@ namespace Application.Animals.Queries
             /// <summary>
             /// The number of records per page. Defaults to 20.
             /// </summary>
-            public int PageSize { get; set; } = 1;
+            public int PageSize { get; set; } = 20;
         }
 
         /// <summary>
