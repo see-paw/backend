@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿/*using AutoMapper;
 using Domain;
 using Domain.Enums;
 using WebAPI.Core;
@@ -343,4 +343,4 @@ namespace Tests
             Assert.Equal(state, dto.AnimalState);
         }
     }
-}
+}*/

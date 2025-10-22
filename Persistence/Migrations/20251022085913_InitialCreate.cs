@@ -36,7 +36,6 @@ namespace Persistence.Migrations
                     PostalCode = table.Column<string>(type: "text", nullable: false),
                     Phone = table.Column<string>(type: "text", nullable: false),
                     NIF = table.Column<string>(type: "text", nullable: false),
-                    MainImageId = table.Column<string>(type: "text", nullable: true),
                     OpeningTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
                     ClosingTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
@@ -219,7 +218,7 @@ namespace Persistence.Migrations
                     AnimalId = table.Column<string>(type: "text", nullable: true),
                     ShelterId = table.Column<string>(type: "text", nullable: true),
                     Url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>

@@ -2,6 +2,7 @@
 using Domain.Enums;
 using System.Text.Json.Serialization;
 
+
 namespace Domain;
 
 /// <summary>
@@ -111,7 +112,7 @@ public class Animal
     /// The foreign key referencing the shelter where the animal is located.
     /// </summary>
     [Required]
-    public string ShelterId { get; init; } = string.Empty;
+    public string ShelterId { get; set; } = string.Empty;
 
     /// <summary>
     /// The shelter entity associated with the animal.
@@ -174,5 +175,5 @@ public class Animal
     /// The list of users who have marked this animal as a favorite.
     /// </summary>
     [JsonIgnore]
-    public ICollection<Favorite> Favorites { get; init; } = new List<Favorite>();
+    public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
 }

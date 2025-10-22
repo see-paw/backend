@@ -12,7 +12,7 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251020102749_InitialCreate")]
+    [Migration("20251022085913_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -254,6 +254,7 @@ namespace Persistence.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
@@ -337,9 +338,6 @@ namespace Persistence.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("MainImageId")
-                        .HasColumnType("text");
 
                     b.Property<string>("NIF")
                         .IsRequired()

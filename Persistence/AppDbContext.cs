@@ -59,6 +59,15 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             .HasForeignKey(animal => animal.ShelterId)
             .OnDelete(DeleteBehavior.Restrict);
 
+
+        // Shelter -> Images (1:Many relationship)
+        modelBuilder.Entity<Shelter>()
+           .HasMany(s => s.Images)
+           .WithOne(i => i.Shelter)
+           .HasForeignKey(i => i.ShelterId)
+           .OnDelete(DeleteBehavior.Cascade);
+
+
         // ========== USER CONFIGURATIONS ==========
 
         modelBuilder.Entity<User>(entity =>
@@ -75,7 +84,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // User - Animal (Owner) (1:N, optional)
+        // User - Animal (Owner) (1:N, opcional)
         modelBuilder.Entity<Animal>()
             .HasOne(animal => animal.Owner) // only one ownership per animal
             .WithMany(user => user.OwnedAnimals) // an user can own multiple animals
@@ -86,7 +95,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
         modelBuilder.Entity<User>()
         .HasIndex(u => u.ShelterId)
         .IsUnique() // Only one Admin CAA per shelter
-        .HasFilter("\"ShelterId\" IS NOT NULL");  // Only applied when ShelterId is not null
+        .HasFilter("\"ShelterId\" IS NOT NULL");  // Onlu applied when ShelterId is not null
 
         // ========== ANIMAL CONFIGURATIONS ==========
 
@@ -130,12 +139,6 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             .WithMany(a => a.Images)
             .HasForeignKey(i => i.AnimalId)
             .OnDelete(DeleteBehavior.Cascade);  // If animal is deleted, deletes its images
-
-        modelBuilder.Entity<Image>()
-            .HasOne(i => i.Shelter)
-            .WithMany(s => s.Images)
-            .HasForeignKey(i => i.ShelterId)
-            .OnDelete(DeleteBehavior.Cascade);
 
         // ========== FOSTERING CONFIGURATIONS ==========
 
@@ -225,4 +228,3 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             .OnDelete(DeleteBehavior.Cascade);  // If user is deleted, deletes user's favorite animals
     }
 }
-
