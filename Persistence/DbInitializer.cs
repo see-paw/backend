@@ -1,27 +1,34 @@
 ﻿using Domain;
 using Domain.Enums;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace Persistence;
 
 /// <summary>
-/// Provides methods for seeding initial data into the database.
+/// Provides initial seeding logic for the application's database.
+/// 
+/// This class is responsible for populating the database with essential data, 
+/// including roles, users, shelters, breeds, animals, and images, ensuring 
+/// the system starts with a consistent baseline dataset for development, testing, or demonstration.
 /// </summary>
-/// <remarks>
-/// Populates the database with predefined entities such as shelters, breeds, animals, and images.  
-/// Used primarily for development and testing environments to ensure the application starts with sample data.
-/// </remarks>
 public static class DbInitializer
 {
     /// <summary>
-    /// Seeds the database with initial data if the corresponding tables are empty.
+    /// Seeds the database with default data such as user roles, users, shelters, breeds, animals, and images.
+    /// 
+    /// This method ensures that core entities are created only when they do not already exist, 
+    /// preventing duplication and maintaining idempotent execution.
     /// </summary>
-    /// <param name="dbContext">The application database context used to access and populate entities.</param>
-    /// <returns>A task representing the asynchronous seeding operation.</returns>
-    /// <remarks>
-    /// Inserts default records for shelters, breeds, animals, and images.  
-    /// Ensures the database is pre-populated with consistent data for development, testing, or demonstration purposes.
-    /// </remarks>
-    public static async Task SeedData(AppDbContext dbContext)
+    /// <param name="dbContext">The application's database context used to persist entities.</param>
+    /// <param name="userManager">The <see cref="UserManager{TUser}"/> used to manage user creation and role assignment.</param>
+    /// <param name="roleManager">The <see cref="RoleManager{TRole}"/> used to manage roles in the identity system.</param>
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging seeding operations and errors.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public static async Task SeedData(AppDbContext dbContext, 
+        UserManager<User> userManager, 
+        RoleManager<IdentityRole> roleManager,
+        ILoggerFactory loggerFactory)
     {
         const string breed1Id = "1a1a1111-1111-1111-1111-111111111111";
         const string breed2Id = "2b2b2222-2222-2222-2222-222222222222";
@@ -38,7 +45,10 @@ public static class DbInitializer
         const string animal8Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd8b";
         const string animal9Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd9b";
         const string animal10Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd0c";
-
+        const string platformAdmin = "PlatformAdmin";
+        const string adminCaa = "AdminCAA";
+        const string userRole = "User";
+        
         // ======== SEED SHELTERS ========
         if (!dbContext.Shelters.Any())
         {
@@ -74,6 +84,107 @@ public static class DbInitializer
 
             await dbContext.Shelters.AddRangeAsync(shelters);
             await dbContext.SaveChangesAsync();
+        }
+        
+        // ======== USERS SHELTERS ========
+
+        if (!userManager.Users.Any())
+        {
+            var roles = new List<string> { platformAdmin, adminCaa, userRole };
+            var logger = loggerFactory.CreateLogger("DbInitializer");
+            
+            foreach (var role in roles)
+            {
+                if (!await roleManager.RoleExistsAsync(role))
+                {
+                    await roleManager.CreateAsync(new IdentityRole(role));
+                }
+            }
+            var users = new List<User>
+            {
+                new()
+                {
+                    Name = "Bob Johnson",
+                    UserName = "bob@test.com",
+                    Email = "bob@test.com",
+                    City = "Porto",
+                    Street = "Rua das Flores 10",
+                    PostalCode = "4000-123",
+                    BirthDate = new DateTime(1995, 4, 12),
+                    PhoneNumber = "912345678",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new()
+                {
+                    Name = "Alice Ferreira",
+                    UserName = "alice@test.com",
+                    Email = "alice@test.com",
+                    City = "Lisboa",
+                    Street = "Avenida da Liberdade 55",
+                    PostalCode = "1250-123",
+                    BirthDate = new DateTime(1998, 11, 2),
+                    PhoneNumber = "934567890",
+                    CreatedAt = DateTime.UtcNow,
+                    ShelterId = shelter1Id
+                },
+                new()
+                {
+                    Name = "Carlos Santos",
+                    UserName = "carlos@test.com",
+                    Email = "carlos@test.com",
+                    City = "Coimbra",
+                    Street = "Rua do Penedo 32",
+                    PostalCode = "3000-222",
+                    BirthDate = new DateTime(1992, 6, 8),
+                    PhoneNumber = "967123456",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new()
+                {
+                    Name = "Diana Silva",
+                    UserName = "diana@test.com",
+                    Email = "diana@test.com",
+                    City = "Faro",
+                    Street = "Rua das Oliveiras 8",
+                    PostalCode = "8000-333",
+                    BirthDate = new DateTime(1990, 9, 30),
+                    PhoneNumber = "925111333",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new()
+                {
+                    Name = "Eduardo Lima",
+                    UserName = "eduardo@test.com",
+                    Email = "eduardo@test.com",
+                    City = "Braga",
+                    Street = "Rua Nova 42",
+                    PostalCode = "4700-321",
+                    BirthDate = new DateTime(1988, 2, 14),
+                    PhoneNumber = "915222444",
+                    CreatedAt = DateTime.UtcNow
+                }
+            };
+                
+            foreach (var user in users)
+            {
+                var result = await userManager.CreateAsync(user, "Pa$$w0rd");
+                
+                if (result.Succeeded)
+                {
+                    var role = user.Email switch
+                    {
+                        "bob@test.com" => platformAdmin,
+                        "alice@test.com" => adminCaa,
+                        _ => userRole
+                    };
+
+                    await userManager.AddToRoleAsync(user, role);
+                }
+                else
+                {
+                    logger.LogWarning("Erro ao criar utilizador {Email}: {Errors}", user.Email, string.Join(", ", result.Errors.Select(e => e.Description)));
+                }
+            }
         }
 
         // ======== SEED BREEDS ========
