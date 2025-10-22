@@ -2,19 +2,15 @@
 using Application.Shelters.Queries;
 using AutoMapper;
 using Domain;
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using WebAPI.Controllers;
 using WebAPI.DTOs;
 
-namespace API.Controllers
+namespace WebAPI.Controllers
 {
     /// <summary>
     /// API controller responsible for handling operations related to shelters.
     /// Provides endpoints for retrieving animals associated with a specific shelter.
     /// </summary>
-    [ApiController]
-    [Route("api/[controller]")]
     public class SheltersController : BaseApiController
     {
         private readonly IMapper _mapper;

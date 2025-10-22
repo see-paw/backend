@@ -80,8 +80,8 @@ app.UseCors(c => c
     .AllowAnyMethod()
     .WithOrigins("http://localhost:3000", "https://localhost:3000"));
 
-app.UseMiddleware<ExceptionMiddleware>();
 app.UseMiddleware<IdentityResponseMiddleware>();
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();

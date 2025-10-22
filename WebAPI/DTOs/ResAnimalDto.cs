@@ -36,7 +36,7 @@ public class ResAnimalDto
     /// <summary>
     /// The breed information associated with the animal.
     /// </summary>
-    public ResBreedDto Breed { get; set; }
+    public ResBreedDto Breed { get; set; } = null!;
 
     /// <summary>
     /// The current state of the animal (e.g., Available, Fostered, Adopted).
