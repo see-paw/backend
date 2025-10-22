@@ -51,18 +51,19 @@ public class GetAnimalDetailsHandlerTest
     /// <summary>
     /// Ensures that animals in non-retrievable states return a not found result.
     /// </summary>
-    /*[Theory]
+    [Theory]
     [InlineData(AnimalState.Inactive)]
     [InlineData(AnimalState.HasOwner)]
     [InlineData(AnimalState.TotallyFostered)]
     public async Task NonRetrievableStates_ReturnsNotFound(AnimalState invalidState)
     {
         // Arrange
-        using var context = new AppDbContext(_options);
+        await using var context = new AppDbContext(_options);
         var animalId = Guid.NewGuid().ToString();
         var breedId = Guid.NewGuid().ToString();
 
         var breed = new Breed { Id = breedId, Name = "Golden Retriever" };
+        
         var animal = new Animal
         {
             Id = animalId,
@@ -81,8 +82,16 @@ public class GetAnimalDetailsHandlerTest
 
         var images = new List<Image>
         {
-            new() { Url = "https://example.com/max1.jpg", IsPrincipal = true, AnimalId = animalId },
-            new() { Url = "https://example.com/max2.jpg", IsPrincipal = false, AnimalId = animalId }
+            new() { Url = "https://example.com/max1.jpg",
+                IsPrincipal = true,
+                AnimalId = animalId,
+                Description = "Gold and beautiful"
+            },
+            new() { Url = "https://example.com/max2.jpg",
+                IsPrincipal = false,
+                AnimalId = animalId,
+                Description = "Gold and beautiful"
+            }
         };
 
         context.Breeds.Add(breed);
@@ -100,22 +109,28 @@ public class GetAnimalDetailsHandlerTest
         Assert.False(result.IsSuccess);
         Assert.Equal(404, result.Code);
         Assert.Equal("Animal not retrievable", result.Error);
-    }*/
+    }
 
     /// <summary>
     /// Ensures that valid animals in available or partially fostered states return success.
     /// </summary>
-   /* [Theory]
+    [Theory]
     [InlineData(AnimalState.Available)]
     [InlineData(AnimalState.PartiallyFostered)]
     public async Task ValidAvailableAnimal_ReturnsSuccess(AnimalState animalState)
     {
         // Arrange
-        using var context = new AppDbContext(_options);
+        await using var context = new AppDbContext(_options);
         var animalId = Guid.NewGuid().ToString();
         var breedId = Guid.NewGuid().ToString();
 
-        var breed = new Breed { Id = breedId, Name = "Golden Retriever" };
+        var breed = new Breed
+        {
+            Id = breedId, 
+            Name = "Golden Retriever",
+            Description = "Gold and beautiful"
+        };
+        
         var animal = new Animal
         {
             Id = animalId,
@@ -129,13 +144,23 @@ public class GetAnimalDetailsHandlerTest
             Sterilized = true,
             Cost = 150m,
             ShelterId = Guid.NewGuid().ToString(),
-            BreedId = breedId
+            BreedId = breedId,
         };
 
         var images = new List<Image>
         {
-            new() { Url = "https://example.com/max1.jpg", IsPrincipal = true, AnimalId = animalId },
-            new() { Url = "https://example.com/max2.jpg", IsPrincipal = false, AnimalId = animalId }
+            new()
+            {
+                Url = "https://example.com/max1.jpg", 
+                IsPrincipal = true, 
+                AnimalId = animalId,
+                Description = "Image of a dog"
+            },
+            new() { Url = "https://example.com/max2.jpg", 
+                IsPrincipal = false, 
+                AnimalId = animalId,
+                Description = "Image of a dog"
+            }
         };
 
         context.Breeds.Add(breed);
@@ -157,5 +182,5 @@ public class GetAnimalDetailsHandlerTest
         Assert.Equal(200, result.Code);
         Assert.NotNull(result.Value);
         Assert.Equal(animalId, result.Value.Id);
-    }*/
+    }
 }

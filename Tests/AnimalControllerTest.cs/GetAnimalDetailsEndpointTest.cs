@@ -1,4 +1,4 @@
-/*using Application.Animals.Queries;
+using Application.Animals.Queries;
 using Application.Core;
 using AutoMapper;
 using Domain;
@@ -146,7 +146,8 @@ namespace Tests.AnimalControllerTest.cs
                 Breed = new Breed
                 {
                     Id = breedId,
-                    Name = "Golden Retriever"
+                    Name = "Golden Retriever",
+                    Description = "Gold and beautiful"
                 },
                 Images = new List<Image>
                 {
@@ -160,7 +161,7 @@ namespace Tests.AnimalControllerTest.cs
                 }
             };
 
-            var expectedDto = new ResAnimalDTO
+            var expectedDto = new ResAnimalDto
             {
                 Id = animalId,
                 Name = "Max",
@@ -175,7 +176,12 @@ namespace Tests.AnimalControllerTest.cs
                 Cost = 150m,
                 Description = "Friendly and energetic dog",
                 Features = "Good with children, loves to play",
-                BreedName = "Golden Retriever",
+                Breed = new ResBreedDto
+                {
+                    Id = animal.Id,
+                    Name = "Golden Retriever",
+                    Description = "Gold and beautiful"
+                },
                 Images = new List<ResImageDto>
                 {
                     new()
@@ -193,7 +199,7 @@ namespace Tests.AnimalControllerTest.cs
                 .ReturnsAsync(Result<Animal>.Success(animal, 200));
 
             _mockMapper
-                .Setup(m => m.Map<ResAnimalDTO>(It.IsAny<Animal>()))
+                .Setup(m => m.Map<ResAnimalDto>(It.IsAny<Animal>()))
                 .Returns(expectedDto);
 
             // Act
@@ -201,7 +207,7 @@ namespace Tests.AnimalControllerTest.cs
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var dto = Assert.IsType<ResAnimalDTO>(okResult.Value);
+            var dto = Assert.IsType<ResAnimalDto>(okResult.Value);
 
             Assert.Equal("Max", dto.Name);
             Assert.Equal(Species.Dog, dto.Species);
@@ -210,7 +216,8 @@ namespace Tests.AnimalControllerTest.cs
             Assert.Equal("Brown", dto.Colour);
             Assert.True(dto.Sterilized);
             Assert.Equal(150m, dto.Cost);
-            Assert.Equal("Golden Retriever", dto.BreedName);
+            Assert.Equal("Golden Retriever", dto.Breed.Name);
+            Assert.Equal("Gold and beautiful", dto.Breed.Description);
             Assert.Single(dto.Images);
             Assert.True(dto.Images.First().IsPrincipal);
         }
@@ -240,7 +247,7 @@ namespace Tests.AnimalControllerTest.cs
                 ShelterId = Guid.NewGuid().ToString()
             };
 
-            var expectedDto = new ResAnimalDTO
+            var expectedDto = new ResAnimalDto
             {
                 Id = animalId,
                 Name = "Luna",
@@ -253,7 +260,12 @@ namespace Tests.AnimalControllerTest.cs
                 Age = 2,
                 Sterilized = true,
                 Cost = 80m,
-                BreedName = "Mixed"
+                Breed = new ResBreedDto
+                {
+                    Id = animal.Id,
+                    Name = "Normal",
+                    Description = "Just a normal cat"
+                }
             };
 
             _mockMediator
@@ -261,7 +273,7 @@ namespace Tests.AnimalControllerTest.cs
                 .ReturnsAsync(Result<Animal>.Success(animal, 200));
 
             _mockMapper
-                .Setup(m => m.Map<ResAnimalDTO>(It.IsAny<Animal>()))
+                .Setup(m => m.Map<ResAnimalDto>(It.IsAny<Animal>()))
                 .Returns(expectedDto);
 
             // Act
@@ -269,8 +281,8 @@ namespace Tests.AnimalControllerTest.cs
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            var dto = Assert.IsType<ResAnimalDTO>(okResult.Value);
+            var dto = Assert.IsType<ResAnimalDto>(okResult.Value);
             Assert.Equal(AnimalState.PartiallyFostered, dto.AnimalState);
         }
     }
-}*/
+}

@@ -33,11 +33,11 @@ namespace WebAPI.Controllers
         /// </summary>
         /// <param name="pageNumber">The page number to retrieve. Defaults to 1.</param>
         /// <returns>
-        /// A paginated <see cref="PagedList{T}"/> of <see cref="ResAnimalDTO"/> objects representing the animals.
+        /// A paginated <see cref="PagedList{T}"/> of <see cref="ResAnimalDto"/> objects representing the animals.
         /// Returns <c>400</c> if the page number is invalid or an appropriate error message on failure.
         /// </returns>
         [HttpGet]
-        public async Task<ActionResult<PagedList<ResAnimalDTO>>> GetAnimals([FromQuery] int pageNumber = 1)
+        public async Task<ActionResult<PagedList<ResAnimalDto>>> GetAnimals([FromQuery] int pageNumber = 1)
         {
 
             var result = await Mediator.Send(new GetAnimalList.Query
@@ -49,10 +49,10 @@ namespace WebAPI.Controllers
                 return HandleResult(result);
 
             // Map the list of Animal entities to response DTOs
-            var dtoList = _mapper.Map<List<ResAnimalDTO>>(result.Value);
+            var dtoList = _mapper.Map<List<ResAnimalDto>>(result.Value);
 
             // Create a new paginated list with the DTOs
-            var dtoPagedList = new PagedList<ResAnimalDTO>(
+            var dtoPagedList = new PagedList<ResAnimalDto>(
                 dtoList,
                 result.Value.TotalCount,
                 result.Value.CurrentPage,
@@ -60,7 +60,7 @@ namespace WebAPI.Controllers
             );
 
             // Return the successful paginated result
-            return HandleResult(Result<PagedList<ResAnimalDTO>>.Success(dtoPagedList, 200));
+            return HandleResult(Result<PagedList<ResAnimalDto>>.Success(dtoPagedList, 200));
         }
 
         /// <summary>
@@ -68,15 +68,15 @@ namespace WebAPI.Controllers
         /// </summary>
         /// <param name="id">The unique identifier (GUID) of the animal.</param>
         /// <returns>
-        /// A <see cref="ResAnimalDTO"/> containing the animal details if found; otherwise, an appropriate error response.
+        /// A <see cref="ResAnimalDto"/> containing the animal details if found; otherwise, an appropriate error response.
         /// </returns>
         /// <remarks>
         /// Sends a <see cref="GetAnimalDetails.Query"/> through MediatR to fetch the animal data.
         /// If the animal is not found or unavailable, returns a standardized error response.
-        /// Successfully retrieved entities are mapped to <see cref="ResAnimalDTO"/> using AutoMapper.
+        /// Successfully retrieved entities are mapped to <see cref="ResAnimalDto"/> using AutoMapper.
         /// </remarks>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ResAnimalDTO>> GetAnimalDetails(string id)
+        public async Task<ActionResult<ResAnimalDto>> GetAnimalDetails(string id)
         {
             var result = await Mediator.Send(new GetAnimalDetails.Query() { Id = id });
 
@@ -85,9 +85,9 @@ namespace WebAPI.Controllers
                 return HandleResult(result);
             }
 
-            var animalDto = _mapper.Map<ResAnimalDTO>(result.Value);
+            var animalDto = _mapper.Map<ResAnimalDto>(result.Value);
 
-            return HandleResult(Result<ResAnimalDTO>.Success(animalDto, 200));
+            return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace WebAPI.Controllers
         /// or an error response (400, 404, 401) depending on the failure condition.
         /// </returns>
         [HttpPost]
-        public async Task<ActionResult<string>> CreateAnimal([FromBody] ReqCreateAnimalDTO reqAnimalDto)
+        public async Task<ActionResult<string>> CreateAnimal([FromBody] ReqCreateAnimalDto reqAnimalDto)
         {
             // Temporary shelter ID (to be replaced when JWT authentication is implemented)
             var shelterId = "22222222-2222-2222-2222-222222222222";

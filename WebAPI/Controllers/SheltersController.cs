@@ -34,7 +34,7 @@ namespace API.Controllers
         /// <param name="shelterId">The unique identifier of the shelter.</param>
         /// <param name="pageNumber">The page number to retrieve (default is 1).</param>
         /// <returns>
-        /// A paginated <see cref="PagedList{T}"/> of <see cref="ResAnimalDTO"/> objects representing the animals.
+        /// A paginated <see cref="PagedList{T}"/> of <see cref="ResAnimalDto"/> objects representing the animals.
         /// Returns <c>400</c> if the page number is invalid or an appropriate error message if the shelter or animals are not found.
         /// </returns>
         [HttpGet("{shelterId}/animals")]
@@ -52,11 +52,11 @@ namespace API.Controllers
             if (!result.IsSuccess)
                 return HandleResult(result);
 
-            // Map Animal → ResAnimalDTO for the API response
-            var dtoList = _mapper.Map<List<ResAnimalDTO>>(result.Value);
+            // Map Animal → ResAnimalDto for the API response
+            var dtoList = _mapper.Map<List<ResAnimalDto>>(result.Value);
 
             // Wrap the DTO list in a paginated structure with metadata
-            var pagedDtoList = new PagedList<ResAnimalDTO>(
+            var pagedDtoList = new PagedList<ResAnimalDto>(
                 dtoList,
                 result.Value.TotalCount,
                 result.Value.CurrentPage,
@@ -64,7 +64,7 @@ namespace API.Controllers
             );
 
             // Return the standardized result using the base handler
-            return HandleResult(Result<PagedList<ResAnimalDTO>>.Success(pagedDtoList, 200));
+            return HandleResult(Result<PagedList<ResAnimalDto>>.Success(pagedDtoList, 200));
         }
     }
 }

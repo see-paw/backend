@@ -158,7 +158,7 @@ namespace Tests
         public void AnimalBirthDateEmpty()
         {
             // default DateOnly is 0001-01-01 - equivalent to "empty" for other types like string or int
-            var animalDTO = new ReqCreateAnimalDTO { BirthDate = default };
+            var animalDTO = new ReqCreateAnimalDto { BirthDate = default };
             var result = _validator.Validate(animalDTO);
 
             Assert.False(result.IsValid);
@@ -171,7 +171,7 @@ namespace Tests
         [InlineData(365)] // 1 year in the future
         public void AnimalBirthDateInFuture(int daysInFuture)
         {
-            var animalDTO = new ReqCreateAnimalDTO
+            var animalDTO = new ReqCreateAnimalDto
             {
                 BirthDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(daysInFuture))
             };
@@ -294,7 +294,7 @@ namespace Tests
         public void AnimalsListCannotHaveToIsPrincipalImages()
         {
             var dto = CreateValidAnimalDTO();
-            dto.Images = new List<ReqImageDTO>
+            dto.Images = new List<ReqImageDto>
             {
                 new()
                 {
@@ -318,7 +318,7 @@ namespace Tests
         public void NoPrincipalImage()
         {
             var dto = CreateValidAnimalDTO();
-            dto.Images = new List<ReqImageDTO>
+            dto.Images = new List<ReqImageDto>
             {
                 new() { Url = "https://example.com/img1.jpg", Description = "Main photo", isPrincipal = false },
                 new() { Url = "https://example.com/img2.jpg", Description = "Second photo", isPrincipal = false }
@@ -332,7 +332,7 @@ namespace Tests
         public void ValidListOfImages()
         {
             var dto = CreateValidAnimalDTO();
-            dto.Images = new List<ReqImageDTO>
+            dto.Images = new List<ReqImageDto>
             {
                 new() { Url = "https://example.com/img1.jpg", isPrincipal = true },
                 new() { Url = "https://example.com/img2.jpg", isPrincipal = false }
@@ -349,7 +349,7 @@ namespace Tests
         public void ImageUrlEmptyOrNull(string url)
         {
             var dto = CreateValidAnimalDTO();
-            dto.Images = new List<ReqImageDTO>
+            dto.Images = new List<ReqImageDto>
             {
                 new() { Url = url, isPrincipal = true }
             };
@@ -366,7 +366,7 @@ namespace Tests
         public void ImageUrlInvalidFormat(string url)
         {
             var dto = CreateValidAnimalDTO();
-            dto.Images = new List<ReqImageDTO>
+            dto.Images = new List<ReqImageDto>
             {
                 new() { Url = url, isPrincipal = true }
             };
@@ -383,7 +383,7 @@ namespace Tests
         public void ImageUrlValidFormat(string url)
         {
             var dto = CreateValidAnimalDTO();
-            dto.Images = new List<ReqImageDTO>
+            dto.Images = new List<ReqImageDto>
             {
                 new() { Url = url, isPrincipal = true }
             };
@@ -398,7 +398,7 @@ namespace Tests
             var dto = CreateValidAnimalDTO();
             var longUrl = "https://example.com/" + new string('a', 500); // > 500 chars
 
-            dto.Images = new List<ReqImageDTO>
+            dto.Images = new List<ReqImageDto>
             {
                 new() { Url = longUrl, isPrincipal = true }
             };
@@ -409,9 +409,9 @@ namespace Tests
 
 
 
-        private ReqCreateAnimalDTO CreateValidAnimalDTO()
+        private ReqCreateAnimalDto CreateValidAnimalDTO()
         {
-            return new ReqCreateAnimalDTO
+            return new ReqCreateAnimalDto
             {
                 Name = "Test Animal",
                 Species = Species.Dog,
@@ -424,9 +424,9 @@ namespace Tests
                 Features = "Healthy and friendly",
                 Description = "Healthy and friendly",
                 Sex = SexType.Male,
-                Images = new List<ReqImageDTO>
+                Images = new List<ReqImageDto>
                 {
-                    new ReqImageDTO
+                    new ReqImageDto
                     {
                         Url = "https://example.com/valid-image.jpg",
                         isPrincipal = true
