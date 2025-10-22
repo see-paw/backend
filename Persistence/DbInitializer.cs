@@ -49,6 +49,43 @@ public static class DbInitializer
         const string adminCaa = "AdminCAA";
         const string userRole = "User";
         
+        // ======== SEED SHELTERS ========
+        if (!dbContext.Shelters.Any())
+        {
+            var shelters = new List<Shelter>
+            {
+                new()
+                {
+                    Id = shelter1Id,
+                    Name = "Test Shelter",
+                    Street = "Rua das Flores 123",
+                    City = "Porto",
+                    PostalCode = "4000-123",
+                    Phone = "912345678",
+                    NIF = "123456789",
+                    OpeningTime = new TimeOnly(9, 0, 0),
+                    ClosingTime = new TimeOnly(18, 0, 0),
+                    CreatedAt = DateTime.UtcNow
+                },
+                new()
+                {
+                    Id = shelter2Id,
+                    Name = "Test Shelter 2",
+                    Street = "Rua de Cima 898",
+                    City = "Porto",
+                    PostalCode = "4000-125",
+                    Phone = "224589631",
+                    NIF = "999999999",
+                    OpeningTime = new TimeOnly(9, 0, 0),
+                    ClosingTime = new TimeOnly(18, 0, 0),
+                    CreatedAt = DateTime.UtcNow
+                }
+            };
+
+            await dbContext.Shelters.AddRangeAsync(shelters);
+            await dbContext.SaveChangesAsync();
+        }
+        
         // ======== USERS SHELTERS ========
 
         if (!userManager.Users.Any())
@@ -148,43 +185,6 @@ public static class DbInitializer
                     logger.LogWarning("Erro ao criar utilizador {Email}: {Errors}", user.Email, string.Join(", ", result.Errors.Select(e => e.Description)));
                 }
             }
-        }
-        
-        // ======== SEED SHELTERS ========
-        if (!dbContext.Shelters.Any())
-        {
-            var shelters = new List<Shelter>
-            {
-                new()
-                {
-                    Id = shelter1Id,
-                    Name = "Test Shelter",
-                    Street = "Rua das Flores 123",
-                    City = "Porto",
-                    PostalCode = "4000-123",
-                    Phone = "912345678",
-                    NIF = "123456789",
-                    OpeningTime = new TimeOnly(9, 0, 0),
-                    ClosingTime = new TimeOnly(18, 0, 0),
-                    CreatedAt = DateTime.UtcNow
-                },
-                new()
-                {
-                    Id = shelter2Id,
-                    Name = "Test Shelter 2",
-                    Street = "Rua de Cima 898",
-                    City = "Porto",
-                    PostalCode = "4000-125",
-                    Phone = "224589631",
-                    NIF = "999999999",
-                    OpeningTime = new TimeOnly(9, 0, 0),
-                    ClosingTime = new TimeOnly(18, 0, 0),
-                    CreatedAt = DateTime.UtcNow
-                }
-            };
-
-            await dbContext.Shelters.AddRangeAsync(shelters);
-            await dbContext.SaveChangesAsync();
         }
 
         // ======== SEED BREEDS ========

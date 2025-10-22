@@ -12,7 +12,6 @@ namespace Domain;
 /// as well as relationships to shelters, animals, and user-related activities.
 /// </remarks>
 
-[Table("Users")]
 public class User : IdentityUser
 {
     /// <summary>
