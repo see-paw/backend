@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Application.OwnershipRequests.Commands;
 
-public class UpdateOwnershipStatus
+public class UpdateOwnershipRequestStatus
 {
     public class Command : IRequest<Result<OwnershipRequest>>
     {
