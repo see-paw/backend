@@ -98,6 +98,7 @@ namespace WebAPI.Controllers
         /// The unique identifier (<see cref="string"/>) of the created animal on success,
         /// or an error response (400, 404, 401) depending on the failure condition.
         /// </returns>
+        [IgnoreAntiforgeryToken]
         [HttpPost]
         public async Task<ActionResult<string>> CreateAnimal([FromBody] ReqCreateAnimalDto reqAnimalDto)
         {
