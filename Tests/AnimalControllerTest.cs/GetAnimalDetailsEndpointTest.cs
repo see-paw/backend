@@ -146,7 +146,8 @@ namespace Tests.AnimalControllerTest.cs
                 Breed = new Breed
                 {
                     Id = breedId,
-                    Name = "Golden Retriever"
+                    Name = "Golden Retriever",
+                    Description = "Gold and beautiful"
                 },
                 Images = new List<Image>
                 {
@@ -175,7 +176,12 @@ namespace Tests.AnimalControllerTest.cs
                 Cost = 150m,
                 Description = "Friendly and energetic dog",
                 Features = "Good with children, loves to play",
-                BreedName = "Golden Retriever",
+                Breed = new ResBreedDto
+                {
+                    Id = animal.Id,
+                    Name = "Golden Retriever",
+                    Description = "Gold and beautiful"
+                },
                 Images = new List<ResImageDto>
                 {
                     new()
@@ -210,7 +216,8 @@ namespace Tests.AnimalControllerTest.cs
             Assert.Equal("Brown", dto.Colour);
             Assert.True(dto.Sterilized);
             Assert.Equal(150m, dto.Cost);
-            Assert.Equal("Golden Retriever", dto.BreedName);
+            Assert.Equal("Golden Retriever", dto.Breed.Name);
+            Assert.Equal("Gold and beautiful", dto.Breed.Description);
             Assert.Single(dto.Images);
             Assert.True(dto.Images.First().IsPrincipal);
         }
@@ -253,7 +260,12 @@ namespace Tests.AnimalControllerTest.cs
                 Age = 2,
                 Sterilized = true,
                 Cost = 80m,
-                BreedName = "Mixed"
+                Breed = new ResBreedDto
+                {
+                    Id = animal.Id,
+                    Name = "Normal",
+                    Description = "Just a normal cat"
+                }
             };
 
             _mockMediator

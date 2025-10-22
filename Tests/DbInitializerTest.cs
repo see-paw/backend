@@ -62,7 +62,7 @@ namespace Tests
         public async Task SeedData_EmptyDatabase_CreatesAllRoles()
         {
             // Arrange
-            using var context = new AppDbContext(_options);
+            await using var context = new AppDbContext(_options);
             var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
 
             // Act
@@ -81,7 +81,7 @@ namespace Tests
         public async Task SeedData_EmptyDatabase_Creates5Users()
         {
             // Arrange
-            using var context = new AppDbContext(_options);
+            await using var context = new AppDbContext(_options);
             var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
 
             // Act
@@ -98,7 +98,7 @@ namespace Tests
         public async Task SeedData_EmptyDatabase_AssignsPlatformAdminRole()
         {
             // Arrange
-            using var context = new AppDbContext(_options);
+            await using var context = new AppDbContext(_options);
             var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
 
             // Act
@@ -117,7 +117,7 @@ namespace Tests
         public async Task SeedData_EmptyDatabase_AssignsAdminCAARole()
         {
             // Arrange
-            using var context = new AppDbContext(_options);
+            await using var context = new AppDbContext(_options);
             var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
 
             // Act
@@ -140,7 +140,7 @@ namespace Tests
         public async Task SeedData_EmptyDatabase_AssignsUserRole(string email)
         {
             // Arrange
-            using var context = new AppDbContext(_options);
+            await using var context = new AppDbContext(_options);
             var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
 
             // Act
@@ -159,7 +159,7 @@ namespace Tests
         public async Task SeedData_EmptyDatabase_CreatesUsersWithCorrectPassword()
         {
             // Arrange
-            using var context = new AppDbContext(_options);
+            await using var context = new AppDbContext(_options);
             var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
 
             // Act
@@ -178,7 +178,7 @@ namespace Tests
         public async Task SeedData_UsersExist_DoesNotDuplicate()
         {
             // Arrange
-            using var context = new AppDbContext(_options);
+            await using var context = new AppDbContext(_options);
             var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
 
             var existingUser = new User
@@ -210,7 +210,7 @@ namespace Tests
         public async Task SeedData_EmptyDatabase_CreatesUsersWithValidPhoneNumbers()
         {
             // Arrange
-            using var context = new AppDbContext(_options);
+            await using var context = new AppDbContext(_options);
             var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
 
             // Act
@@ -233,7 +233,7 @@ namespace Tests
         public async Task SeedData_EmptyDatabase_CreatesShelters()
         {
             // Arrange
-            using var context = new AppDbContext(_options);
+            await using var context = new AppDbContext(_options);
             var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
 
             // Act
@@ -252,7 +252,7 @@ namespace Tests
         public async Task SeedData_SheltersExist_DoesNotDuplicate()
         {
             // Arrange
-            using var context = new AppDbContext(_options);
+            await using var context = new AppDbContext(_options);
             var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
 
             var existingShelter = new Shelter
@@ -288,7 +288,7 @@ namespace Tests
         public async Task SeedData_EmptyDatabase_CreatesBreeds()
         {
             // Arrange
-            using var context = new AppDbContext(_options);
+            await using var context = new AppDbContext(_options);
             var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
 
             // Act
@@ -305,7 +305,7 @@ namespace Tests
         public async Task SeedData_BreedsExist_DoesNotDuplicate()
         {
             // Arrange
-            using var context = new AppDbContext(_options);
+           await using var context = new AppDbContext(_options);
             var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
 
             var existingBreed = new Breed
@@ -334,7 +334,7 @@ namespace Tests
         public async Task SeedData_EmptyDatabase_CreatesAnimals()
         {
             // Arrange
-            using var context = new AppDbContext(_options);
+            await using var context = new AppDbContext(_options);
             var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
 
             // Act
@@ -356,7 +356,7 @@ namespace Tests
         public async Task SeedData_EmptyDatabase_CreatesAnimalsWithDifferentStates(AnimalState state, int expectedCount)
         {
             // Arrange
-            using var context = new AppDbContext(_options);
+            await using var context = new AppDbContext(_options);
             var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
 
             // Act
@@ -376,7 +376,7 @@ namespace Tests
         public async Task SeedData_EmptyDatabase_CreatesAnimalsWithCorrectSpecies(Species species, int expectedCount)
         {
             // Arrange
-            using var context = new AppDbContext(_options);
+            await using var context = new AppDbContext(_options);
             var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
 
             // Act
@@ -394,7 +394,7 @@ namespace Tests
         public async Task SeedData_AnimalsExist_DoesNotDuplicate()
         {
             // Arrange
-            using var context = new AppDbContext(_options);
+            await using var context = new AppDbContext(_options);
             var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
 
             var existingAnimal = new Animal
@@ -433,7 +433,7 @@ namespace Tests
         public async Task SeedData_EmptyDatabase_CreatesImages()
         {
             // Arrange
-            using var context = new AppDbContext(_options);
+            await using var context = new AppDbContext(_options);
             var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
 
             // Act
@@ -450,7 +450,7 @@ namespace Tests
         public async Task SeedData_EmptyDatabase_CreatesImagesForSheltersAndAnimals()
         {
             // Arrange
-            using var context = new AppDbContext(_options);
+            await using var context = new AppDbContext(_options);
             var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
 
             // Act
@@ -471,7 +471,7 @@ namespace Tests
         public async Task SeedData_EmptyDatabase_CreatesPrincipalImages()
         {
             // Arrange
-            using var context = new AppDbContext(_options);
+            await using var context = new AppDbContext(_options);
             var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
 
             // Act
@@ -490,7 +490,7 @@ namespace Tests
         public async Task SeedData_ImagesExist_DoesNotDuplicate()
         {
             // Arrange
-            using var context = new AppDbContext(_options);
+            await using var context = new AppDbContext(_options);
             var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
 
             var existingImage = new Image
@@ -498,6 +498,7 @@ namespace Tests
                 Id = Guid.NewGuid().ToString(),
                 Url = "https://example.com/existing.jpg",
                 IsPrincipal = true,
+                Description = "A very pretty shelter",
                 ShelterId = Guid.NewGuid().ToString()
             };
 

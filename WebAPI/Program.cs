@@ -8,6 +8,7 @@ using Domain;
 using Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using WebAPI.Core;
 using WebAPI.Middleware;
@@ -44,6 +45,9 @@ builder.Services.AddControllers().AddJsonOptions(o =>
     o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     o.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
 });
+
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
 
 builder.Services.AddCors();
 builder.Services.AddMediatR(x => {

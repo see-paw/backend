@@ -3,31 +3,46 @@ using Application.Animals.Queries;
 using Application.Core;
 using AutoMapper;
 using Domain;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs;
 
 namespace WebAPI.Controllers;
 
-/// <summary>
-/// Controller responsible for managing animal-related operations.
-/// </summary>
-/// <remarks>
-/// Provides endpoints for retrieving, creating, and viewing details of animals.
-/// Utilizes the <see cref="IMediator"/> pattern to delegate business logic to the application layer
-/// and AutoMapper for mapping between domain entities and DTOs.
-/// </remarks>
 public class AnimalsController(IMapper mapper) : BaseApiController
 {
-    //[HttpGet]
-    //public async Task<ActionResult<List<ResAnimalDto>>> GetAnimals()
-    //{
-    //    var animalList = await Mediator.Send(new GetAnimalList.Query());
+    /// <summary>
+    /// Retrieves a paginated list of animals that are available or partially fostered.
+    /// </summary>
+    /// <param name="pageNumber">The page number to retrieve. Defaults to 1.</param>
+    /// <returns>
+    /// A paginated <see cref="PagedList{T}"/> of <see cref="ResAnimalDto"/> objects representing the animals.
+    /// Returns <c>400</c> if the page number is invalid or an appropriate error message on failure.
+    /// </returns>
+    [HttpGet]
+    public async Task<ActionResult<PagedList<ResAnimalDto>>> GetAnimals([FromQuery] int pageNumber = 1)
+    {
+        var result = await Mediator.Send(new GetAnimalList.Query
+        {
+            PageNumber = pageNumber
+        });
 
-    //    var animalDtoList = mapper.Map<List<ResAnimalDto>>(animalList);
+        if (!result.IsSuccess)
+            return HandleResult(result);
 
-    //    return HandleResult(Result<List<ResAnimalDto>>.Success(animalDtoList, 200));
-    //}
+        // Map the list of Animal entities to response DTOs
+        var dtoList = mapper.Map<List<ResAnimalDto>>(result.Value);
+
+        // Create a new paginated list with the DTOs
+        var dtoPagedList = new PagedList<ResAnimalDto>(
+            dtoList,
+            result.Value.TotalCount,
+            result.Value.CurrentPage,
+            result.Value.PageSize
+        );
+
+        // Return the successful paginated result
+        return HandleResult(Result<PagedList<ResAnimalDto>>.Success(dtoPagedList, 200));
+    }
 
     /// <summary>
     /// Retrieves detailed information about a specific animal by its unique identifier.
@@ -41,11 +56,10 @@ public class AnimalsController(IMapper mapper) : BaseApiController
     /// If the animal is not found or unavailable, returns a standardized error response.
     /// Successfully retrieved entities are mapped to <see cref="ResAnimalDto"/> using AutoMapper.
     /// </remarks>
-    [Authorize(Roles = "PlatformAdmin")]
     [HttpGet("{id}")]
     public async Task<ActionResult<ResAnimalDto>> GetAnimalDetails(string id)
     {
-        var result = await Mediator.Send(new GetAnimalDetails.Query() {Id = id});
+        var result = await Mediator.Send(new GetAnimalDetails.Query() { Id = id });
 
         if (!result.IsSuccess)
         {
@@ -57,18 +71,34 @@ public class AnimalsController(IMapper mapper) : BaseApiController
         return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
     }
 
-    //[HttpPost]
-    //public async Task<ActionResult<string>> CreateAnimal([FromBody] ReqAnimalDto reqAnimalDto)
-    //{
-    //    var animal = mapper.Map<Animal>(reqAnimalDto);
+    /// <summary>
+    /// Creates a new animal record associated with a specific shelter.
+    /// </summary>
+    /// <param name="reqAnimalDto">The request DTO containing animal details and optional image data.</param>
+    /// <returns>
+    /// The unique identifier (<see cref="string"/>) of the created animal on success,
+    /// or an error response (400, 404, 401) depending on the failure condition.
+    /// </returns>
+    [HttpPost]
+    public async Task<ActionResult<string>> CreateAnimal([FromBody] ReqCreateAnimalDto reqAnimalDto)
+    {
+        // Temporary shelter ID (to be replaced when JWT authentication is implemented)
+        var shelterId = "22222222-2222-2222-2222-222222222222";
 
-    //    animal.Images.Add(new Image()
-    //    {
-    //        IsPrincipal = true,
-    //        Description = reqAnimalDto.MainImageDesc,
-    //        Url = reqAnimalDto.MainImageUrl
-    //    });
-            
-    //    return HandleResult(await Mediator.Send(new CreateAnimal.Command() {Animal = animal}));
-    //}
+        if (string.IsNullOrEmpty(shelterId))
+            return Unauthorized("Invalid shelter token");
+
+        // Map the validated DTO to the domain entity
+        var animal = mapper.Map<Animal>(reqAnimalDto);
+
+        // Build the command to send to the Application layer
+        var command = new CreateAnimal.Command
+        {
+            Animal = animal,
+            ShelterId = shelterId
+        };
+
+        // Centralized result handling (200, 400, 404, etc.)
+        return HandleResult(await Mediator.Send(command));
+    }
 }

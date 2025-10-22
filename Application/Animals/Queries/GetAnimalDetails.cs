@@ -18,7 +18,6 @@ namespace Application.Animals.Queries;
 /// </remarks>
 public class GetAnimalDetails
 {
-
     /// <summary>
     /// Represents a request to retrieve detailed information about a specific animal.
     /// </summary>

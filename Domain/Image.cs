@@ -1,4 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace Domain;
 
@@ -28,19 +34,12 @@ public class Image
     /// </summary>
     public string? AnimalId { get; set; }
 
-    /// <summary>
-    /// The animal entity associated with this image.
-    /// </summary>
+    [JsonIgnore]
     public Animal? Animal { get; set; }
 
-    /// <summary>
-    /// The foreign key referencing the associated shelter, if applicable.
-    /// </summary>
+    // Foreign Key for Shelter 
     public string? ShelterId { get; set; }
-
-    /// <summary>
-    /// The shelter entity associated with this image.
-    /// </summary>
+    [JsonIgnore]
     public Shelter? Shelter { get; set; }
 
     /// <summary>
@@ -49,6 +48,8 @@ public class Image
     [Required]
     [MaxLength(500)]
     public string Url { get; set; } = string.Empty;
+
+    [Required]
 
     /// <summary>
     /// A short optional description of the image content.

@@ -537,4 +537,3 @@ public static class DbInitializer
         }
     }
 }
-
