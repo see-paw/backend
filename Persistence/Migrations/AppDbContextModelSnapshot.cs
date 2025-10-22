@@ -335,12 +335,6 @@ namespace Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 
-<<<<<<< HEAD
-                    b.Property<string>("MainImageId")
-                        .HasColumnType("text");
-
-=======
->>>>>>> feature/create-and-list-animals
                     b.Property<string>("NIF")
                         .IsRequired()
                         .HasColumnType("text");
