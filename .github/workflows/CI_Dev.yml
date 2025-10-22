@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ "develop" ]
     paths-ignore:
-       - '.github/workflows/**'
+      - '.github/workflows/**'
 
 # Adicionar permissões para comentar nos PRs
 permissions:
@@ -53,8 +53,8 @@ jobs:
 
 
   # ======================================================
-# 2️⃣ UNIT TESTS
-# ======================================================
+  # 2️⃣ UNIT TESTS
+  # ======================================================
   unit_tests:
     runs-on: ubuntu-latest
     container:
@@ -63,19 +63,19 @@ jobs:
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
-        
+
       - name: Restaurar dependências
         run: dotnet restore backend.sln
-        
+
       - name: Compilar solução completa
         run: dotnet build backend.sln --no-restore --configuration Release
-        
+
       - name: Instalar ferramentas de cobertura
         run: |
           dotnet add Tests/Tests.csproj package coverlet.collector
           dotnet tool install --global dotnet-reportgenerator-globaltool
           export PATH="$PATH:$HOME/.dotnet/tools"
-      
+
       - name: Correr testes unitários (xUnit) + Cobertura
         run: |
           mkdir -p TestResults
@@ -124,7 +124,7 @@ jobs:
           echo ""
           echo "📂 Ficheiros gerados:"
           ls -lah TestResults/
-      
+
       - name: Verificar se todos os testes passaram
         run: |
           if [ ! -f TestResults/test-results.trx ]; then
@@ -155,7 +155,7 @@ jobs:
             echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
             exit 1
           fi
-      
+
       - name: Gerar relatório HTML de cobertura
         if: success()
         run: |
@@ -163,20 +163,20 @@ jobs:
           
           if [ -f TestResults/coverage.xml ]; then
             echo "📊 A gerar relatório HTML de cobertura..."
-            
+          
             reportgenerator \
               -reports:TestResults/coverage.xml \
               -targetdir:TestResults/CoverageReport \
               -reporttypes:"Html;HtmlSummary" \
               -verbosity:Info
-            
+          
             echo "✅ Relatório HTML gerado em TestResults/CoverageReport/"
             ls -lah TestResults/CoverageReport/
           else
             echo "⚠️ Ficheiro de cobertura não encontrado. Relatório HTML não foi gerado."
             exit 1
           fi
-      
+
       - name: Aplicar Quality Gates personalizadas
         if: success()
         run: |
@@ -232,23 +232,14 @@ jobs:
           
           if echo "$pr_title_lower" | grep -q "basic"; then
             threshold=40
-            criticality="📘 BASIC"
-          elif echo "$pr_title_lower" | grep -q "intermediate"; then
-            threshold=50
-            criticality="📙 INTERMEDIATE"
-          elif echo "$pr_title_lower" | grep -q "critical"; then
+            criticality="🟢 BASIC"
+          elif echo "$pr_title_lower" | grep -q "medium"; then
+            threshold=60
+            criticality="🟡 MEDIUM"
+          elif echo "$pr_title_lower" | grep -q "advanced"; then
             threshold=80
-            criticality="📕 CRITICAL"
-          fi
-          
-          # Aplicar quality gate
-          if [ $threshold -eq 0 ]; then
-            echo "⚠️ Nenhuma criticidade detectada no título do PR"
-            echo "   O título deve conter 'basic', 'intermediate' ou 'critical'"
-            echo "   Exemplos:"
-            echo "   - '[BASIC] Adicionar nova funcionalidade'"
-            echo "   - 'Feature intermediate: Login system'"
-            echo "   - 'Critical bug fix'"
+            criticality="🔴 ADVANCED"
+          else
             echo ""
             echo "⚠️ Sem quality gate para aplicar - assumindo sucesso"
             exit 0
@@ -273,7 +264,7 @@ jobs:
             echo "❌ Quality gate falhou!"
             exit 1
           fi
-      
+
       - name: Exportar resultados de testes e cobertura
         uses: actions/upload-artifact@v4
         if: always()
@@ -314,7 +305,7 @@ jobs:
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
-        
+
       - name: Descarregar artefactos do build
         uses: actions/download-artifact@v4
         with:
@@ -344,6 +335,9 @@ jobs:
               sleep 3
           done
           ' || (echo "❌ A API não respondeu a tempo" && exit 1)
+          echo "✅ Porta 5000 está a responder!"
+          echo "⏳ A aguardar que as migrações sejam aplicadas..."
+          sleep 15
           echo "✅ API pronta!"
 
       - name: Instalar Postman CLI
@@ -389,12 +383,12 @@ jobs:
             total=$(jq -r '.run.stats.assertions.total // 0' TestResults/postman/results.json)
             failed=$(jq -r '.run.stats.assertions.failed // 0' TestResults/postman/results.json)
             passed=$((total - failed))
-            
+          
             echo "📊 RESUMO DOS TESTES:"
             echo "   Total: $total"
             echo "   ✅ Passaram: $passed"
             echo "   ❌ Falharam: $failed"
-            
+          
             if [ $failed -gt 0 ]; then
               echo ""
               echo "⚠️  Alguns testes falharam!"
@@ -403,7 +397,7 @@ jobs:
               echo ""
               echo "🎉 Todos os testes passaram!"
             fi
-            
+          
             # Criar resumo em JSON
             cat > TestResults/postman/summary.json <<EOF
           {
