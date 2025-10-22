@@ -217,7 +217,7 @@ var assemblies = [
       { "name": "Application.Animals.Queries.GetAnimalList", "rp": "Application_GetAnimalList.html", "cl": 24, "ucl": 0, "cal": 24, "tl": 86, "cb": 3, "tb": 4, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Application.Core.PagedList<T>", "rp": "Application_PagedList_1.html", "cl": 20, "ucl": 0, "cal": 20, "tl": 72, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Application.Core.Result<T>", "rp": "Application_Result_1.html", "cl": 11, "ucl": 0, "cal": 11, "tl": 17, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "Application.OwnershipRequests.Commands.ApproveOwnershipRequest", "rp": "Application_ApproveOwnershipRequest.html", "cl": 1, "ucl": 55, "cal": 56, "tl": 100, "cb": 0, "tb": 24, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "Application.OwnershipRequests.Commands.ApproveOwnershipRequest", "rp": "Application_ApproveOwnershipRequest.html", "cl": 1, "ucl": 76, "cal": 77, "tl": 197, "cb": 0, "tb": 26, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Application.OwnershipRequests.Commands.CreateOwnershipRequest", "rp": "Application_CreateOwnershipRequest.html", "cl": 3, "ucl": 37, "cal": 40, "tl": 73, "cb": 0, "tb": 12, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Application.OwnershipRequests.Commands.RejectOwnershipRequest", "rp": "Application_RejectOwnershipRequest.html", "cl": 2, "ucl": 22, "cal": 24, "tl": 55, "cb": 0, "tb": 8, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "Application.OwnershipRequests.Commands.UpdateOwnershipRequestStatus", "rp": "Application_UpdateOwnershipRequestStatus.html", "cl": 2, "ucl": 25, "cal": 27, "tl": 64, "cb": 0, "tb": 10, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
@@ -297,13 +297,13 @@ var riskHotspotMetrics = [
 
 var riskHotspots = [
   {
-    "assembly": "Application", "class": "Application.OwnershipRequests.Commands.ApproveOwnershipRequest", "reportPath": "Application_ApproveOwnershipRequest.html", "methodName": "Handle()", "methodShortName": "Handle()", "fileIndex": 0, "line": 27,
+    "assembly": "Application", "class": "Application.Animals.Commands.CreateAnimal", "reportPath": "Application_CreateAnimal.html", "methodName": "Handle()", "methodShortName": "Handle()", "fileIndex": 0, "line": 71,
     "metrics": [
-      { "value": 342, "exceeded": true },
-      { "value": 18, "exceeded": true },
+      { "value": 156, "exceeded": true },
+      { "value": 12, "exceeded": false },
     ]},
   {
-    "assembly": "Application", "class": "Application.Animals.Commands.CreateAnimal", "reportPath": "Application_CreateAnimal.html", "methodName": "Handle()", "methodShortName": "Handle()", "fileIndex": 0, "line": 71,
+    "assembly": "Application", "class": "Application.OwnershipRequests.Commands.ApproveOwnershipRequest", "reportPath": "Application_ApproveOwnershipRequest.html", "methodName": "ValidateApprovalConditions(Domain.OwnershipRequest,System.String)", "methodShortName": "ValidateApprovalConditions(...)", "fileIndex": 0, "line": 134,
     "metrics": [
       { "value": 156, "exceeded": true },
       { "value": 12, "exceeded": false },
@@ -331,6 +331,18 @@ var riskHotspots = [
     "metrics": [
       { "value": 72, "exceeded": true },
       { "value": 8, "exceeded": false },
+    ]},
+  {
+    "assembly": "Application", "class": "Application.OwnershipRequests.Commands.ApproveOwnershipRequest", "reportPath": "Application_ApproveOwnershipRequest.html", "methodName": "RejectOtherPendingRequests(Domain.Animal,System.String)", "methodShortName": "RejectOtherPendingRequests(...)", "fileIndex": 0, "line": 183,
+    "metrics": [
+      { "value": 42, "exceeded": true },
+      { "value": 6, "exceeded": false },
+    ]},
+  {
+    "assembly": "Application", "class": "Application.OwnershipRequests.Commands.ApproveOwnershipRequest", "reportPath": "Application_ApproveOwnershipRequest.html", "methodName": "Handle()", "methodShortName": "Handle()", "fileIndex": 0, "line": 101,
+    "metrics": [
+      { "value": 42, "exceeded": true },
+      { "value": 6, "exceeded": false },
     ]},
   {
     "assembly": "WebAPI", "class": "WebAPI.Controllers.AnimalsController", "reportPath": "WebAPI_AnimalsController.html", "methodName": "CreateAnimal()", "methodShortName": "CreateAnimal()", "fileIndex": 0, "line": 78,
