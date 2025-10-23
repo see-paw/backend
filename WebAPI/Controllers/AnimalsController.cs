@@ -5,11 +5,17 @@ using AutoMapper;
 using Domain;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs;
+using Infrastructure;
+using Microsoft.AspNetCore.Authorization;
+using Application.Interfaces;
+
 
 namespace WebAPI.Controllers;
 
-public class AnimalsController(IMapper mapper) : BaseApiController
+public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : BaseApiController
 {
+    
+
     /// <summary>
     /// Retrieves a paginated list of animals that are available or partially fostered.
     /// </summary>
@@ -80,11 +86,14 @@ public class AnimalsController(IMapper mapper) : BaseApiController
     /// The unique identifier (<see cref="string"/>) of the created animal on success,
     /// or an error response (400, 404, 401) depending on the failure condition.
     /// </returns>
+    [Authorize(Roles = "AdminCAA")]
     [HttpPost]
     public async Task<ActionResult<string>> CreateAnimal([FromBody] ReqCreateAnimalDto reqAnimalDto)
     {
-        // Temporary shelter ID (to be replaced when JWT authentication is implemented)
-        var shelterId = "22222222-2222-2222-2222-222222222222";
+
+        var user = await userAccessor.GetUserAsync();
+        var shelterId = user.ShelterId;
+
 
         if (string.IsNullOrEmpty(shelterId))
             return Unauthorized("Invalid shelter token");

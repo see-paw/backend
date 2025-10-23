@@ -9,7 +9,7 @@ namespace Application.Interfaces;
 /// or authentication mechanism, allowing other components to obtain the user's identity or full domain entity
 /// without depending directly on the web framework.
 /// </summary>
-public interface IUserAcessor
+public interface IUserAccessor
 {
     /// <summary>
     /// Retrieves the unique identifier of the currently authenticated user.

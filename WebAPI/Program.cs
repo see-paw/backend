@@ -55,7 +55,7 @@ builder.Services.AddMediatR(x => {
     x.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 
-builder.Services.AddScoped<IUserAcessor, UserAccessor>();
+builder.Services.AddScoped<IUserAccessor, UserAccessor>();
 builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 builder.Services.AddValidatorsFromAssemblyContaining<GetAnimalDetailsValidator>();
 builder.Services.AddTransient<ExceptionMiddleware>();
@@ -99,7 +99,8 @@ try
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var loggerFactory = services.GetRequiredService<ILoggerFactory>();
     await context.Database.MigrateAsync();
-    await DbInitializer.SeedData(context, userManager, roleManager, loggerFactory);
+    await Persistence.DbInitializer.SeedData(context, userManager, roleManager, loggerFactory);
+    
 }
 catch (Exception ex)
 {

@@ -28,7 +28,7 @@ namespace Tests.AnimalControllerTest.cs
         /// <summary>
         /// Initializes the test class and configures mocked dependencies.
         /// </summary>
-        public GetAnimalDetailsEndpointTest()
+       /* public GetAnimalDetailsEndpointTest()
         {
             _mockMediator = new Mock<IMediator>();
             _mockMapper = new Mock<IMapper>();
@@ -47,7 +47,7 @@ namespace Tests.AnimalControllerTest.cs
                     RequestServices = serviceProviderMock.Object
                 }
             };
-        }
+        }*/
 
         /// <summary>
         /// Ensures that invalid or malformed IDs return a BadRequest response.

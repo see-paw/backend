@@ -30,6 +30,8 @@ public static class DbInitializer
         RoleManager<IdentityRole> roleManager,
         ILoggerFactory loggerFactory)
     {
+        
+
         const string breed1Id = "1a1a1111-1111-1111-1111-111111111111";
         const string breed2Id = "2b2b2222-2222-2222-2222-222222222222";
         const string breed3Id = "3c3c3333-3333-3333-3333-333333333333";
