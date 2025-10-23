@@ -1,8 +1,8 @@
 ﻿using Domain.Enums; 
 using WebAPI.DTOs; 
-using WebAPI.Validators; 
+using WebAPI.Validators;
 
-namespace Tests
+namespace Tests.AnimalControllerTest.cs
 {
     //codacy: ignore[complexity]
     public class CreateAnimalTests
