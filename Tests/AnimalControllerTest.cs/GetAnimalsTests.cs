@@ -24,20 +24,20 @@ namespace Tests.AnimalControllerTest.cs
             var context = new AppDbContext(options);
 
             // Add required related entities
-            var testBreed = new Breed
+            var breed = new Breed
             {
-                Id = "b1",
+                Id = "1a1a1111-1111-1111-1111-111111111111",
                 Name = "Rafeiro"
             };
 
-            var testShelter = new Shelter
+            var shelter = new Shelter
             {
-                Id = "shelter1",
+                Id = "11111111-1111-1111-1111-111111111111",
                 Name = "Animais de Rua"
             };
 
-            context.Breeds.Add(testBreed);
-            context.Shelters.Add(testShelter);
+            context.Breeds.Add(breed);
+            context.Shelters.Add(shelter);
             context.Animals.AddRange(animals);
             context.SaveChanges();
 
@@ -58,11 +58,11 @@ namespace Tests.AnimalControllerTest.cs
                 Colour = "Brown",
                 BirthDate = new DateOnly(2020, 1, 1),
                 Sterilized = true,
-                BreedId = "b1",
+                BreedId = "1a1a1111-1111-1111-1111-111111111111",
                 Cost = 100m,
-                Features = "Test animal",
+                Features = "Friendly",
                 CreatedAt = DateTime.UtcNow,
-                ShelterId = "shelter1"
+                ShelterId = "11111111-1111-1111-1111-111111111111"
             };
         }
 

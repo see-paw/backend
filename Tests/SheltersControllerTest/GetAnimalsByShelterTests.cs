@@ -105,8 +105,8 @@ namespace Tests.SheltersControllerTest
         [Fact]
         public async Task GetAnimalsByShelterInAlphabeticalOrder()
         {
-            var shelterId = "shelter1";
-            var breedId = "breed1";
+            var shelterId = "11111111-1111-1111-1111-111111111111";
+            var breedId = "1a1a1111-1111-1111-1111-111111111111";
             var animals = new List<Animal>
             {
                 CreateAnimal("Zebra", shelterId, breedId),
@@ -129,8 +129,8 @@ namespace Tests.SheltersControllerTest
         [Fact]
         public async Task PaginateResultsCorrectlly()
         {
-            var shelterId = "shelter1";
-            var breedId = "breed1";
+            var shelterId = "11111111-1111-1111-1111-111111111111";
+            var breedId = "1a1a1111-1111-1111-1111-111111111111";
             var animals = Enumerable.Range(1, 30)
                 .Select(i => CreateAnimal($"Animal{i}", shelterId, breedId))
                 .ToList();
@@ -150,8 +150,8 @@ namespace Tests.SheltersControllerTest
         [Fact]
         public async Task CalculateTotalPagesCorrectly()
         {
-            var shelterId = "shelter1";
-            var breedId = "breed1";
+            var shelterId = "11111111-1111-1111-1111-111111111111";
+            var breedId = "1a1a1111-1111-1111-1111-111111111111";
             var animals = Enumerable.Range(1, 30)
                 .Select(i => CreateAnimal($"Animal{i}", shelterId, breedId))
                 .ToList();
@@ -171,8 +171,8 @@ namespace Tests.SheltersControllerTest
         [Fact]
         public async Task GetAnimalsByShelter()
         {
-            var shelterId = "shelter1";
-            var breedId = "breed1";
+            var shelterId = "11111111-1111-1111-1111-111111111111";
+            var breedId = "1a1a1111-1111-1111-1111-111111111111";
             var animals = new List<Animal>
             {
                 CreateAnimal("Available", shelterId, breedId, AnimalState.Available),
@@ -196,7 +196,7 @@ namespace Tests.SheltersControllerTest
         [Fact]
         public async Task NoAnimalsFoundForShelter()
         {
-            var shelterId = "shelter1";
+            var shelterId = "11111111-1111-1111-1111-111111111111";
             var animals = new List<Animal>();
             var shelters = new List<Shelter> { CreateShelter(shelterId) };
 
@@ -213,9 +213,9 @@ namespace Tests.SheltersControllerTest
         [Fact]
         public async Task ShouldNotReturnAnimalsFromOtherShelters()
         {
-            var shelter1Id = "shelter1";
-            var shelter2Id = "shelter2";
-            var breedId = "breed1";
+            var shelter1Id = "11111111-1111-1111-1111-111111111111";
+            var shelter2Id = "22222222-2222-2222-2222-222222222222";
+            var breedId = "1a1a1111-1111-1111-1111-111111111111";
             var animals = new List<Animal>
             {
                 CreateAnimal("Charlie", shelter1Id, breedId),
@@ -242,8 +242,8 @@ namespace Tests.SheltersControllerTest
         public async Task ShelterDoesNotExist()
         {
             var nonExistentShelterId = "shelter-does-not-exist";
-            var shelterId = "shelter1";
-            var breedId = "breed1";
+            var shelterId = "11111111-1111-1111-1111-111111111111";
+            var breedId = "1a1a1111-1111-1111-1111-111111111111";
             var animals = new List<Animal>
             {
                 CreateAnimal("Charlie", shelterId, breedId)
