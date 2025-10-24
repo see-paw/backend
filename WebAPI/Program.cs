@@ -9,6 +9,7 @@ using Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using FluentValidation.AspNetCore;
+using Infrastructure.Photos;
 using Microsoft.EntityFrameworkCore;
 using WebAPI.Core;
 using WebAPI.Middleware;
@@ -56,6 +57,7 @@ builder.Services.AddMediatR(x => {
 });
 
 builder.Services.AddScoped<IUserAcessor, UserAccessor>();
+builder.Services.AddScoped<IPhotoService, PhotoService>();
 builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 builder.Services.AddValidatorsFromAssemblyContaining<GetAnimalDetailsValidator>();
 builder.Services.AddTransient<ExceptionMiddleware>();
@@ -71,6 +73,8 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = IdentityConstants.BearerScheme;
 });
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthMiddlewareHandler>();
+builder.Services.Configure<CloudinarySettings>(builder.Configuration
+    .GetSection("CloudinarySettings"));
 
 var app = builder.Build();
 
