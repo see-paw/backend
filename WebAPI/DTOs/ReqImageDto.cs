@@ -4,7 +4,7 @@ namespace WebAPI.DTOs
     /// Data Transfer Object (DTO) representing an image associated with an animal.
     /// Used when creating or updating animal records.
     /// </summary>
-    public class ReqImageDTO
+    public class ReqImageDto
     {
         /// <summary>
         /// Indicates whether this image is the animal's main (principal) image.

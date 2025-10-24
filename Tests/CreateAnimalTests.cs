@@ -4,6 +4,7 @@ using WebAPI.Validators;
 
 namespace Tests
 {
+    //codacy: ignore[complexity]
     public class CreateAnimalTests
     {
         private readonly CreateAnimalValidator _validator;
@@ -65,7 +66,7 @@ namespace Tests
         [InlineData(Species.Cat)]
         public void AnimalSpeciesValid(Species species)
         {
-            // Use a valid base DTO and modify only the property being tested.
+            //Use a valid base DTO and modify only the property being tested.
             var dto = CreateValidAnimalDTO();
             dto.Species = species;
 
@@ -293,7 +294,7 @@ namespace Tests
         public void AnimalsListCannotHaveToIsPrincipalImages()
         {
             var dto = CreateValidAnimalDTO();
-            dto.Images = new List<ReqImageDTO>
+            dto.Images = new List<ReqImageDto>
             {
                 new()
                 {
@@ -317,7 +318,7 @@ namespace Tests
         public void NoPrincipalImage()
         {
             var dto = CreateValidAnimalDTO();
-            dto.Images = new List<ReqImageDTO>
+            dto.Images = new List<ReqImageDto>
             {
                 new() { Url = "https://example.com/img1.jpg", Description = "Main photo", isPrincipal = false },
                 new() { Url = "https://example.com/img2.jpg", Description = "Second photo", isPrincipal = false }
@@ -331,7 +332,7 @@ namespace Tests
         public void ValidListOfImages()
         {
             var dto = CreateValidAnimalDTO();
-            dto.Images = new List<ReqImageDTO>
+            dto.Images = new List<ReqImageDto>
             {
                 new() { Url = "https://example.com/img1.jpg", isPrincipal = true },
                 new() { Url = "https://example.com/img2.jpg", isPrincipal = false }
@@ -348,7 +349,7 @@ namespace Tests
         public void ImageUrlEmptyOrNull(string url)
         {
             var dto = CreateValidAnimalDTO();
-            dto.Images = new List<ReqImageDTO>
+            dto.Images = new List<ReqImageDto>
             {
                 new() { Url = url, isPrincipal = true }
             };
@@ -365,7 +366,7 @@ namespace Tests
         public void ImageUrlInvalidFormat(string url)
         {
             var dto = CreateValidAnimalDTO();
-            dto.Images = new List<ReqImageDTO>
+            dto.Images = new List<ReqImageDto>
             {
                 new() { Url = url, isPrincipal = true }
             };
@@ -382,7 +383,7 @@ namespace Tests
         public void ImageUrlValidFormat(string url)
         {
             var dto = CreateValidAnimalDTO();
-            dto.Images = new List<ReqImageDTO>
+            dto.Images = new List<ReqImageDto>
             {
                 new() { Url = url, isPrincipal = true }
             };
@@ -397,7 +398,7 @@ namespace Tests
             var dto = CreateValidAnimalDTO();
             var longUrl = "https://example.com/" + new string('a', 500); // > 500 chars
 
-            dto.Images = new List<ReqImageDTO>
+            dto.Images = new List<ReqImageDto>
             {
                 new() { Url = longUrl, isPrincipal = true }
             };
@@ -423,9 +424,9 @@ namespace Tests
                 Features = "Healthy and friendly",
                 Description = "Healthy and friendly",
                 Sex = SexType.Male,
-                Images = new List<ReqImageDTO>
+                Images = new List<ReqImageDto>
                 {
-                    new ReqImageDTO
+                    new ReqImageDto
                     {
                         Url = "https://example.com/valid-image.jpg",
                         isPrincipal = true

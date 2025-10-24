@@ -1,4 +1,5 @@
 ﻿using Domain;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Persistence;
@@ -15,12 +16,10 @@ namespace Persistence;
 /// The context also configures the mapping of enumeration properties to string values
 /// to ensure data readability and consistency across database records.
 /// </remarks>
-
-public class AppDbContext(DbContextOptions options) : DbContext(options)
+public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(options)
 {
     public DbSet<Animal> Animals { get; set; }
     public DbSet<Shelter> Shelters { get; set; }
-    public DbSet<User> Users { get; set; }
     public DbSet<Fostering> Fosterings { get; set; }
     public DbSet<OwnershipRequest> OwnershipRequests { get; set; }
     public DbSet<Activity> Activities { get; set; }
@@ -49,7 +48,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
 
         modelBuilder.Entity<Shelter>(entity =>
         {
-            // NIF único
+            // Nif unique
             entity.HasIndex(s => s.NIF).IsUnique();
         });
 
@@ -60,6 +59,15 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             .HasForeignKey(animal => animal.ShelterId)
             .OnDelete(DeleteBehavior.Restrict);
 
+
+        // Shelter -> Images (1:Many relationship)
+        modelBuilder.Entity<Shelter>()
+           .HasMany(s => s.Images)
+           .WithOne(i => i.Shelter)
+           .HasForeignKey(i => i.ShelterId)
+           .OnDelete(DeleteBehavior.Cascade);
+
+
         // ========== USER CONFIGURATIONS ==========
 
         modelBuilder.Entity<User>(entity =>
@@ -68,7 +76,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             entity.HasIndex(user => user.Email).IsUnique();
         });
 
-        // User - Shelter (N:1, only one Admin CAA)
+        // User - Shelter (N:1, só 1 Admin CAA)
         modelBuilder.Entity<User>()
             .HasOne(user => user.Shelter)
             .WithOne()
@@ -76,7 +84,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // User - Animal (Owner) (1:N, optional)
+        // User - Animal (Owner) (1:N, opcional)
         modelBuilder.Entity<Animal>()
             .HasOne(animal => animal.Owner) // only one ownership per animal
             .WithMany(user => user.OwnedAnimals) // an user can own multiple animals
@@ -87,7 +95,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
         modelBuilder.Entity<User>()
         .HasIndex(u => u.ShelterId)
         .IsUnique() // Only one Admin CAA per shelter
-        .HasFilter("\"ShelterId\" IS NOT NULL");  // Only applied when ShelterId is not null
+        .HasFilter("\"ShelterId\" IS NOT NULL");  // Onlu applied when ShelterId is not null
 
         // ========== ANIMAL CONFIGURATIONS ==========
 
@@ -104,7 +112,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
 
         modelBuilder.Entity<Breed>(entity =>
         {
-            // Breed name único
+            // Breed name unique
             entity.HasIndex(b => b.Name).IsUnique();
         });
 
@@ -119,7 +127,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
 
         modelBuilder.Entity<Image>(entity =>
         {
-            // Only one main image per animal
+            // One Main image for each animal
             entity.HasIndex(i => new { i.AnimalId, i.IsPrincipal })
                   .IsUnique()
                   .HasFilter("\"IsPrincipal\" = true");

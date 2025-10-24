@@ -38,6 +38,7 @@ namespace Application.Shelters.Queries
         /// Handles the business logic for retrieving animals belonging to a specific shelter.
         /// Validates the existence of the shelter, applies pagination, and returns a consistent result.
         /// </summary>
+
         public class Handler : IRequestHandler<Query, Result<PagedList<Animal>>>
         {
             private readonly AppDbContext _context;
@@ -62,6 +63,9 @@ namespace Application.Shelters.Queries
             /// </returns>
             public async Task<Result<PagedList<Animal>>> Handle(Query request, CancellationToken cancellationToken)
             {
+                if (request.PageNumber < 1)
+                    return Result<PagedList<Animal>>.Failure("Page number must be 1 or greater", 404);
+
                 // Check whether the shelter exists in the database
                 var shelterExists = await _context.Shelters
                     .AnyAsync(s => s.Id == request.ShelterId, cancellationToken);
@@ -89,7 +93,7 @@ namespace Application.Shelters.Queries
                     return Result<PagedList<Animal>>.Failure("No animals found for this shelter", 404);
 
                 // Return success result with the paginated list
-                return Result<PagedList<Animal>>.Success(pagedList);
+                return Result<PagedList<Animal>>.Success(pagedList, 200);
             }
         }
     }

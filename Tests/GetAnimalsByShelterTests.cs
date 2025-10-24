@@ -7,6 +7,7 @@ using Persistence;
 
 namespace Tests;
 
+//codacy: ignore[complexity]
 public class GetAnimalsByShelterTests
 {
     // ===== Helper method =====

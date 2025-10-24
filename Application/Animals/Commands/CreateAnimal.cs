@@ -1,6 +1,5 @@
 ﻿using Application.Core;
 using Domain;
-using Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
@@ -30,11 +29,6 @@ namespace Application.Animals.Commands
             /// The unique identifier of the shelter where the animal is hosted.
             /// </summary>
             public required string ShelterId { get; set; }
-
-            /// <summary>
-            ///  List of images associated with the animal.
-            /// </summary>
-            public List<Image> Images { get; set; }
         }
 
         /// <summary>
@@ -89,12 +83,6 @@ namespace Application.Animals.Commands
                 //Assign the shelter ID to the animal
                 request.Animal.ShelterId = request.ShelterId;
 
-                // Associate images with the animal if provided
-                if (request.Images != null && request.Images.Any())
-                {
-                    request.Animal.Images = request.Images;
-                }
-
                 // Persist the entity in the database
                 _context.Animals.Add(request.Animal);
                 var success = await _context.SaveChangesAsync(cancellationToken) > 0;
@@ -103,7 +91,7 @@ namespace Application.Animals.Commands
                     return Result<string>.Failure("Failed to create animal", 400);
 
                 // Return success with the new animal ID
-                return Result<string>.Success(request.Animal.Id);
+                return Result<string>.Success(request.Animal.Id, 201);
             }
         }
     }

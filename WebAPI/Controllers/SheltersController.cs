@@ -2,19 +2,15 @@
 using Application.Shelters.Queries;
 using AutoMapper;
 using Domain;
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using WebAPI.Controllers;
 using WebAPI.DTOs;
 
-namespace API.Controllers
+namespace WebAPI.Controllers
 {
     /// <summary>
     /// API controller responsible for handling operations related to shelters.
     /// Provides endpoints for retrieving animals associated with a specific shelter.
     /// </summary>
-    [ApiController]
-    [Route("api/[controller]")]
     public class SheltersController : BaseApiController
     {
         private readonly IMapper _mapper;
@@ -40,12 +36,8 @@ namespace API.Controllers
         [HttpGet("{shelterId}/animals")]
         public async Task<ActionResult<PagedList<Animal>>> GetAnimalsByShelter(string shelterId, [FromQuery] int pageNumber = 1)
         {
-            if (pageNumber < 1)
-                return BadRequest("Page number must be 1 or greater");
 
-            const int pageSize = 20; // Default page size
-
-            // Send the query to the Application layer through MediatR
+            // Send the query to the Application layer 
             var result = await Mediator.Send(new GetAnimalsByShelter.Query
             {
                 ShelterId = shelterId,
@@ -68,7 +60,7 @@ namespace API.Controllers
             );
 
             // Return the standardized result using the base handler
-            return HandleResult(Result<PagedList<ResAnimalDto>>.Success(pagedDtoList));
+            return HandleResult(Result<PagedList<ResAnimalDto>>.Success(pagedDtoList, 200));
         }
     }
 }
