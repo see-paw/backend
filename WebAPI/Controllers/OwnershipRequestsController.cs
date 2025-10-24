@@ -1,6 +1,6 @@
 ﻿using Application.Core;
 using Application.OwnershipRequests.Commands;
-using Domain;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs;
 
@@ -10,9 +10,7 @@ namespace WebAPI.Controllers;
 /// API controller responsible for handling ownership request operations.
 /// Provides endpoints for creating, updating status, approving and rejecting ownership requests.
 /// </summary>
-[ApiController]
-[Route("api/ownership-requests")]
-public class OwnershipRequestsController : BaseApiController
+public class OwnershipRequestsController(IMapper mapper) : BaseApiController
 {
     /// <summary>
     /// Creates a new ownership request for an animal.
@@ -37,7 +35,7 @@ public class OwnershipRequestsController : BaseApiController
         if (!result.IsSuccess)
             return HandleResult(result);
 
-        var responseDto = Mapper.Map<ResOwnershipRequestDto>(result.Value);
+        var responseDto = mapper.Map<ResOwnershipRequestDto>(result.Value);
 
         return HandleResult(Result<ResOwnershipRequestDto>.Success(responseDto));
     }
@@ -62,7 +60,7 @@ public class OwnershipRequestsController : BaseApiController
         if (!result.IsSuccess)
             return HandleResult(result);
 
-        var responseDto = Mapper.Map<ResOwnershipRequestDto>(result.Value);
+        var responseDto = mapper.Map<ResOwnershipRequestDto>(result.Value);
 
         return HandleResult(Result<ResOwnershipRequestDto>.Success(responseDto));
     }
@@ -85,7 +83,7 @@ public class OwnershipRequestsController : BaseApiController
         if (!result.IsSuccess)
             return HandleResult(result);
 
-        var responseDto = Mapper.Map<ResOwnershipRequestDto>(result.Value);
+        var responseDto = mapper.Map<ResOwnershipRequestDto>(result.Value);
 
         return HandleResult(Result<ResOwnershipRequestDto>.Success(responseDto));
     }
@@ -110,7 +108,7 @@ public class OwnershipRequestsController : BaseApiController
         if (!result.IsSuccess)
             return HandleResult(result);
 
-        var responseDto = Mapper.Map<ResOwnershipRequestDto>(result.Value);
+        var responseDto = mapper.Map<ResOwnershipRequestDto>(result.Value);
 
         return HandleResult(Result<ResOwnershipRequestDto>.Success(responseDto));
     }

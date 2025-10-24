@@ -28,11 +28,11 @@ public class CreateOwnershipRequest
         {
             var animal = await _context.Animals.FindAsync(request.AnimalID);
             if (animal == null)
-                return Result<OwnershipRequest>.Failure("Animal not found", 404);
+                return Result<OwnershipRequest>.Failure("Animal ID not found", 404);
 
             var user = await _context.Users.FindAsync(request.UserId);
             if (user == null)
-                return Result<OwnershipRequest>.Failure("User not found", 404);
+                return Result<OwnershipRequest>.Failure("User ID not found", 404);
 
             if (animal.AnimalState == AnimalState.HasOwner || animal.AnimalState == AnimalState.Inactive)
                 return Result<OwnershipRequest>.Failure("Animal not available for ownership", 400);
