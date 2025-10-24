@@ -14,8 +14,6 @@ namespace WebAPI.Controllers;
 
 public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : BaseApiController
 {
-    
-
     /// <summary>
     /// Retrieves a paginated list of animals that are available or partially fostered.
     /// </summary>

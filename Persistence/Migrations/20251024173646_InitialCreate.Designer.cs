@@ -12,7 +12,7 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251023203746_InitialCreate")]
+    [Migration("20251024173646_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
