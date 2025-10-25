@@ -156,7 +156,8 @@ namespace Tests.AnimalControllerTest.cs
                         Id = Guid.NewGuid().ToString(),
                         Url = "https://example.com/max1.jpg",
                         IsPrincipal = true,
-                        Description = "Main photo"
+                        Description = "Main photo",
+                        PublicId = "images_cq2q0f"
                     }
                 }
             };

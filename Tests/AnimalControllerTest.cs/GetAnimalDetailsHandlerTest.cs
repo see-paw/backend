@@ -85,12 +85,14 @@ public class GetAnimalDetailsHandlerTest
             new() { Url = "https://example.com/max1.jpg",
                 IsPrincipal = true,
                 AnimalId = animalId,
-                Description = "Gold and beautiful"
+                Description = "Gold and beautiful",
+                PublicId = "images_cq2q0f"
             },
             new() { Url = "https://example.com/max2.jpg",
                 IsPrincipal = false,
                 AnimalId = animalId,
-                Description = "Gold and beautiful"
+                Description = "Gold and beautiful",
+                PublicId = "images_cq2q0f"
             }
         };
 
@@ -154,12 +156,14 @@ public class GetAnimalDetailsHandlerTest
                 Url = "https://example.com/max1.jpg", 
                 IsPrincipal = true, 
                 AnimalId = animalId,
-                Description = "Image of a dog"
+                Description = "Image of a dog",
+                PublicId = "images_cq2q0f"
             },
             new() { Url = "https://example.com/max2.jpg", 
                 IsPrincipal = false, 
                 AnimalId = animalId,
-                Description = "Image of a dog"
+                Description = "Image of a dog",
+                PublicId = "images_cq2q0f"
             }
         };
 

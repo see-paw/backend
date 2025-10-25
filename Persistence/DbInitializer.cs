@@ -458,17 +458,19 @@ public static class DbInitializer
                 {
                     Id = Guid.NewGuid().ToString(),
                     ShelterId = shelter1Id,
-                    Url = "https://placekitten.com/600/400",
+                    Url = "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761374947/images_cq2q0f.jpg",
                     Description = "Fachada principal do CAA Porto",
-                    IsPrincipal = true
+                    IsPrincipal = true,
+                    PublicId = "images_cq2q0f"
                 },
                 new()
                 {
                     Id = Guid.NewGuid().ToString(),
                     ShelterId = shelter1Id,
-                    Url = "https://placekitten.com/601/401",
+                    Url = "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761374947/images_cq2q0f.jpg",
                     Description = "Área de recreio dos animais",
-                    IsPrincipal = false
+                    IsPrincipal = false,
+                    PublicId = "images_cq2q0f"
                 },
 
                 // === Shelter 2 ===
@@ -476,9 +478,10 @@ public static class DbInitializer
                 {
                     Id = Guid.NewGuid().ToString(),
                     ShelterId = "22222222-2222-2222-2222-222222222222",
-                    Url = "https://placedog.net/600/400?id=2",
+                    Url = "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761374947/images_cq2q0f.jpg",
                     Description = "Instalações do CAA de Cima",
-                    IsPrincipal = true
+                    IsPrincipal = true,
+                    PublicId = "images_cq2q0f"
                 },
 
                 // === Animais ===
@@ -486,49 +489,55 @@ public static class DbInitializer
                 {
                     Id = Guid.NewGuid().ToString(),
                     AnimalId = animal1Id,
-                    Url = "https://placekitten.com/500/400",
+                    Url = "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761374947/images_cq2q0f.jpg",
                     Description = "Bolinhas deitado ao sol",
-                    IsPrincipal = true
+                    IsPrincipal = true,
+                    PublicId = "images_cq2q0f"
                 },
                 new()
                 {
                     Id = Guid.NewGuid().ToString(),
                     AnimalId = animal2Id,
-                    Url = "https://placedog.net/501/401?id=1",
+                    Url = "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761374947/images_cq2q0f.jpg",
                     Description = "Luna a correr no jardim",
-                    IsPrincipal = true
+                    IsPrincipal = true,
+                    PublicId = "images_cq2q0f"
                 },
                 new()
                 {
                     Id = Guid.NewGuid().ToString(),
                     AnimalId = animal3Id,
-                    Url = "https://placeparrot.com/400/300",
+                    Url = "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761374947/images_cq2q0f.jpg",
                     Description = "Tico no poleiro",
-                    IsPrincipal = true
+                    IsPrincipal = true,
+                    PublicId = "images_cq2q0f"
                 },
                 new()
                 {
                     Id = Guid.NewGuid().ToString(),
                     AnimalId = animal4Id,
-                    Url = "https://placekitten.com/401/301",
+                    Url = "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761374947/images_cq2q0f.jpg",
                     Description = "Mika deitada no sofá",
-                    IsPrincipal = true
+                    IsPrincipal = true,
+                    PublicId = "images_cq2q0f"
                 },
                 new()
                 {
                     Id = Guid.NewGuid().ToString(),
                     AnimalId = animal5Id,
-                    Url = "https://placedog.net/502/402?id=2",
+                    Url = "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761374947/images_cq2q0f.jpg",
                     Description = "Thor atento ao portão",
-                    IsPrincipal = true
+                    IsPrincipal = true,
+                    PublicId = "images_cq2q0f"
                 },
                 new()
                 {
                     Id = Guid.NewGuid().ToString(),
                     AnimalId = animal6Id,
-                    Url = "https://placebunny.com/500/350",
+                    Url = "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761374947/images_cq2q0f.jpg",
                     Description = "Nina comendo cenoura",
-                    IsPrincipal = true
+                    IsPrincipal = true,
+                    PublicId = "images_cq2q0f"
                 }
             };
 

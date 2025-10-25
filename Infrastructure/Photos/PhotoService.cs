@@ -20,34 +20,35 @@ public class PhotoService : IPhotoService
         _cloudinary = new Cloudinary(account);
     }
     
-    public async Task<PhotoUploadResult?> UploadPhoto(IFormFile file)
+    public async Task<PhotoUploadResult?> UploadPhoto(IFormFile file, string folderType)
     {
-        if (file.Length > 0)
+        if (file.Length <= 0)
         {
-            //using close the stream after executing the method
-            await using var stream = file.OpenReadStream();
-
-            var uploadParams = new ImageUploadParams
-            {
-                File = new FileDescription(file.FileName, stream),
-                Transformation = new Transformation().Height(500).Width(500).Crop("fill"),
-                Folder = "Seepaw"
-            };
-            
-            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
-
-            if (uploadResult.Error != null)
-            {
-                throw new Exception(uploadResult.Error.Message);
-            }
-
-            return new PhotoUploadResult
-            {
-                PublicId = uploadResult.PublicId,
-                Url = uploadResult.SecureUrl.AbsoluteUri
-            };
+            return null;
         }
-        return null;
+        
+        //using close the stream after executing the method
+        await using var stream = file.OpenReadStream();
+
+        var uploadParams = new ImageUploadParams
+        {
+            File = new FileDescription(file.FileName, stream),
+            Transformation = new Transformation().Height(500).Width(500).Crop("fill"),
+            Folder = $"SeePaw/{folderType}"
+        };
+            
+        var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+        if (uploadResult.Error != null)
+        {
+            throw new Exception(uploadResult.Error.Message);
+        }
+
+        return new PhotoUploadResult
+        {
+            PublicId = uploadResult.PublicId,
+            Url = uploadResult.SecureUrl.AbsoluteUri
+        };
     }
 
     public async Task<string> DeletePhoto(string publicId)

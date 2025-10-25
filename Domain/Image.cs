@@ -24,6 +24,12 @@ public class Image
     public string Id { get; init; } = Guid.NewGuid().ToString();
 
     /// <summary>
+    /// Public identifier of the resource stored in Cloudinary.
+    /// </summary>
+    [Required]
+    [MaxLength(500)]
+    public required string PublicId { get; init; }
+    /// <summary>
     /// Indicates whether this image is marked as the principal image.
     /// </summary>
     [Required]

@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class AddedPublicIdToImage : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -346,6 +346,7 @@ namespace Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
+                    PublicId = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     IsPrincipal = table.Column<bool>(type: "boolean", nullable: false),
                     AnimalId = table.Column<string>(type: "text", nullable: true),
                     ShelterId = table.Column<string>(type: "text", nullable: true),

@@ -306,7 +306,7 @@ namespace Tests
         {
             // Arrange
            await using var context = new AppDbContext(_options);
-            var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
+           var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
 
             var existingBreed = new Breed
             {
@@ -499,7 +499,8 @@ namespace Tests
                 Url = "https://example.com/existing.jpg",
                 IsPrincipal = true,
                 Description = "A very pretty shelter",
-                ShelterId = Guid.NewGuid().ToString()
+                ShelterId = Guid.NewGuid().ToString(),
+                PublicId = "images_cq2q0f"
             };
 
             context.Images.Add(existingImage);
