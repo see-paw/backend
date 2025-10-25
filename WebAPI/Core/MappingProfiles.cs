@@ -48,8 +48,12 @@ public class MappingProfiles : Profile
       
         CreateMap<Image, ResImageDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id));// Maps the 'Id' property from Image to the 'ImageId' property in ResImageDto.
-        
 
+        CreateMap<User, ResUserProfileDto>();
+
+        CreateMap<ReqUserProfileDto, User>()
+            // If a property is null do not map it to the destination entity and keeps its current value
+            .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
     }
 }
