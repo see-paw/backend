@@ -162,7 +162,7 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
         
     }
 
-    /// <summary>
+    /*/// <summary>
     /// Deletes an existing animal record associated with the authenticated shelter.
     /// </summary>
     /// <para>
@@ -204,6 +204,47 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
 
         // Return standardized ActionResult with DTO and HTTP 200 status
         return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
+    }*/
+
+
+    /// <summary>
+    /// Deactivates an existing <see cref="Animal"/> entity within the shelter context,
+    /// changing its <see cref="Domain.Enums.AnimalState"/> to <c>Inactive</c> instead of deleting it.
+    /// </summary>
+    /// <para>
+    /// The operation is only permitted when:
+    /// <list type="bullet">
+    ///   <item><description>The animal belongs to the authenticated shelter administrator (CAA).</description></item>
+    ///   <item><description>The animal has no active <see cref="Domain.Fostering"/> or <see cref="Domain.OwnershipRequest"/> associations.</description></item>
+    ///   <item><description>The authenticated user has the <c>AdminCAA</c> role.</description></item>
+    /// </list>
+    /// </para>
+    /// <param name="id">The unique identifier of the animal to be deactivated.</param>
+    /// <returns>
+    [Authorize(Roles = "AdminCAA")]
+    [HttpPatch("{id}/deactivate")]
+    public async Task<ActionResult> DeactivateAnimal(string id)
+    {
+        var user = await userAccessor.GetUserAsync();
+        var shelterId = user.ShelterId;
+
+        if (string.IsNullOrEmpty(shelterId))
+            return Unauthorized("Invalid shelter token");
+
+        var command = new DeactivateAnimal.Command
+        {
+            AnimalId = id,
+            ShelterId = shelterId
+        };
+
+        var result = await Mediator.Send(command);
+
+        if (!result.IsSuccess)
+            return HandleResult(result);
+
+        var animalDto = mapper.Map<ResAnimalDto>(result.Value);
+        return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
     }
+
 
 }

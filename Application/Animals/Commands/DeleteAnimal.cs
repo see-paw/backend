@@ -1,5 +1,6 @@
 ﻿using Application.Core;
 using Domain;
+using Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
@@ -70,13 +71,15 @@ namespace Application.Animals.Commands
 
                 // Get the animal to be deleted
                 var animal = await _context.Animals
-                    .Include(a => a.Images)
                     .FirstOrDefaultAsync(a =>
                         a.Id == request.AnimalId && a.ShelterId == request.ShelterId,
                         cancellationToken);
 
                 if (animal == null)
                     return Result<Animal>.Failure("Animal not found or not owned by this shelter", 404);
+
+                if(animal.AnimalState != AnimalState.Available)
+                    return Result<Animal>.Failure("Only animals in 'Available' state can be deleted", 400);
 
                 // Remove the animal from the database context
                 _context.Animals.Remove(animal);
