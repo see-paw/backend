@@ -1,13 +1,14 @@
 ﻿using Application.Animals.Commands;
 using Application.Animals.Queries;
 using Application.Core;
+using Application.Interfaces;
 using AutoMapper;
 using Domain;
-using Microsoft.AspNetCore.Mvc;
-using WebAPI.DTOs;
 using Infrastructure;
 using Microsoft.AspNetCore.Authorization;
-using Application.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+using WebAPI.DTOs;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace WebAPI.Controllers;
@@ -109,4 +110,100 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
         // Centralized result handling (200, 400, 404, etc.)
         return HandleResult(await Mediator.Send(command));
     }
+
+    /// <summary>
+    /// Updates an existing animal record belonging to the authenticated shelter.
+    /// </summary>
+    /// <para>
+    /// The animal identifier (<paramref name="id"/>) is obtained from the route, and the shelter context 
+    /// is derived from the authenticated user’s token.
+    /// </para>
+    /// <param name="id">The unique identifier of the animal to be edited.</param>
+    /// <param name="reqEditAnimalDto">
+    /// A <see cref="ReqEditAnimalDto"/> object containing the updated animal data received from the client.
+    /// </param>
+    /// <returns>
+    /// The updated animal record on success, or an appropriate error response on failure.
+    /// </returns>
+    [Authorize(Roles = "AdminCAA")]
+    [HttpPut("{id}")]
+    public async Task<ActionResult> EditAnimal(string id, [FromBody] ReqEditAnimalDto reqEditAnimalDto)
+    {
+        // Retrieve the authenticated user and shelter context
+        var user = await userAccessor.GetUserAsync();
+        var shelterId = user.ShelterId;
+
+        // Ensure the shelter context is valid
+        if (string.IsNullOrEmpty(shelterId))
+            return Unauthorized("Invalid shelter token");
+
+        // Map the incoming DTO to the domain entity
+        var animal = mapper.Map<Animal>(reqEditAnimalDto);
+
+        // Create and send the command through the MediatR pipeline
+        var command = new EditAnimal.Command
+        {
+            AnimalId = id,
+            Animal = animal,
+            ShelterId = shelterId
+        };
+
+        var result = await Mediator.Send(command);
+
+        if (!result.IsSuccess)
+        {
+            return HandleResult(result);
+        }
+
+        var animalDto = mapper.Map<ResAnimalDto>(result.Value);
+
+        // Execute the command and return a standardized ActionResult
+        return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
+        
+    }
+
+    /// <summary>
+    /// Deletes an existing animal record associated with the authenticated shelter.
+    /// </summary>
+    /// <para>
+    /// The animal identifier (<paramref name="id"/>) is obtained from the route, and the shelter context 
+    /// is derived from the authenticated user’s token.
+    /// </para>
+    /// <param name="id">The unique identifier of the animal to be edited.</param>
+    /// </param>
+    /// <returns>
+    /// The deleted animal record on success, or an appropriate error response on failure.
+    /// </returns>
+    [Authorize(Roles = "AdminCAA")]
+    [HttpDelete("{id}")]
+    public async Task<ActionResult<ResAnimalDto>> DeleteAnimal(string id)
+    {
+        // Retrieve the authenticated user and shelter context
+        var user = await userAccessor.GetUserAsync();
+        var shelterId = user.ShelterId;
+
+        // Ensure the shelter context is valid
+        if (string.IsNullOrEmpty(shelterId))
+            return Unauthorized("Invalid shelter token");
+
+        // Create and send the command through the MediatR pipeline
+        var command = new DeleteAnimal.Command
+        {
+            AnimalId = id,
+            ShelterId = shelterId
+        };
+
+        // Execute the command
+        var result = await Mediator.Send(command);
+
+        if (!result.IsSuccess || result.Value == null)
+            return HandleResult(result);
+
+        // Map the deleted Animal entity to a response DTO
+        var animalDto = mapper.Map<ResAnimalDto>(result.Value);
+
+        // Return standardized ActionResult with DTO and HTTP 200 status
+        return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
+    }
+
 }
