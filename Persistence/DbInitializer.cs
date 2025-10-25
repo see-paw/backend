@@ -48,6 +48,11 @@ public static class DbInitializer
         const string platformAdmin = "PlatformAdmin";
         const string adminCaa = "AdminCAA";
         const string userRole = "User";
+        const string user1Id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"; // Alice
+        const string user2Id = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"; // Bob
+        const string user3Id = "cccccccc-cccc-cccc-cccc-cccccccccccc"; // Carlos
+        const string user4Id = "dddddddd-dddd-dddd-dddd-dddddddddddd"; // Diana
+        const string user5Id = "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"; // Eduardo
 
         // ======== SEED SHELTERS ========
         if (!dbContext.Shelters.Any())
@@ -104,6 +109,7 @@ public static class DbInitializer
             {
                 new()
                 {
+                    Id = user2Id,
                     Name = "Bob Johnson",
                     UserName = "bob@test.com",
                     Email = "bob@test.com",
@@ -116,6 +122,7 @@ public static class DbInitializer
                 },
                 new()
                 {
+                    Id = user1Id,
                     Name = "Alice Ferreira",
                     UserName = "alice@test.com",
                     Email = "alice@test.com",
@@ -129,6 +136,7 @@ public static class DbInitializer
                 },
                 new()
                 {
+                    Id = user3Id,
                     Name = "Carlos Santos",
                     UserName = "carlos@test.com",
                     Email = "carlos@test.com",
@@ -141,6 +149,7 @@ public static class DbInitializer
                 },
                 new()
                 {
+                    Id = user4Id,
                     Name = "Diana Silva",
                     UserName = "diana@test.com",
                     Email = "diana@test.com",
@@ -153,6 +162,7 @@ public static class DbInitializer
                 },
                 new()
                 {
+                    Id = user5Id,
                     Name = "Eduardo Lima",
                     UserName = "eduardo@test.com",
                     Email = "eduardo@test.com",

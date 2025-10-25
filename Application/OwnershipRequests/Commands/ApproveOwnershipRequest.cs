@@ -1,4 +1,5 @@
 ﻿using Application.Core;
+using Application.Interfaces;
 using Domain;
 using Domain.Enums;
 using MediatR;
@@ -14,20 +15,26 @@ public class ApproveOwnershipRequest
         public string OwnershipRequestId { get; set; } = string.Empty;
     }
 
-    public class Handler : IRequestHandler<Command, Result<OwnershipRequest>>
+    public class Handler(AppDbContext context, IUserAcessor userAccessor) : IRequestHandler<Command, Result<OwnershipRequest>>
     {
-        private readonly AppDbContext _context;
-
-        public Handler(AppDbContext context)
-        {
-            _context = context;
-        }
-
         public async Task<Result<OwnershipRequest>> Handle(Command request, CancellationToken cancellationToken)
         {
+            var currentUser = await userAccessor.GetUserAsync();
+            if (currentUser.ShelterId == null)
+            {
+                return Result<OwnershipRequest>.Failure(
+                    "Only shelter administrators can approve ownership requests", 403);
+            }
+
             var ownershipRequest = await GetOwnershipRequestWithRelations(request.OwnershipRequestId, cancellationToken);
             if (ownershipRequest == null)
                 return Result<OwnershipRequest>.Failure("Ownership request not found", 404);
+
+            if (ownershipRequest.Animal.ShelterId != currentUser.ShelterId)
+            {
+                return Result<OwnershipRequest>.Failure(
+                    "You can only approve requests for animals in your shelter", 403);
+            }
 
             var validationResult = ValidateApprovalConditions(ownershipRequest, request.OwnershipRequestId);
             if (!validationResult.IsSuccess)
@@ -38,7 +45,7 @@ public class ApproveOwnershipRequest
             CancelActiveFosterings(ownershipRequest.Animal);
             RejectOtherPendingRequests(ownershipRequest.Animal, request.OwnershipRequestId);
 
-            var success = await _context.SaveChangesAsync(cancellationToken) > 0;
+            var success = await context.SaveChangesAsync(cancellationToken) > 0;
             if (!success)
                 return Result<OwnershipRequest>.Failure("Failed to approve ownership request", 500);
 
@@ -47,7 +54,7 @@ public class ApproveOwnershipRequest
 
         private async Task<OwnershipRequest?> GetOwnershipRequestWithRelations(string requestId, CancellationToken cancellationToken)
         {
-            return await _context.OwnershipRequests
+            return await context.OwnershipRequests
                 .Include(or => or.Animal)
                     .ThenInclude(a => a.Fosterings)
                 .Include(or => or.Animal)

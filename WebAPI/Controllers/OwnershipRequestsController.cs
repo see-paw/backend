@@ -1,6 +1,8 @@
 ﻿using Application.Core;
 using Application.OwnershipRequests.Commands;
+using Application.OwnershipRequests.Queries;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs;
 
@@ -10,8 +12,42 @@ namespace WebAPI.Controllers;
 /// API controller responsible for handling ownership request operations.
 /// Provides endpoints for creating, updating status, approving and rejecting ownership requests.
 /// </summary>
+[Authorize]
 public class OwnershipRequestsController(IMapper mapper) : BaseApiController
 {
+    /// <summary>
+    /// Gets all ownership requests for animals in the authenticated admin's shelter with pagination.
+    /// </summary>
+    /// <param name="pageNumber">Page number (default: 1).</param>
+    /// <param name="pageSize">Number of items per page (default: 10).</param>
+    /// <returns>Paginated list of ownership requests.</returns>
+    [HttpGet]
+    public async Task<ActionResult> GetOwnershipRequests([FromQuery] int pageNumber = 1)
+    {
+        var result = await Mediator.Send(new GetOwnershipRequestsByShelter.Query
+        {
+            PageNumber = pageNumber
+        });
+
+        if (!result.IsSuccess)
+        {
+            return HandleResult(result);
+        }
+
+        var dtoList = mapper.Map<List<ResOwnershipRequestDto>>(result.Value);
+
+        // Create a new paginated list with the DTOs
+        var dtoPagedList = new PagedList<ResOwnershipRequestDto>(
+            dtoList,
+            result.Value.TotalCount,
+            result.Value.CurrentPage,
+            result.Value.PageSize
+        );
+
+        // Return the successful paginated result
+        return HandleResult(Result<PagedList<ResOwnershipRequestDto>>.Success(dtoPagedList, 200));
+    }
+
     /// <summary>
     /// Creates a new ownership request for an animal.
     /// </summary>
@@ -20,13 +56,9 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
     [HttpPost]
     public async Task<ActionResult<ResOwnershipRequestDto>> CreateOwnershipRequest([FromBody] ReqCreateOwnershipRequestDto dto)
     {
-        // TODO: Get userId from JWT token when authentication is implemented
-        var userId = "temporary-user-id";
-
         var command = new CreateOwnershipRequest.Command
         {
             AnimalID = dto.AnimalId,
-            UserId = userId,
             RequestInfo = dto.RequestInfo
         };
 
@@ -37,7 +69,7 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
 
         var responseDto = mapper.Map<ResOwnershipRequestDto>(result.Value);
 
-        return HandleResult(Result<ResOwnershipRequestDto>.Success(responseDto));
+        return HandleResult(Result<ResOwnershipRequestDto>.Success(responseDto, 200));
     }
 
     /// <summary>
@@ -62,7 +94,7 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
 
         var responseDto = mapper.Map<ResOwnershipRequestDto>(result.Value);
 
-        return HandleResult(Result<ResOwnershipRequestDto>.Success(responseDto));
+        return HandleResult(Result<ResOwnershipRequestDto>.Success(responseDto, 200));
     }
 
     /// <summary>
@@ -85,7 +117,7 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
 
         var responseDto = mapper.Map<ResOwnershipRequestDto>(result.Value);
 
-        return HandleResult(Result<ResOwnershipRequestDto>.Success(responseDto));
+        return HandleResult(Result<ResOwnershipRequestDto>.Success(responseDto, 200));
     }
 
     /// <summary>
@@ -110,6 +142,6 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
 
         var responseDto = mapper.Map<ResOwnershipRequestDto>(result.Value);
 
-        return HandleResult(Result<ResOwnershipRequestDto>.Success(responseDto));
+        return HandleResult(Result<ResOwnershipRequestDto>.Success(responseDto, 200));
     }
 }

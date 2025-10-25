@@ -88,6 +88,5 @@ public class ResAnimalDto
     /// A list of images associated with the animal.
     /// </summary>
     public List<ResImageDto>? Images { get; set; }
-    }
 }
 

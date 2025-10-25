@@ -1,9 +1,10 @@
 ﻿using Application.Core;
-using MediatR;
-using Persistence;
+using Application.Interfaces;
 using Domain;
 using Domain.Enums;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Persistence;
 
 namespace Application.OwnershipRequests.Commands;
 
@@ -12,35 +13,29 @@ public class CreateOwnershipRequest
     public class Command : IRequest<Result<OwnershipRequest>>
     {
         public string AnimalID { get; set; } = string.Empty;
-        public string UserId { get; set; } = string.Empty;
         public string? RequestInfo { get; set; }
     }
 
-    public class Handler : IRequestHandler<Command, Result<OwnershipRequest>>
+    public class Handler(AppDbContext context, IUserAcessor userAccessor) : IRequestHandler<Command, Result<OwnershipRequest>>
     {
-        private readonly AppDbContext _context;
-
-        public Handler(AppDbContext context)
-        {
-            _context = context;
-        }
+        
         public async Task<Result<OwnershipRequest>> Handle(Command request, CancellationToken cancellationToken)
         {
-            var animal = await _context.Animals.FindAsync(request.AnimalID);
+            var userId = userAccessor.GetUserId(); 
+
+            // Validate existence of animal
+            var animal = await context.Animals.FindAsync(request.AnimalID);
             if (animal == null)
                 return Result<OwnershipRequest>.Failure("Animal ID not found", 404);
 
-            var user = await _context.Users.FindAsync(request.UserId);
-            if (user == null)
-                return Result<OwnershipRequest>.Failure("User ID not found", 404);
-
+            // Validate if animal is inactive or if it already has an owner
             if (animal.AnimalState == AnimalState.HasOwner || animal.AnimalState == AnimalState.Inactive)
                 return Result<OwnershipRequest>.Failure("Animal not available for ownership", 400);
 
             // Check for existing ownership request
-            var existingRequest = await _context.OwnershipRequests
+            var existingRequest = await context.OwnershipRequests
                 .Where(or => or.AnimalId == request.AnimalID
-                          && or.UserId == request.UserId)
+                          && or.UserId == userId)
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (existingRequest != null)
@@ -49,25 +44,25 @@ public class CreateOwnershipRequest
             var ownershipRequest = new OwnershipRequest
             {
                 AnimalId = request.AnimalID,
-                UserId = request.UserId,
+                UserId = userId,
                 Amount = animal.Cost,
                 RequestInfo = request.RequestInfo,
                 Status = OwnershipStatus.Pending
             };
 
-            _context.OwnershipRequests.Add(ownershipRequest);
+            context.OwnershipRequests.Add(ownershipRequest);
 
-            var success = await _context.SaveChangesAsync(cancellationToken) > 0;
+            var success = await context.SaveChangesAsync(cancellationToken) > 0;
 
             if (!success)
                 return Result<OwnershipRequest>.Failure("Failed to create ownership request", 500);
 
-            var createdRequest = await _context.OwnershipRequests
+            var createdRequest = await context.OwnershipRequests
                 .Include(or => or.Animal)
                 .Include(or => or.User)
                 .FirstOrDefaultAsync(or => or.Id == ownershipRequest.Id, cancellationToken);
 
-            return Result<OwnershipRequest>.Success(createdRequest!);
+            return Result<OwnershipRequest>.Success(createdRequest!, 200);
         }
     }
 }
