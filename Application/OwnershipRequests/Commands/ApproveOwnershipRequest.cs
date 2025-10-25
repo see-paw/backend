@@ -8,15 +8,45 @@ using Persistence;
 
 namespace Application.OwnershipRequests.Commands;
 
+/// <summary>
+/// Handles the approval of ownership requests for animals in shelters.
+/// 
+/// This command orchestrates the complete approval workflow, including validating permissions,
+/// updating the animal's ownership status, canceling active fosterings, and automatically
+/// rejecting competing ownership requests for the same animal.
+/// </summary>
 public class ApproveOwnershipRequest
 {
+    /// <summary>
+    /// Command to approve an ownership request.
+    /// </summary>
     public class Command : IRequest<Result<OwnershipRequest>>
     {
         public string OwnershipRequestId { get; set; } = string.Empty;
     }
 
+    /// <summary>
+    /// Handles the approval of an ownership request with comprehensive validation and side effects.
+    /// </summary>
     public class Handler(AppDbContext context, IUserAcessor userAccessor) : IRequestHandler<Command, Result<OwnershipRequest>>
     {
+        /// <summary>
+        /// Processes the approval of an ownership request.
+        /// 
+        /// This method performs the following operations:
+        /// - Validates that the requester is a shelter administrator
+        /// - Verifies the request exists and belongs to the administrator's shelter
+        /// - Validates approval conditions (animal state, request status, etc.)
+        /// - Approves the request and updates timestamps
+        /// - Transfers animal ownership to the requesting user
+        /// - Cancels any active fostering agreements for the animal
+        /// - Automatically rejects other pending or analyzing requests for the same animal
+        /// </summary>
+        /// <param name="request">The command containing the ownership request ID to approve.</param>
+        /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
+        /// <returns>
+        /// A result containing the approved ownership request if successful, or an error message with appropriate status code if validation fails.
+        /// </returns>
         public async Task<Result<OwnershipRequest>> Handle(Command request, CancellationToken cancellationToken)
         {
             var currentUser = await userAccessor.GetUserAsync();
@@ -52,6 +82,15 @@ public class ApproveOwnershipRequest
             return Result<OwnershipRequest>.Success(ownershipRequest, 200);
         }
 
+        /// <summary>
+        /// Retrieves an ownership request with all necessary related entities for approval processing.
+        /// </summary>
+        /// <param name="requestId">The unique identifier of the ownership request.</param>
+        /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
+        /// <returns>
+        /// The ownership request with eagerly loaded Animal (including Fosterings and OwnershipRequests) and User,
+        /// or null if not found.
+        /// </returns>
         private async Task<OwnershipRequest?> GetOwnershipRequestWithRelations(string requestId, CancellationToken cancellationToken)
         {
             return await context.OwnershipRequests
@@ -63,6 +102,21 @@ public class ApproveOwnershipRequest
                 .FirstOrDefaultAsync(or => or.Id == requestId, cancellationToken);
         }
 
+        /// <summary>
+        /// Validates all business rules and conditions required for approving an ownership request.
+        /// </summary>
+        /// <param name="ownershipRequest">The ownership request to validate.</param>
+        /// <param name="requestId">The ID of the request being validated (used to exclude self in duplicate checks).</param>
+        /// <returns>
+        /// A success result if all conditions are met, or a failure result with an appropriate error message and status code.
+        /// </returns>
+        /// <remarks>
+        /// Validation checks performed:
+        /// - Animal must not be inactive
+        /// - Animal must not already have an owner
+        /// - No other approved ownership request should exist for the animal
+        /// - Request status must be 'Analysing'
+        /// </remarks>
         private static Result<OwnershipRequest> ValidateApprovalConditions(OwnershipRequest ownershipRequest, string requestId)
         {
             if (ownershipRequest.Animal.AnimalState == AnimalState.Inactive)
@@ -77,12 +131,16 @@ public class ApproveOwnershipRequest
             if (hasApprovedRequest)
                 return Result<OwnershipRequest>.Failure("Animal already has an approved ownership request", 400);
 
-            if (ownershipRequest.Status != OwnershipStatus.Analysing && ownershipRequest.Status != OwnershipStatus.Rejected)
-                return Result<OwnershipRequest>.Failure("Only requests in 'Analysing' or 'Rejected' status can be approved", 400);
+            if (ownershipRequest.Status != OwnershipStatus.Analysing)
+                return Result<OwnershipRequest>.Failure("Only requests in 'Analysing' status can be approved", 400);
 
             return Result<OwnershipRequest>.Success(ownershipRequest, 200);
         }
 
+        /// <summary>
+        /// Updates the ownership request to approved status and sets approval timestamps.
+        /// </summary>
+        /// <param name="ownershipRequest">The ownership request to approve.</param>
         private static void ApproveRequest(OwnershipRequest ownershipRequest)
         {
             ownershipRequest.Status = OwnershipStatus.Approved;
@@ -90,6 +148,10 @@ public class ApproveOwnershipRequest
             ownershipRequest.UpdatedAt = DateTime.UtcNow;
         }
 
+        /// <summary>
+        /// Transfers ownership of the animal to the requesting user and updates the animal's state.
+        /// </summary>
+        /// <param name="ownershipRequest">The approved ownership request containing the user and animal information.</param>
         private static void UpdateAnimalToOwned(OwnershipRequest ownershipRequest)
         {
             ownershipRequest.Animal.OwnerId = ownershipRequest.UserId;
@@ -98,6 +160,14 @@ public class ApproveOwnershipRequest
             ownershipRequest.Animal.UpdatedAt = DateTime.UtcNow;
         }
 
+        /// <summary>
+        /// Cancels all active fostering agreements for the specified animal.
+        /// </summary>
+        /// <param name="animal">The animal whose fosterings should be cancelled.</param>
+        /// <remarks>
+        /// When an animal is adopted (ownership approved), any active fostering agreements
+        /// must be terminated as the animal will no longer be available for fostering.
+        /// </remarks>
         private static void CancelActiveFosterings(Animal animal)
         {
             var activeFosterings = animal.Fosterings
@@ -112,6 +182,15 @@ public class ApproveOwnershipRequest
             }
         }
 
+        /// <summary>
+        /// Automatically rejects all other pending or analyzing ownership requests for the same animal.
+        /// </summary>
+        /// <param name="animal">The animal whose competing requests should be rejected.</param>
+        /// <param name="approvedRequestId">The ID of the approved request to exclude from rejection.</param>
+        /// <remarks>
+        /// Since only one ownership request can be approved per animal, all competing requests
+        /// are automatically rejected to prevent conflicts and maintain data integrity.
+        /// </remarks>
         private static void RejectOtherPendingRequests(Animal animal, string approvedRequestId)
         {
             var otherRequests = animal.OwnershipRequests

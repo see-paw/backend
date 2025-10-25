@@ -14,6 +14,12 @@ namespace Tests.OwnershipRequestsTest;
 
 /// <summary>
 /// Unit tests for RejectRequest endpoint in OwnershipRequestsController.
+/// 
+/// These tests validate the rejection workflow for ownership requests, ensuring that:
+/// - Only requests in 'Analysing' status can be rejected
+/// - Optional rejection reasons are properly stored and visible to users
+/// - Proper authorization is enforced (shelter administrators only)
+/// - All business rules and validations are correctly applied
 /// </summary>
 public class RejectOwnershipRequestTests
 {
@@ -25,15 +31,13 @@ public class RejectOwnershipRequestTests
     {
         _mockMediator = new Mock<IMediator>();
         _mockMapper = new Mock<IMapper>();
-        _controller = new OwnershipRequestsController();
+
+        _controller = new OwnershipRequestsController(_mockMapper.Object);
 
         var serviceProviderMock = new Mock<IServiceProvider>();
         serviceProviderMock
             .Setup(sp => sp.GetService(typeof(IMediator)))
             .Returns(_mockMediator.Object);
-        serviceProviderMock
-            .Setup(sp => sp.GetService(typeof(IMapper)))
-            .Returns(_mockMapper.Object);
 
         _controller.ControllerContext = new ControllerContext
         {
@@ -44,15 +48,73 @@ public class RejectOwnershipRequestTests
         };
     }
 
+    /// <summary>
+    /// Tests that a valid rejection with a reason returns OK with updated request details.
+    /// </summary>
     [Fact]
-    public async Task RejectRequest_ValidRequest_ReturnsOk()
+    public async Task RejectRequest_ValidRequestWithReason_ReturnsOk()
     {
-        // Arrange
         var requestId = Guid.NewGuid().ToString();
+        var animalId = Guid.NewGuid().ToString();
+        var userId = Guid.NewGuid().ToString();
+        var rejectedAt = DateTime.UtcNow;
+
         var dto = new ReqRejectOwnershipRequestDto
         {
-            RejectionReason = "Does not meet requirements"
+            RejectionReason = "User does not meet shelter requirements"
         };
+
+        var ownershipRequest = new OwnershipRequest
+        {
+            Id = requestId,
+            AnimalId = animalId,
+            UserId = userId,
+            Amount = 100m,
+            Status = OwnershipStatus.Rejected,
+            RequestInfo = "User does not meet shelter requirements",
+            UpdatedAt = rejectedAt,
+            Animal = new Animal { Id = animalId, Name = "Test Animal" },
+            User = new User { Id = userId, Name = "Test User" }
+        };
+
+        var responseDto = new ResOwnershipRequestDto
+        {
+            Id = requestId,
+            AnimalId = animalId,
+            AnimalName = "Test Animal",
+            UserId = userId,
+            UserName = "Test User",
+            Amount = 100m,
+            Status = OwnershipStatus.Rejected,
+            RequestInfo = "User does not meet shelter requirements",
+            UpdatedAt = rejectedAt
+        };
+
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<RejectOwnershipRequest.Command>(), default))
+            .ReturnsAsync(Result<OwnershipRequest>.Success(ownershipRequest, 200));
+
+        _mockMapper
+            .Setup(m => m.Map<ResOwnershipRequestDto>(It.IsAny<OwnershipRequest>()))
+            .Returns(responseDto);
+
+        var result = await _controller.RejectRequest(requestId, dto);
+
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var returnedDto = Assert.IsType<ResOwnershipRequestDto>(okResult.Value);
+        Assert.Equal(OwnershipStatus.Rejected, returnedDto.Status);
+        Assert.Equal("User does not meet shelter requirements", returnedDto.RequestInfo);
+        Assert.NotNull(returnedDto.UpdatedAt);
+    }
+
+    /// <summary>
+    /// Tests that rejection without a reason is allowed and returns OK.
+    /// </summary>
+    [Fact]
+    public async Task RejectRequest_WithoutReason_ReturnsOk()
+    {
+        var requestId = Guid.NewGuid().ToString();
+        var dto = new ReqRejectOwnershipRequestDto();
 
         var ownershipRequest = new OwnershipRequest
         {
@@ -61,7 +123,7 @@ public class RejectOwnershipRequestTests
             UserId = Guid.NewGuid().ToString(),
             Amount = 100m,
             Status = OwnershipStatus.Rejected,
-            RequestInfo = "Does not meet requirements",
+            RequestInfo = null,
             Animal = new Animal { Id = Guid.NewGuid().ToString(), Name = "Test Animal" },
             User = new User { Id = Guid.NewGuid().ToString(), Name = "Test User" }
         };
@@ -75,31 +137,31 @@ public class RejectOwnershipRequestTests
             UserName = "Test User",
             Amount = 100m,
             Status = OwnershipStatus.Rejected,
-            RequestInfo = "Does not meet requirements"
+            RequestInfo = null
         };
 
         _mockMediator
             .Setup(m => m.Send(It.IsAny<RejectOwnershipRequest.Command>(), default))
-            .ReturnsAsync(Result<OwnershipRequest>.Success(ownershipRequest));
+            .ReturnsAsync(Result<OwnershipRequest>.Success(ownershipRequest, 200));
 
         _mockMapper
             .Setup(m => m.Map<ResOwnershipRequestDto>(It.IsAny<OwnershipRequest>()))
             .Returns(responseDto);
 
-        // Act
         var result = await _controller.RejectRequest(requestId, dto);
 
-        // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var returnedDto = Assert.IsType<ResOwnershipRequestDto>(okResult.Value);
         Assert.Equal(OwnershipStatus.Rejected, returnedDto.Status);
-        Assert.Equal("Does not meet requirements", returnedDto.RequestInfo);
+        Assert.Null(returnedDto.RequestInfo);
     }
 
+    /// <summary>
+    /// Tests that attempting to reject a non-existent request returns NotFound.
+    /// </summary>
     [Fact]
     public async Task RejectRequest_RequestNotFound_ReturnsNotFound()
     {
-        // Arrange
         var requestId = Guid.NewGuid().ToString();
         var dto = new ReqRejectOwnershipRequestDto
         {
@@ -110,17 +172,19 @@ public class RejectOwnershipRequestTests
             .Setup(m => m.Send(It.IsAny<RejectOwnershipRequest.Command>(), default))
             .ReturnsAsync(Result<OwnershipRequest>.Failure("Ownership request not found", 404));
 
-        // Act
         var result = await _controller.RejectRequest(requestId, dto);
 
-        // Assert
-        Assert.IsType<NotFoundObjectResult>(result.Result);
+        var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
+        Assert.Equal("Ownership request not found", notFoundResult.Value);
     }
 
+    /// <summary>
+    /// Tests that attempting to reject a request not in 'Analysing' status returns BadRequest.
+    /// Only requests currently under analysis can be rejected.
+    /// </summary>
     [Fact]
-    public async Task RejectRequest_InvalidStatus_ReturnsBadRequest()
+    public async Task RejectRequest_RequestNotInAnalysing_ReturnsBadRequest()
     {
-        // Arrange
         var requestId = Guid.NewGuid().ToString();
         var dto = new ReqRejectOwnershipRequestDto
         {
@@ -129,58 +193,85 @@ public class RejectOwnershipRequestTests
 
         _mockMediator
             .Setup(m => m.Send(It.IsAny<RejectOwnershipRequest.Command>(), default))
-            .ReturnsAsync(Result<OwnershipRequest>.Failure("Only requests in 'Analysing' status can be rejected", 400));
+            .ReturnsAsync(Result<OwnershipRequest>.Failure(
+                "Only requests in 'Analysing' status can be rejected", 400));
 
-        // Act
         var result = await _controller.RejectRequest(requestId, dto);
 
-        // Assert
-        Assert.IsType<BadRequestObjectResult>(result.Result);
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+        Assert.Equal("Only requests in 'Analysing' status can be rejected", badRequestResult.Value);
     }
 
+    /// <summary>
+    /// Tests that attempting to reject a request from a different shelter returns Forbidden.
+    /// Shelter administrators can only reject requests for animals in their own shelter.
+    /// </summary>
     [Fact]
-    public async Task RejectRequest_WithoutReason_ReturnsOk()
+    public async Task RejectRequest_RequestFromDifferentShelter_ReturnsForbidden()
     {
-        // Arrange
         var requestId = Guid.NewGuid().ToString();
-        var dto = new ReqRejectOwnershipRequestDto(); // No rejection reason
-
-        var ownershipRequest = new OwnershipRequest
+        var dto = new ReqRejectOwnershipRequestDto
         {
-            Id = requestId,
-            AnimalId = Guid.NewGuid().ToString(),
-            UserId = Guid.NewGuid().ToString(),
-            Amount = 100m,
-            Status = OwnershipStatus.Rejected,
-            Animal = new Animal { Id = Guid.NewGuid().ToString(), Name = "Test Animal" },
-            User = new User { Id = Guid.NewGuid().ToString(), Name = "Test User" }
-        };
-
-        var responseDto = new ResOwnershipRequestDto
-        {
-            Id = requestId,
-            AnimalId = ownershipRequest.AnimalId,
-            AnimalName = "Test Animal",
-            UserId = ownershipRequest.UserId,
-            UserName = "Test User",
-            Amount = 100m,
-            Status = OwnershipStatus.Rejected
+            RejectionReason = "Test reason"
         };
 
         _mockMediator
             .Setup(m => m.Send(It.IsAny<RejectOwnershipRequest.Command>(), default))
-            .ReturnsAsync(Result<OwnershipRequest>.Success(ownershipRequest));
+            .ReturnsAsync(Result<OwnershipRequest>.Failure(
+                "You can only reject requests for animals in your shelter", 403));
 
-        _mockMapper
-            .Setup(m => m.Map<ResOwnershipRequestDto>(It.IsAny<OwnershipRequest>()))
-            .Returns(responseDto);
-
-        // Act
         var result = await _controller.RejectRequest(requestId, dto);
 
-        // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var returnedDto = Assert.IsType<ResOwnershipRequestDto>(okResult.Value);
-        Assert.Equal(OwnershipStatus.Rejected, returnedDto.Status);
+        var forbiddenResult = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(403, forbiddenResult.StatusCode);
+        Assert.Equal("You can only reject requests for animals in your shelter", forbiddenResult.Value);
+    }
+
+    /// <summary>
+    /// Tests that attempting to reject without being a shelter administrator returns Forbidden.
+    /// </summary>
+    [Fact]
+    public async Task RejectRequest_NotShelterAdministrator_ReturnsForbidden()
+    {
+        var requestId = Guid.NewGuid().ToString();
+        var dto = new ReqRejectOwnershipRequestDto
+        {
+            RejectionReason = "Test reason"
+        };
+
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<RejectOwnershipRequest.Command>(), default))
+            .ReturnsAsync(Result<OwnershipRequest>.Failure(
+                "Only shelter administrators can reject ownership requests", 403));
+
+        var result = await _controller.RejectRequest(requestId, dto);
+
+        var forbiddenResult = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(403, forbiddenResult.StatusCode);
+        Assert.Equal("Only shelter administrators can reject ownership requests", forbiddenResult.Value);
+    }
+
+    /// <summary>
+    /// Tests that a database failure during rejection returns InternalServerError.
+    /// </summary>
+    [Fact]
+    public async Task RejectRequest_DatabaseFailure_ReturnsInternalServerError()
+    {
+        var requestId = Guid.NewGuid().ToString();
+        var dto = new ReqRejectOwnershipRequestDto
+        {
+            RejectionReason = "Test reason"
+        };
+
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<RejectOwnershipRequest.Command>(), default))
+            .ReturnsAsync(Result<OwnershipRequest>.Failure(
+                "Failed to reject ownership request", 500));
+
+        var result = await _controller.RejectRequest(requestId, dto);
+
+        var serverErrorResult = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(500, serverErrorResult.StatusCode);
+        Assert.Equal("Failed to reject ownership request", serverErrorResult.Value);
     }
 }

@@ -14,8 +14,5 @@ public class CreateOwnershipRequestValidator : AbstractValidator<ReqCreateOwners
             .NotNull().WithMessage("Animal ID cannot be null")
             .NotEmpty().WithMessage("Animal ID is required")
             .Length(36).WithMessage("Animal ID must be a valid GUID format");
-
-        RuleFor(x => x.RequestInfo)
-            .MaximumLength(500).WithMessage("Request info cannot exceed 500 characters");
     }
 }

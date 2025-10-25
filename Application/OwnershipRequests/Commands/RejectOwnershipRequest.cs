@@ -8,17 +8,60 @@ using Persistence;
 
 namespace Application.OwnershipRequests.Commands;
 
+/// <summary>
+/// Handles the rejection of ownership requests for animals in shelters.
+/// 
+/// This command allows shelter administrators to reject adoption requests that do not meet
+/// the shelter's criteria, providing an optional reason for the rejection that is visible
+/// to the requesting user.
+/// </summary>
 public class RejectOwnershipRequest
 {
+    /// <summary>
+    /// Command to reject an ownership request.
+    /// </summary>
     public class Command : IRequest<Result<OwnershipRequest>>
     {
+        /// <summary>
+        /// The unique identifier of the ownership request to reject.
+        /// </summary>
         public string OwnershipRequestId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Optional explanation for why the ownership request is being rejected.
+        /// This message will be visible to the user who submitted the request.
+        /// </summary>
         public string? RejectionReason { get; set; }
     }
 
+    /// <summary>
+    /// Handles the rejection of ownership requests with validation and reason tracking.
+    /// </summary>
     public class Handler(AppDbContext context, IUserAcessor userAccessor) 
         : IRequestHandler<Command, Result<OwnershipRequest>>
     {
+        /// <summary>
+        /// Rejects an ownership request with an optional reason.
+        /// 
+        /// This method performs the following operations:
+        /// - Validates that the requester is a shelter administrator
+        /// - Verifies the request exists and belongs to the administrator's shelter
+        /// - Ensures the request is in 'Analysing' status (already under review)
+        /// - Updates the request status to Rejected
+        /// - Records the rejection reason if provided
+        /// - Updates the timestamp to track when the rejection occurred
+        /// </summary>
+        /// <param name="request">The command containing the ownership request ID and optional rejection reason.</param>
+        /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
+        /// <returns>
+        /// A result containing the rejected ownership request if successful,
+        /// or an error message with appropriate status code if validation fails.
+        /// </returns>
+        /// <remarks>
+        /// Only ownership requests in 'Analysing' status can be rejected. This ensures that
+        /// requests have been properly reviewed before rejection. After rejection, the user
+        /// can contact the shelter to address concerns and request re-analysis.
+        /// </remarks>
         public async Task<Result<OwnershipRequest>> Handle(Command request, CancellationToken cancellationToken)
         {
             // Validate access token, only Admin CAA is allowed to update the Ownership Request's status
