@@ -1,13 +1,14 @@
 ﻿using Application.Animals.Commands;
 using Application.Animals.Queries;
 using Application.Core;
+using Application.Interfaces;
 using AutoMapper;
 using Domain;
-using Microsoft.AspNetCore.Mvc;
-using WebAPI.DTOs;
 using Infrastructure;
 using Microsoft.AspNetCore.Authorization;
-using Application.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+using WebAPI.DTOs;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace WebAPI.Controllers;
@@ -109,4 +110,102 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
         // Centralized result handling (200, 400, 404, etc.)
         return HandleResult(await Mediator.Send(command));
     }
+
+    /// <summary>
+    /// Updates an existing animal record belonging to the authenticated shelter.
+    /// </summary>
+    /// <para>
+    /// The animal identifier (<paramref name="id"/>) is obtained from the route, and the shelter context 
+    /// is derived from the authenticated user’s token.
+    /// </para>
+    /// <param name="id">The unique identifier of the animal to be edited.</param>
+    /// <param name="reqEditAnimalDto">
+    /// A <see cref="ReqEditAnimalDto"/> object containing the updated animal data received from the client.
+    /// </param>
+    /// <returns>
+    /// The updated animal record on success, or an appropriate error response on failure.
+    /// </returns>
+    [Authorize(Roles = "AdminCAA")]
+    [HttpPut("{id}")]
+    public async Task<ActionResult> EditAnimal(string id, [FromBody] ReqEditAnimalDto reqEditAnimalDto)
+    {
+        // Retrieve the authenticated user and shelter context
+        var user = await userAccessor.GetUserAsync();
+
+        // Check if user is authenticated
+        if (user == null)
+            return HandleResult(Result<ResAnimalDto>.Failure("User is not authenticated", 401));
+
+        var shelterId = user.ShelterId;
+
+        // Ensure the shelter context is valid
+        if (string.IsNullOrEmpty(shelterId))
+            return Unauthorized("Invalid shelter token");
+
+        // Map the incoming DTO to the domain entity
+        var animal = mapper.Map<Animal>(reqEditAnimalDto);
+
+        // Create and send the command through the MediatR pipeline
+        var command = new EditAnimal.Command
+        {
+            AnimalId = id,
+            Animal = animal,
+            ShelterId = shelterId
+        };
+
+        var result = await Mediator.Send(command);
+
+        if (!result.IsSuccess)
+        {
+            return HandleResult(result);
+        }
+
+        var animalDto = mapper.Map<ResAnimalDto>(result.Value);
+
+        // Execute the command and return a standardized ActionResult
+        return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
+        
+    }
+
+
+    /// <summary>
+    /// Deactivates an existing <see cref="Animal"/> entity within the shelter context,
+    /// changing its <see cref="Domain.Enums.AnimalState"/> to <c>Inactive</c> instead of deleting it.
+    /// </summary>
+    /// <para>
+    /// The operation is only permitted when:
+    /// <list type="bullet">
+    ///   <item><description>The animal belongs to the authenticated shelter administrator (CAA).</description></item>
+    ///   <item><description>The animal has no active <see cref="Domain.Fostering"/> or <see cref="Domain.OwnershipRequest"/> associations.</description></item>
+    ///   <item><description>The authenticated user has the <c>AdminCAA</c> role.</description></item>
+    /// </list>
+    /// </para>
+    /// <param name="id">The unique identifier of the animal to be deactivated.</param>
+    /// <returns>
+    [Authorize(Roles = "AdminCAA")]
+    [HttpPatch("{id}/deactivate")]
+    public async Task<ActionResult> DeactivateAnimal(string id)
+    {
+        var user = await userAccessor.GetUserAsync();
+        var shelterId = user.ShelterId;
+
+        if (string.IsNullOrEmpty(shelterId))
+            return Unauthorized("Invalid shelter token");
+
+        var command = new DeactivateAnimal.Command
+        {
+            AnimalId = id,
+            ShelterId = shelterId
+        };
+
+        var result = await Mediator.Send(command);
+
+        if (!result.IsSuccess)
+            return HandleResult(result);
+
+        var animalDto = mapper.Map<ResAnimalDto>(result.Value);
+        return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
+    }
+
+
 }

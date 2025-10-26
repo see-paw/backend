@@ -18,14 +18,14 @@ public class Animal
     /// Unique identifier of the animal (GUID).
     /// </summary>
     [Key]
-    public string Id { get; init; } = Guid.NewGuid().ToString();
+    public string Id { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// The animal’s display name.
     /// </summary>
     [Required]
     [StringLength(100, MinimumLength = 2)]
-    public string Name { get; init; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// The current availability or ownership state of the animal.
@@ -43,38 +43,38 @@ public class Animal
     /// The species classification of the animal (e.g., dog, cat, bird).
     /// </summary>
     [Required]
-    public Species Species { get; init; }
+    public Species Species { get; set; }
 
     /// <summary>
     /// The size category of the animal (e.g., small, medium, large).
     /// </summary>
     [Required]
-    public SizeType Size { get; init; }
+    public SizeType Size { get; set; }
 
     /// <summary>
     /// The biological sex of the animal.
     /// </summary>
     [Required]
-    public SexType Sex { get; init; }
+    public SexType Sex { get; set; }
 
     /// <summary>
     /// The color or main color pattern of the animal.
     /// </summary>
     [Required]
     [StringLength(50)]
-    public string Colour { get; init; } = string.Empty;
+    public string Colour { get; set; } = string.Empty;
 
     /// <summary>
     /// The animal’s date of birth.
     /// </summary>
     [Required]
-    public DateOnly BirthDate { get; init; }
+    public DateOnly BirthDate { get; set; }
 
     /// <summary>
     /// Indicates whether the animal has been sterilized.
     /// </summary>
     [Required]
-    public bool Sterilized { get; init; }
+    public bool Sterilized { get; set; }
 
     /// <summary>
     /// The monthly cost associated with the animal’s care.
@@ -87,7 +87,7 @@ public class Animal
     /// Additional characteristics or traits of the animal.
     /// </summary>
     [StringLength(300)]
-    public string? Features { get; init; }
+    public string? Features { get; set; }
 
     /// <summary>
     /// The UTC timestamp when the record was created.
@@ -124,7 +124,7 @@ public class Animal
     /// The foreign key referencing the breed of the animal.
     /// </summary>
     [Required]
-    public string BreedId { get; init; } = string.Empty;
+    public string BreedId { get; set; } = string.Empty;
 
     /// <summary>
     /// The breed entity associated with the animal.

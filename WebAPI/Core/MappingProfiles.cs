@@ -49,6 +49,9 @@ public class MappingProfiles : Profile
         CreateMap<Image, ResImageDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id));// Maps the 'Id' property from Image to the 'ImageId' property in ResImageDto.
         
+        CreateMap<ReqEditAnimalDto, Animal>()
+            .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.Images));
+
         // OwnershipRequest mappings
         CreateMap<OwnershipRequest, ResOwnershipRequestDto>()
             .ForMember(dest => dest.AnimalName, opt => opt.MapFrom(src => src.Animal.Name))
