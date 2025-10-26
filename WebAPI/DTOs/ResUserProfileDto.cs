@@ -10,11 +10,6 @@
     {
         
         /// <summary>
-        /// Email address used for authentication and contact.
-        /// </summary>
-        public string Email { get; set; } = string.Empty;
-
-        /// <summary>
         /// Full name of the user.
         /// </summary>
         public string Name { get; set; } = string.Empty;
@@ -38,6 +33,11 @@
         /// ZIP code.
         /// </summary>
         public string PostalCode { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Phone number.
+        /// </summary>
+        public string PhoneNumber { get; set; }
 
     }
 }

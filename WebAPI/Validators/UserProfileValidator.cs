@@ -14,7 +14,10 @@ namespace WebAPI.Validators
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Name is required.")
                 .MaximumLength(255).WithMessage("Name cannot exceed 255 characters.")
-                .Matches(@"^[A-Za-zÀ-ÖØ-öø-ÿ\s'\-]+$").WithMessage("Name contains invalid characters.");
+                .Matches(@"^[A-Za-zÀ-ÖØ-öø-ÿ\s'\-’]+$")
+                .WithMessage("Name can only contain letters, spaces, hyphens, and apostrophes.");
+
+
 
             RuleFor(x => x.BirthDate)
                 .NotEmpty().WithMessage("Birth date is required.")
@@ -37,8 +40,9 @@ namespace WebAPI.Validators
 
             RuleFor(x => x.PhoneNumber)
                 .NotEmpty().WithMessage("Phone number is required.")
-                .Matches(@"^\+?\d{9,15}$").WithMessage("Invalid phone number format.")
-                .MaximumLength(15).WithMessage("Phone number cannot exceed 15 digits.");
+                .Matches(@"^9\d{8}$").WithMessage("Phone number must start with 9 and contain exactly 9 digits.")
+                .Length(9).WithMessage("Phone number must have exactly 9 digits.");
+
         }
     }
 }

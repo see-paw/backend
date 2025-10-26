@@ -51,9 +51,7 @@ public class MappingProfiles : Profile
 
         CreateMap<User, ResUserProfileDto>();
 
-        CreateMap<ReqUserProfileDto, User>()
-            // If a property is null do not map it to the destination entity and keeps its current value
-            .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        CreateMap<ReqUserProfileDto, User>();
 
     }
 }

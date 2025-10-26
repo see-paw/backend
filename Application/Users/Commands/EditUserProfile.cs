@@ -51,12 +51,12 @@ namespace Application.Users.Commands
                     return Result<User>.Failure("User not found", 404);
 
                 // Apply updates (only editable fields)
-                user.Name = request.UpdatedUser.Name ?? user.Name;
-                user.BirthDate = request.UpdatedUser.BirthDate != default ? request.UpdatedUser.BirthDate : user.BirthDate;
-                user.Street = request.UpdatedUser.Street ?? user.Street;
-                user.City = request.UpdatedUser.City ?? user.City;
-                user.PostalCode = request.UpdatedUser.PostalCode ?? user.PostalCode;
-                user.PhoneNumber = request.UpdatedUser.PhoneNumber ?? user.PhoneNumber;
+                user.Name = request.UpdatedUser.Name;
+                user.BirthDate = request.UpdatedUser.BirthDate;
+                user.Street = request.UpdatedUser.Street;
+                user.City = request.UpdatedUser.City;
+                user.PostalCode = request.UpdatedUser.PostalCode;
+                user.PhoneNumber = request.UpdatedUser.PhoneNumber;
                 user.UpdatedAt = DateTime.UtcNow;
 
                 // Save changes

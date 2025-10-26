@@ -22,7 +22,8 @@ namespace WebAPI.Controllers
         /// <returns>
         /// A <see cref="ResUserProfileDto"/> object containing the authenticated user's data.
         /// </returns>
-        [HttpGet("profile")]
+        [Authorize(Roles = "AdminCAA, User")]
+        [HttpGet]
         public async Task<ActionResult<ResUserProfileDto>> GetUserProfile()
         {
             // Retrieve the authenticated user context
@@ -52,11 +53,15 @@ namespace WebAPI.Controllers
         /// A <see cref="ResUserProfileDto"/> containing the updated user data if the operation succeeds;
         /// otherwise, an appropriate error response.
         /// </returns>
-        [HttpPut("profile")]
+        [Authorize(Roles = "AdminCAA, User")]
+        [HttpPut]
         public async Task<ActionResult<ResUserProfileDto>> EditUserProfile([FromBody] ReqUserProfileDto reqUserProfileDto)
         {
             // Retrieve the authenticated user context
             var currentUser = await userAccessor.GetUserAsync();
+
+            if (currentUser == null)
+                return HandleResult(Result<ResUserProfileDto>.Failure("User is not authenticated", 401));
 
             // Map the incoming DTO to a User domain entity
             var updatedUser = mapper.Map<User>(reqUserProfileDto);

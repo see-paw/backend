@@ -35,6 +35,9 @@
         /// </summary>
         public string PostalCode { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Phone number.
+        /// </summary>
         public string PhoneNumber { get; set; }
     }
 }
