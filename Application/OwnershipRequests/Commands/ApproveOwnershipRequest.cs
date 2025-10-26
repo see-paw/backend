@@ -28,7 +28,7 @@ public class ApproveOwnershipRequest
     /// <summary>
     /// Handles the approval of an ownership request with comprehensive validation and side effects.
     /// </summary>
-    public class Handler(AppDbContext context, IUserAcessor userAccessor) : IRequestHandler<Command, Result<OwnershipRequest>>
+    public class Handler(AppDbContext context, IUserAccessor userAccessor) : IRequestHandler<Command, Result<OwnershipRequest>>
     {
         /// <summary>
         /// Processes the approval of an ownership request.

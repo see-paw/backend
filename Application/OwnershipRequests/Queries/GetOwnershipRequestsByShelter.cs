@@ -35,7 +35,7 @@ public class GetOwnershipRequestsByShelter
     /// <summary>
     /// Handles the retrieval of paginated ownership requests with authentication and authorization.
     /// </summary>
-    public class Handler(AppDbContext context, IUserAcessor userAcessor) : IRequestHandler<Query, Result<PagedList<OwnershipRequest>>>
+    public class Handler(AppDbContext context, IUserAccessor userAcessor) : IRequestHandler<Query, Result<PagedList<OwnershipRequest>>>
     {
         /// <summary>
         /// Retrieves a paginated list of ownership requests for the authenticated administrator's shelter.
