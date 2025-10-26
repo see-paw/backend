@@ -43,7 +43,7 @@ public class MappingProfiles : Profile
             .ForMember(dest => dest.Images,
                 opt => opt.MapFrom(src => src.Images));
 
-        CreateMap<ReqImageDto, Image>(MemberList.Source);
+        CreateMap<ReqImageDto, Image>();
       
         CreateMap<Image, ResImageDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id));// Maps the 'Id' property from Image to the 'ImageId' property in ResImageDto.
