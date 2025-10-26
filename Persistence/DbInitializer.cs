@@ -25,8 +25,8 @@ public static class DbInitializer
     /// <param name="roleManager">The <see cref="RoleManager{TRole}"/> used to manage roles in the identity system.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging seeding operations and errors.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    public static async Task SeedData(AppDbContext dbContext, 
-        UserManager<User> userManager, 
+    public static async Task SeedData(AppDbContext dbContext,
+        UserManager<User> userManager,
         RoleManager<IdentityRole> roleManager,
         ILoggerFactory loggerFactory)
     {
@@ -48,7 +48,13 @@ public static class DbInitializer
         const string platformAdmin = "PlatformAdmin";
         const string adminCaa = "AdminCAA";
         const string userRole = "User";
-        
+        const string user1Id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"; // Alice
+        const string user2Id = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"; // Bob
+        const string user3Id = "cccccccc-cccc-cccc-cccc-cccccccccccc"; // Carlos
+        const string user4Id = "dddddddd-dddd-dddd-dddd-dddddddddddd"; // Diana
+        const string user5Id = "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"; // Eduardo
+        const string user6Id = "66666666-6666-6666-6666-666666666666"; // Filipe
+
         // ======== SEED SHELTERS ========
         if (!dbContext.Shelters.Any())
         {
@@ -85,14 +91,14 @@ public static class DbInitializer
             await dbContext.Shelters.AddRangeAsync(shelters);
             await dbContext.SaveChangesAsync();
         }
-        
+
         // ======== USERS SHELTERS ========
 
         if (!userManager.Users.Any())
         {
             var roles = new List<string> { platformAdmin, adminCaa, userRole };
             var logger = loggerFactory.CreateLogger("DbInitializer");
-            
+
             foreach (var role in roles)
             {
                 if (!await roleManager.RoleExistsAsync(role))
@@ -104,6 +110,7 @@ public static class DbInitializer
             {
                 new()
                 {
+                    Id = user2Id,
                     Name = "Bob Johnson",
                     UserName = "bob@test.com",
                     Email = "bob@test.com",
@@ -116,6 +123,7 @@ public static class DbInitializer
                 },
                 new()
                 {
+                    Id = user1Id,
                     Name = "Alice Ferreira",
                     UserName = "alice@test.com",
                     Email = "alice@test.com",
@@ -129,6 +137,7 @@ public static class DbInitializer
                 },
                 new()
                 {
+                    Id = user3Id,
                     Name = "Carlos Santos",
                     UserName = "carlos@test.com",
                     Email = "carlos@test.com",
@@ -141,6 +150,7 @@ public static class DbInitializer
                 },
                 new()
                 {
+                    Id = user4Id,
                     Name = "Diana Silva",
                     UserName = "diana@test.com",
                     Email = "diana@test.com",
@@ -153,6 +163,7 @@ public static class DbInitializer
                 },
                 new()
                 {
+                    Id = user5Id,
                     Name = "Eduardo Lima",
                     UserName = "eduardo@test.com",
                     Email = "eduardo@test.com",
@@ -162,19 +173,34 @@ public static class DbInitializer
                     BirthDate = new DateTime(1988, 2, 14),
                     PhoneNumber = "915222444",
                     CreatedAt = DateTime.UtcNow
+                },
+                new()
+                {
+                    Id = user6Id,
+                    Name = "Filipe Marques",
+                    UserName = "filipe@test.com",
+                    Email = "filipe@test.com",
+                    City = "Porto",
+                    Street = "Rua das Oliveiras 99",
+                    PostalCode = "4000-450",
+                    BirthDate = new DateTime(1994, 5, 27),
+                    PhoneNumber = "912345999",
+                    CreatedAt = DateTime.UtcNow,
+                    ShelterId = "22222222-2222-2222-2222-222222222222" // Test Shelter 2
                 }
             };
-                
+
             foreach (var user in users)
             {
                 var result = await userManager.CreateAsync(user, "Pa$$w0rd");
-                
+
                 if (result.Succeeded)
                 {
                     var role = user.Email switch
                     {
                         "bob@test.com" => platformAdmin,
                         "alice@test.com" => adminCaa,
+                        "filipe@test.com" => adminCaa,
                         _ => userRole
                     };
 
@@ -219,7 +245,7 @@ public static class DbInitializer
                 Colour = "Branco e cinzento",
                 BirthDate = new DateOnly(2022, 4, 15),
                 Sterilized = true,
-                 BreedId = breed1Id,
+                BreedId = breed1Id,
                 Cost = 30,
                 Features = "Olhos verdes, muito sociável",
                 ShelterId = shelter1Id,

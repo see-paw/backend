@@ -25,14 +25,14 @@ public class AnimalsController(IMapper mapper) : BaseApiController
         {
             PageNumber = pageNumber
         });
-        
+
         if (!result.IsSuccess)
         {
             return HandleResult(result);
         }
-        
+
         var dtoList = mapper.Map<List<ResAnimalDto>>(result.Value);
-        
+
         // Create a new paginated list with the DTOs
         var dtoPagedList = new PagedList<ResAnimalDto>(
             dtoList,

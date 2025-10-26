@@ -48,7 +48,7 @@ namespace WebAPI.Controllers
             if (!result.IsSuccess)
                 return HandleResult(result);
 
-            // Map Animal → ResAnimalDto for the API response
+            // Map Animal to ResAnimalDto for the API response
             var dtoList = _mapper.Map<List<ResAnimalDto>>(result.Value);
 
             // Wrap the DTO list in a paginated structure with metadata

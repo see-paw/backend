@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+
 using Domain.Enums;
 
 namespace Domain;
@@ -75,3 +76,4 @@ public class OwnershipRequest
     /// </summary>
     public User User { get; set; } = null!;
 }
+
