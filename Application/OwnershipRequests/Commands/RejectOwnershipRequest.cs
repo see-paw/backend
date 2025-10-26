@@ -37,7 +37,7 @@ public class RejectOwnershipRequest
     /// <summary>
     /// Handles the rejection of ownership requests with validation and reason tracking.
     /// </summary>
-    public class Handler(AppDbContext context, IUserAcessor userAccessor) 
+    public class Handler(AppDbContext context, IUserAccessor userAccessor) 
         : IRequestHandler<Command, Result<OwnershipRequest>>
     {
         /// <summary>

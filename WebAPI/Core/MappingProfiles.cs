@@ -31,6 +31,7 @@ public class MappingProfiles : Profile
         CreateMap<ReqCreateAnimalDto, Animal>()
             // Maps the 'Images' collection from the request DTO to the 'Images' navigation property in the Animal domain entity
             .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.Images));
+        
 
         CreateMap<Breed, ResBreedDto>();
 

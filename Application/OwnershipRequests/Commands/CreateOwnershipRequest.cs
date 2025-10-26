@@ -30,7 +30,7 @@ public class CreateOwnershipRequest
     /// <summary>
     /// Handles the creation of ownership requests with validation and duplicate prevention.
     /// </summary>
-    public class Handler(AppDbContext context, IUserAcessor userAccessor) : IRequestHandler<Command, Result<OwnershipRequest>>
+    public class Handler(AppDbContext context, IUserAccessor userAccessor) : IRequestHandler<Command, Result<OwnershipRequest>>
     {
 
         /// <summary>

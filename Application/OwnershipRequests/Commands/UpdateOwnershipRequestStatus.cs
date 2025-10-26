@@ -41,7 +41,7 @@ public class UpdateOwnershipRequestStatus
     /// <summary>
     /// Handles the status update of ownership requests with comprehensive validation.
     /// </summary>
-    public class Handler(AppDbContext context, IUserAcessor userAccessor) : IRequestHandler<Command, Result<OwnershipRequest>>
+    public class Handler(AppDbContext context, IUserAccessor userAccessor) : IRequestHandler<Command, Result<OwnershipRequest>>
     {
 
         /// <summary>
