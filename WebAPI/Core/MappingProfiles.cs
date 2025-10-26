@@ -48,8 +48,46 @@ public class MappingProfiles : Profile
       
         CreateMap<Image, ResImageDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id));// Maps the 'Id' property from Image to the 'ImageId' property in ResImageDto.
-        
 
+        CreateMap<Fostering, ResActiveFosteringDto>()
+            // Flatten animal properties
+            .ForMember(dest => dest.AnimalName, opt => opt.MapFrom(src => src.Animal.Name))
+            .ForMember(dest => dest.AnimalAge, opt => opt.MapFrom(src => CalculateAge(src.Animal.BirthDate)))
+            // Pick only principal image
+            .ForMember(dest => dest.Images, opt => opt.MapFrom(src =>
+                src.Animal.Images != null
+                    ? src.Animal.Images
+                        .Where(i => i.IsPrincipal)
+                        .Select(i => new ResImageDto
+                        {
+                            Id = i.Id,
+                            Url = i.Url,
+                            Description = i.Description,
+                            IsPrincipal = i.IsPrincipal
+                        }).ToList()
+                    : new List<ResImageDto>()))
+            // Map fostering-specific fields
+            .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount))
+            .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate));
 
+        CreateMap<Fostering, ResCancelFosteringDto>()
+            // Flatten animal properties
+            .ForMember(dest => dest.AnimalName, opt => opt.MapFrom(src => src.Animal.Name))
+            .ForMember(dest => dest.AnimalAge, opt => opt.MapFrom(src => CalculateAge(src.Animal.BirthDate)))
+            // Map fostering-specific fields
+            .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount))
+            .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))
+            .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate));
     }
+    
+
+    private static int CalculateAge(DateOnly birthDate)
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var age = today.Year - birthDate.Year;
+        if (today < birthDate.AddYears(age)) age--;
+        return age;
+    }
+
+
 }

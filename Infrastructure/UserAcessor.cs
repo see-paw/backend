@@ -14,7 +14,7 @@ namespace Infrastructure;
 /// from the database.
 /// </summary>
 public class UserAccessor(IHttpContextAccessor httpContextAccessor,
-    AppDbContext dbContext): IUserAcessor
+    AppDbContext dbContext): IUserAccessor
 {
     /// <summary>
     /// Retrieves the unique identifier of the currently authenticated user
