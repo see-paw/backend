@@ -28,10 +28,11 @@ public class MappingProfiles : Profile
     /// </remarks>
     public MappingProfiles()
     {
-        CreateMap<ReqCreateAnimalDto, Animal>(MemberList.Source)
+        CreateMap<ReqCreateAnimalDto, Animal>()
             // Maps the 'Images' collection from the request DTO to the 'Images' navigation property in the Animal domain entity
             .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.Images));
         
+
         CreateMap<Breed, ResBreedDto>();
 
         CreateMap<Animal, ResAnimalDto>()
@@ -51,6 +52,10 @@ public class MappingProfiles : Profile
         CreateMap<ReqEditAnimalDto, Animal>()
             .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.Images));
 
+        // OwnershipRequest mappings
+        CreateMap<OwnershipRequest, ResOwnershipRequestDto>()
+            .ForMember(dest => dest.AnimalName, opt => opt.MapFrom(src => src.Animal.Name))
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Name));
 
     }
 }

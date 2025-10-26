@@ -1,4 +1,4 @@
-﻿namespace WebAPI.DTOs;
+namespace WebAPI.DTOs;
 
 /// <summary>
 /// Data Transfer Object (DTO) representing an image associated with an animal or shelter.
@@ -14,4 +14,3 @@ public class ResImageDto
     public string Url { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
 }
-

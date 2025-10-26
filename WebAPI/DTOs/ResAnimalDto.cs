@@ -83,6 +83,7 @@ public class ResAnimalDto
     /// </summary>
     public string shelterId { get; set; } = null!;
 
+
     /// <summary>
     /// A list of images associated with the animal.
     /// </summary>
