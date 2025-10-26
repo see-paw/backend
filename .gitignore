@@ -485,3 +485,6 @@ $RECYCLE.BIN/
 /API/seePaw.db
 /API/seePaw.db-shm
 /API/seePaw.db-wal
+
+# Coverage Report
+/Tests/coveragereport/

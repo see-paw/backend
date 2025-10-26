@@ -78,7 +78,7 @@ namespace Tests
         /// Tests that SeedData creates 5 users with correct data.
         /// </summary>
         [Fact]
-        public async Task SeedData_EmptyDatabase_Creates5Users()
+        public async Task SeedData_EmptyDatabase_Creates6Users()
         {
             // Arrange
             await using var context = new AppDbContext(_options);
@@ -88,7 +88,7 @@ namespace Tests
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
             // Assert
-            Assert.Equal(5, userManager.Users.Count());
+            Assert.Equal(6, userManager.Users.Count());
         }
 
         /// <summary>
