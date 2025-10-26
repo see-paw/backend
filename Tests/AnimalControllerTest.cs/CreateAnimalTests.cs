@@ -1,5 +1,5 @@
-﻿using Domain.Enums;
-using WebAPI.DTOs;
+﻿using Domain.Enums; 
+using WebAPI.DTOs; 
 using WebAPI.Validators;
 
 namespace Tests.AnimalControllerTest.cs
@@ -407,6 +407,15 @@ namespace Tests.AnimalControllerTest.cs
             Assert.False(result.IsValid);
         }
 
+        [Fact]
+        public void ValidCreateAnimal()
+        {
+            var dto = CreateValidAnimalDTO();
+
+            var result = _validator.Validate(dto);
+
+            Assert.True(result.IsValid);
+        }
 
 
         private ReqCreateAnimalDto CreateValidAnimalDTO()
@@ -419,7 +428,7 @@ namespace Tests.AnimalControllerTest.cs
                 Colour = "Brown",
                 BirthDate = new DateOnly(2020, 1, 1),
                 Sterilized = true,
-                BreedId = Guid.NewGuid().ToString(),
+                BreedId = "3c3c3333-3333-3333-3333-333333333333",
                 Cost = 100m,
                 Features = "Healthy and friendly",
                 Description = "Healthy and friendly",

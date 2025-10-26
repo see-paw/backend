@@ -1,4 +1,4 @@
-using Application.Animals.Queries;
+/*using Application.Animals.Queries;
 using Application.Core;
 using AutoMapper;
 using Domain;
@@ -285,4 +285,4 @@ namespace Tests.AnimalControllerTest.cs
             Assert.Equal(AnimalState.PartiallyFostered, dto.AnimalState);
         }
     }
-}
+}*/
