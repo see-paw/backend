@@ -52,10 +52,13 @@ public class MappingProfiles : Profile
         CreateMap<ReqEditAnimalDto, Animal>()
             .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.Images));
 
+        CreateMap<User, ResUserProfileDto>();
+
         // OwnershipRequest mappings
         CreateMap<OwnershipRequest, ResOwnershipRequestDto>()
             .ForMember(dest => dest.AnimalName, opt => opt.MapFrom(src => src.Animal.Name))
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Name));
+        CreateMap<ReqUserProfileDto, User>();
 
     }
 }
