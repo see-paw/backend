@@ -7,6 +7,7 @@ using Xunit;
 
 namespace Tests.Animals
 {
+    //codacy: ignore[complexity]
     public class DeactivateAnimalTests
     {
         private readonly AppDbContext _context;

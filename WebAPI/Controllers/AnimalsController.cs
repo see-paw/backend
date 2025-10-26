@@ -131,6 +131,11 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     {
         // Retrieve the authenticated user and shelter context
         var user = await userAccessor.GetUserAsync();
+
+        // Check if user is authenticated
+        if (user == null)
+            return HandleResult(Result<ResAnimalDto>.Failure("User is not authenticated", 401));
+
         var shelterId = user.ShelterId;
 
         // Ensure the shelter context is valid
@@ -161,50 +166,6 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
         return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
         
     }
-
-    /*/// <summary>
-    /// Deletes an existing animal record associated with the authenticated shelter.
-    /// </summary>
-    /// <para>
-    /// The animal identifier (<paramref name="id"/>) is obtained from the route, and the shelter context 
-    /// is derived from the authenticated user’s token.
-    /// </para>
-    /// <param name="id">The unique identifier of the animal to be edited.</param>
-    /// </param>
-    /// <returns>
-    /// The deleted animal record on success, or an appropriate error response on failure.
-    /// </returns>
-    [Authorize(Roles = "AdminCAA")]
-    [HttpDelete("{id}")]
-    public async Task<ActionResult<ResAnimalDto>> DeleteAnimal(string id)
-    {
-        // Retrieve the authenticated user and shelter context
-        var user = await userAccessor.GetUserAsync();
-        var shelterId = user.ShelterId;
-
-        // Ensure the shelter context is valid
-        if (string.IsNullOrEmpty(shelterId))
-            return Unauthorized("Invalid shelter token");
-
-        // Create and send the command through the MediatR pipeline
-        var command = new DeleteAnimal.Command
-        {
-            AnimalId = id,
-            ShelterId = shelterId
-        };
-
-        // Execute the command
-        var result = await Mediator.Send(command);
-
-        if (!result.IsSuccess || result.Value == null)
-            return HandleResult(result);
-
-        // Map the deleted Animal entity to a response DTO
-        var animalDto = mapper.Map<ResAnimalDto>(result.Value);
-
-        // Return standardized ActionResult with DTO and HTTP 200 status
-        return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
-    }*/
 
 
     /// <summary>

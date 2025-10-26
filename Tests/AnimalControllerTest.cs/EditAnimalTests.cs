@@ -4,6 +4,7 @@ using WebAPI.Validators;
 
 namespace Tests.AnimalControllerTests
 {
+    //codacy: ignore[complexity]
     public class EditAnimalTests
     {
         private readonly EditAnimalValidator _validator;
