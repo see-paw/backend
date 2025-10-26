@@ -53,6 +53,7 @@ public static class DbInitializer
         const string user3Id = "cccccccc-cccc-cccc-cccc-cccccccccccc"; // Carlos
         const string user4Id = "dddddddd-dddd-dddd-dddd-dddddddddddd"; // Diana
         const string user5Id = "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"; // Eduardo
+        const string user6Id = "66666666-6666-6666-6666-666666666666"; // Filipe
 
         // ======== SEED SHELTERS ========
         if (!dbContext.Shelters.Any())
@@ -172,6 +173,20 @@ public static class DbInitializer
                     BirthDate = new DateTime(1988, 2, 14),
                     PhoneNumber = "915222444",
                     CreatedAt = DateTime.UtcNow
+                },
+                new()
+                {
+                    Id = user6Id,
+                    Name = "Filipe Marques",
+                    UserName = "filipe@test.com",
+                    Email = "filipe@test.com",
+                    City = "Porto",
+                    Street = "Rua das Oliveiras 99",
+                    PostalCode = "4000-450",
+                    BirthDate = new DateTime(1994, 5, 27),
+                    PhoneNumber = "912345999",
+                    CreatedAt = DateTime.UtcNow,
+                    ShelterId = "22222222-2222-2222-2222-222222222222" // Test Shelter 2
                 }
             };
 
@@ -185,6 +200,7 @@ public static class DbInitializer
                     {
                         "bob@test.com" => platformAdmin,
                         "alice@test.com" => adminCaa,
+                        "filipe@test.com" => adminCaa,
                         _ => userRole
                     };
 
@@ -229,7 +245,7 @@ public static class DbInitializer
                 Colour = "Branco e cinzento",
                 BirthDate = new DateOnly(2022, 4, 15),
                 Sterilized = true,
-                 BreedId = breed1Id,
+                BreedId = breed1Id,
                 Cost = 30,
                 Features = "Olhos verdes, muito sociável",
                 ShelterId = shelter1Id,

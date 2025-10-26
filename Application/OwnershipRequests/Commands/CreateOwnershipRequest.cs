@@ -76,7 +76,7 @@ public class CreateOwnershipRequest
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (existingRequest != null)
-                return Result<OwnershipRequest>.Failure("You already have a pending ownership request for this animal", 400);
+                return Result<OwnershipRequest>.Failure("User already has a pending ownership request for this animal", 400);
 
             var ownershipRequest = CreateOwnershipRequest(request.AnimalID, userId, animal.Cost);
 

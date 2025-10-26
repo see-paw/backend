@@ -146,7 +146,7 @@ public class UpdateOwnershipRequestStatus
             if (ownershipRequest.Animal.ShelterId != userShelterId)
             {
                 return Result<OwnershipRequest>.Failure(
-                    "You can only update requests for animals in your shelter", 403);
+                    "User can only reject requests for animals in its shelter", 403);
             }
             return Result<OwnershipRequest>.Success(null!, 200);
         }

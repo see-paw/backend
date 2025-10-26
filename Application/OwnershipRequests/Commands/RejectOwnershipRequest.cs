@@ -84,7 +84,7 @@ public class RejectOwnershipRequest
             if (ownershipRequest.Animal.ShelterId != currentUser.ShelterId)
             {
                 return Result<OwnershipRequest>.Failure(
-                    "You can only reject requests for animals in your shelter", 403);
+                    "User can only reject requests for animals in its shelter", 403);
             }
 
             if (ownershipRequest.Status != OwnershipStatus.Analysing)
