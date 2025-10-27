@@ -48,6 +48,11 @@ namespace Application.Fosterings.Commands
                         "Fostering record not found or does not belong to the authenticated user.",
                         404);
 
+                if (fostering.Status != FosteringStatus.Active)
+                    return Result<Fostering>.Failure(
+                        "Only active fosterings can be cancelled.",
+                        400);
+
                 fostering.Status = FosteringStatus.Cancelled;
                 fostering.EndDate = DateTime.UtcNow;
                 fostering.UpdatedAt = DateTime.UtcNow;

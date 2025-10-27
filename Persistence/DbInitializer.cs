@@ -567,22 +567,15 @@ public static class DbInitializer
         // ======== SEED FOSTERINGS ========
         if (!dbContext.Fosterings.Any())
         {
+            const string fostering1Id = "f0000000-0000-0000-0000-000000000001";
+            const string fostering2Id = "f0000000-0000-0000-0000-000000000002";
+            const string fostering3Id = "f0000000-0000-0000-0000-000000000003";
+
             var fosterings = new List<Fostering>
             {
                 new()
                 {
-                    Id = Guid.NewGuid().ToString(),
-                    UserId = user4Id, // Diana
-                    AnimalId = animal1Id, // Celinho 
-                    Amount = 15.00m,
-                    Status = FosteringStatus.Active,
-                    StartDate = DateTime.UtcNow.AddDays(-20),
-                    EndDate = DateTime.UtcNow.AddDays(40),
-                    UpdatedAt = DateTime.UtcNow
-                },
-                new()
-                {
-                    Id = Guid.NewGuid().ToString(),
+                    Id = fostering2Id,
                     UserId = user4Id, // Diana
                     AnimalId = animal3Id, // Rocky
                     Amount = 20.00m,
@@ -593,7 +586,7 @@ public static class DbInitializer
                 },
                 new()
                 {
-                    Id = Guid.NewGuid().ToString(),
+                    Id = fostering3Id,
                     UserId = user4Id, // Diana
                     AnimalId = animal4Id, // Mika
                     Amount = 10.00m,

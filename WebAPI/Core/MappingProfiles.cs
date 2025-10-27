@@ -31,13 +31,13 @@ public class MappingProfiles : Profile
         CreateMap<ReqCreateAnimalDto, Animal>()
             // Maps the 'Images' collection from the request DTO to the 'Images' navigation property in the Animal domain entity
             .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.Images));
-        
+
 
         CreateMap<Breed, ResBreedDto>();
 
         CreateMap<Animal, ResAnimalDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.Age, 
+            .ForMember(dest => dest.Age,
                 opt => opt.MapFrom(src => DateTime.Today.Year - src.BirthDate.Year))
             .ForMember(dest => dest.Breed,
                 opt => opt.MapFrom(src => src.Breed))
@@ -45,10 +45,12 @@ public class MappingProfiles : Profile
                 opt => opt.MapFrom(src => src.Images));
 
         CreateMap<ReqImageDto, Image>();
-      
+
         CreateMap<Image, ResImageDto>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id));// Maps the 'Id' property from Image to the 'ImageId' property in ResImageDto.
-        
+            .ForMember(dest => dest.Id,
+                opt => opt.MapFrom(src =>
+                    src.Id)); // Maps the 'Id' property from Image to the 'ImageId' property in ResImageDto.
+
         CreateMap<ReqEditAnimalDto, Animal>()
             .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.Images));
 
@@ -82,8 +84,8 @@ public class MappingProfiles : Profile
             .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount))
             .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))
             .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate));
-    }
-    
+
+
         CreateMap<User, ResUserProfileDto>();
 
         // OwnershipRequest mappings
@@ -91,14 +93,15 @@ public class MappingProfiles : Profile
             .ForMember(dest => dest.AnimalName, opt => opt.MapFrom(src => src.Animal.Name))
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Name));
         CreateMap<ReqUserProfileDto, User>();
-
-    private static int CalculateAge(DateOnly birthDate)
-    {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var age = today.Year - birthDate.Year;
-        if (today < birthDate.AddYears(age)) age--;
-        return age;
     }
 
-
+    private static int CalculateAge(DateOnly birthDate)
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var age = today.Year - birthDate.Year;
+            if (today < birthDate.AddYears(age)) age--;
+            return age;
+        }
 }
+
+
