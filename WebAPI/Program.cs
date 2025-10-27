@@ -63,8 +63,8 @@ builder.Services.AddScoped(typeof(IImageOwnerLoader<>), typeof(ImageOwnerLoader<
 builder.Services.AddScoped<IPrincipalImageEnforcer, PrincipalImageEnforcer>();
 
 builder.Services.AddScoped<IImageOwnerLinker<Animal>, AnimalImageLinker>();
-builder.Services.AddScoped<IUserAcessor, UserAccessor>();
 builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<IUserAccessor, UserAccessor>();
 builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 builder.Services.AddValidatorsFromAssemblyContaining<GetAnimalDetailsValidator>();
 builder.Services.AddTransient<ExceptionMiddleware>();
@@ -80,8 +80,6 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = IdentityConstants.BearerScheme;
 });
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthMiddlewareHandler>();
-builder.Services.Configure<CloudinarySettings>(builder.Configuration
-    .GetSection("CloudinarySettings"));
 
 var app = builder.Build();
 

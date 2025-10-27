@@ -258,11 +258,6 @@ namespace Persistence.Migrations
                     b.Property<bool>("IsPrincipal")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("PublicId")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
                     b.Property<string>("ShelterId")
                         .HasColumnType("text");
 
