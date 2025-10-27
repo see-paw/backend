@@ -563,5 +563,43 @@ public static class DbInitializer
             await dbContext.Images.AddRangeAsync(images);
             await dbContext.SaveChangesAsync();
         }
+
+        // ======== SEED FOSTERINGS ========
+        if (!dbContext.Fosterings.Any())
+        {
+            const string fostering1Id = "f0000000-0000-0000-0000-000000000001";
+            const string fostering2Id = "f0000000-0000-0000-0000-000000000002";
+            const string fostering3Id = "f0000000-0000-0000-0000-000000000003";
+
+            var fosterings = new List<Fostering>
+            {
+                new()
+                {
+                    Id = fostering2Id,
+                    UserId = user4Id, // Diana
+                    AnimalId = animal3Id, // Rocky
+                    Amount = 20.00m,
+                    Status = FosteringStatus.Active,
+                    StartDate = DateTime.UtcNow.AddDays(-10),
+                    EndDate = DateTime.UtcNow.AddDays(50),
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new()
+                {
+                    Id = fostering3Id,
+                    UserId = user4Id, // Diana
+                    AnimalId = animal4Id, // Mika
+                    Amount = 10.00m,
+                    Status = FosteringStatus.Active,
+                    StartDate = DateTime.UtcNow.AddDays(-5),
+                    EndDate = DateTime.UtcNow.AddDays(25),
+                    UpdatedAt = DateTime.UtcNow
+                }
+            };
+
+            await dbContext.Fosterings.AddRangeAsync(fosterings);
+            await dbContext.SaveChangesAsync();
+        }
+
     }
 }
