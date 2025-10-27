@@ -17,14 +17,6 @@ namespace WebAPI.Validators
         /// </summary>
         public ImageValidator()
         {
-            // Validate the image URL
-            RuleFor(x => x.Url)
-                .NotNull().WithMessage("Url cannot be null")
-                .NotEmpty().WithMessage("Url is required")
-                .MaximumLength(500).WithMessage("Url cannot exceed 500 characters.")
-                .Matches(@"^(https?:\/\/)([a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,})(\/\S*)\.(jpg|jpeg|png)$")
-                .WithMessage("Url must be a valid HTTP or HTTPS image ending in .jpg, .jpeg, or .png.");
-
             // Validate the optional image description
             RuleFor(x => x.Description)
                 .MaximumLength(255)

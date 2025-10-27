@@ -4,12 +4,9 @@ using Application.Core;
 using Application.Interfaces;
 using AutoMapper;
 using Domain;
-using Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
 
 namespace WebAPI.Controllers;
 
@@ -77,34 +74,36 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
         return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
     }
 
-    /// <summary>
-    /// Creates a new animal record associated with a specific shelter.
-    /// </summary>
-    /// <param name="reqAnimalDto">The request DTO containing animal details and optional image data.</param>
-    /// <returns>
-    /// The unique identifier (<see cref="string"/>) of the created animal on success,
-    /// or an error response (400, 404, 401) depending on the failure condition.
-    /// </returns>
+  
     [Authorize(Roles = "AdminCAA")]
     [HttpPost]
-    public async Task<ActionResult<string>> CreateAnimal([FromBody] ReqCreateAnimalDto reqAnimalDto)
+    [Consumes("multipart/form-data")]
+    public async Task<ActionResult<string>> CreateAnimal([FromForm] ReqCreateAnimalDto reqAnimalDto)
     {
-
         var user = await userAccessor.GetUserAsync();
         var shelterId = user.ShelterId;
-
-
+        
         if (string.IsNullOrEmpty(shelterId))
             return Unauthorized("Invalid shelter token");
+        
+        if (reqAnimalDto.Images.Count == 0)
+            return BadRequest("At least one image is required when creating an animal.");
+        
+        var invalidFile = reqAnimalDto.Images.Any(i => i.File.Length == 0);
+        if (invalidFile)
+            return BadRequest("Each image must include a valid file.");
 
         // Map the validated DTO to the domain entity
         var animal = mapper.Map<Animal>(reqAnimalDto);
-
+        var imageEntities = mapper.Map<List<Image>>(reqAnimalDto.Images);
+        
         // Build the command to send to the Application layer
         var command = new CreateAnimal.Command
         {
             Animal = animal,
-            ShelterId = shelterId
+            ShelterId = shelterId,
+            Images = imageEntities,
+            Files = reqAnimalDto.Images.Select(i => i.File).ToList()
         };
 
         // Centralized result handling (200, 400, 404, etc.)
@@ -166,8 +165,7 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
         return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
         
     }
-
-
+    
     /// <summary>
     /// Deactivates an existing <see cref="Animal"/> entity within the shelter context,
     /// changing its <see cref="Domain.Enums.AnimalState"/> to <c>Inactive</c> instead of deleting it.
@@ -206,6 +204,4 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
         var animalDto = mapper.Map<ResAnimalDto>(result.Value);
         return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
     }
-
-
 }

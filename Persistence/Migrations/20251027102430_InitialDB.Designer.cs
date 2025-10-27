@@ -12,13 +12,8 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-<<<<<<<< HEAD:Persistence/Migrations/20251025070159_AddedPublicIdToImage.Designer.cs
-    [Migration("20251025070159_AddedPublicIdToImage")]
-    partial class AddedPublicIdToImage
-========
-    [Migration("20251026183832_InitialDB")]
+    [Migration("20251027102430_InitialDB")]
     partial class InitialDB
->>>>>>>> abc05b2ec7caaa394510c7fd84b31391a3eafc21:Persistence/Migrations/20251026183832_InitialDB.Designer.cs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -265,11 +260,6 @@ namespace Persistence.Migrations
 
                     b.Property<bool>("IsPrincipal")
                         .HasColumnType("boolean");
-
-                    b.Property<string>("PublicId")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("ShelterId")
                         .HasColumnType("text");
