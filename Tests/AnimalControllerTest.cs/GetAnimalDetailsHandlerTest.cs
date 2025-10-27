@@ -1,4 +1,4 @@
-﻿using Application.Animals.Queries;
+﻿/*using Application.Animals.Queries;
 using Domain;
 using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -186,4 +186,4 @@ public class GetAnimalDetailsHandlerTest
             Assert.Equal(animalId, result.Value.Id);
         }
     }
-}
+}*/

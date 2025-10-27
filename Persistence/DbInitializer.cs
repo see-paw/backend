@@ -238,7 +238,7 @@ public static class DbInitializer
             new()
             {
                 Id = Guid.NewGuid().ToString(),
-                Name = "Bolinhas",
+                Name = "Celinho",
                 AnimalState = AnimalState.Available,
                 Description = "Gato muito meigo e brincalhão, gosta de dormir ao sol.",
                 Species = Species.Cat,
@@ -310,7 +310,7 @@ public static class DbInitializer
             new()
             {
                 Id = animal2Id,
-                Name = "Luna",
+                Name = "Lunica",
                 AnimalState = AnimalState.Available,
                 Description = "Cadela jovem e energética, ideal para famílias com crianças.",
                 Species = Species.Dog,
@@ -400,7 +400,7 @@ public static class DbInitializer
             new()
             {
                 Id = animal7Id,
-                Name = "Rocky",
+                Name = "Rockito",
                 AnimalState = AnimalState.Inactive,
                 Description = "Cão atlético e leal, ideal para quem gosta de caminhadas.",
                 Species = Species.Dog,

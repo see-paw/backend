@@ -37,7 +37,7 @@ public class BaseApiController : ControllerBase
     /// ensuring consistent status codes and messages for success and error results.
     /// </remarks>
     protected ActionResult HandleResult<T>(Result<T> result,
-        string? actionName = null, 
+        string? actionName = null,
         object? routeValues = null)
     {
         if (result == null)
@@ -59,7 +59,6 @@ public class BaseApiController : ControllerBase
             };
         }
 
-       
         return result.Code switch
         {
             200 => Ok(result.Value),
@@ -72,3 +71,4 @@ public class BaseApiController : ControllerBase
     }
 
 }
+

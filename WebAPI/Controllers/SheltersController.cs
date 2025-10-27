@@ -4,6 +4,8 @@ using AutoMapper;
 using Domain;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs;
+using Infrastructure;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebAPI.Controllers
 {
@@ -33,6 +35,7 @@ namespace WebAPI.Controllers
         /// A paginated <see cref="PagedList{T}"/> of <see cref="ResAnimalDto"/> objects representing the animals.
         /// Returns <c>400</c> if the page number is invalid or an appropriate error message if the shelter or animals are not found.
         /// </returns>
+        [Authorize(Roles = "AdminCAA")]
         [HttpGet("{shelterId}/animals")]
         public async Task<ActionResult<PagedList<Animal>>> GetAnimalsByShelter(string shelterId, [FromQuery] int pageNumber = 1)
         {
@@ -48,7 +51,7 @@ namespace WebAPI.Controllers
             if (!result.IsSuccess)
                 return HandleResult(result);
 
-            // Map Animal → ResAnimalDto for the API response
+            // Map Animal to ResAnimalDto for the API response
             var dtoList = _mapper.Map<List<ResAnimalDto>>(result.Value);
 
             // Wrap the DTO list in a paginated structure with metadata

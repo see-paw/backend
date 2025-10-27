@@ -5,7 +5,7 @@ using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
-namespace Tests;
+namespace Tests.AnimalControllerTest.cs;
 
 //codacy: ignore[complexity]
 public class GetAnimalsByShelterTests
