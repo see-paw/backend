@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
 
 namespace Domain;

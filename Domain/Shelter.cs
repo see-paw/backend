@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using Domain.Interfaces;
 
 namespace Domain;
 
@@ -10,7 +11,7 @@ namespace Domain;
 /// Contains identification, contact, and scheduling information for a shelter,  
 /// as well as relationships with animals and images registered under it.
 /// </remarks>
-public class Shelter
+public class Shelter: IHasPhotos
 {
     /// <summary>
     /// Unique identifier of the shelter (GUID).

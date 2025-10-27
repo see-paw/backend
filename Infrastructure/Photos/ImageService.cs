@@ -4,14 +4,15 @@ using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using ImageUploadResult = Application.ImageUploadResult;
 
 namespace Infrastructure.Photos;
 
-public class PhotoService : IPhotoService
+public class ImageService : IImageService
 {
     private readonly Cloudinary _cloudinary;
 
-    public PhotoService(IOptions<CloudinarySettings> config)
+    public ImageService(IOptions<CloudinarySettings> config)
     {
         var account = new Account(config.Value.CloudName,
             config.Value.CloudName,
@@ -20,7 +21,7 @@ public class PhotoService : IPhotoService
         _cloudinary = new Cloudinary(account);
     }
     
-    public async Task<PhotoUploadResult?> UploadPhoto(IFormFile file, string folderType)
+    public async Task<ImageUploadResult?> UploadImage(IFormFile file, string folderType)
     {
         if (file.Length <= 0)
         {
@@ -44,14 +45,14 @@ public class PhotoService : IPhotoService
             throw new Exception(uploadResult.Error.Message);
         }
 
-        return new PhotoUploadResult
+        return new ImageUploadResult
         {
             PublicId = uploadResult.PublicId,
             Url = uploadResult.SecureUrl.AbsoluteUri
         };
     }
 
-    public async Task<string> DeletePhoto(string publicId)
+    public async Task<string> DeleteImage(string publicId)
     {
         var deleteParams = new DeletionParams(publicId);
 

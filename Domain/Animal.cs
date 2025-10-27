@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Domain.Enums;
 using System.Text.Json.Serialization;
+using Domain.Interfaces;
 
 
 namespace Domain;
@@ -12,7 +13,7 @@ namespace Domain;
 /// Contains all relevant data about an animal, including biological information,
 /// ownership details, and relationships with shelters, breeds, and activities.
 /// </remarks>
-public class Animal
+public class Animal : IHasPhotos
 {
     /// <summary>
     /// Unique identifier of the animal (GUID).
@@ -106,7 +107,7 @@ public class Animal
     /// </summary>
     [JsonIgnore]
     [MinLength(1, ErrorMessage = "Animal must have at least one image.")]
-    public ICollection<Image> Images { get; init; } = new List<Image>();
+    public ICollection<Image> Images { get; set; } = new List<Image>();
 
     /// <summary>
     /// The foreign key referencing the shelter where the animal is located.

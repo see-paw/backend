@@ -3,6 +3,9 @@ using WebAPI.Validators;
 using FluentValidation;
 using Persistence;
 using System.Text.Json.Serialization;
+using Application.Animals;
+using Application.Images;
+using Application.Images.Services;
 using Application.Interfaces;
 using Domain;
 using Infrastructure;
@@ -56,8 +59,12 @@ builder.Services.AddMediatR(x => {
     x.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 
+builder.Services.AddScoped(typeof(IImageOwnerLoader<>), typeof(ImageOwnerLoader<>));
+builder.Services.AddScoped<IPrincipalImageEnforcer, PrincipalImageEnforcer>();
+
+builder.Services.AddScoped<IImageOwnerLinker<Animal>, AnimalImageLinker>();
 builder.Services.AddScoped<IUserAcessor, UserAccessor>();
-builder.Services.AddScoped<IPhotoService, PhotoService>();
+builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 builder.Services.AddValidatorsFromAssemblyContaining<GetAnimalDetailsValidator>();
 builder.Services.AddTransient<ExceptionMiddleware>();

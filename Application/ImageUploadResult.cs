@@ -1,6 +1,6 @@
 ﻿namespace Application;
 
-public class PhotoUploadResult
+public class ImageUploadResult
 {
     public required string PublicId { get; set; }
 
