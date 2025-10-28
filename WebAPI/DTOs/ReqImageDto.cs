@@ -10,7 +10,7 @@ namespace WebAPI.DTOs
         /// <summary>
         /// Indicates whether this image is the animal's main (principal) image.
         /// </summary>
-        public bool isPrincipal { get; set; }
+        public bool IsPrincipal { get; set; }
 
         /// <summary>
         /// Optional textual description providing context or details about the image.

@@ -1,4 +1,5 @@
 ﻿using Application.Core;
+using AutoMapper;
 using Domain;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -31,48 +32,19 @@ namespace Application.Animals.Commands
             /// </summary>
             public required Animal Animal { get; set; }
         }
-
-        /// <summary>
-        /// Handles the execution of the <see cref="Command"/> to update an existing animal record.
-        /// </summary>
-        public class Handler : IRequestHandler<Command, Result<Animal>>
+        
+        public class Handler(AppDbContext dbContext, IMapper mapper) : IRequestHandler<Command, Result<Animal>>
         {
-            private readonly AppDbContext _context;
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="Handler"/> class
-            /// with the provided database context.
-            /// </summary>
-            /// <param name="context">Entity Framework Core database context.</param>
-            public Handler(AppDbContext context)
-            {
-                _context = context;
-            }
-
-            /// <summary>
-            /// Executes the command to edit an existing <see cref="Animal"/>.
-            /// Performs validation checks for shelter and breed existence,
-            /// updates the animal’s attributes and images, and persists the changes.
-            /// </summary>
-            /// <param name="request">The command containing the animal details and related IDs.</param>
-            /// <param name="cancellationToken">Token used to cancel the asynchronous operation.</param>
-            /// <returns>
-            /// A <see cref="Result{T}"/> object containing either:
-            /// <list type="bullet">
-            /// <item><description>The updated animal (on success).</description></item>
-            /// <item><description>An error message and status code (on failure).</description></item>
-            /// </list>
-            /// </returns>
             public async Task<Result<Animal>> Handle(Command request, CancellationToken cancellationToken)
             {
                 // Check if the shelter exists
-                var shelterExists = await _context.Shelters
+                var shelterExists = await dbContext.Shelters
                     .AnyAsync(s => s.Id == request.ShelterId, cancellationToken);
                 if (!shelterExists)
                     return Result<Animal>.Failure("Shelter not found", 404);
 
                 // Get the animal to be edited
-                var animal = await _context.Animals
+                var animal = await dbContext.Animals
                     .Include(a => a.Images)
                     .FirstOrDefaultAsync(a =>
                         a.Id == request.AnimalId && a.ShelterId == request.ShelterId,
@@ -84,7 +56,7 @@ namespace Application.Animals.Commands
                 // Check if the breed exists 
                 if (!string.IsNullOrEmpty(request.Animal.BreedId))
                 {
-                    var breedExists = await _context.Breeds
+                    var breedExists = await dbContext.Breeds
                         .AnyAsync(b => b.Id == request.Animal.BreedId, cancellationToken);
 
                     if (!breedExists)
@@ -92,38 +64,14 @@ namespace Application.Animals.Commands
                 }
 
                 // Update animal properties
-                animal.Name = request.Animal.Name;
-                animal.Description = request.Animal.Description;
-                animal.AnimalState = request.Animal.AnimalState;
-                animal.Colour = request.Animal.Colour;
-                animal.Species = request.Animal.Species;
-                animal.BreedId = request.Animal.BreedId;
-                animal.Size = request.Animal.Size;
-                animal.Sex = request.Animal.Sex;
-                animal.BirthDate = request.Animal.BirthDate;
-                animal.Sterilized = request.Animal.Sterilized;
-                animal.Cost = request.Animal.Cost;
-                animal.Features = request.Animal.Features;
-                animal.UpdatedAt = DateTime.UtcNow;
-
-                // Update images
-                if (request.Animal.Images != null && request.Animal.Images.Count > 0)
-                {
-                    animal.Images.Clear();
-
-                    foreach (var image in request.Animal.Images)
-                    {
-                        animal.Images.Add(image);
-                    }
-                }
-
+                mapper.Map<Animal>(animal);
+                
                 // Save updated animal
-                var success = await _context.SaveChangesAsync(cancellationToken) > 0;
+                var success = await dbContext.SaveChangesAsync(cancellationToken) > 0;
 
-                if (!success)
-                    return Result<Animal>.Failure("Failed to update animal", 400);
-
-                return Result<Animal>.Success(animal, 200);
+                return success
+                    ? Result<Animal>.Success(animal, 200)
+                    : Result<Animal>.Failure("Failed to update animal", 400);
             }
         }
     }

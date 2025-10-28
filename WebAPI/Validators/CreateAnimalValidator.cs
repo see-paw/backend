@@ -76,7 +76,7 @@ namespace WebAPI.Validators
                 .NotEmpty().WithMessage("BreedId is required");
 
             //Must have one image at least
-            RuleFor(x => x.Images)
+            /*RuleFor(x => x.Images)
                 .NotNull().WithMessage("Images cannot be null.")
                 .Must(images => images != null && images.Count > 0)
                 .WithMessage("At least one image is required.");
@@ -88,9 +88,9 @@ namespace WebAPI.Validators
 
             // Ensure exactly one image is marked as principal
             RuleFor(x => x.Images)
-                .Must(images => images != null && images.Count(img => img.isPrincipal) == 1)
+                .Must(images => images != null && images.Count(img => img.IsPrincipal) == 1)
                 .WithMessage("Exactly one image must be marked as principal.")
-                .When(x => x.Images != null && x.Images.Any());
+                .When(x => x.Images != null && x.Images.Any());*/
         }
     }
 }

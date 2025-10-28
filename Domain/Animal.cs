@@ -19,6 +19,7 @@ public class Animal : IHasPhotos
     /// Unique identifier of the animal (GUID).
     /// </summary>
     [Key]
+    [MaxLength(36)]
     public string Id { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
@@ -106,13 +107,13 @@ public class Animal : IHasPhotos
     /// At least one image is required, with one marked as principal.
     /// </summary>
     [JsonIgnore]
-    [MinLength(1, ErrorMessage = "Animal must have at least one image.")]
     public ICollection<Image> Images { get; set; } = new List<Image>();
 
     /// <summary>
     /// The foreign key referencing the shelter where the animal is located.
     /// </summary>
     [Required]
+    [MaxLength(36)]
     public string ShelterId { get; set; } = string.Empty;
 
     /// <summary>
@@ -125,6 +126,7 @@ public class Animal : IHasPhotos
     /// The foreign key referencing the breed of the animal.
     /// </summary>
     [Required]
+    [MaxLength(36)]
     public string BreedId { get; set; } = string.Empty;
 
     /// <summary>
@@ -136,6 +138,7 @@ public class Animal : IHasPhotos
     /// <summary>
     /// The unique identifier of the user who owns the animal, if applicable.
     /// </summary>
+    [MaxLength(36)]
     public string? OwnerId { get; set; }
 
     /// <summary>

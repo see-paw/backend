@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿﻿using AutoMapper;
 using Domain;
 using WebAPI.DTOs;
 
@@ -28,36 +28,29 @@ public class MappingProfiles : Profile
     /// </remarks>
     public MappingProfiles()
     {
-        CreateMap<ReqCreateAnimalDto, Animal>(MemberList.Source)
-            // Maps the 'Images' collection from the request DTO to the 'Images' navigation property in the Animal domain entity
-            .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.Images));
+        CreateMap<ReqCreateAnimalDto, Animal>()
+            .ForMember(dest => dest.Images, opt => opt.Ignore());
         
-
         CreateMap<Breed, ResBreedDto>();
 
         CreateMap<Animal, ResAnimalDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.Age, 
+            .ForMember(dest => dest.Age,
                 opt => opt.MapFrom(src => DateTime.Today.Year - src.BirthDate.Year))
             .ForMember(dest => dest.Breed,
                 opt => opt.MapFrom(src => src.Breed))
             .ForMember(dest => dest.Images,
                 opt => opt.MapFrom(src => src.Images));
 
-        CreateMap<ReqImageDto, Image>(MemberList.Source);
-      
         CreateMap<ReqImageDto, Image>();
 
         CreateMap<Image, ResImageDto>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id));// Maps the 'Id' property from Image to the 'ImageId' property in ResImageDto.
-        
-        CreateMap<ReqEditAnimalDto, Animal>(MemberList.Source)
             .ForMember(dest => dest.Id,
                 opt => opt.MapFrom(src =>
                     src.Id)); // Maps the 'Id' property from Image to the 'ImageId' property in ResImageDto.
 
-        CreateMap<ReqEditAnimalDto, Animal>()
-            .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.Images));
+        //CreateMap<ReqEditAnimalDto, Animal>()
+          //  .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.Images));
 
 
         CreateMap<Fostering, ResActiveFosteringDto>()
@@ -97,7 +90,6 @@ public class MappingProfiles : Profile
         CreateMap<OwnershipRequest, ResOwnershipRequestDto>()
             .ForMember(dest => dest.AnimalName, opt => opt.MapFrom(src => src.Animal.Name))
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Name));
-        CreateMap<ReqUserProfileDto, User>(MemberList.Source);
         CreateMap<ReqUserProfileDto, User>();
     }
 
@@ -109,5 +101,3 @@ public class MappingProfiles : Profile
             return age;
         }
 }
-
-

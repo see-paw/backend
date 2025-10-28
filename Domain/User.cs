@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
 
@@ -69,30 +70,36 @@ public class User : IdentityUser
     /// <summary>
     /// The shelter associated with this user (if the user is an Admin CAA).
     /// </summary>
+    [JsonIgnore]
     public Shelter? Shelter { get; set; }
 
     /// <summary>
     /// The collection of animals marked as favorites by the user.
     /// </summary>
+    [JsonIgnore]
     public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
 
     /// <summary>
     /// The list of activities performed by the user within the system.
     /// </summary>
+    [JsonIgnore]
     public ICollection<Activity> Activities { get; set; } = new List<Activity>();
 
     /// <summary>
     /// The list of fostering relationships associated with the user.
     /// </summary>
+    [JsonIgnore]
     public ICollection<Fostering> Fosterings { get; set; } = new List<Fostering>();
 
     /// <summary>
     /// The collection of ownership requests submitted by the user.
     /// </summary>
+    [JsonIgnore]
     public ICollection<OwnershipRequest> OwnershipRequests { get; set; } = new List<OwnershipRequest>();
 
     /// <summary>
     /// The list of animals currently owned by the user.
     /// </summary>
+    [JsonIgnore]
     public ICollection<Animal> OwnedAnimals { get; set; } = new List<Animal>();
 }

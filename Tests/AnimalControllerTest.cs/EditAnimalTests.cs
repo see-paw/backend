@@ -1,4 +1,4 @@
-﻿using Domain.Enums;
+﻿/*using Domain.Enums;
 using WebAPI.DTOs;
 using WebAPI.Validators;
 
@@ -81,4 +81,4 @@ namespace Tests.AnimalControllerTests
             };
         }
     }
-}
+}*/

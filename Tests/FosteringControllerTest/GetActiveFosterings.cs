@@ -30,6 +30,7 @@ namespace Tests.Fosterings.Queries
 
         private async Task SeedFosteringsAsync(string userId)
         {
+            var publicId = Guid.NewGuid().ToString();
             var animal1 = new Animal
             {
                 Id = Guid.NewGuid().ToString(),
@@ -46,7 +47,11 @@ namespace Tests.Fosterings.Queries
                 AnimalState = AnimalState.Available,
                 Images = new List<Image>
                 {
-                    new Image { Id = Guid.NewGuid().ToString(), Url = "https://test/image1.jpg",  Description = "Profile photo" }
+                    new() { Id = Guid.NewGuid().ToString(), 
+                        Url = "https://test/image1.jpg",  
+                        Description = "Profile photo",
+                        PublicId = publicId
+                    }
                 }
             };
 

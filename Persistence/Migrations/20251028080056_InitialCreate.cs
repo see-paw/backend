@@ -7,11 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Persistence.Migrations
 {
     /// <inheritdoc />
-<<<<<<<< HEAD:Persistence/Migrations/20251025070159_AddedPublicIdToImage.cs
-    public partial class AddedPublicIdToImage : Migration
-========
-    public partial class InitialDB : Migration
->>>>>>>> abc05b2ec7caaa394510c7fd84b31391a3eafc21:Persistence/Migrations/20251026183832_InitialDB.cs
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

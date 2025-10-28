@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-
+using System.Text.Json.Serialization;
 using Domain.Enums;
 
 namespace Domain;
@@ -17,18 +17,21 @@ public class OwnershipRequest
     /// Unique identifier of the ownership request (GUID).
     /// </summary>
     [Key]
+    [MaxLength(36)]
     public string Id { get; init; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// The foreign key referencing the requested animal.
     /// </summary>
     [Required]
+    [MaxLength(36)]
     public string AnimalId { get; set; } = string.Empty;
 
     /// <summary>
     /// The foreign key referencing the user who made the ownership request.
     /// </summary>
     [Required]
+    [MaxLength(36)]
     public string UserId { get; set; } = string.Empty;
 
     /// <summary>
@@ -69,11 +72,13 @@ public class OwnershipRequest
     /// <summary>
     /// The animal associated with this ownership request.
     /// </summary>
+    [JsonIgnore]
     public Animal Animal { get; set; } = null!;
 
     /// <summary>
     /// The user who submitted this ownership request.
     /// </summary>
+    [JsonIgnore]
     public User User { get; set; } = null!;
 }
 

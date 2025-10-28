@@ -1,5 +1,4 @@
-﻿using Application;
-using Application.Interfaces;
+﻿using Application.Interfaces;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
@@ -14,9 +13,10 @@ public class ImageService : IImageService
 
     public ImageService(IOptions<CloudinarySettings> config)
     {
-        var account = new Account(config.Value.CloudName,
+        var account = new Account(
             config.Value.CloudName,
-            config.Value.ApiKey);
+            config.Value.ApiKey,
+            config.Value.ApiSecret);
         
         _cloudinary = new Cloudinary(account);
     }
@@ -58,11 +58,6 @@ public class ImageService : IImageService
 
         var result = await _cloudinary.DestroyAsync(deleteParams);
 
-        if (result.Error != null)
-        {
-            throw new Exception(result.Error.Message);
-        }
-        
-        return result.Result;
+        return result.Error != null ? throw new Exception(result.Error.Message) : result.Result;
     }
 }

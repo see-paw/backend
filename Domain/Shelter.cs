@@ -17,6 +17,7 @@ public class Shelter: IHasPhotos
     /// Unique identifier of the shelter (GUID).
     /// </summary>
     [Key]
+    [MaxLength(36)]
     public string Id { get; init; } = Guid.NewGuid().ToString();
 
     /// <summary>
@@ -90,6 +91,7 @@ public class Shelter: IHasPhotos
     /// <summary>
     /// The list of animals currently registered in the shelter.
     /// </summary>
+    [JsonIgnore]
     public ICollection<Animal> Animals { get; set; } = new List<Animal>();
 
     /// <summary>

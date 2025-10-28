@@ -1,12 +1,15 @@
 ﻿using Application.Animals.Commands;
 using Application.Animals.Queries;
 using Application.Core;
+using Application.Images.Commands;
 using Application.Interfaces;
 using AutoMapper;
 using Domain;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs;
+using WebAPI.DTOs.Images;
 
 namespace WebAPI.Controllers;
 
@@ -80,34 +83,34 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<string>> CreateAnimal([FromForm] ReqCreateAnimalDto reqAnimalDto)
     {
-        var user = await userAccessor.GetUserAsync();
-        var shelterId = user.ShelterId;
+            var user = await userAccessor.GetUserAsync();
+            var shelterId = user.ShelterId;
         
-        if (string.IsNullOrEmpty(shelterId))
-            return Unauthorized("Invalid shelter token");
+            if (string.IsNullOrEmpty(shelterId))
+                return Unauthorized("Invalid shelter token");
         
-        if (reqAnimalDto.Images.Count == 0)
-            return BadRequest("At least one image is required when creating an animal.");
+            if (reqAnimalDto.Images.Count == 0)
+                return BadRequest("At least one image is required when creating an animal.");
         
-        var invalidFile = reqAnimalDto.Images.Any(i => i.File.Length == 0);
-        if (invalidFile)
-            return BadRequest("Each image must include a valid file.");
+            var invalidFile = reqAnimalDto.Images.Any(i => i.File.Length == 0);
+            if (invalidFile)
+                return BadRequest("Each image must include a valid file.");
 
-        // Map the validated DTO to the domain entity
-        var animal = mapper.Map<Animal>(reqAnimalDto);
-        var imageEntities = mapper.Map<List<Image>>(reqAnimalDto.Images);
+            // Map the validated DTO to the domain entity
+            var animal = mapper.Map<Animal>(reqAnimalDto);
+            var imageEntities = mapper.Map<List<Image>>(reqAnimalDto.Images);
         
-        // Build the command to send to the Application layer
-        var command = new CreateAnimal.Command
-        {
-            Animal = animal,
-            ShelterId = shelterId,
-            Images = imageEntities,
-            Files = reqAnimalDto.Images.Select(i => i.File).ToList()
-        };
+            // Build the command to send to the Application layer
+            var command = new CreateAnimal.Command
+            {
+                Animal = animal,
+                ShelterId = shelterId,
+                Images = imageEntities,
+                Files = reqAnimalDto.Images.Select(i => i.File).ToList()
+            };
 
-        // Centralized result handling (200, 400, 404, etc.)
-        return HandleResult(await Mediator.Send(command));
+            // Centralized result handling (200, 400, 404, etc.)
+            return HandleResult(await Mediator.Send(command));
     }
 
     /// <summary>
@@ -130,10 +133,6 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     {
         // Retrieve the authenticated user and shelter context
         var user = await userAccessor.GetUserAsync();
-
-        // Check if user is authenticated
-        if (user == null)
-            return HandleResult(Result<ResAnimalDto>.Failure("User is not authenticated", 401));
 
         var shelterId = user.ShelterId;
 
@@ -163,8 +162,54 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
 
         // Execute the command and return a standardized ActionResult
         return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
-        
     }
+
+    [Authorize(Roles = "AdminCAA")]
+    [HttpPost("{id}/images")]
+    [Consumes("multipart/form-data")]
+    public async Task<ActionResult<List<ResImageDto>>> AddImagesToAnimal(string id, [FromForm] ReqAddImagesDto reqAddImagesDto)
+    {
+        if (reqAddImagesDto.Images.Count == 0)
+            return BadRequest("No image was provided");
+
+        var imageEntities = mapper.Map<List<Image>>(reqAddImagesDto.Images);
+        
+        var command = new AddImagesAnimal.Command
+        {
+            AnimalId = id,
+            Images = imageEntities,
+            Files =  reqAddImagesDto.Images.Select(i => i.File).ToList()
+        };
+        
+        return HandleResult(await Mediator.Send(command));
+    }
+    
+    [Authorize(Roles = "AdminCAA")]
+    [HttpDelete("{animalId}/images/{imageId}")]
+    public async Task<ActionResult<Unit>> DeleteAnimalImage(string animalId, string imageId)
+    {
+        var command = new DeleteAnimalImage.Command
+        {
+            AnimalId = animalId,
+            ImageId = imageId
+        };
+
+        return HandleResult(await Mediator.Send(command));
+    }
+
+    [Authorize(Roles = "AdminCAA")]
+    [HttpPut("{animalId}/images/{imageId}/set-principal")]
+    public async Task<ActionResult<Unit>> SetAnimalPrincipalImage(string animalId, string imageId)
+    {
+        var command = new SetAnimalPrincipalImage.Command
+        {
+            AnimalId = animalId,
+            ImageId = imageId
+        };
+        
+        return HandleResult(await Mediator.Send(command));
+    }
+    
     
     /// <summary>
     /// Deactivates an existing <see cref="Animal"/> entity within the shelter context,

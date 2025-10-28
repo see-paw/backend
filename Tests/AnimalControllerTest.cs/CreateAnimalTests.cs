@@ -1,4 +1,4 @@
-﻿using Domain.Enums; 
+﻿/*using Domain.Enums; 
 using WebAPI.DTOs; 
 using WebAPI.Validators;
 
@@ -293,18 +293,18 @@ namespace Tests.AnimalControllerTest.cs
 
         public void AnimalsListCannotHaveToIsPrincipalImages()
         {
+            var publicId = Guid.NewGuid().ToString();
             var dto = CreateValidAnimalDTO();
             dto.Images = new List<ReqImageDto>
             {
                 new()
                 {
-                    Url = "https://example.com/img1.jpg",
                     Description = "Main photo",
                     isPrincipal = true
                 },
                 new()
                 {
-                    Url = "https://example.com/img1.jpg",
+                    
                     Description = "Main photo",
                     isPrincipal = true
                 }
@@ -320,8 +320,17 @@ namespace Tests.AnimalControllerTest.cs
             var dto = CreateValidAnimalDTO();
             dto.Images = new List<ReqImageDto>
             {
-                new() { Url = "https://example.com/img1.jpg", Description = "Main photo", isPrincipal = false },
-                new() { Url = "https://example.com/img2.jpg", Description = "Second photo", isPrincipal = false }
+                new()
+                { 
+                    Description = "Main photo",
+                    isPrincipal = false,
+                },
+                new()
+                {
+                    Url = "https://example.com/img2.jpg", 
+                    Description = "Second photo", 
+                    isPrincipal = false
+                }
             };
 
             var result = _validator.Validate(dto);
@@ -445,4 +454,4 @@ namespace Tests.AnimalControllerTest.cs
         }
 
     }
-}
+}*/

@@ -21,6 +21,7 @@ public class Image
     /// Unique identifier of the image (GUID).
     /// </summary>
     [Key]
+    [MaxLength(36)]
     public string Id { get; init; } = Guid.NewGuid().ToString();
 
     /// <summary>
@@ -38,13 +39,16 @@ public class Image
     /// <summary>
     /// The foreign key referencing the associated animal, if applicable.
     /// </summary>
+    [MaxLength(36)]
     public string? AnimalId { get; set; }
 
     [JsonIgnore]
     public Animal? Animal { get; set; }
 
     // Foreign Key for Shelter 
+    [MaxLength(36)]
     public string? ShelterId { get; set; }
+    
     [JsonIgnore]
     public Shelter? Shelter { get; set; }
 
@@ -55,11 +59,11 @@ public class Image
     [MaxLength(500)]
     public string Url { get; set; } = string.Empty;
 
-    [Required]
 
     /// <summary>
     /// A short optional description of the image content.
     /// </summary>
+    [Required]
     [MaxLength(255)]
     public string? Description { get; set; }
 

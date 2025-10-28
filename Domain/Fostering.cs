@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using Domain.Enums;
 
 namespace Domain;
@@ -16,18 +17,21 @@ public class Fostering
     /// Unique identifier of the fostering record (GUID).
     /// </summary>
     [Key]
+    [MaxLength(36)]
     public string Id { get; init; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// The foreign key referencing the fostered animal.
     /// </summary>
     [Required]
+    [MaxLength(36)]
     public string AnimalId { get; set; } = string.Empty;
 
     /// <summary>
     /// The foreign key referencing the user who is fostering the animal.
     /// </summary>
     [Required]
+    [MaxLength(36)]
     public string UserId { get; set; } = string.Empty;
 
     /// <summary>
@@ -62,10 +66,12 @@ public class Fostering
     /// <summary>
     /// The animal associated with this fostering record.
     /// </summary>
+    [JsonIgnore]
     public Animal Animal { get; set; } = null!;
 
     /// <summary>
     /// The user who is fostering the animal.
     /// </summary>
+    [JsonIgnore]
     public User User { get; set; } = null!;
 }

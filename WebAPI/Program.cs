@@ -3,6 +3,7 @@ using WebAPI.Validators;
 using FluentValidation;
 using Persistence;
 using System.Text.Json.Serialization;
+using Application;
 using Application.Animals;
 using Application.Images;
 using Application.Images.Services;
@@ -61,7 +62,7 @@ builder.Services.AddMediatR(x => {
 
 builder.Services.AddScoped(typeof(IImageOwnerLoader<>), typeof(ImageOwnerLoader<>));
 builder.Services.AddScoped<IPrincipalImageEnforcer, PrincipalImageEnforcer>();
-
+builder.Services.AddScoped(typeof(IImageAppService<>), typeof(ImageAppService<>));
 builder.Services.AddScoped<IImageOwnerLinker<Animal>, AnimalImageLinker>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IUserAccessor, UserAccessor>();
@@ -80,6 +81,9 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = IdentityConstants.BearerScheme;
 });
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthMiddlewareHandler>();
+
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("CloudinarySettings"));
 
 var app = builder.Build();
 
