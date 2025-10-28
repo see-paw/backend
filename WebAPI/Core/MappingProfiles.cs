@@ -49,10 +49,22 @@ public class MappingProfiles : Profile
                 opt => opt.MapFrom(src =>
                     src.Id)); // Maps the 'Id' property from Image to the 'ImageId' property in ResImageDto.
 
-        //CreateMap<ReqEditAnimalDto, Animal>()
-          //  .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.Images));
+        CreateMap<ReqEditAnimalDto, Animal>(MemberList.Source);
 
-
+        //For edit Animal
+        CreateMap<Animal, Animal>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.Images, opt => opt.Ignore())
+            .ForMember(dest => dest.Fosterings, opt => opt.Ignore())
+            .ForMember(dest => dest.OwnershipRequests, opt => opt.Ignore())
+            .ForMember(dest => dest.Activities, opt => opt.Ignore())
+            .ForMember(dest => dest.Favorites, opt => opt.Ignore())
+            .ForMember(dest => dest.Owner, opt => opt.Ignore())
+            .ForMember(dest => dest.OwnerId, opt => opt.Ignore())
+            .ForMember(dest => dest.ShelterId, opt => opt.Ignore())
+            .ForMember(dest => dest.Shelter, opt => opt.Ignore());
+        
         CreateMap<Fostering, ResActiveFosteringDto>()
             // Flatten animal properties
             .ForMember(dest => dest.AnimalName, opt => opt.MapFrom(src => src.Animal.Name))

@@ -29,9 +29,6 @@ namespace WebAPI.Validators
         /// </remarks>
         public EditAnimalValidator()
         {
-            // Reuse all validation rules from the CreateAnimalValidator
-            Include(new CreateAnimalValidator());
-
             // Additional rule specific to editing
             RuleFor(x => x.AnimalState)
                 .IsInEnum()

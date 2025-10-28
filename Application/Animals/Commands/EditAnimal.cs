@@ -18,61 +18,41 @@ namespace Application.Animals.Commands
         public class Command : IRequest<Result<Animal>>
         {
             /// <summary>
-            /// The unique identifier of the animal being edited.
-            /// </summary>
-            public required string AnimalId { get; set; }
-
-            /// <summary>
-            /// The unique identifier of the shelter where the animal is located.
-            /// </summary>
-            public required string ShelterId { get; set; }
-
-            /// <summary>
             /// The animal entity containing all updated biological and adoption attributes.
             /// </summary>
             public required Animal Animal { get; set; }
         }
-        
+
         public class Handler(AppDbContext dbContext, IMapper mapper) : IRequestHandler<Command, Result<Animal>>
         {
-            public async Task<Result<Animal>> Handle(Command request, CancellationToken cancellationToken)
-            {
-                // Check if the shelter exists
-                var shelterExists = await dbContext.Shelters
-                    .AnyAsync(s => s.Id == request.ShelterId, cancellationToken);
-                if (!shelterExists)
-                    return Result<Animal>.Failure("Shelter not found", 404);
+             public async Task<Result<Animal>> Handle(Command request, CancellationToken ct)
+             {
+                var breed = await dbContext.Breeds.FirstOrDefaultAsync(b => b.Id == request.Animal.BreedId, ct);
 
-                // Get the animal to be edited
+                if (breed == null)
+                {
+                    return Result<Animal>.Failure("Breed not found", 404);
+                }
+                
+                request.Animal.Breed = breed;
+                
                 var animal = await dbContext.Animals
+                    .Include(a => a.Breed)
+                    .Include(a => a.Shelter)
                     .Include(a => a.Images)
-                    .FirstOrDefaultAsync(a =>
-                        a.Id == request.AnimalId && a.ShelterId == request.ShelterId,
-                        cancellationToken);
+                    .FirstOrDefaultAsync(a => a.Id == request.Animal.Id, ct);
 
                 if (animal == null)
                     return Result<Animal>.Failure("Animal not found or not owned by this shelter", 404);
-
-                // Check if the breed exists 
-                if (!string.IsNullOrEmpty(request.Animal.BreedId))
-                {
-                    var breedExists = await dbContext.Breeds
-                        .AnyAsync(b => b.Id == request.Animal.BreedId, cancellationToken);
-
-                    if (!breedExists)
-                        return Result<Animal>.Failure("Breed not found", 404);
-                }
-
-                // Update animal properties
-                mapper.Map<Animal>(animal);
                 
-                // Save updated animal
-                var success = await dbContext.SaveChangesAsync(cancellationToken) > 0;
+                mapper.Map(request.Animal, animal);
+                
+                var success = await dbContext.SaveChangesAsync(ct) > 0;
 
                 return success
                     ? Result<Animal>.Success(animal, 200)
                     : Result<Animal>.Failure("Failed to update animal", 400);
             }
         }
+        }
     }
-}

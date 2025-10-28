@@ -1,5 +1,4 @@
 ﻿using Application.Core;
-using Application.Images.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
@@ -15,7 +14,7 @@ public class SetAnimalPrincipalImage
         public required string ImageId { get; set; }
     }
 
-    public class Handler(AppDbContext dbContext, IPrincipalImageEnforcer enforcer) : IRequestHandler<Command, Result<Unit>>
+    public class Handler(AppDbContext dbContext) : IRequestHandler<Command, Result<Unit>>
     {
         public async Task<Result<Unit>> Handle(Command request, CancellationToken ct)
         {

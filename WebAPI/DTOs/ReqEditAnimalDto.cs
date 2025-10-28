@@ -13,7 +13,7 @@ namespace WebAPI.DTOs
     /// allowing changes to biological data, adoption details, and its current state.
     /// </para>
     /// </remarks>
-    public class ReqEditAnimalDto : ReqCreateAnimalDto
+    public class ReqEditAnimalDto : BaseReqAnimalDto
     {
         /// <summary>
         /// The animal state of the animal (e.g.,Available, PartiallyFostered, TotallyFostered, HasOwner and Inactive).
