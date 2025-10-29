@@ -3,6 +3,8 @@ using Domain;
 using Domain.Enums;
 using WebAPI.Core;
 using WebAPI.DTOs;
+using WebAPI.DTOs.Animals;
+using WebAPI.DTOs.Images;
 using Xunit;
 
 namespace Tests

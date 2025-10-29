@@ -1,6 +1,12 @@
 ﻿namespace WebAPI.DTOs.Images;
 
+/// <summary>
+/// Represents a request to add multiple images to an entity.
+/// </summary>
 public class ReqAddImagesDto
 {
-    public List<ReqImageDto> Images { get; set; }
+    /// <summary>
+    /// The collection of images to be added.
+    /// </summary>
+    public required List<ReqImageDto> Images { get; set; }
 }

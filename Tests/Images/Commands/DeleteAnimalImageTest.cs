@@ -17,7 +17,7 @@ namespace Tests.Images.Commands;
 public class DeleteAnimalImageTest : IDisposable
 {
     private readonly AppDbContext _dbContext;
-    private readonly Mock<IImageAppService<Animal>> _mockImageService;
+    private readonly Mock<IImageManager<Animal>> _mockImageService;
     private readonly DeleteAnimalImage.Handler _handler;
 
     public DeleteAnimalImageTest()
@@ -27,7 +27,7 @@ public class DeleteAnimalImageTest : IDisposable
             .Options;
 
         _dbContext = new AppDbContext(options);
-        _mockImageService = new Mock<IImageAppService<Animal>>();
+        _mockImageService = new Mock<IImageManager<Animal>>();
         _handler = new DeleteAnimalImage.Handler(_dbContext, _mockImageService.Object);
     }
 

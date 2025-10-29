@@ -20,7 +20,10 @@ namespace Application.Fosterings.Queries
             /// <summary>Authenticated user's Id.</summary>
             public required string UserId { get; set; }
         }
-
+        
+        /// <summary>
+        /// Handles the retrieval of all active fostering records for a specific user.
+        /// </summary>
         public class Handler : IRequestHandler<Query, Result<List<Fostering>>>
         {
             private readonly AppDbContext _context;

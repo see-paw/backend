@@ -7,6 +7,7 @@ using Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs;
+using WebAPI.DTOs.Fostering;
 
 namespace WebAPI.Controllers
 {

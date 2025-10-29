@@ -9,6 +9,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs;
+using WebAPI.DTOs.Animals;
 using WebAPI.DTOs.Images;
 
 namespace WebAPI.Controllers;
@@ -182,9 +183,6 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<List<ResImageDto>>> AddImagesToAnimal(string id, [FromForm] ReqAddImagesDto reqAddImagesDto)
     {
-        if (reqAddImagesDto.Images.Count == 0)
-            return BadRequest("No image was provided");
-
         var imageEntities = mapper.Map<List<Image>>(reqAddImagesDto.Images);
     
         var command = new AddImagesAnimal.Command

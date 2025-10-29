@@ -2,7 +2,6 @@
 using Application.Interfaces;
 using Domain;
 using MediatR;
-using Persistence;
 
 namespace Application.Images.Commands;
 
@@ -30,40 +29,20 @@ public class DeleteAnimalImage
     /// <summary>
     /// Handles the image deletion process for a specific animal.
     /// </summary>
-    public class Handler(AppDbContext dbContext, IImageAppService<Animal> imageAppService) : IRequestHandler<Command, Result<Unit>>
+    public class Handler(IImageManager<Animal> imageManager) : IRequestHandler<Command, Result<Unit>>
     {
         /// <summary>
-        /// Deletes an image from the given animal.
+        /// Executes the command to delete an image from the specified animal.
         /// </summary>
-        /// <param name="request">The command containing the animal ID and image ID.</param>
+        /// <param name="request">The command containing the animal and image identifiers.</param>
         /// <param name="ct">A token to cancel the operation.</param>
         /// <returns>
-        /// A <see cref="Result{T}"/> indicating success or failure of the deletion.
+        /// A <see cref="Result{T}"/> with <see cref="Unit"/> if successful,  
+        /// or an error message otherwise.
         /// </returns>
-        /// <exception cref="Exception">Thrown if an unexpected error occurs during deletion.</exception>
         public async Task<Result<Unit>> Handle(Command request, CancellationToken ct)
         {
-            var animal = await dbContext.Animals.FindAsync([request.AnimalId], ct);
-            
-            if  (animal == null)
-                return Result<Unit>.Failure("Animal not found", 404);
-            
-            var image = await dbContext.Images.FindAsync([request.ImageId], ct);
-            
-            if (image == null)
-                return Result<Unit>.Failure("Image not found", 404);
-
-            if (image.IsPrincipal)
-            {
-                return Result<Unit>.Failure("Cannot delete Animal's main image", 404);
-            }
-            
-            if (image.AnimalId != animal.Id)
-                return Result<Unit>.Failure("Image does not belong to the specified animal.", 403);
-            
-            var result = await imageAppService.DeleteImageAsync(dbContext, animal.Id, image.PublicId, ct);
-
-            return result;
+            return await imageManager.DeleteImageAsync(request.AnimalId, request.ImageId, ct);
         }
     }
 }

@@ -14,16 +14,11 @@ namespace Tests.Animals.Commands;
 /// Unit tests for CreateAnimal.Handler using equivalence partitioning and boundary value analysis.
 /// Tests the Handle method which creates a new animal with images in a transactional manner.
 /// 
-/// IMPORTANT: InMemoryDatabase does not support real database transactions.
-/// - BeginTransactionAsync/CommitAsync/RollbackAsync are ignored by InMemoryDatabase
-/// - Tests cannot verify that data is actually rolled back on failure
-/// - Tests focus on verifying error handling, validation logic, and successful scenarios
-/// - In production with SQL Server/PostgreSQL, transactions work correctly
 /// </summary>
 public class CreateAnimalTests : IDisposable
 {
     private readonly AppDbContext _dbContext;
-    private readonly Mock<IImageAppService<Animal>> _mockImageService;
+    private readonly Mock<IImageManager<Animal>> _mockImageService;
     private readonly CreateAnimal.Handler _handler;
 
     public CreateAnimalTests()
@@ -34,7 +29,7 @@ public class CreateAnimalTests : IDisposable
             .Options;
 
         _dbContext = new AppDbContext(options);
-        _mockImageService = new Mock<IImageAppService<Animal>>();
+        _mockImageService = new Mock<IImageManager<Animal>>();
         _handler = new CreateAnimal.Handler(_dbContext, _mockImageService.Object);
     }
 

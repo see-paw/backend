@@ -1,6 +1,7 @@
 ﻿using Application.Animals.Queries;
 using FluentValidation.TestHelper;
 using WebAPI.Validators;
+using WebAPI.Validators.Animals;
 
 namespace Tests.AnimalControllerTest.cs;
 

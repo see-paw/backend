@@ -3,6 +3,7 @@ using Application.Interfaces;
 using Domain;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Persistence;
 
 namespace Application.Images.Commands;
@@ -36,7 +37,8 @@ public class AddImagesAnimal
     /// <summary>
     /// Handles the image upload process for a specific animal.
     /// </summary>
-    public class Handler(AppDbContext dbContext, IImageAppService<Animal> imageAppService) : IRequestHandler<Command, Result<List<Image>>>
+    public class Handler(AppDbContext dbContext
+        , IImagesUploader<Animal> uploadService) : IRequestHandler<Command, Result<List<Image>>>
     {
         /// <summary>
         /// Adds images to the specified animal.
@@ -50,45 +52,41 @@ public class AddImagesAnimal
         /// <exception cref="Exception">Thrown if an unexpected error occurs during upload.</exception>
         public async Task<Result<List<Image>>> Handle(Command request, CancellationToken ct)
         {
-            if (request.Files.Count != request.Images.Count)
-                return Result<List<Image>>.Failure("Mismatch between files and image metadata.", 400);
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
 
-            var animal = await dbContext.Animals.FindAsync([request.AnimalId], ct);
+            var animal = await dbContext.Animals
+                .Include(a => a.Images)
+                .FirstOrDefaultAsync(a => a.Id == request.AnimalId, ct);
 
             if (animal == null)
                 return Result<List<Image>>.Failure("Animal not found", 404);
 
-            var resultImages = new List<Image>();
-            
-            for (var i = 0; i < request.Files.Count; i++)
+            var imageCountBefore = animal.Images.Count;
+
+            var uploadResult = await uploadService.UploadImagesAsync(
+                request.AnimalId,
+                request.Files,
+                request.Images,
+                ct
+            );
+
+            if (!uploadResult.IsSuccess)
             {
-                var file = request.Files[i];
-                var meta = request.Images[i];
-
-                var imgResult = await imageAppService.AddImageAsync(
-                    dbContext,
-                    animal.Id,
-                    file,
-                    meta.Description ?? string.Empty,
-                    meta.IsPrincipal,
-                    ct
-                );
-
-                if (!imgResult.IsSuccess)
-                {
-                    return Result<List<Image>>.Failure($"Image upload failed: {imgResult.Error}", 400);
-                }
-
-                if (imgResult.Value != null)
-                {
-                    resultImages.Add(imgResult.Value);
-                }
-                else
-                {
-                    return Result<List<Image>>.Failure("Image upload returned null value.", 500);
-                }
+                await transaction.RollbackAsync(ct);
+                return Result<List<Image>>.Failure(uploadResult.Error, uploadResult.Code);
             }
-            return Result<List<Image>>.Success(resultImages, 201);
+
+            var success = await dbContext.SaveChangesAsync(ct) > 0;
+            if (!success)
+            {
+                await transaction.RollbackAsync(ct);
+                return Result<List<Image>>.Failure("Failed to save images", 500);
+            }
+
+            await transaction.CommitAsync(ct);
+
+            var addedImages = animal.Images.Skip(imageCountBefore).ToList();
+            return Result<List<Image>>.Success(addedImages, 201);
         }
     }
 }

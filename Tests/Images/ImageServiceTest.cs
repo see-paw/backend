@@ -6,14 +6,14 @@ using Moq;
 namespace Tests.Images;
 
 /// <summary>
-/// Unit tests for ImageService using Equivalence Class Partitioning and Boundary Value Analysis.
+/// Unit tests for CloudinaryService using Equivalence Class Partitioning and Boundary Value Analysis.
 /// </summary>
-public class ImageServiceTests
+public class CloudinaryServiceTests
 {
     private readonly Mock<IOptions<CloudinarySettings>> _mockConfig;
     private readonly CloudinarySettings _validSettings;
 
-    public ImageServiceTests()
+    public CloudinaryServiceTests()
     {
         _validSettings = new CloudinarySettings
         {
@@ -38,7 +38,7 @@ public class ImageServiceTests
     public async Task UploadImage_InvalidFileLength_ReturnsNull(long fileLength, string fileName, string folderType)
     {
         var mockFile = CreateMockFile(fileName, fileLength);
-        var service = new ImageService(_mockConfig.Object);
+        var service = new CloudinaryService(_mockConfig.Object);
 
         var result = await service.UploadImage(mockFile.Object, folderType);
 
@@ -57,7 +57,7 @@ public class ImageServiceTests
     public async Task UploadImage_ValidFileLength_ProcessesSuccessfully(long fileLength, string fileName, string folderType)
     {
         var mockFile = CreateMockFile(fileName, fileLength, hasContent: true);
-        var service = new ImageService(_mockConfig.Object);
+        var service = new CloudinaryService(_mockConfig.Object);
 
         using var stream = mockFile.Object.OpenReadStream();
 
@@ -75,7 +75,7 @@ public class ImageServiceTests
     public async Task UploadImage_ExtremelyLargeFileLength_HandledAppropriately(long fileLength, string fileName, string folderType)
     {
         var mockFile = CreateMockFile(fileName, fileLength, hasContent: true);
-        var service = new ImageService(_mockConfig.Object);
+        var service = new CloudinaryService(_mockConfig.Object);
 
         using var stream = mockFile.Object.OpenReadStream();
 
@@ -157,7 +157,7 @@ public class ImageServiceTests
     #region Configuration Tests
 
     /// <summary>
-    /// Tests ImageService with valid configurations.
+    /// Tests CloudinaryService with valid configurations.
     /// </summary>
     [Theory]
     [InlineData("cloud-name", "api-key", "api-secret")]
@@ -175,13 +175,13 @@ public class ImageServiceTests
         var mockOptions = new Mock<IOptions<CloudinarySettings>>();
         mockOptions.Setup(x => x.Value).Returns(config);
 
-        var service = new ImageService(mockOptions.Object);
+        var service = new CloudinaryService(mockOptions.Object);
 
         Assert.NotNull(service);
     }
 
     /// <summary>
-    /// Tests ImageService with invalid configurations.
+    /// Tests CloudinaryService with invalid configurations.
     /// </summary>
     [Theory]
     [InlineData(null, "api-key", "api-secret")]

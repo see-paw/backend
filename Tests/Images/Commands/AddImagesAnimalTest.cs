@@ -17,7 +17,7 @@ namespace Tests.Images.Commands;
 public class AddImagesAnimalTest : IDisposable
 {
     private readonly AppDbContext _dbContext;
-    private readonly Mock<IImageAppService<Animal>> _mockImageService;
+    private readonly Mock<IImageManager<Animal>> _mockImageService;
     private readonly AddImagesAnimal.Handler _handler;
 
     public AddImagesAnimalTest()
@@ -27,7 +27,7 @@ public class AddImagesAnimalTest : IDisposable
             .Options;
 
         _dbContext = new AppDbContext(options);
-        _mockImageService = new Mock<IImageAppService<Animal>>();
+        _mockImageService = new Mock<IImageManager<Animal>>();
         _handler = new AddImagesAnimal.Handler(_dbContext, _mockImageService.Object);
     }
 

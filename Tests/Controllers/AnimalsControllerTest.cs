@@ -11,7 +11,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WebAPI.Controllers;
-using WebAPI.DTOs;
+using WebAPI.DTOs.Animals;
+using WebAPI.DTOs.Breeds;
 using WebAPI.DTOs.Images;
 
 namespace Tests.Controllers;

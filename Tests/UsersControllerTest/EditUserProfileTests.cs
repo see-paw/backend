@@ -1,5 +1,7 @@
 ﻿using WebAPI.DTOs;
+using WebAPI.DTOs.User;
 using WebAPI.Validators;
+using WebAPI.Validators.User;
 
 namespace Tests.UsersControllerTest
 {

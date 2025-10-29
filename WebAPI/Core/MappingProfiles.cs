@@ -1,6 +1,12 @@
 ﻿﻿using AutoMapper;
 using Domain;
 using WebAPI.DTOs;
+using WebAPI.DTOs.Animals;
+using WebAPI.DTOs.Breeds;
+using WebAPI.DTOs.Fostering;
+using WebAPI.DTOs.Images;
+using WebAPI.DTOs.Ownership;
+using WebAPI.DTOs.User;
 
 namespace WebAPI.Core;
 
