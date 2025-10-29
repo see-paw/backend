@@ -13,6 +13,10 @@ public class CreateOwnershipRequestValidator : AbstractValidator<ReqCreateOwners
         RuleFor(x => x.AnimalId)
             .NotNull().WithMessage("Animal ID cannot be null")
             .NotEmpty().WithMessage("Animal ID is required")
-            .Length(36).WithMessage("Animal ID must be a valid GUID format");
+            .Must(BeAValidGuid).WithMessage("Animal ID must be a valid GUID");
+    }
+    private static bool BeAValidGuid(string? id)
+    {
+        return Guid.TryParse(id, out _);
     }
 }
