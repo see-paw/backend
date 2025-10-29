@@ -1,6 +1,7 @@
 ﻿using Application.Animals.Commands;
 using Application.Animals.Queries;
 using Application.Core;
+using Application.Fosterings.Commands;
 using Application.Interfaces;
 using AutoMapper;
 using Domain;
@@ -205,6 +206,19 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
 
         var animalDto = mapper.Map<ResAnimalDto>(result.Value);
         return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
+    }
+    
+    [Authorize(Roles = "User")]
+    [HttpPost("{animalId}/fosterings")]
+    public async Task<ActionResult<ResActiveFosteringDto>> AddFostering(string animalId)
+    {
+        var user = await userAccessor.GetUserAsync();
+        
+        var result = await Mediator.Send(new AddFostering.Command
+        {
+            AnimalId = animalId,
+            UserId = user.Id
+        });
     }
 
 
