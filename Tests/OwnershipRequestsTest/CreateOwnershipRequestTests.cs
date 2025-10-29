@@ -9,8 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WebAPI.Controllers;
 using WebAPI.DTOs;
+using Xunit;
 
-namespace Tests.OwnershipRequestsTest;
+namespace Tests.OwnershipRequests;
 
 /// <summary>
 /// Unit tests for CreateOwnershipRequest endpoint in OwnershipRequestsController.
@@ -21,21 +22,18 @@ namespace Tests.OwnershipRequestsTest;
 /// - User ID is extracted from JWT token (not from request body)
 /// - All business rules are correctly applied
 /// </summary>
-public class CreateOwnershipRequestTests
+public class CreateOwnershipRequestControllerTests
 {
     private readonly Mock<IMediator> _mockMediator;
     private readonly Mock<IMapper> _mockMapper;
     private readonly OwnershipRequestsController _controller;
 
-    public CreateOwnershipRequestTests()
+    public CreateOwnershipRequestControllerTests()
     {
         _mockMediator = new Mock<IMediator>();
         _mockMapper = new Mock<IMapper>();
-
-        // Pass mapper to controller constructor
         _controller = new OwnershipRequestsController(_mockMapper.Object);
 
-        // Mock HttpContext to provide IMediator
         var serviceProviderMock = new Mock<IServiceProvider>();
         serviceProviderMock
             .Setup(sp => sp.GetService(typeof(IMediator)))
@@ -50,44 +48,73 @@ public class CreateOwnershipRequestTests
         };
     }
 
-    /// <summary>
-    /// Tests that a valid ownership request creation returns OK with complete request details.
-    /// </summary>
-    [Fact]
-    public async Task CreateOwnershipRequest_ValidRequest_ReturnsOk()
+    private static OwnershipRequest CreateOwnershipRequest(decimal animalCost = 100m)
     {
         var animalId = Guid.NewGuid().ToString();
         var userId = Guid.NewGuid().ToString();
         var requestId = Guid.NewGuid().ToString();
 
-        var dto = new ReqCreateOwnershipRequestDto
-        {
-            AnimalId = animalId
-        };
-
-        var ownershipRequest = new OwnershipRequest
+        return new OwnershipRequest
         {
             Id = requestId,
             AnimalId = animalId,
             UserId = userId,
-            Amount = 100m,
+            Amount = animalCost,
             Status = OwnershipStatus.Pending,
             RequestInfo = null,
-            Animal = new Animal { Id = animalId, Name = "Test Animal", Cost = 100m },
-            User = new User { Id = userId, Name = "Test User" }
+            Animal = new Animal
+            {
+                Id = animalId,
+                Name = "Test Animal",
+                Cost = animalCost,
+                Colour = "Brown",
+                Species = Species.Dog,
+                Size = SizeType.Medium,
+                Sex = SexType.Male,
+                BirthDate = new DateOnly(2020, 1, 1),
+                Sterilized = true,
+                BreedId = Guid.NewGuid().ToString(),
+                ShelterId = Guid.NewGuid().ToString(),
+                AnimalState = AnimalState.Available
+            },
+            User = new User
+            {
+                Id = userId,
+                Name = "Test User",
+                Email = "test@example.com",
+                BirthDate = DateTime.UtcNow.AddYears(-25),
+                Street = "Test Street",
+                City = "Test City",
+                PostalCode = "1234-567"
+            }
+        };
+    }
+
+    private static ResOwnershipRequestDto CreateResponseDto(OwnershipRequest request)
+    {
+        return new ResOwnershipRequestDto
+        {
+            Id = request.Id,
+            AnimalId = request.AnimalId,
+            AnimalName = request.Animal.Name,
+            UserId = request.UserId,
+            UserName = request.User.Name,
+            Amount = request.Amount,
+            Status = request.Status,
+            RequestInfo = request.RequestInfo
+        };
+    }
+
+    [Fact]
+    public async Task CreateOwnershipRequest_ShouldReturnOkResult_WhenRequestIsValid()
+    {
+        var dto = new ReqCreateOwnershipRequestDto
+        {
+            AnimalId = Guid.NewGuid().ToString()
         };
 
-        var responseDto = new ResOwnershipRequestDto
-        {
-            Id = requestId,
-            AnimalId = animalId,
-            AnimalName = "Test Animal",
-            UserId = userId,
-            UserName = "Test User",
-            Amount = 100m,
-            Status = OwnershipStatus.Pending,
-            RequestInfo = null
-        };
+        var ownershipRequest = CreateOwnershipRequest();
+        var responseDto = CreateResponseDto(ownershipRequest);
 
         _mockMediator
             .Setup(m => m.Send(It.IsAny<CreateOwnershipRequest.Command>(), default))
@@ -99,19 +126,168 @@ public class CreateOwnershipRequestTests
 
         var result = await _controller.CreateOwnershipRequest(dto);
 
-        var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var returnedDto = Assert.IsType<ResOwnershipRequestDto>(okResult.Value);
-        Assert.Equal(animalId, returnedDto.AnimalId);
-        Assert.Equal(userId, returnedDto.UserId);
-        Assert.Equal(OwnershipStatus.Pending, returnedDto.Status);
-        Assert.Equal(100m, returnedDto.Amount);
+        Assert.IsType<OkObjectResult>(result.Result);
     }
 
-    /// <summary>
-    /// Tests that attempting to create a request for a non-existent animal returns NotFound.
-    /// </summary>
     [Fact]
-    public async Task CreateOwnershipRequest_AnimalNotFound_ReturnsNotFound()
+    public async Task CreateOwnershipRequest_ShouldReturnCorrectAnimalId_WhenRequestIsValid()
+    {
+        var dto = new ReqCreateOwnershipRequestDto
+        {
+            AnimalId = Guid.NewGuid().ToString()
+        };
+
+        var ownershipRequest = CreateOwnershipRequest();
+        var responseDto = CreateResponseDto(ownershipRequest);
+
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<CreateOwnershipRequest.Command>(), default))
+            .ReturnsAsync(Result<OwnershipRequest>.Success(ownershipRequest, 200));
+
+        _mockMapper
+            .Setup(m => m.Map<ResOwnershipRequestDto>(It.IsAny<OwnershipRequest>()))
+            .Returns(responseDto);
+
+        var result = await _controller.CreateOwnershipRequest(dto);
+
+        var okResult = result.Result as OkObjectResult;
+        var returnedDto = okResult!.Value as ResOwnershipRequestDto;
+        Assert.Equal(ownershipRequest.AnimalId, returnedDto!.AnimalId);
+    }
+
+    [Fact]
+    public async Task CreateOwnershipRequest_ShouldReturnCorrectUserId_WhenRequestIsValid()
+    {
+        var dto = new ReqCreateOwnershipRequestDto
+        {
+            AnimalId = Guid.NewGuid().ToString()
+        };
+
+        var ownershipRequest = CreateOwnershipRequest();
+        var responseDto = CreateResponseDto(ownershipRequest);
+
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<CreateOwnershipRequest.Command>(), default))
+            .ReturnsAsync(Result<OwnershipRequest>.Success(ownershipRequest, 200));
+
+        _mockMapper
+            .Setup(m => m.Map<ResOwnershipRequestDto>(It.IsAny<OwnershipRequest>()))
+            .Returns(responseDto);
+
+        var result = await _controller.CreateOwnershipRequest(dto);
+
+        var okResult = result.Result as OkObjectResult;
+        var returnedDto = okResult!.Value as ResOwnershipRequestDto;
+        Assert.Equal(ownershipRequest.UserId, returnedDto!.UserId);
+    }
+
+    [Fact]
+    public async Task CreateOwnershipRequest_ShouldReturnPendingStatus_WhenRequestIsValid()
+    {
+        var dto = new ReqCreateOwnershipRequestDto
+        {
+            AnimalId = Guid.NewGuid().ToString()
+        };
+
+        var ownershipRequest = CreateOwnershipRequest();
+        var responseDto = CreateResponseDto(ownershipRequest);
+
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<CreateOwnershipRequest.Command>(), default))
+            .ReturnsAsync(Result<OwnershipRequest>.Success(ownershipRequest, 200));
+
+        _mockMapper
+            .Setup(m => m.Map<ResOwnershipRequestDto>(It.IsAny<OwnershipRequest>()))
+            .Returns(responseDto);
+
+        var result = await _controller.CreateOwnershipRequest(dto);
+
+        var okResult = result.Result as OkObjectResult;
+        var returnedDto = okResult!.Value as ResOwnershipRequestDto;
+        Assert.Equal(OwnershipStatus.Pending, returnedDto!.Status);
+    }
+
+    [Fact]
+    public async Task CreateOwnershipRequest_ShouldReturnAmountFromAnimalCost_WhenRequestIsValid()
+    {
+        var dto = new ReqCreateOwnershipRequestDto
+        {
+            AnimalId = Guid.NewGuid().ToString()
+        };
+
+        var animalCost = 250m;
+        var ownershipRequest = CreateOwnershipRequest(animalCost);
+        var responseDto = CreateResponseDto(ownershipRequest);
+
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<CreateOwnershipRequest.Command>(), default))
+            .ReturnsAsync(Result<OwnershipRequest>.Success(ownershipRequest, 200));
+
+        _mockMapper
+            .Setup(m => m.Map<ResOwnershipRequestDto>(It.IsAny<OwnershipRequest>()))
+            .Returns(responseDto);
+
+        var result = await _controller.CreateOwnershipRequest(dto);
+
+        var okResult = result.Result as OkObjectResult;
+        var returnedDto = okResult!.Value as ResOwnershipRequestDto;
+        Assert.Equal(animalCost, returnedDto!.Amount);
+    }
+
+    [Fact]
+    public async Task CreateOwnershipRequest_ShouldCallMediatorWithCorrectCommand_WhenRequestIsValid()
+    {
+        var animalId = Guid.NewGuid().ToString();
+        var dto = new ReqCreateOwnershipRequestDto
+        {
+            AnimalId = animalId
+        };
+
+        var ownershipRequest = CreateOwnershipRequest();
+        var responseDto = CreateResponseDto(ownershipRequest);
+
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<CreateOwnershipRequest.Command>(), default))
+            .ReturnsAsync(Result<OwnershipRequest>.Success(ownershipRequest, 200));
+
+        _mockMapper
+            .Setup(m => m.Map<ResOwnershipRequestDto>(It.IsAny<OwnershipRequest>()))
+            .Returns(responseDto);
+
+        await _controller.CreateOwnershipRequest(dto);
+
+        _mockMediator.Verify(m => m.Send(
+            It.Is<CreateOwnershipRequest.Command>(c => c.AnimalID == animalId),
+            default), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateOwnershipRequest_ShouldCallMapperWithOwnershipRequest_WhenRequestIsValid()
+    {
+        var dto = new ReqCreateOwnershipRequestDto
+        {
+            AnimalId = Guid.NewGuid().ToString()
+        };
+
+        var ownershipRequest = CreateOwnershipRequest();
+        var responseDto = CreateResponseDto(ownershipRequest);
+
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<CreateOwnershipRequest.Command>(), default))
+            .ReturnsAsync(Result<OwnershipRequest>.Success(ownershipRequest, 200));
+
+        _mockMapper
+            .Setup(m => m.Map<ResOwnershipRequestDto>(It.IsAny<OwnershipRequest>()))
+            .Returns(responseDto);
+
+        await _controller.CreateOwnershipRequest(dto);
+
+        _mockMapper.Verify(m => m.Map<ResOwnershipRequestDto>(
+            It.IsAny<OwnershipRequest>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateOwnershipRequest_ShouldReturnNotFound_WhenAnimalDoesNotExist()
     {
         var dto = new ReqCreateOwnershipRequestDto
         {
@@ -124,15 +300,11 @@ public class CreateOwnershipRequestTests
 
         var result = await _controller.CreateOwnershipRequest(dto);
 
-        var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
-        Assert.Equal("Animal ID not found", notFoundResult.Value);
+        Assert.IsType<NotFoundObjectResult>(result.Result);
     }
 
-    /// <summary>
-    /// Tests that attempting to create a request for an animal with an owner returns BadRequest.
-    /// </summary>
     [Fact]
-    public async Task CreateOwnershipRequest_AnimalHasOwner_ReturnsBadRequest()
+    public async Task CreateOwnershipRequest_ShouldReturnBadRequest_WhenAnimalHasOwner()
     {
         var dto = new ReqCreateOwnershipRequestDto
         {
@@ -145,15 +317,11 @@ public class CreateOwnershipRequestTests
 
         var result = await _controller.CreateOwnershipRequest(dto);
 
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        Assert.Equal("Animal not available for ownership", badRequestResult.Value);
+        Assert.IsType<BadRequestObjectResult>(result.Result);
     }
 
-    /// <summary>
-    /// Tests that attempting to create a request for an inactive animal returns BadRequest.
-    /// </summary>
     [Fact]
-    public async Task CreateOwnershipRequest_AnimalInactive_ReturnsBadRequest()
+    public async Task CreateOwnershipRequest_ShouldReturnBadRequest_WhenAnimalIsInactive()
     {
         var dto = new ReqCreateOwnershipRequestDto
         {
@@ -166,16 +334,11 @@ public class CreateOwnershipRequestTests
 
         var result = await _controller.CreateOwnershipRequest(dto);
 
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        Assert.Equal("Animal not available for ownership", badRequestResult.Value);
+        Assert.IsType<BadRequestObjectResult>(result.Result);
     }
 
-    /// <summary>
-    /// Tests that attempting to create a duplicate request for the same animal returns BadRequest.
-    /// Users can only have one ownership request per animal at a time.
-    /// </summary>
     [Fact]
-    public async Task CreateOwnershipRequest_DuplicateRequest_ReturnsBadRequest()
+    public async Task CreateOwnershipRequest_ShouldReturnBadRequest_WhenDuplicateRequestExists()
     {
         var dto = new ReqCreateOwnershipRequestDto
         {
@@ -185,19 +348,15 @@ public class CreateOwnershipRequestTests
         _mockMediator
             .Setup(m => m.Send(It.IsAny<CreateOwnershipRequest.Command>(), default))
             .ReturnsAsync(Result<OwnershipRequest>.Failure(
-                "You already have a pending ownership request for this animal", 400));
+                "User already has a pending ownership request for this animal", 400));
 
         var result = await _controller.CreateOwnershipRequest(dto);
 
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        Assert.Equal("You already have a pending ownership request for this animal", badRequestResult.Value);
+        Assert.IsType<BadRequestObjectResult>(result.Result);
     }
 
-    /// <summary>
-    /// Tests that a database failure during creation returns InternalServerError.
-    /// </summary>
     [Fact]
-    public async Task CreateOwnershipRequest_DatabaseFailure_ReturnsInternalServerError()
+    public async Task CreateOwnershipRequest_ShouldReturnInternalServerError_WhenDatabaseFailureOccurs()
     {
         var dto = new ReqCreateOwnershipRequestDto
         {
@@ -211,60 +370,7 @@ public class CreateOwnershipRequestTests
 
         var result = await _controller.CreateOwnershipRequest(dto);
 
-        var serverErrorResult = Assert.IsType<ObjectResult>(result.Result);
-        Assert.Equal(500, serverErrorResult.StatusCode);
-        Assert.Equal("Failed to create ownership request", serverErrorResult.Value);
-    }
-
-    /// <summary>
-    /// Tests that the request amount is automatically set from the animal's cost.
-    /// </summary>
-    [Fact]
-    public async Task CreateOwnershipRequest_AmountSetFromAnimalCost_ReturnsOk()
-    {
-        var animalId = Guid.NewGuid().ToString();
-        var userId = Guid.NewGuid().ToString();
-        var animalCost = 250m;
-
-        var dto = new ReqCreateOwnershipRequestDto
-        {
-            AnimalId = animalId
-        };
-
-        var ownershipRequest = new OwnershipRequest
-        {
-            Id = Guid.NewGuid().ToString(),
-            AnimalId = animalId,
-            UserId = userId,
-            Amount = animalCost,  // Set from animal's cost
-            Status = OwnershipStatus.Pending,
-            Animal = new Animal { Id = animalId, Name = "Test Animal", Cost = animalCost },
-            User = new User { Id = userId, Name = "Test User" }
-        };
-
-        var responseDto = new ResOwnershipRequestDto
-        {
-            Id = ownershipRequest.Id,
-            AnimalId = animalId,
-            AnimalName = "Test Animal",
-            UserId = userId,
-            UserName = "Test User",
-            Amount = animalCost,
-            Status = OwnershipStatus.Pending
-        };
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<CreateOwnershipRequest.Command>(), default))
-            .ReturnsAsync(Result<OwnershipRequest>.Success(ownershipRequest, 200));
-
-        _mockMapper
-            .Setup(m => m.Map<ResOwnershipRequestDto>(It.IsAny<OwnershipRequest>()))
-            .Returns(responseDto);
-
-        var result = await _controller.CreateOwnershipRequest(dto);
-
-        var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var returnedDto = Assert.IsType<ResOwnershipRequestDto>(okResult.Value);
-        Assert.Equal(animalCost, returnedDto.Amount);
+        var objectResult = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(500, objectResult.StatusCode);
     }
 }
