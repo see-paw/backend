@@ -45,6 +45,7 @@ public class Shelter: IHasPhotos
     /// The postal code of the shelter, formatted as 0000-000.
     /// </summary>
     [Required]
+    [StringLength(100)]
     [RegularExpression(@"^\d{4}-\d{3}$", ErrorMessage = "Postal Code must be in the format 0000-000.")]
     public string PostalCode { get; set; } = string.Empty;
 
@@ -54,6 +55,7 @@ public class Shelter: IHasPhotos
     /// </summary>
     [Required]
     [Phone]
+    [StringLength(100)]
     [RegularExpression(@"^[29]\d{8}$", ErrorMessage = "Phone number must have 9 digits and start with 2 or 9.")]
     public string Phone { get; set; } = string.Empty;
 
@@ -62,6 +64,7 @@ public class Shelter: IHasPhotos
     /// Must contain exactly 9 digits.
     /// </summary>
     [Required]
+    [StringLength(100)]
     [RegularExpression(@"^\d{9}$", ErrorMessage = "Nif must contain exactly 9 digits.")]
     public string NIF { get; init; } = string.Empty;
 

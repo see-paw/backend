@@ -144,6 +144,15 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
         return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
     }
 
+    /// <summary>
+    /// Adds one or more images to an existing animal.
+    /// </summary>
+    /// <param name="id">The unique identifier of the animal.</param>
+    /// <param name="reqAddImagesDto">DTO containing the list of images to add.</param>
+    /// <returns>
+    /// A list of <see cref="ResImageDto"/> representing the newly added images on success,
+    /// or an appropriate error response on failure.
+    /// </returns>
     [Authorize(Roles = "AdminCAA")]
     [HttpPost("{id}/images")]
     [Consumes("multipart/form-data")]
@@ -153,15 +162,22 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
             return BadRequest("No image was provided");
 
         var imageEntities = mapper.Map<List<Image>>(reqAddImagesDto.Images);
-        
+    
         var command = new AddImagesAnimal.Command
         {
             AnimalId = id,
             Images = imageEntities,
-            Files =  reqAddImagesDto.Images.Select(i => i.File).ToList()
+            Files = reqAddImagesDto.Images.Select(i => i.File).ToList()
         };
-        
-        return HandleResult(await Mediator.Send(command));
+    
+        var result = await Mediator.Send(command);
+
+        if (!result.IsSuccess)
+            return HandleResult(result);
+
+        var imageDtos = mapper.Map<List<ResImageDto>>(result.Value);
+
+        return HandleResult(Result<List<ResImageDto>>.Success(imageDtos, 201));
     }
     
     [Authorize(Roles = "AdminCAA")]
@@ -204,7 +220,6 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// </list>
     /// </para>
     /// <param name="id">The unique identifier of the animal to be deactivated.</param>
-    /// <returns>
     [Authorize(Roles = "AdminCAA")]
     [HttpPatch("{id}/deactivate")]
     public async Task<ActionResult> DeactivateAnimal(string id)

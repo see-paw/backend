@@ -10,10 +10,24 @@
 /// </remarks>
 public class Result<T>
 {
+    /// <summary>
+    /// Indicates whether the operation was successful.
+    /// </summary>
     public bool IsSuccess { get; init; }
+
+    /// <summary>
+    /// The data returned when the operation succeeds.
+    /// </summary>
     public T? Value { get; init; }
 
+    /// <summary>
+    /// The error message when the operation fails.
+    /// </summary>
     public string? Error { get; init; }
+
+    /// <summary>
+    /// The HTTP status code for the result.
+    /// </summary>
     public int Code { get; init; }
 
     /// <summary>

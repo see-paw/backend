@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Domain;
 using Infrastructure;
+using Infrastructure.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Moq;

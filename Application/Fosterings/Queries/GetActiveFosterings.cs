@@ -31,10 +31,7 @@ namespace Application.Fosterings.Queries
                     .Where(f => f.UserId == request.UserId && f.Status == FosteringStatus.Active)
                     .ToListAsync(ct);
 
-                if (fosterings == null || fosterings.Count == 0)
-                    return Result<List<Fostering>>.Failure("No active fostering records found.", 404);
-
-                return Result<List<Fostering>>.Success(fosterings, 200);
+                return fosterings.Count == 0 ? Result<List<Fostering>>.Failure("No active fostering records found.", 404) : Result<List<Fostering>>.Success(fosterings, 200);
             }
         }
     }

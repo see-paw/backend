@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using ImageUploadResult = Application.ImageUploadResult;
 
-namespace Infrastructure.Photos;
+namespace Infrastructure.Images;
 
 public class ImageService : IImageService
 {

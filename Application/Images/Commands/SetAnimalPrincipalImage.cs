@@ -27,7 +27,8 @@ public class SetAnimalPrincipalImage
                 return Result<Unit>.Failure("Animal not found", 404);
             }
             
-            var image = animal.Images.FirstOrDefault(i => i.Id == request.ImageId);
+            var image = await dbContext.Images
+                .FirstOrDefaultAsync(i => i.Id == request.ImageId, ct);
 
             if (image == null)
             {

@@ -4,7 +4,7 @@ using Domain;
 using Microsoft.AspNetCore.Http;
 using Persistence;
 
-namespace Infrastructure;
+namespace Infrastructure.Security;
 
 /// <summary>
 /// Provides access to information about the currently authenticated user.

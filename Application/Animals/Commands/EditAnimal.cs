@@ -8,7 +8,7 @@ using Persistence;
 namespace Application.Animals.Commands
 {
     /// <summary>
-    /// Handles the editing of an existing <see cref="Animal"/> entity within a specific shelter context.
+    /// Handles the editing of an existing <see cref="Animal"/> entity.
     /// </summary>
     public class EditAnimal
     {
@@ -23,6 +23,29 @@ namespace Application.Animals.Commands
             public required Animal Animal { get; set; }
         }
 
+        /// <summary>
+        /// Executes the update process for an existing animal.
+        /// </summary>
+        /// <param name="request">
+        /// The command containing the updated <see cref="Animal"/> data to apply.
+        /// </param>
+        /// <param name="ct">Cancellation token to handle operation cancellation.</param>
+        /// <returns>
+        /// A <see cref="Result{T}"/> containing the updated <see cref="Animal"/> if successful,
+        /// or an error message with a status code otherwise.
+        /// </returns>
+        /// <remarks>
+        /// Steps performed:
+        /// 1. Verifies if the specified breed exists.
+        /// 2. Loads the current animal with related entities.
+        /// 3. Maps updated values using <see cref="AutoMapper"/>.
+        /// 4. Saves changes to the database.
+        ///
+        /// Return codes:
+        /// - 200: Animal successfully updated  
+        /// - 400: Failed to save changes  
+        /// - 404: Breed or animal not found
+        /// </remarks>
         public class Handler(AppDbContext dbContext, IMapper mapper) : IRequestHandler<Command, Result<Animal>>
         {
              public async Task<Result<Animal>> Handle(Command request, CancellationToken ct)

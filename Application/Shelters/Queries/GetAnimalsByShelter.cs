@@ -89,11 +89,9 @@ namespace Application.Shelters.Queries
                 );
 
                 // Handle the case when no animals were found
-                if (pagedList == null || pagedList.Count == 0)
-                    return Result<PagedList<Animal>>.Failure("No animals found for this shelter", 404);
-
-                // Return success result with the paginated list
-                return Result<PagedList<Animal>>.Success(pagedList, 200);
+                return pagedList.Count == 0 ? Result<PagedList<Animal>>.Failure("No animals found for this shelter", 404) :
+                    // Return success result with the paginated list
+                    Result<PagedList<Animal>>.Success(pagedList, 200);
             }
         }
     }

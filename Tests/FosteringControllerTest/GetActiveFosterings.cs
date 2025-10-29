@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Persistence;
 using Xunit;
 
-namespace Tests.Fosterings.Queries
+namespace Tests.FosteringControllerTest
 {
     //codacy: ignore[complexity]
     public class GetActiveFosteringsTests

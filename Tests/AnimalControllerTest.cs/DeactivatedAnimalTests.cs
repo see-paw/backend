@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Persistence;
 using Xunit;
 
-namespace Tests.Animals
+namespace Tests.AnimalControllerTest.cs
 {
     //codacy: ignore[complexity]
     public class DeactivateAnimalTests
