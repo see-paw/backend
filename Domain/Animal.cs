@@ -13,7 +13,7 @@ namespace Domain;
 /// Contains all relevant data about an animal, including biological information,
 /// ownership details, and relationships with shelters, breeds, and activities.
 /// </remarks>
-public class Animal : IHasPhotos
+public class Animal : IHasImages
 {
     /// <summary>
     /// Unique identifier of the animal (GUID).

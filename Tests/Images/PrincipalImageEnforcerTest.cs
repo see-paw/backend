@@ -1,5 +1,5 @@
 ﻿using Application.Images;
-using Application.Images.Services;
+using Application.Interfaces;
 using Domain;
 
 namespace Tests.Images;

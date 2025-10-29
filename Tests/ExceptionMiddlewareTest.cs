@@ -1,4 +1,4 @@
-﻿/*using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -322,4 +322,4 @@ namespace Tests
             Assert.Equal(500, context.Response.StatusCode);
         }
     }
-}*/
+}

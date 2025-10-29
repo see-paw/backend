@@ -22,32 +22,26 @@ namespace Application.Animals.Commands
             /// </summary>
             public required Animal Animal { get; set; }
         }
-
+        
         /// <summary>
-        /// Executes the update process for an existing animal.
+        /// Handles the command responsible for editing an existing <see cref="Animal"/>.
         /// </summary>
-        /// <param name="request">
-        /// The command containing the updated <see cref="Animal"/> data to apply.
-        /// </param>
-        /// <param name="ct">Cancellation token to handle operation cancellation.</param>
-        /// <returns>
-        /// A <see cref="Result{T}"/> containing the updated <see cref="Animal"/> if successful,
-        /// or an error message with a status code otherwise.
-        /// </returns>
         /// <remarks>
-        /// Steps performed:
-        /// 1. Verifies if the specified breed exists.
-        /// 2. Loads the current animal with related entities.
-        /// 3. Maps updated values using <see cref="AutoMapper"/>.
-        /// 4. Saves changes to the database.
-        ///
-        /// Return codes:
-        /// - 200: Animal successfully updated  
-        /// - 400: Failed to save changes  
-        /// - 404: Breed or animal not found
+        /// Uses Entity Framework Core to load the target animal and its related entities,  
+        /// applies updates using AutoMapper, and saves the changes to the database.
         /// </remarks>
         public class Handler(AppDbContext dbContext, IMapper mapper) : IRequestHandler<Command, Result<Animal>>
         {
+            /// <summary>
+            /// Updates an existing animal with new data.
+            /// </summary>
+            /// <param name="request">The command containing the updated animal information.</param>
+            /// <param name="ct">A token to cancel the operation.</param>
+            /// <returns>
+            /// A <see cref="Result{T}"/> containing the updated <see cref="Animal"/> if successful,  
+            /// or an error message with the corresponding status code otherwise.
+            /// </returns>
+            /// <exception cref="Exception">Thrown if a database operation fails unexpectedly.</exception>
              public async Task<Result<Animal>> Handle(Command request, CancellationToken ct)
              {
                 var breed = await dbContext.Breeds.FirstOrDefaultAsync(b => b.Id == request.Animal.BreedId, ct);

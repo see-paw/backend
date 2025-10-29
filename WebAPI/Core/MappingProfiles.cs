@@ -4,9 +4,19 @@ using WebAPI.DTOs;
 
 namespace WebAPI.Core;
 
+/// <summary>
+/// Defines AutoMapper configuration profiles for mapping between entities and DTOs.
+/// </summary>
+/// <remarks>
+/// Centralizes all object-to-object mappings used across the application,  
+/// ensuring consistent data transformation between the domain and API layers.
+/// </remarks>
 public class MappingProfiles : Profile
 {
-
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MappingProfiles"/> class  
+    /// and registers all entity-to-DTO and DTO-to-entity mappings.
+    /// </summary>
     public MappingProfiles()
     {
         CreateMap<ReqCreateAnimalDto, Animal>(MemberList.Source)

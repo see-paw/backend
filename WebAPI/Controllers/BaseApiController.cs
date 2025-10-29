@@ -18,6 +18,13 @@ public class BaseApiController : ControllerBase
 {
     private IMediator? _mediator;
 
+    /// <summary>
+    /// Provides access to the <see cref="IMediator"/> instance used for sending commands and queries.
+    /// </summary>
+    /// <remarks>
+    /// Lazily retrieves the <see cref="IMediator"/> service from the current HTTP request context.  
+    /// Throws an exception if the service is unavailable.
+    /// </remarks>
     protected IMediator Mediator => _mediator ??= HttpContext.RequestServices.GetService<IMediator>()
                                                   ?? throw new InvalidOperationException("IMediator service is unavailable");
 

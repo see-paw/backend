@@ -1,6 +1,6 @@
 ﻿using Application;
 using Application.Core;
-using Application.Images.Services;
+using Application.Images;
 using Application.Interfaces;
 using Domain;
 using Domain.Interfaces;
@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Persistence;
-using ImageUploadResult = Application.ImageUploadResult;
+using ImageUploadResult = Application.Images.ImageUploadResult;
 
 namespace Tests.Images;
 

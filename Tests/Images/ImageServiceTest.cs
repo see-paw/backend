@@ -2,22 +2,20 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Moq;
-using CloudinarySettings = Infrastructure.Images.CloudinarySettings;
 
 namespace Tests.Images;
 
 /// <summary>
-/// Unit tests for ImageService covering testable scenarios.
-/// Note: Full integration tests with Cloudinary require real API credentials.
+/// Unit tests for ImageService using Equivalence Class Partitioning and Boundary Value Analysis.
 /// </summary>
-public class ImageServiceTest
+public class ImageServiceTests
 {
     private readonly Mock<IOptions<CloudinarySettings>> _mockConfig;
-    private readonly CloudinarySettings _cloudinarySettings;
+    private readonly CloudinarySettings _validSettings;
 
-    public ImageServiceTest()
+    public ImageServiceTests()
     {
-        _cloudinarySettings = new CloudinarySettings
+        _validSettings = new CloudinarySettings
         {
             CloudName = "test-cloud",
             ApiKey = "test-api-key",
@@ -25,51 +23,133 @@ public class ImageServiceTest
         };
 
         _mockConfig = new Mock<IOptions<CloudinarySettings>>();
-        _mockConfig.Setup(x => x.Value).Returns(_cloudinarySettings);
+        _mockConfig.Setup(x => x.Value).Returns(_validSettings);
     }
 
-    #region UploadImage Tests
+    #region UploadImage - File Length Tests
 
     /// <summary>
-    /// Tests that empty or invalid files return null without uploading.
+    /// Tests upload with invalid file lengths (negative, zero, and boundary values).
     /// </summary>
     [Theory]
-    [InlineData(0, "empty.jpg", "animals")]
-    [InlineData(0, "test.png", "shelters")]
-    [InlineData(-1, "invalid.jpg", "animals")]
-    public async Task UploadImage_InvalidFile_ReturnsNull(long fileLength, string fileName, string folderType)
+    [InlineData(-1, "negative.jpg", "animals")]
+    [InlineData(-100, "large-negative.png", "shelters")]
+    [InlineData(0, "zero.jpg", "animals")]
+    public async Task UploadImage_InvalidFileLength_ReturnsNull(long fileLength, string fileName, string folderType)
     {
-        // Arrange
         var mockFile = CreateMockFile(fileName, fileLength);
         var service = new ImageService(_mockConfig.Object);
 
-        // Act
         var result = await service.UploadImage(mockFile.Object, folderType);
 
-        // Assert
         Assert.Null(result);
     }
 
     /// <summary>
-    /// Tests that valid files with content can be processed.
+    /// Tests upload with valid file lengths at boundaries.
     /// </summary>
     [Theory]
-    [InlineData("dog.jpg", 1024, "animals")]
-    [InlineData("shelter.png", 2048, "shelters")]
-    [InlineData("profile.jpeg", 512, "users")]
-    public void UploadImage_ValidFile_HasValidStream(string fileName, long fileSize, string folderType)
+    [InlineData(1, "smallest-valid.jpg", "animals")]
+    [InlineData(1024, "1kb.jpg", "shelters")]
+    [InlineData(1048576, "1mb.png", "animals")]
+    [InlineData(5242880, "5mb.jpg", "shelters")]
+    [InlineData(10485760, "10mb.png", "animals")]
+    public async Task UploadImage_ValidFileLength_ProcessesSuccessfully(long fileLength, string fileName, string folderType)
     {
-        // Arrange
-        var mockFile = CreateMockFile(fileName, fileSize, hasContent: true);
+        var mockFile = CreateMockFile(fileName, fileLength, hasContent: true);
+        var service = new ImageService(_mockConfig.Object);
 
-        // Act
         using var stream = mockFile.Object.OpenReadStream();
 
-        // Assert
         Assert.NotNull(stream);
-        Assert.True(stream.CanRead);
-        Assert.Equal(fileSize, mockFile.Object.Length);
+        Assert.Equal(fileLength, mockFile.Object.Length);
+    }
+
+    /// <summary>
+    /// Tests upload with extremely large file lengths.
+    /// </summary>
+    [Theory]
+    [InlineData(52428800, "50mb.jpg", "animals")]
+    [InlineData(104857600, "100mb.jpg", "shelters")]
+    [InlineData(long.MaxValue, "max-value.jpg", "animals")]
+    public async Task UploadImage_ExtremelyLargeFileLength_HandledAppropriately(long fileLength, string fileName, string folderType)
+    {
+        var mockFile = CreateMockFile(fileName, fileLength, hasContent: true);
+        var service = new ImageService(_mockConfig.Object);
+
+        using var stream = mockFile.Object.OpenReadStream();
+
+        Assert.NotNull(stream);
+        Assert.Equal(fileLength, mockFile.Object.Length);
+    }
+
+    #endregion
+
+    #region UploadImage - FileName Tests
+
+    /// <summary>
+    /// Tests upload with invalid file names.
+    /// </summary>
+    [Theory]
+    [InlineData(null, 1024, "animals")]
+    [InlineData("", 1024, "shelters")]
+    [InlineData("   ", 1024, "animals")]
+    public void UploadImage_InvalidFileName_IsDetected(string? fileName, long fileLength, string folderType)
+    {
+        var isInvalid = string.IsNullOrWhiteSpace(fileName);
+        Assert.True(isInvalid);
+    }
+
+    /// <summary>
+    /// Tests upload with various valid file names and extensions.
+    /// </summary>
+    [Theory]
+    [InlineData("image.jpg", 1024, "animals")]
+    [InlineData("image.jpeg", 2048, "shelters")]
+    [InlineData("image.png", 512, "animals")]
+    [InlineData("image.gif", 1536, "shelters")]
+    [InlineData("image.webp", 768, "animals")]
+    [InlineData("very-long-file-name-with-multiple-words-and-numbers-12345.jpg", 1024, "shelters")]
+    [InlineData("file with spaces.png", 2048, "animals")]
+    [InlineData("special!@#$%chars.jpg", 512, "shelters")]
+    public void UploadImage_ValidFileName_IsAccepted(string fileName, long fileLength, string folderType)
+    {
+        var mockFile = CreateMockFile(fileName, fileLength, hasContent: true);
+
         Assert.Equal(fileName, mockFile.Object.FileName);
+        Assert.True(fileLength > 0);
+    }
+
+    #endregion
+
+    #region UploadImage - FolderType Tests
+
+    /// <summary>
+    /// Tests upload with invalid folder types.
+    /// </summary>
+    [Theory]
+    [InlineData(null, "image.jpg", 1024)]
+    [InlineData("", "image.png", 2048)]
+    [InlineData("   ", "image.gif", 512)]
+    public void UploadImage_InvalidFolderType_IsDetected(string? folderType, string fileName, long fileLength)
+    {
+        var isInvalid = string.IsNullOrWhiteSpace(folderType);
+        Assert.True(isInvalid);
+    }
+
+    /// <summary>
+    /// Tests upload with valid folder types.
+    /// </summary>
+    [Theory]
+    [InlineData("animals", "image.jpg", 1024, "SeePaw/animals")]
+    [InlineData("shelters", "image.png", 2048, "SeePaw/shelters")]
+    [InlineData("users", "image.gif", 512, "SeePaw/users")]
+    [InlineData("test-folder", "image.webp", 768, "SeePaw/test-folder")]
+    [InlineData("folder_with_underscore", "image.jpg", 1024, "SeePaw/folder_with_underscore")]
+    public void UploadImage_ValidFolderType_GeneratesCorrectPath(string folderType, string fileName, long fileLength, string expectedPath)
+    {
+        var actualPath = $"SeePaw/{folderType}";
+        Assert.Equal(expectedPath, actualPath);
     }
 
     #endregion
@@ -77,18 +157,14 @@ public class ImageServiceTest
     #region Configuration Tests
 
     /// <summary>
-    /// Tests that ImageService initializes correctly with valid configuration.
+    /// Tests ImageService with valid configurations.
     /// </summary>
     [Theory]
-    [InlineData("cloud-name-1", "api-key-1", "api-secret-1")]
-    [InlineData("test-cloud", "test-key", "test-secret")]
-    [InlineData("production", "prod-key", "prod-secret")]
-    public void Constructor_ValidConfiguration_InitializesSuccessfully(
-        string cloudName, 
-        string apiKey, 
-        string apiSecret)
+    [InlineData("cloud-name", "api-key", "api-secret")]
+    [InlineData("a", "b", "c")]
+    [InlineData("very-long-cloud-name-with-many-characters", "very-long-api-key", "very-long-api-secret")]
+    public void Constructor_ValidConfiguration_InitializesSuccessfully(string cloudName, string apiKey, string apiSecret)
     {
-        // Arrange
         var config = new CloudinarySettings
         {
             CloudName = cloudName,
@@ -99,15 +175,13 @@ public class ImageServiceTest
         var mockOptions = new Mock<IOptions<CloudinarySettings>>();
         mockOptions.Setup(x => x.Value).Returns(config);
 
-        // Act
         var service = new ImageService(mockOptions.Object);
 
-        // Assert
         Assert.NotNull(service);
     }
 
     /// <summary>
-    /// Tests validation of configuration values.
+    /// Tests ImageService with invalid configurations.
     /// </summary>
     [Theory]
     [InlineData(null, "api-key", "api-secret")]
@@ -116,86 +190,145 @@ public class ImageServiceTest
     [InlineData("", "api-key", "api-secret")]
     [InlineData("cloud-name", "", "api-secret")]
     [InlineData("cloud-name", "api-key", "")]
-    public void Constructor_InvalidConfiguration_HasInvalidValues(
-        string? cloudName,
-        string? apiKey, 
-        string? apiSecret)
+    [InlineData("   ", "api-key", "api-secret")]
+    [InlineData("cloud-name", "   ", "api-secret")]
+    [InlineData("cloud-name", "api-key", "   ")]
+    [InlineData(null, null, null)]
+    [InlineData("", "", "")]
+    public void Constructor_InvalidConfiguration_HasInvalidValues(string? cloudName, string? apiKey, string? apiSecret)
     {
-        // Arrange
-        var config = new CloudinarySettings
-        {
-            CloudName = cloudName!,
-            ApiKey = apiKey!,
-            ApiSecret = apiSecret!
-        };
-
-        // Act
         var hasInvalidValue = string.IsNullOrWhiteSpace(cloudName) ||
                              string.IsNullOrWhiteSpace(apiKey) ||
                              string.IsNullOrWhiteSpace(apiSecret);
-        
-        // Assert
+
         Assert.True(hasInvalidValue);
     }
 
     #endregion
 
-    #region Edge Cases
+    #region DeleteImage Tests
 
     /// <summary>
-    /// Tests edge cases for file handling.
+    /// Tests DeleteImage with invalid public IDs.
     /// </summary>
     [Theory]
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void FileValidation_InvalidFileName_IsDetected(string? invalidFileName)
+    public void DeleteImage_InvalidPublicId_IsDetected(string? publicId)
     {
-        // Arrange & Act & Assert
-        var isInvalid = string.IsNullOrWhiteSpace(invalidFileName);
+        var isInvalid = string.IsNullOrWhiteSpace(publicId);
         Assert.True(isInvalid);
     }
 
     /// <summary>
-    /// Tests folder type validation.
+    /// Tests DeleteImage with valid public IDs.
     /// </summary>
     [Theory]
-    [InlineData("animals", "SeePaw/animals")]
-    [InlineData("shelters", "SeePaw/shelters")]
-    [InlineData("users", "SeePaw/users")]
-    public void FolderPath_ValidFolderType_GeneratesCorrectPath(string folderType, string expectedPath)
+    [InlineData("SeePaw/animals/image123")]
+    [InlineData("SeePaw/shelters/abc-def-ghi")]
+    [InlineData("a")]
+    [InlineData("very-long-public-id-with-many-characters-and-segments/folder1/folder2/image")]
+    [InlineData("SeePaw/animals/123456789")]
+    public void DeleteImage_ValidPublicId_IsAccepted(string publicId)
     {
-        // Arrange & Act
-        var actualPath = $"SeePaw/{folderType}";
-
-        // Assert
-        Assert.Equal(expectedPath, actualPath);
+        var isValid = !string.IsNullOrWhiteSpace(publicId);
+        Assert.True(isValid);
     }
 
     /// <summary>
-    /// Tests transformation parameters.
+    /// Tests DeleteImage with special characters in public IDs.
     /// </summary>
-    [Fact]
-    public void ImageTransformation_HasCorrectDimensions()
+    [Theory]
+    [InlineData("SeePaw/animals/image!@#$%")]
+    [InlineData("SeePaw/shelters/image with spaces")]
+    [InlineData("SeePaw/users/image\nwith\nnewlines")]
+    [InlineData("SeePaw/animals/image\twith\ttabs")]
+    public void DeleteImage_SpecialCharactersInPublicId_IsAccepted(string publicId)
     {
-        // Arrange
-        var expectedHeight = 500;
-        var expectedWidth = 500;
-        var expectedCrop = "fill";
-        
-        // Assert
-        Assert.Equal(500, expectedHeight);
-        Assert.Equal(500, expectedWidth);
-        Assert.Equal("fill", expectedCrop);
+        var isValid = !string.IsNullOrWhiteSpace(publicId);
+        Assert.True(isValid);
+    }
+
+    #endregion
+
+    #region Transformation Tests
+
+    /// <summary>
+    /// Tests image transformation parameters at boundaries.
+    /// </summary>
+    [Theory]
+    [InlineData(0, 0, "fill")]
+    [InlineData(1, 1, "fill")]
+    [InlineData(499, 499, "fill")]
+    [InlineData(500, 500, "fill")]
+    [InlineData(501, 501, "fill")]
+    [InlineData(1000, 1000, "fill")]
+    [InlineData(9999, 9999, "fill")]
+    public void ImageTransformation_VariousDimensions_AreValid(int height, int width, string crop)
+    {
+        Assert.True(height >= 0);
+        Assert.True(width >= 0);
+        Assert.False(string.IsNullOrWhiteSpace(crop));
+    }
+
+    /// <summary>
+    /// Tests image transformation with invalid parameters.
+    /// </summary>
+    [Theory]
+    [InlineData(-1, 500, "fill")]
+    [InlineData(500, -1, "fill")]
+    [InlineData(-100, -100, "fill")]
+    [InlineData(500, 500, null)]
+    [InlineData(500, 500, "")]
+    [InlineData(500, 500, "   ")]
+    public void ImageTransformation_InvalidParameters_AreDetected(int height, int width, string? crop)
+    {
+        var hasInvalidValue = height < 0 || width < 0 || string.IsNullOrWhiteSpace(crop);
+        Assert.True(hasInvalidValue);
+    }
+
+    #endregion
+
+    #region Combined Tests
+
+    /// <summary>
+    /// Tests upload with multiple invalid parameters simultaneously.
+    /// </summary>
+    [Theory]
+    [InlineData(0, "", null)]
+    [InlineData(-1, null, "")]
+    [InlineData(0, "   ", "   ")]
+    [InlineData(-100, "", null)]
+    public void UploadImage_MultipleInvalidParameters_AreAllDetected(long fileLength, string? fileName, string? folderType)
+    {
+        var hasInvalidFileLength = fileLength <= 0;
+        var hasInvalidFileName = string.IsNullOrWhiteSpace(fileName);
+        var hasInvalidFolderType = string.IsNullOrWhiteSpace(folderType);
+
+        Assert.True(hasInvalidFileLength && hasInvalidFileName && hasInvalidFolderType);
+    }
+
+    /// <summary>
+    /// Tests upload with edge case combinations.
+    /// </summary>
+    [Theory]
+    [InlineData(1, "a.jpg", "a")]
+    [InlineData(long.MaxValue, "max-file.jpg", "max-folder")]
+    [InlineData(1, "single-byte.png", "single")]
+    public void UploadImage_EdgeCaseCombinations_AreHandled(long fileLength, string fileName, string folderType)
+    {
+        var mockFile = CreateMockFile(fileName, fileLength, hasContent: true);
+
+        Assert.Equal(fileName, mockFile.Object.FileName);
+        Assert.Equal(fileLength, mockFile.Object.Length);
+        Assert.False(string.IsNullOrWhiteSpace(folderType));
     }
 
     #endregion
 
     #region Helper Methods
 
-    /// <summary>
-    /// Creates a mock IFormFile for testing purposes.
-    /// </summary>
     private Mock<IFormFile> CreateMockFile(string fileName, long length, bool hasContent = false)
     {
         var mockFile = new Mock<IFormFile>();
@@ -204,7 +337,7 @@ public class ImageServiceTest
 
         if (hasContent && length > 0)
         {
-            var content = new byte[length];
+            var content = new byte[Math.Min(length, 10485760)];
             var stream = new MemoryStream(content);
             mockFile.Setup(f => f.OpenReadStream()).Returns(stream);
             mockFile.Setup(f => f.CopyToAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()))

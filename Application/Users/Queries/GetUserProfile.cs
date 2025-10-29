@@ -30,11 +30,25 @@ namespace Application.Users.Queries
         {
             private readonly AppDbContext _context;
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Handler"/> class.
+            /// </summary>
+            /// <param name="context">The application's database context.</param>
             public Handler(AppDbContext context)
             {
                 _context = context;
             }
 
+            /// <summary>
+            /// Retrieves the profile of the authenticated user from the database.
+            /// </summary>
+            /// <param name="request">The query containing the user's ID.</param>
+            /// <param name="cancellationToken">A token to cancel the operation if needed.</param>
+            /// <returns>
+            /// A <see cref="Result{T}"/> containing the user's profile data if found,  
+            /// or an error message with the corresponding status code otherwise.
+            /// </returns>
+            /// <exception cref="Exception">Thrown if a database query fails unexpectedly.</exception>
             public async Task<Result<User>> Handle(Query request, CancellationToken cancellationToken)
             {
                 // Retrieve the user from the database along with their shelter (if any)

@@ -419,7 +419,7 @@ public class ImageOwnerLoaderTest : IDisposable
     /// <summary>
     /// Tests that the loader works with different entity types.
     /// This test demonstrates the generic nature of ImageOwnerLoader.
-    /// Note: Requires another entity type that implements IHasPhotos for a real test.
+    /// Note: Requires another entity type that implements IHasImages for a real test.
     /// </summary>
     [Fact]
     public async Task LoadAsync_GenericType_WorksWithAnimalEntity()

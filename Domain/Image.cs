@@ -42,13 +42,23 @@ public class Image
     [MaxLength(36)]
     public string? AnimalId { get; set; }
 
+    /// <summary>
+    /// The animal associated with this image.
+    /// Ignored during JSON serialization to prevent circular references.
+    /// </summary>
     [JsonIgnore]
     public Animal? Animal { get; set; }
-
-    // Foreign Key for Shelter 
+    
+    /// <summary>
+    /// The foreign key referencing the shelter that owns this image.
+    /// </summary>
     [MaxLength(36)]
     public string? ShelterId { get; set; }
     
+    /// <summary>
+    /// The shelter associated with this image.
+    /// Ignored during JSON serialization to prevent circular references.
+    /// </summary>
     [JsonIgnore]
     public Shelter? Shelter { get; set; }
 

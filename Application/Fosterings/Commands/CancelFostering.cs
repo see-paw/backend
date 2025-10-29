@@ -12,6 +12,9 @@ namespace Application.Fosterings.Commands
     /// </summary>
     public class CancelFostering
     {
+        /// <summary>
+        /// Represents the command to cancel an active fostering record.
+        /// </summary>
         public class Command : IRequest<Result<Fostering>>
         {
             /// <summary>
@@ -32,8 +35,22 @@ namespace Application.Fosterings.Commands
         {
             private readonly AppDbContext _context;
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Handler"/> class.
+            /// </summary>
+            /// <param name="context">The database context.</param>
             public Handler(AppDbContext context) => _context = context;
 
+            /// <summary>
+            /// Cancels an active fostering record if it belongs to the authenticated user.
+            /// </summary>
+            /// <param name="request">The command containing the fostering ID and user ID.</param>
+            /// <param name="ct">A token to cancel the operation.</param>
+            /// <returns>
+            /// A <see cref="Result{T}"/> containing the updated <see cref="Fostering"/> if successful,  
+            /// or an error message with the appropriate status code otherwise.
+            /// </returns>
+            /// <exception cref="Exception">Thrown if a database error occurs unexpectedly.</exception>
             public async Task<Result<Fostering>> Handle(Command request, CancellationToken ct)
             {
                 // Retrieve the fostering record for the authenticated user

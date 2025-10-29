@@ -3,14 +3,21 @@ using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using ImageUploadResult = Application.ImageUploadResult;
+using ImageUploadResult = Application.Images.ImageUploadResult;
 
 namespace Infrastructure.Images;
 
+/// <summary>
+/// Handles image upload and deletion using Cloudinary.
+/// </summary>
 public class ImageService : IImageService
 {
     private readonly Cloudinary _cloudinary;
-
+        
+    /// <summary>
+    /// Initializes a new instance of <see cref="ImageService"/> with Cloudinary configuration.
+    /// </summary>
+    /// <param name="config">The Cloudinary configuration settings.</param>
     public ImageService(IOptions<CloudinarySettings> config)
     {
         var account = new Account(
@@ -21,6 +28,13 @@ public class ImageService : IImageService
         _cloudinary = new Cloudinary(account);
     }
     
+    /// <summary>
+    /// Uploads an image to Cloudinary.
+    /// </summary>
+    /// <param name="file">The image file to upload.</param>
+    /// <param name="folderType">The target folder name in Cloudinary.</param>
+    /// <returns>The upload result with the image URL and public ID, or null if empty.</returns>
+    /// <exception cref="Exception">Thrown when Cloudinary returns an error.</exception>
     public async Task<ImageUploadResult?> UploadImage(IFormFile file, string folderType)
     {
         if (file.Length <= 0)
@@ -52,6 +66,12 @@ public class ImageService : IImageService
         };
     }
 
+    /// <summary>
+    /// Deletes an image from Cloudinary.
+    /// </summary>
+    /// <param name="publicId">The Cloudinary public ID of the image to delete.</param>
+    /// <returns>The result message from Cloudinary.</returns>
+    /// <exception cref="Exception">Thrown when Cloudinary returns an error.</exception>
     public async Task<string> DeleteImage(string publicId)
     {
         var deleteParams = new DeletionParams(publicId);

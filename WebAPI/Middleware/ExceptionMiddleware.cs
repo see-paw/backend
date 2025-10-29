@@ -57,8 +57,18 @@ public class ExceptionMiddleware(ILogger<ExceptionMiddleware> logger, IHostEnvir
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
         var response = env.IsDevelopment()
-            ? new AppException(context.Response.StatusCode, ex.Message, ex.StackTrace)
-            : new AppException(context.Response.StatusCode, ex.Message, null);
+            ? new AppException
+            {
+                StatusCode = context.Response.StatusCode,
+                Message = ex.Message,
+                Details = ex.StackTrace
+            }
+            : new AppException
+            {
+                StatusCode = context.Response.StatusCode,
+                Message = ex.Message,
+                Details = null
+            };
 
         JsonSerializerOptions options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 

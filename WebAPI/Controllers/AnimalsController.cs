@@ -13,6 +13,14 @@ using WebAPI.DTOs.Images;
 
 namespace WebAPI.Controllers;
 
+/// <summary>
+/// Handles all API operations related to animals, including creation, updates, image management, and deactivation.
+/// </summary>
+/// <remarks>
+/// Provides endpoints for public users to view animals and for shelter administrators (<c>AdminCAA</c> role)
+/// to manage animal data and images.  
+/// Uses MediatR to delegate business logic to the Application layer and AutoMapper for DTO mapping.
+/// </remarks>
 public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : BaseApiController
 {
     /// <summary>
@@ -76,8 +84,20 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
 
         return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
     }
-
-  
+    
+    /// <summary>
+    /// Creates a new animal and uploads its associated images.
+    /// </summary>
+    /// <param name="reqAnimalDto">The data and images required to create the animal.</param>
+    /// <returns>
+    /// An <see cref="ActionResult{T}"/> containing the ID of the created animal if successful,  
+    /// or an error message with the corresponding status code otherwise.
+    /// </returns>
+    /// <remarks>
+    /// Accessible only to users with the <c>AdminCAA</c> role.  
+    /// Accepts multipart form data to include both animal information and image files.  
+    /// Uses the <see cref="CreateAnimal"/> command via MediatR to handle the creation.
+    /// </remarks>
     [Authorize(Roles = "AdminCAA")]
     [HttpPost]
     [Consumes("multipart/form-data")]
@@ -113,16 +133,20 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
             return HandleResult(await Mediator.Send(command));
     }
 
+
     /// <summary>
-    /// Updates an existing animal record belonging to the authenticated shelter.
+    /// Updates an existing animal with new information.
     /// </summary>
-    /// <param name="id">The unique identifier of the animal to be edited.</param>
-    /// <param name="reqEditAnimalDto">
-    /// A <see cref="ReqEditAnimalDto"/> object containing the updated animal data received from the client.
-    /// </param>
+    /// <param name="id">The ID of the animal to update.</param>
+    /// <param name="reqEditAnimalDto">The data containing the updated animal details.</param>
     /// <returns>
-    /// The updated animal record on success, or an appropriate error response on failure.
+    /// An <see cref="ActionResult{T}"/> containing the updated <see cref="ResAnimalDto"/> if successful,  
+    /// or an error message with the corresponding status code otherwise.
     /// </returns>
+    /// <remarks>
+    /// Accessible only to users with the <c>AdminCAA</c> role.  
+    /// Uses the <see cref="EditAnimal"/> command via MediatR to perform the update.
+    /// </remarks>
     [Authorize(Roles = "AdminCAA")]
     [HttpPut("{id}")]
     public async Task<ActionResult<ResAnimalDto>> EditAnimal(string id, [FromBody] ReqEditAnimalDto reqEditAnimalDto)
@@ -180,6 +204,20 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
         return HandleResult(Result<List<ResImageDto>>.Success(imageDtos, 201));
     }
     
+    /// <summary>
+    /// Deletes an image from a specific animal.
+    /// </summary>
+    /// <param name="animalId">The ID of the animal that owns the image.</param>
+    /// <param name="imageId">The ID of the image to delete.</param>
+    /// <returns>
+    /// An <see cref="ActionResult{T}"/> indicating success or failure of the deletion.  
+    /// Returns a success result if the image was removed successfully,  
+    /// or an error message with the corresponding status code otherwise.
+    /// </returns>
+    /// <remarks>
+    /// Accessible only to users with the <c>AdminCAA</c> role.  
+    /// Uses the <see cref="DeleteAnimalImage"/> command via MediatR to handle the deletion.
+    /// </remarks>
     [Authorize(Roles = "AdminCAA")]
     [HttpDelete("{animalId}/images/{imageId}")]
     public async Task<ActionResult<Unit>> DeleteAnimalImage(string animalId, string imageId)
@@ -193,6 +231,20 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
         return HandleResult(await Mediator.Send(command));
     }
 
+    /// <summary>
+    /// Sets the main image for a specific animal.
+    /// </summary>
+    /// <param name="animalId">The ID of the animal whose main image will be updated.</param>
+    /// <param name="imageId">The ID of the image to set as the main image.</param>
+    /// <returns>
+    /// An <see cref="ActionResult{T}"/> containing the result of the operation.  
+    /// Returns a success result if the image was updated successfully,  
+    /// or an error message with the corresponding status code otherwise.
+    /// </returns>
+    /// <remarks>
+    /// Accessible only to users with the <c>AdminCAA</c> role.  
+    /// Uses the <see cref="SetAnimalPrincipalImage"/> command via MediatR to handle the update.
+    /// </remarks>
     [Authorize(Roles = "AdminCAA")]
     [HttpPut("{animalId}/images/{imageId}/set-principal")]
     public async Task<ActionResult<Unit>> SetAnimalPrincipalImage(string animalId, string imageId)

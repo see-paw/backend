@@ -11,7 +11,7 @@ namespace Domain;
 /// Contains identification, contact, and scheduling information for a shelter,  
 /// as well as relationships with animals and images registered under it.
 /// </remarks>
-public class Shelter: IHasPhotos
+public class Shelter: IHasImages
 {
     /// <summary>
     /// Unique identifier of the shelter (GUID).

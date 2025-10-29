@@ -1,5 +1,5 @@
 ﻿using Application.Animals;
-using Application.Images.Services;
+using Application.Interfaces;
 using Domain;
 using Domain.Enums;
 
