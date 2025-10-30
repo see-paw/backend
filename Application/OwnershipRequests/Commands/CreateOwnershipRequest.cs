@@ -70,7 +70,7 @@ public class CreateOwnershipRequest
 
             if (!isAnimalAvailableForOwnershipResult.IsSuccess)
             {
-                return Result<OwnershipRequest>.Failure(isAnimalAvailableForOwnershipResult.Error, 400);
+                return Result<OwnershipRequest>.Failure(isAnimalAvailableForOwnershipResult.Error, isAnimalAvailableForOwnershipResult.Code);
             }
             // Validate existence of animal
             var animal = await context.Animals.FindAsync(request.AnimalID);
