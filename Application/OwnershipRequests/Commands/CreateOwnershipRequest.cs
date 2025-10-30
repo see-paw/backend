@@ -1,4 +1,5 @@
-﻿using Application.Core;
+﻿using Application.Animals.Queries;
+using Application.Core;
 using Application.Interfaces;
 using Domain;
 using Domain.Enums;
@@ -38,8 +39,7 @@ public class CreateOwnershipRequest
         /// 
         /// This method performs the following operations:
         /// - Extracts the authenticated user's ID from the JWT token
-        /// - Validates that the animal exists
-        /// - Verifies the animal is available (not inactive or already owned)
+        /// - Validates that the animal exists and verifies the animal is available for ownersip (using the code in CheckAnimalEligibilityForOwnership
         /// - Checks for duplicate requests from the same user for the same animal
         /// - Creates the request with automatic cost calculation from animal data
         /// - Persists the request to the database
@@ -59,7 +59,19 @@ public class CreateOwnershipRequest
         public async Task<Result<OwnershipRequest>> Handle(Command request, CancellationToken cancellationToken)
         {
             var userId = userAccessor.GetUserId(); 
+            
+            var query = new CheckAnimalEligibilityForOwnership.Query
+            {
+                AnimalId = request.AnimalID
+            };
 
+            var handler = new CheckAnimalEligibilityForOwnership.Handler(context);  
+            var isAnimalAvailableForOwnershipResult = await handler.Handle(query, cancellationToken);  
+
+            if (!isAnimalAvailableForOwnershipResult.IsSuccess)
+            {
+                return Result<OwnershipRequest>.Failure(isAnimalAvailableForOwnershipResult.Error, isAnimalAvailableForOwnershipResult.Code);
+            }
             // Validate existence of animal
             var animal = await context.Animals.FindAsync(request.AnimalID);
             if (animal == null)

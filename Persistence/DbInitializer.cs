@@ -32,6 +32,8 @@ public static class DbInitializer
         ILoggerFactory loggerFactory,
         bool resetDatabase = false)
     {
+
+
         const string breed1Id = "1a1a1111-1111-1111-1111-111111111111";
         const string breed2Id = "2b2b2222-2222-2222-2222-222222222222";
         const string breed3Id = "3c3c3333-3333-3333-3333-333333333333";
@@ -562,8 +564,346 @@ public static class DbInitializer
                     Features = "Muito ativa e adora correr na roda",
                     ShelterId = shelter1Id,
                     Images = new List<Image>()
-                }
-            };
+                },
+            new()
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "Celinho",
+                AnimalState = AnimalState.Available,
+                Description = "Gato muito meigo e brincalhão, gosta de dormir ao sol.",
+                Species = Species.Cat,
+                Size = SizeType.Small,
+                Sex = SexType.Male,
+                Colour = "Branco e cinzento",
+                BirthDate = new DateOnly(2022, 4, 15),
+                Sterilized = true,
+                BreedId = breed1Id,
+                Cost = 30,
+                Features = "Olhos verdes, muito sociável",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+            // ======== ANIMALS FOR ELIGIBITY TESTING  ========
+
+            // 1. Animal Available for Ownership (200 OK)
+            new()
+            {
+                Id = "available-animal-id-123",
+                Name = "TestDog Available",
+                AnimalState = AnimalState.Available,
+                Description = "Animal de teste disponível para adoção",
+                Species = Species.Dog,
+                Size = SizeType.Medium,
+                Sex = SexType.Male,
+                Colour = "Preto",
+                BirthDate = new DateOnly(2022, 1, 15),
+                Sterilized = true,
+                BreedId = breed2Id,
+                Cost = 40,
+                Features = "Animal de teste - Estado: Available",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+
+            // 2. Animal with owner (400 Bad Request)
+            new()
+            {
+                Id = "animal-with-owner-id",
+                Name = "TestDog HasOwner",
+                AnimalState = AnimalState.HasOwner,
+                Description = "Animal de teste que já tem dono",
+                Species = Species.Dog,
+                Size = SizeType.Small,
+                Sex = SexType.Female,
+                Colour = "Branco",
+                BirthDate = new DateOnly(2021, 5, 10),
+                Sterilized = true,
+                BreedId = breed2Id,
+                Cost = 35,
+                Features = "Animal de teste - Estado: HasOwner",
+                ShelterId = shelter1Id,
+                OwnerId = user3Id, // Carlos
+                OwnershipStartDate = DateTime.UtcNow.AddMonths(-2),
+                Images = new List<Image>()
+            },
+
+            // 3. Animal Inactive (400 Bad Request)
+            new()
+            {
+                Id = "inactive-animal-id",
+                Name = "TestCat Inactive",
+                AnimalState = AnimalState.Inactive,
+                Description = "Animal de teste inativo",
+                Species = Species.Cat,
+                Size = SizeType.Small,
+                Sex = SexType.Male,
+                Colour = "Cinzento",
+                BirthDate = new DateOnly(2020, 8, 20),
+                Sterilized = true,
+                BreedId = breed1Id,
+                Cost = 25,
+                Features = "Animal de teste - Estado: Inactive",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+
+            // 4. Animal Partially Fostered (400 Bad Request)
+            new()
+            {
+                Id = "partially-fostered-animal-id",
+                Name = "TestDog PartiallyFostered",
+                AnimalState = AnimalState.PartiallyFostered,
+                Description = "Animal de teste parcialmente acolhido",
+                Species = Species.Dog,
+                Size = SizeType.Large,
+                Sex = SexType.Male,
+                Colour = "Castanho",
+                BirthDate = new DateOnly(2021, 3, 5),
+                Sterilized = false,
+                BreedId = breed3Id,
+                Cost = 60,
+                Features = "Animal de teste - Estado: PartiallyFostered",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+
+            // 5. Animal Totally Fostered (400 Bad Request)
+            new()
+            {
+                Id = "totally-fostered-animal-id",
+                Name = "TestCat TotallyFostered",
+                AnimalState = AnimalState.TotallyFostered,
+                Description = "Animal de teste totalmente acolhido",
+                Species = Species.Cat,
+                Size = SizeType.Small,
+                Sex = SexType.Female,
+                Colour = "Laranja",
+                BirthDate = new DateOnly(2022, 7, 12),
+                Sterilized = true,
+                BreedId = breed1Id,
+                Cost = 30,
+                Features = "Animal de teste - Estado: TotallyFostered",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+            
+            new()
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "Luna",
+                AnimalState = AnimalState.Available,
+                Description = "Cadela jovem e energética, ideal para famílias com crianças.",
+                Species = Species.Dog,
+                Size = SizeType.Medium,
+                Sex = SexType.Female,
+                Colour = "Castanho claro",
+                BirthDate = new DateOnly(2021, 11, 5),
+                Sterilized = true,
+                 BreedId = breed2Id,
+                Cost = 50,
+                Features = "Muito obediente e adora correr",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+            new()
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = "Rocky",
+                AnimalState = AnimalState.Available,
+                Description = "Cão atlético e leal, ideal para quem gosta de caminhadas.",
+                Species = Species.Dog,
+                Size = SizeType.Medium,
+                Sex = SexType.Male,
+                Colour = "Cinza",
+                BirthDate = new DateOnly(2022, 7, 19),
+                Sterilized = true,
+                 BreedId = breed3Id,
+                Cost = 70,
+                Features = "Olhos azuis e muita energia",
+                ShelterId = "22222222-2222-2222-2222-222222222222",
+                Images = new List<Image>()
+            },
+            new()
+            {
+                Id = animal1Id,
+                Name = "Bolinhas",
+                AnimalState = AnimalState.Available,
+                Description = "Gato muito meigo e brincalhão, gosta de dormir ao sol.",
+                Species = Species.Cat,
+                Size = SizeType.Small,
+                Sex = SexType.Male,
+                Colour = "Branco e cinzento",
+                BirthDate = new DateOnly(2022, 4, 15),
+                Sterilized = true,
+                BreedId = breed2Id,
+                Cost = 30,
+                Features = "Olhos verdes, muito sociável",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+            new()
+            {
+                Id = animal2Id,
+                Name = "Lunica",
+                AnimalState = AnimalState.Available,
+                Description = "Cadela jovem e energética, ideal para famílias com crianças.",
+                Species = Species.Dog,
+                Size = SizeType.Medium,
+                Sex = SexType.Female,
+                Colour = "Castanho claro",
+                BirthDate = new DateOnly(2021, 11, 5),
+                Sterilized = true,
+                BreedId = breed2Id,
+                Cost = 50,
+                Features = "Muito obediente e adora correr",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+            new()
+            {
+                Id = animal3Id,
+                Name = "Tico",
+                AnimalState = AnimalState.Available,
+                Description = "Papagaio falador que adora companhia humana.",
+                Species = Species.Cat,
+                Size = SizeType.Small,
+                Sex = SexType.Male,
+                Colour = "Verde com azul",
+                BirthDate = new DateOnly(2020, 2, 10),
+                Sterilized = false,
+                BreedId = breed2Id,
+                Cost = 80,
+                Features = "Sabe dizer 'Olá!' e assobiar",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+            new()
+            {
+                Id = animal4Id,
+                Name = "Mika",
+                AnimalState = AnimalState.Available,
+                Description = "Gata calma e dócil, procura um lar tranquilo.",
+                Species = Species.Cat,
+                Size = SizeType.Small,
+                Sex = SexType.Female,
+                Colour = "Preto",
+                BirthDate = new DateOnly(2020, 8, 22),
+                Sterilized = true,
+                BreedId = breed2Id,
+                Cost = 25,
+                Features = "Olhos azuis intensos",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+            new()
+            {
+                Id = animal5Id,
+                Name = "Thor",
+                AnimalState = AnimalState.Available,
+                Description = "Cão de guarda muito protetor, mas fiel à família.",
+                Species = Species.Dog,
+                Size = SizeType.Large,
+                Sex = SexType.Male,
+                Colour = "Preto e castanho",
+                BirthDate = new DateOnly(2019, 6, 30),
+                Sterilized = false,
+                BreedId = breed2Id,
+                Cost = 100,
+                Features = "Muito atento e obediente",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+            new()
+            {
+                Id = animal6Id,
+                Name = "Nina",
+                AnimalState = AnimalState.Available,
+                Description = "Coelha curiosa e afetuosa, gosta de cenouras e de brincar.",
+                Species = Species.Dog,
+                Size = SizeType.Small,
+                Sex = SexType.Female,
+                Colour = "Branco com manchas castanhas",
+                BirthDate = new DateOnly(2023, 3, 10),
+                Sterilized = false,
+                BreedId = breed2Id,
+                Cost = 15,
+                Features = "Orelhas pequenas e pelo macio",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+            new()
+            {
+                Id = animal7Id,
+                Name = "Rockito",
+                AnimalState = AnimalState.Inactive,
+                Description = "Cão atlético e leal, ideal para quem gosta de caminhadas.",
+                Species = Species.Dog,
+                Size = SizeType.Medium,
+                Sex = SexType.Male,
+                Colour = "Cinza",
+                BirthDate = new DateOnly(2022, 7, 19),
+                Sterilized = true,
+                BreedId = breed2Id,
+                Cost = 70,
+                Features = "Olhos azuis e muita energia",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+            new()
+            {
+                Id = animal8Id,
+                Name = "Amora",
+                AnimalState = AnimalState.HasOwner,
+                Description = "Gata jovem e curiosa, adora caçar brinquedos.",
+                Species = Species.Cat,
+                Size = SizeType.Small,
+                Sex = SexType.Female,
+                Colour = "Cinzento e branco",
+                BirthDate = new DateOnly(2023, 5, 14),
+                Sterilized = false,
+                BreedId = breed2Id,
+                Cost = 20,
+                Features = "Bigodes longos e muito expressiva",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+            new()
+            {
+                Id = animal9Id,
+                Name = "Zeus",
+                AnimalState = AnimalState.TotallyFostered,
+                Description = "Cavalo calmo e bem treinado, ótimo para equitação.",
+                Species = Species.Dog,
+                Size = SizeType.Large,
+                Sex = SexType.Male,
+                Colour = "Castanho escuro",
+                BirthDate = new DateOnly(2017, 9, 1),
+                Sterilized = true,
+                BreedId = breed2Id,
+                Cost = 500,
+                Features = "Crina longa e brilhante",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+            new()
+            {
+                Id = animal10Id,
+                Name = "Pipoca",
+                AnimalState = AnimalState.PartiallyFostered,
+                Description = "Hamster pequena e simpática, ideal para crianças.",
+                Species = Species.Dog,
+                Size = SizeType.Small,
+                Sex = SexType.Female,
+                Colour = "Dourado",
+                BirthDate = new DateOnly(2024, 1, 12),
+                Sterilized = false,
+                BreedId = breed2Id,
+                Cost = 10,
+                Features = "Muito ativa e adora correr na roda",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            }
+        };
 
             await dbContext.Animals.AddRangeAsync(animals);
             await dbContext.SaveChangesAsync();
@@ -796,5 +1136,6 @@ public static class DbInitializer
             await dbContext.Fosterings.AddRangeAsync(fosterings);
             await dbContext.SaveChangesAsync();
         }
+
     }
 }
