@@ -253,9 +253,9 @@ public static class DbInitializer
                 ShelterId = shelter1Id,
                 Images = new List<Image>()
             },
-            // ======== ANIMAIS PARA TESTES DE ELEGIBILIDADE ========
+            // ======== ANIMALS FOR ELIGIBITY TESTING  ========
 
-            // 1. Animal DISPONÍVEL para adoção (200 OK)
+            // 1. Animal Available for Ownership (200 OK)
             new()
             {
                 Id = "available-animal-id-123",
@@ -275,7 +275,7 @@ public static class DbInitializer
                 Images = new List<Image>()
             },
 
-            // 2. Animal com DONO (400 Bad Request)
+            // 2. Animal with owner (400 Bad Request)
             new()
             {
                 Id = "animal-with-owner-id",
@@ -297,7 +297,7 @@ public static class DbInitializer
                 Images = new List<Image>()
             },
 
-            // 3. Animal INATIVO (400 Bad Request)
+            // 3. Animal Inactive (400 Bad Request)
             new()
             {
                 Id = "inactive-animal-id",
@@ -317,7 +317,7 @@ public static class DbInitializer
                 Images = new List<Image>()
             },
 
-            // 4. Animal PARCIALMENTE ACOLHIDO (400 Bad Request)
+            // 4. Animal Partially Fostered (400 Bad Request)
             new()
             {
                 Id = "partially-fostered-animal-id",
@@ -337,7 +337,7 @@ public static class DbInitializer
                 Images = new List<Image>()
             },
 
-            // 5. Animal TOTALMENTE ACOLHIDO (400 Bad Request)
+            // 5. Animal Totally Fostered (400 Bad Request)
             new()
             {
                 Id = "totally-fostered-animal-id",
