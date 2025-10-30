@@ -227,36 +227,35 @@ jobs:
           pr_title_lower=$(echo "$pr_title" | tr '[:upper:]' '[:lower:]')
           
           # Determinar criticidade baseada no título do PR
-          threshold=0
-          criticality=""
+          threshold=60
+          criticality="NORMAL"
           
-          if echo "$pr_title_lower" | grep -q "basic"; then
-            threshold=40
-            criticality="🟢 BASIC"
-          elif echo "$pr_title_lower" | grep -q "medium"; then
-            threshold=60
-            criticality="🟡 MEDIUM"
-          elif echo "$pr_title_lower" | grep -q "advanced"; then
-            threshold=80
-            criticality="🔴 ADVANCED"
-          else
-            echo ""
-            echo "⚠️ Sem quality gate para aplicar - assumindo sucesso"
-            exit 0
+          if echo "$pr_title_lower" | grep -qE "fix|bug|critical|security|hotfix"; then
+            threshold=50
+            criticality="CRÍTICO (Bug/Security)"
+          elif echo "$pr_title_lower" | grep -qE "feature|feat|add|new"; then
+            threshold=70
+            criticality="ALTO (Nova Funcionalidade)"
+          elif echo "$pr_title_lower" | grep -qE "refactor|improve|enhance|optimize"; then
+            threshold=65
+            criticality="MÉDIO (Refactor/Melhoria)"
+          elif echo "$pr_title_lower" | grep -qE "test|tests|testing"; then
+            threshold=75
+            criticality="MUITO ALTO (Testes)"
           fi
           
-          echo "🎯 A aplicar Quality Gate..."
-          echo ""
           echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
-          echo "  $criticality - Threshold: ${threshold}%"
+          echo "  🎯 QUALITY GATE"
           echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
+          echo "  Criticidade: $criticality"
+          echo "  Threshold: ${threshold}%"
+          echo "  Cobertura: ${overall_coverage}%"
           
           if [ $overall_coverage -ge $threshold ]; then
-            echo "  ✅ PASSOU (${overall_coverage}% ≥ ${threshold}%)"
+            echo "  ✅ PASSOU (${overall_coverage}% >= ${threshold}%)"
             echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
             echo ""
-            echo "✅ Quality gate passou!"
-            exit 0
+            echo "✅ Quality gate passou com sucesso!"
           else
             echo "  ❌ FALHOU (${overall_coverage}% < ${threshold}%)"
             echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
@@ -347,27 +346,27 @@ jobs:
 
       - name: Login no Postman CLI
         run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
-        
+
       - name: Debug - Listar estrutura do projeto
-          run: |
-            echo "📂 Diretório atual:"
-            pwd
-            echo ""
-            echo "📂 Conteúdo da raiz:"
-            ls -la
-            echo ""
-            echo "📂 Verificar se Tests/Assets existe:"
-            if [ -d "Tests/Assets" ]; then
+        run: |
+          echo "📂 Diretório atual:"
+          pwd
+          echo ""
+          echo "📂 Conteúdo da raiz:"
+          ls -la
+          echo ""
+          echo "📂 Verificar se Tests/Assets existe:"
+          if [ -d "Tests/Assets" ]; then
             echo "✅ Tests/Assets encontrado!"
             echo ""
             echo "📂 Conteúdo de Tests/Assets:"
             ls -la Tests/Assets/
-            else
+          else
             echo "❌ Tests/Assets NÃO encontrado!"
             echo ""
             echo "🔍 Procurando por Assets em todo o projeto:"
             find . -type d -name "Assets" 2>/dev/null || echo "Nenhum diretório Assets encontrado"
-            fi
+          fi
 
       - name: Prepare Postman working directory
         run: |
@@ -405,7 +404,7 @@ jobs:
         run: |
           echo "📂 Conteúdo de ~/Postman/files:"
           ls -lah ~/Postman/files/ || echo "⚠️ Diretório vazio ou não existe"
-        
+
       - name: Executar testes Postman e gerar relatórios
         run: |
           set -e
