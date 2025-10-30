@@ -8,7 +8,6 @@ using Domain;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WebAPI.DTOs;
 using WebAPI.DTOs.Animals;
 using WebAPI.DTOs.Images;
 

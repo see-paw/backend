@@ -1,4 +1,5 @@
 ﻿using Application.Core;
+using Application.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
@@ -29,7 +30,8 @@ public class SetAnimalPrincipalImage
     /// <summary>
     /// Handles the process of setting an animal's main image.
     /// </summary>
-    public class Handler(AppDbContext dbContext) : IRequestHandler<Command, Result<Unit>>
+    public class Handler(AppDbContext dbContext,
+        IUserAccessor userAccessor) : IRequestHandler<Command, Result<Unit>>
     {
         /// <summary>
         /// Sets the main image for the specified animal.
@@ -42,6 +44,8 @@ public class SetAnimalPrincipalImage
         /// <exception cref="Exception">Thrown if an unexpected error occurs while saving changes.</exception>
         public async Task<Result<Unit>> Handle(Command request, CancellationToken ct)
         {
+            var user = await userAccessor.GetUserAsync();
+            
             var animal = await dbContext.Animals
                 .Include(a => a.Images)
                 .FirstOrDefaultAsync(a => a.Id == request.AnimalId, ct);
@@ -49,6 +53,12 @@ public class SetAnimalPrincipalImage
             if (animal == null)
             {
                 return Result<Unit>.Failure("Animal not found", 404);
+            }
+            
+            if (animal.ShelterId != user.ShelterId)
+            {
+                return Result<Unit>.Failure(
+                    "You can only change main image of animals from your shelter", 403);
             }
             
             var image = await dbContext.Images

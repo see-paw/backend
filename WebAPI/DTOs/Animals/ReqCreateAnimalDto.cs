@@ -12,6 +12,6 @@ namespace WebAPI.DTOs.Animals
         /// <summary>
         /// A list of images associated with the animal at creation.
         /// </summary>
-        public List<ReqImageDto> Images { get; set; } = new();
+        public List<ReqCreateImageDto> Images { get; set; } = new();
     }
 }

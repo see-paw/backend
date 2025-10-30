@@ -113,7 +113,7 @@ try
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var loggerFactory = services.GetRequiredService<ILoggerFactory>();
     await context.Database.MigrateAsync();
-    await DbInitializer.SeedData(context, userManager, roleManager, loggerFactory);
+    await DbInitializer.SeedData(context, userManager, roleManager, loggerFactory, true);
 }
 catch (Exception ex)
 {

@@ -7,10 +7,6 @@ namespace WebAPI.DTOs.Images
     public class ReqImageDto
     {
         public required IFormFile File { get; set; }
-        /// <summary>
-        /// Indicates whether this image is the animal's main (principal) image.
-        /// </summary>
-        public bool IsPrincipal { get; set; }
 
         /// <summary>
         /// Optional textual description providing context or details about the image.

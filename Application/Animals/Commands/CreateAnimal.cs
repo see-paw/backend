@@ -75,7 +75,7 @@ namespace Application.Animals.Commands
                 if (!uploadResult.IsSuccess)
                 {
                     await transaction.RollbackAsync(cancellationToken);
-                    return Result<string>.Failure(uploadResult.Error, uploadResult.Code);
+                    return Result<string>.Failure(uploadResult.Error ?? string.Empty, uploadResult.Code);
                 }
 
                 var success = await dbContext.SaveChangesAsync(cancellationToken) > 0;

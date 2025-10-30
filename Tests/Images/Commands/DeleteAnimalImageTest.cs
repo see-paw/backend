@@ -1,5 +1,5 @@
-﻿using Application.Images.Commands;
-using Application.Core;
+﻿using Application.Core;
+using Application.Images.Commands;
 using Application.Interfaces;
 using Domain;
 using Domain.Enums;
@@ -11,24 +11,26 @@ using Persistence;
 namespace Tests.Images.Commands;
 
 /// <summary>
-/// Unit tests for DeleteAnimalImage.Handler using equivalence partitioning and boundary value analysis.
-/// Tests the Handle method which deletes an image from an animal.
+/// Unit tests for DeleteAnimalImage.Handler using Equivalence Class Partitioning and Boundary Value Analysis.
+/// Tests focus on finding bugs through boundary conditions, authorization, and error handling.
 /// </summary>
 public class DeleteAnimalImageTest : IDisposable
 {
     private readonly AppDbContext _dbContext;
-    private readonly Mock<IImageManager<Animal>> _mockImageService;
-    private readonly DeleteAnimalImage.Handler _handler;
+    private readonly Mock<IImageManager<Animal>> _mockImageManager;
+    private readonly Mock<IUserAccessor> _mockUserAccessor;
+    private readonly DeleteAnimalImage.Handler _sut;
 
     public DeleteAnimalImageTest()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
 
         _dbContext = new AppDbContext(options);
-        _mockImageService = new Mock<IImageManager<Animal>>();
-        _handler = new DeleteAnimalImage.Handler(_dbContext, _mockImageService.Object);
+        _mockImageManager = new Mock<IImageManager<Animal>>();
+        _mockUserAccessor = new Mock<IUserAccessor>();
+        _sut = new DeleteAnimalImage.Handler(_dbContext, _mockImageManager.Object, _mockUserAccessor.Object);
     }
 
     public void Dispose()
@@ -37,18 +39,556 @@ public class DeleteAnimalImageTest : IDisposable
         _dbContext.Dispose();
     }
 
+    #region ECP - Animal Not Found
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("non-existent-animal")]
+    [InlineData("invalid-$%^&")]
+    [InlineData("../../path")]
+    [InlineData("animal\0null")]
+    [InlineData("00000000-0000-0000-0000-000000000000")]
+    public async Task Handle_AnimalNotFound_Returns404(string animalId)
+    {
+        SetupUserAccessor("shelter-123");
+
+        var command = new DeleteAnimalImage.Command
+        {
+            AnimalId = animalId,
+            ImageId = "image-456"
+        };
+
+        var result = await _sut.Handle(command, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(404, result.Code);
+        Assert.Equal("Animal not found", result.Error);
+        _mockImageManager.Verify(x => x.DeleteImageAsync(
+            It.IsAny<string>(),
+            It.IsAny<string>(),
+            It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    #endregion
+
+    #region ECP - Authorization and Shelter Ownership
+
+    [Fact]
+    public async Task Handle_AnimalFromDifferentShelter_Returns403()
+    {
+        var animal = await CreateAnimalInDb("shelter-123");
+        SetupUserAccessor("different-shelter-456");
+
+        var command = new DeleteAnimalImage.Command
+        {
+            AnimalId = animal.Id,
+            ImageId = "image-456"
+        };
+
+        var result = await _sut.Handle(command, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(403, result.Code);
+        Assert.Contains("your shelter", result.Error, StringComparison.OrdinalIgnoreCase);
+        _mockImageManager.Verify(x => x.DeleteImageAsync(
+            It.IsAny<string>(),
+            It.IsAny<string>(),
+            It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_AnimalFromSameShelter_CallsImageManager()
+    {
+        var animal = await CreateAnimalInDb("shelter-123");
+        SetupUserAccessor("shelter-123");
+        SetupSuccessfulDeletion();
+
+        var command = new DeleteAnimalImage.Command
+        {
+            AnimalId = animal.Id,
+            ImageId = "image-456"
+        };
+
+        var result = await _sut.Handle(command, CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(204, result.Code);
+        _mockImageManager.Verify(x => x.DeleteImageAsync(
+            animal.Id,
+            "image-456",
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_UserWithNullShelterId_CannotDelete()
+    {
+        var animal = await CreateAnimalInDb("shelter-123");
+        SetupUserAccessor(null);
+
+        var command = new DeleteAnimalImage.Command
+        {
+            AnimalId = animal.Id,
+            ImageId = "image-456"
+        };
+
+        var result = await _sut.Handle(command, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(403, result.Code);
+    }
+
+    #endregion
+
+    #region BVA - ID Lengths
+
+    [Theory]
+    [InlineData("A")]
+    [InlineData("01234567890123456789012345678901234")]
+    [InlineData("012345678901234567890123456789012345")]
+    [InlineData("0123456789012345678901234567890123456")]
+    public async Task Handle_AnimalIdLengthBoundaries_HandlesCorrectly(string animalId)
+    {
+        var animal = await CreateAnimalInDb("shelter-123", animalId);
+        SetupUserAccessor("shelter-123");
+        SetupSuccessfulDeletion();
+
+        var command = new DeleteAnimalImage.Command
+        {
+            AnimalId = animalId,
+            ImageId = "image-123"
+        };
+
+        var result = await _sut.Handle(command, CancellationToken.None);
+
+        if (result.IsSuccess)
+        {
+            Assert.Equal(204, result.Code);
+        }
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("I")]
+    [InlineData("01234567890123456789012345678901234")]
+    [InlineData("012345678901234567890123456789012345")]
+    [InlineData("0123456789012345678901234567890123456")]
+    public async Task Handle_ImageIdLengthBoundaries_HandlesCorrectly(string imageId)
+    {
+        var animal = await CreateAnimalInDb("shelter-123");
+        SetupUserAccessor("shelter-123");
+        SetupSuccessfulDeletion();
+
+        var command = new DeleteAnimalImage.Command
+        {
+            AnimalId = animal.Id,
+            ImageId = imageId
+        };
+
+        var result = await _sut.Handle(command, CancellationToken.None);
+
+        Assert.NotNull(result);
+        if (result.IsSuccess)
+        {
+            _mockImageManager.Verify(x => x.DeleteImageAsync(
+                animal.Id,
+                imageId,
+                It.IsAny<CancellationToken>()), Times.Once);
+        }
+    }
+
+    #endregion
+
+    #region ECP - ImageManager Results
+
+    [Theory]
+    [InlineData(true, 204, null)]
+    [InlineData(false, 404, "Image not found")]
+    [InlineData(false, 400, "Cannot delete the principal image")]
+    [InlineData(false, 403, "Image does not belong to the specified entity")]
+    [InlineData(false, 502, "Cloudinary deletion failed")]
+    [InlineData(false, 500, "Failed to delete image from database")]
+    public async Task Handle_ImageManagerResponses_PropagatesCorrectly(bool isSuccess, int code, string error)
+    {
+        var animal = await CreateAnimalInDb("shelter-123");
+        SetupUserAccessor("shelter-123");
+
+        _mockImageManager.Setup(x => x.DeleteImageAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(isSuccess 
+                ? Result<Unit>.Success(Unit.Value, code) 
+                : Result<Unit>.Failure(error, code));
+
+        var command = new DeleteAnimalImage.Command
+        {
+            AnimalId = animal.Id,
+            ImageId = "image-456"
+        };
+
+        var result = await _sut.Handle(command, CancellationToken.None);
+
+        if (isSuccess)
+        {
+            Assert.True(result.IsSuccess);
+            Assert.Equal(code, result.Code);
+        }
+        else
+        {
+            Assert.False(result.IsSuccess);
+            Assert.Equal(code, result.Code);
+            Assert.Equal(error, result.Error);
+        }
+    }
+
+    #endregion
+
+    #region ECP - Special Characters in IDs
+
+    [Theory]
+    [InlineData("animal<script>")]
+    [InlineData("animal'; DROP--")]
+    [InlineData("动物")]
+    [InlineData("🐶")]
+    [InlineData("animal\r\n\t")]
+    public async Task Handle_SpecialCharactersInAnimalId_Returns404(string animalId)
+    {
+        SetupUserAccessor("shelter-123");
+
+        var command = new DeleteAnimalImage.Command
+        {
+            AnimalId = animalId,
+            ImageId = "image-123"
+        };
+
+        var result = await _sut.Handle(command, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(404, result.Code);
+    }
+
+    [Theory]
+    [InlineData("image<script>")]
+    [InlineData("image'; DROP--")]
+    [InlineData("图像")]
+    [InlineData("📷")]
+    [InlineData("image\r\n\t")]
+    public async Task Handle_SpecialCharactersInImageId_PropagatedToManager(string imageId)
+    {
+        var animal = await CreateAnimalInDb("shelter-123");
+        SetupUserAccessor("shelter-123");
+        SetupSuccessfulDeletion();
+
+        var command = new DeleteAnimalImage.Command
+        {
+            AnimalId = animal.Id,
+            ImageId = imageId
+        };
+
+        var result = await _sut.Handle(command, CancellationToken.None);
+
+        Assert.NotNull(result);
+        _mockImageManager.Verify(x => x.DeleteImageAsync(
+            animal.Id,
+            imageId,
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    #endregion
+
+    #region ECP - Same IDs
+
+    [Theory]
+    [InlineData("same-id-123")]
+    [InlineData("00000000-0000-0000-0000-000000000000")]
+    public async Task Handle_SameAnimalAndImageId_HandlesCorrectly(string sameId)
+    {
+        var animal = await CreateAnimalInDb("shelter-123", sameId);
+        SetupUserAccessor("shelter-123");
+        SetupSuccessfulDeletion();
+
+        var command = new DeleteAnimalImage.Command
+        {
+            AnimalId = sameId,
+            ImageId = sameId
+        };
+
+        var result = await _sut.Handle(command, CancellationToken.None);
+
+        Assert.NotNull(result);
+        if (result.IsSuccess)
+        {
+            _mockImageManager.Verify(x => x.DeleteImageAsync(
+                sameId,
+                sameId,
+                It.IsAny<CancellationToken>()), Times.Once);
+        }
+    }
+
+    #endregion
+
+    #region Edge Cases
+
+    [Fact]
+    public async Task Handle_CancelledToken_PropagatedCorrectly()
+    {
+        var animal = await CreateAnimalInDb("shelter-123");
+        SetupUserAccessor("shelter-123");
+
+        _mockImageManager.Setup(x => x.DeleteImageAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+
+        var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var command = new DeleteAnimalImage.Command
+        {
+            AnimalId = animal.Id,
+            ImageId = "image-456"
+        };
+
+        await Assert.ThrowsAsync<OperationCanceledException>(
+            async () => await _sut.Handle(command, cts.Token));
+    }
+
+    [Theory]
+    [InlineData("animal-123", "IMAGE-456")]
+    [InlineData("ANIMAL-123", "image-456")]
+    [InlineData("Animal-123", "Image-456")]
+    public async Task Handle_CaseSensitiveIds_TreatedAsDistinct(string animalId, string imageId)
+    {
+        var animal = await CreateAnimalInDb("shelter-123", animalId);
+        SetupUserAccessor("shelter-123");
+        SetupSuccessfulDeletion();
+
+        var command = new DeleteAnimalImage.Command
+        {
+            AnimalId = animalId,
+            ImageId = imageId
+        };
+
+        var result = await _sut.Handle(command, CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        _mockImageManager.Verify(x => x.DeleteImageAsync(
+            animalId,
+            imageId,
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData("animal-123 ")]
+    [InlineData(" animal-123")]
+    [InlineData(" animal-123 ")]
+    public async Task Handle_WhitespaceInAnimalId_Returns404(string animalId)
+    {
+        await CreateAnimalInDb("shelter-123", "animal-123");
+        SetupUserAccessor("shelter-123");
+
+        var command = new DeleteAnimalImage.Command
+        {
+            AnimalId = animalId,
+            ImageId = "image-456"
+        };
+
+        var result = await _sut.Handle(command, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(404, result.Code);
+    }
+
+    [Theory]
+    [InlineData(" image-456")]
+    [InlineData("image-456 ")]
+    [InlineData(" image-456 ")]
+    public async Task Handle_WhitespaceInImageId_PropagatedToManager(string imageId)
+    {
+        var animal = await CreateAnimalInDb("shelter-123");
+        SetupUserAccessor("shelter-123");
+        SetupSuccessfulDeletion();
+
+        var command = new DeleteAnimalImage.Command
+        {
+            AnimalId = animal.Id,
+            ImageId = imageId
+        };
+
+        var result = await _sut.Handle(command, CancellationToken.None);
+
+        _mockImageManager.Verify(x => x.DeleteImageAsync(
+            animal.Id,
+            imageId,
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(100)]
+    [InlineData(1000)]
+    [InlineData(10000)]
+    public async Task Handle_VeryLongIds_HandlesCorrectly(int length)
+    {
+        SetupUserAccessor("shelter-123");
+
+        var command = new DeleteAnimalImage.Command
+        {
+            AnimalId = new string('A', length),
+            ImageId = new string('I', length)
+        };
+
+        var result = await _sut.Handle(command, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(404, result.Code);
+    }
+
+    [Fact]
+    public async Task Handle_NullUserAccessor_ThrowsNullReferenceException()
+    {
+        var animal = await CreateAnimalInDb("shelter-123");
+        _mockUserAccessor.Setup(x => x.GetUserAsync())
+            .ReturnsAsync((User)null);
+
+        var command = new DeleteAnimalImage.Command
+        {
+            AnimalId = animal.Id,
+            ImageId = "image-456"
+        };
+
+        await Assert.ThrowsAsync<NullReferenceException>(
+            async () => await _sut.Handle(command, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Handle_ImageManagerThrowsException_PropagatesException()
+    {
+        var animal = await CreateAnimalInDb("shelter-123");
+        SetupUserAccessor("shelter-123");
+
+        _mockImageManager.Setup(x => x.DeleteImageAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Database error"));
+
+        var command = new DeleteAnimalImage.Command
+        {
+            AnimalId = animal.Id,
+            ImageId = "image-456"
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await _sut.Handle(command, CancellationToken.None));
+    }
+
+    [Theory]
+    [InlineData(AnimalState.Available)]
+    [InlineData(AnimalState.PartiallyFostered)]
+    [InlineData(AnimalState.TotallyFostered)]
+    [InlineData(AnimalState.HasOwner)]
+    [InlineData(AnimalState.Inactive)]
+    public async Task Handle_DifferentAnimalStates_AllowsDeletion(AnimalState state)
+    {
+        var animal = await CreateAnimalInDb("shelter-123");
+        animal.AnimalState = state;
+        await _dbContext.SaveChangesAsync();
+
+        SetupUserAccessor("shelter-123");
+        SetupSuccessfulDeletion();
+
+        var command = new DeleteAnimalImage.Command
+        {
+            AnimalId = animal.Id,
+            ImageId = "image-456"
+        };
+
+        var result = await _sut.Handle(command, CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+    }
+
+    [Fact]
+    public async Task Handle_ConcurrentDeletionAttempts_BothCallImageManager()
+    {
+        var animal = await CreateAnimalInDb("shelter-123");
+        SetupUserAccessor("shelter-123");
+
+        var callCount = 0;
+        _mockImageManager.Setup(x => x.DeleteImageAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+                return callCount == 1
+                    ? Result<Unit>.Success(Unit.Value, 204)
+                    : Result<Unit>.Failure("Image not found", 404);
+            });
+
+        var command1 = new DeleteAnimalImage.Command
+        {
+            AnimalId = animal.Id,
+            ImageId = "image-456"
+        };
+
+        var command2 = new DeleteAnimalImage.Command
+        {
+            AnimalId = animal.Id,
+            ImageId = "image-456"
+        };
+
+        var task1 = _sut.Handle(command1, CancellationToken.None);
+        var task2 = _sut.Handle(command2, CancellationToken.None);
+
+        await Task.WhenAll(task1, task2);
+
+        var result1 = await task1;
+        var result2 = await task2;
+
+        Assert.True((result1.IsSuccess && !result2.IsSuccess) || 
+                    (!result1.IsSuccess && result2.IsSuccess) ||
+                    (result1.IsSuccess && result2.IsSuccess));
+    }
+
+    [Fact]
+    public async Task Handle_MultipleImagesOnSameAnimal_DeletesSpecificImage()
+    {
+        var animal = await CreateAnimalInDb("shelter-123");
+        SetupUserAccessor("shelter-123");
+        SetupSuccessfulDeletion();
+
+        var command = new DeleteAnimalImage.Command
+        {
+            AnimalId = animal.Id,
+            ImageId = "specific-image-789"
+        };
+
+        var result = await _sut.Handle(command, CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        _mockImageManager.Verify(x => x.DeleteImageAsync(
+            animal.Id,
+            "specific-image-789",
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    #endregion
+
     #region Helper Methods
 
-    /// <summary>
-    /// Creates a test animal with minimal required properties.
-    /// </summary>
-    private Animal CreateAnimal(string id)
+    private async Task<Animal> CreateAnimalInDb(string shelterId, string animalId = null)
     {
         var shelter = new Shelter
         {
-            Id = Guid.NewGuid().ToString(),
+            Id = shelterId,
             Name = "Test Shelter",
-            Street = "123 Test Street",
+            Street = "Test St",
             City = "Porto",
             PostalCode = "4000-123",
             Phone = "912345678",
@@ -65,12 +605,12 @@ public class DeleteAnimalImageTest : IDisposable
 
         _dbContext.Shelters.Add(shelter);
         _dbContext.Breeds.Add(breed);
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
 
-        return new Animal
+        var animal = new Animal
         {
-            Id = id,
-            Name = "Test Animal",
+            Id = animalId ?? Guid.NewGuid().ToString(), 
+            Name = "TestAnimal",
             AnimalState = AnimalState.Available,
             Species = Species.Dog,
             Size = SizeType.Medium,
@@ -79,833 +619,42 @@ public class DeleteAnimalImageTest : IDisposable
             BirthDate = new DateOnly(2020, 1, 1),
             Sterilized = true,
             Cost = 50.00m,
-            ShelterId = shelter.Id,
-            BreedId = breed.Id,
-            Images = new List<Image>()
+            ShelterId = shelterId,
+            BreedId = breed.Id
         };
+
+        _dbContext.Animals.Add(animal);
+        await _dbContext.SaveChangesAsync();
+
+        return animal;
     }
 
-    /// <summary>
-    /// Creates a test image with specified properties.
-    /// </summary>
-    private static Image CreateImage(string id, string animalId, bool isPrincipal = false)
+    private void SetupUserAccessor(string shelterId)
     {
-        return new Image
+        var user = new User
         {
-            Id = id,
-            PublicId = $"public-{id}",
-            Url = $"https://cloudinary.com/{id}.jpg",
-            Description = "Test image",
-            IsPrincipal = isPrincipal,
-            AnimalId = animalId
+            Id = Guid.NewGuid().ToString(),
+            ShelterId = shelterId,
+            Name = "Test Admin",
+            Email = "admin@test.com",
+            UserName = "admin@test.com",
+            BirthDate = DateTime.UtcNow.AddYears(-30),
+            Street = "Test Street",
+            City = "Porto",
+            PostalCode = "4000-000"
         };
+
+        _mockUserAccessor.Setup(x => x.GetUserAsync())
+            .ReturnsAsync(user);
     }
 
-    /// <summary>
-    /// Setups the mock image service to return successful deletion.
-    /// </summary>
     private void SetupSuccessfulDeletion()
     {
-        _mockImageService
-            .Setup(s => s.DeleteImageAsync(
-                It.IsAny<AppDbContext>(),
+        _mockImageManager.Setup(x => x.DeleteImageAsync(
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<Unit>.Success(Unit.Value, 204));
-    }
-
-    /// <summary>
-    /// Setups the mock image service to return failure.
-    /// </summary>
-    private void SetupFailedDeletion(string errorMessage, int statusCode = 500)
-    {
-        _mockImageService
-            .Setup(s => s.DeleteImageAsync(
-                It.IsAny<AppDbContext>(),
-                It.IsAny<string>(),
-                It.IsAny<string>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<Unit>.Failure(errorMessage, statusCode));
-    }
-
-    #endregion
-
-    #region Success Cases
-
-    /// <summary>
-    /// Tests successful deletion of a non-principal image.
-    /// Equivalence Class: Valid animal, valid non-principal image, image belongs to animal.
-    /// </summary>
-    [Fact]
-    public async Task Handle_ValidNonPrincipalImage_ReturnsSuccess()
-    {
-        var animalId = "animal-1";
-        var imageId = "image-1";
-        
-        var animal = CreateAnimal(animalId);
-        var image = CreateImage(imageId, animalId, isPrincipal: false);
-        
-        _dbContext.Animals.Add(animal);
-        _dbContext.Images.Add(image);
-        await _dbContext.SaveChangesAsync();
-
-        SetupSuccessfulDeletion();
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = imageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.True(result.IsSuccess);
-        Assert.Equal(204, result.Code);
-        _mockImageService.Verify(s => s.DeleteImageAsync(
-            _dbContext,
-            animalId,
-            image.PublicId,
-            It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    /// <summary>
-    /// Tests deletion with different valid ID formats.
-    /// Equivalence Class: Various valid ID formats.
-    /// </summary>
-    [Theory]
-    [InlineData("animal-123", "image-456")]
-    [InlineData("animal_with_underscore", "image_with_underscore")]
-    [InlineData("ANIMAL-UPPERCASE", "IMAGE-UPPERCASE")]
-    public async Task Handle_VariousIdFormats_DeletesSuccessfully(string animalId, string imageId)
-    {
-        var animal = CreateAnimal(animalId);
-        var image = CreateImage(imageId, animalId, isPrincipal: false);
-        
-        _dbContext.Animals.Add(animal);
-        _dbContext.Images.Add(image);
-        await _dbContext.SaveChangesAsync();
-
-        SetupSuccessfulDeletion();
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = imageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.True(result.IsSuccess);
-        _mockImageService.Verify(s => s.DeleteImageAsync(
-            _dbContext,
-            animalId,
-            It.IsAny<string>(),
-            It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    /// <summary>
-    /// Tests deletion with GUID-formatted IDs.
-    /// Common real-world scenario.
-    /// </summary>
-    [Fact]
-    public async Task Handle_GuidFormattedIds_DeletesSuccessfully()
-    {
-        var animalId = Guid.NewGuid().ToString();
-        var imageId = Guid.NewGuid().ToString();
-        
-        var animal = CreateAnimal(animalId);
-        var image = CreateImage(imageId, animalId, isPrincipal: false);
-        
-        _dbContext.Animals.Add(animal);
-        _dbContext.Images.Add(image);
-        await _dbContext.SaveChangesAsync();
-
-        SetupSuccessfulDeletion();
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = imageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.True(result.IsSuccess);
-    }
-
-    #endregion
-
-    #region Failure Cases - Animal Not Found
-
-    /// <summary>
-    /// Tests failure when animal doesn't exist.
-    /// Equivalence Class: Non-existent animal ID.
-    /// </summary>
-    [Fact]
-    public async Task Handle_AnimalNotFound_ReturnsFailure()
-    {
-        var nonExistentAnimalId = "animal-999";
-        var imageId = "image-1";
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = nonExistentAnimalId,
-            ImageId = imageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(404, result.Code);
-        Assert.Equal("Animal not found", result.Error);
-        _mockImageService.Verify(s => s.DeleteImageAsync(
-            It.IsAny<AppDbContext>(),
-            It.IsAny<string>(),
-            It.IsAny<string>(),
-            It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    /// <summary>
-    /// Tests with various invalid animal IDs.
-    /// Equivalence Class: Invalid or non-existent animal IDs.
-    /// </summary>
-    [Theory]
-    [InlineData("")]
-    [InlineData("invalid-animal")]
-    [InlineData("00000000-0000-0000-0000-000000000000")]
-    public async Task Handle_InvalidAnimalId_ReturnsNotFound(string invalidAnimalId)
-    {
-        var imageId = "image-1";
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = invalidAnimalId,
-            ImageId = imageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(404, result.Code);
-        _mockImageService.Verify(s => s.DeleteImageAsync(
-            It.IsAny<AppDbContext>(),
-            It.IsAny<string>(),
-            It.IsAny<string>(),
-            It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    #endregion
-
-    #region Failure Cases - Image Not Found
-
-    /// <summary>
-    /// Tests failure when image doesn't exist.
-    /// Equivalence Class: Valid animal, non-existent image ID.
-    /// </summary>
-    [Fact]
-    public async Task Handle_ImageNotFound_ReturnsFailure()
-    {
-        var animalId = "animal-1";
-        var nonExistentImageId = "image-999";
-        
-        var animal = CreateAnimal(animalId);
-        _dbContext.Animals.Add(animal);
-        await _dbContext.SaveChangesAsync();
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = nonExistentImageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(404, result.Code);
-        Assert.Equal("Image not found", result.Error);
-        _mockImageService.Verify(s => s.DeleteImageAsync(
-            It.IsAny<AppDbContext>(),
-            It.IsAny<string>(),
-            It.IsAny<string>(),
-            It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    /// <summary>
-    /// Tests with various invalid image IDs.
-    /// Equivalence Class: Valid animal, invalid image IDs.
-    /// </summary>
-    [Theory]
-    [InlineData("")]
-    [InlineData("invalid-image")]
-    [InlineData("00000000-0000-0000-0000-000000000000")]
-    public async Task Handle_InvalidImageId_ReturnsNotFound(string invalidImageId)
-    {
-        var animalId = "animal-1";
-        var animal = CreateAnimal(animalId);
-        _dbContext.Animals.Add(animal);
-        await _dbContext.SaveChangesAsync();
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = invalidImageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(404, result.Code);
-        _mockImageService.Verify(s => s.DeleteImageAsync(
-            It.IsAny<AppDbContext>(),
-            It.IsAny<string>(),
-            It.IsAny<string>(),
-            It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    #endregion
-
-    #region Failure Cases - Principal Image Protection
-
-    /// <summary>
-    /// Tests failure when attempting to delete a principal image.
-    /// Equivalence Class: Valid animal and image, but image is principal.
-    /// Business rule: Cannot delete principal images.
-    /// </summary>
-    [Fact]
-    public async Task Handle_PrincipalImage_ReturnsFailure()
-    {
-        var animalId = "animal-1";
-        var imageId = "image-principal";
-        
-        var animal = CreateAnimal(animalId);
-        var principalImage = CreateImage(imageId, animalId, isPrincipal: true);
-        
-        _dbContext.Animals.Add(animal);
-        _dbContext.Images.Add(principalImage);
-        await _dbContext.SaveChangesAsync();
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = imageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(404, result.Code);
-        Assert.Equal("Cannot delete Animal's main image", result.Error);
-        _mockImageService.Verify(s => s.DeleteImageAsync(
-            It.IsAny<AppDbContext>(),
-            It.IsAny<string>(),
-            It.IsAny<string>(),
-            It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    /// <summary>
-    /// Tests that only principal images are protected, not non-principal ones.
-    /// Verifies correct principal flag checking.
-    /// </summary>
-    [Theory]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    public async Task Handle_PrincipalFlag_CheckedCorrectly(bool isPrincipal, bool shouldSucceed)
-    {
-        var animalId = "animal-1";
-        var imageId = "image-1";
-        
-        var animal = CreateAnimal(animalId);
-        var image = CreateImage(imageId, animalId, isPrincipal: isPrincipal);
-        
-        _dbContext.Animals.Add(animal);
-        _dbContext.Images.Add(image);
-        await _dbContext.SaveChangesAsync();
-
-        if (shouldSucceed)
-        {
-            SetupSuccessfulDeletion();
-        }
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = imageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.Equal(shouldSucceed, result.IsSuccess);
-    }
-
-    #endregion
-
-    #region Failure Cases - Image Ownership Validation
-
-    /// <summary>
-    /// Tests failure when image belongs to a different animal.
-    /// Equivalence Class: Valid animal and image, but image.AnimalId != animal.Id.
-    /// Security check: Image must belong to specified animal.
-    /// </summary>
-    [Fact]
-    public async Task Handle_ImageBelongsToDifferentAnimal_ReturnsFailure()
-    {
-        var animal1Id = "animal-1";
-        var animal2Id = "animal-2";
-        var imageId = "image-1";
-        
-        var animal1 = CreateAnimal(animal1Id);
-        var animal2 = CreateAnimal(animal2Id);
-        var imageOfAnimal2 = CreateImage(imageId, animal2Id, isPrincipal: false);
-        
-        _dbContext.Animals.AddRange(animal1, animal2);
-        _dbContext.Images.Add(imageOfAnimal2);
-        await _dbContext.SaveChangesAsync();
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = animal1Id,
-            ImageId = imageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(403, result.Code);
-        Assert.Equal("Image does not belong to the specified animal.", result.Error);
-        _mockImageService.Verify(s => s.DeleteImageAsync(
-            It.IsAny<AppDbContext>(),
-            It.IsAny<string>(),
-            It.IsAny<string>(),
-            It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    /// <summary>
-    /// Tests that ownership validation uses correct animal ID.
-    /// Verifies the security check is properly implemented.
-    /// </summary>
-    [Fact]
-    public async Task Handle_CorrectOwnership_AllowsDeletion()
-    {
-        var animalId = "animal-correct";
-        var imageId = "image-1";
-        
-        var animal = CreateAnimal(animalId);
-        var image = CreateImage(imageId, animalId, isPrincipal: false);
-        
-        _dbContext.Animals.Add(animal);
-        _dbContext.Images.Add(image);
-        await _dbContext.SaveChangesAsync();
-
-        SetupSuccessfulDeletion();
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = imageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.True(result.IsSuccess);
-    }
-
-    /// <summary>
-    /// Tests ownership validation with image having null AnimalId.
-    /// Edge case: Orphaned image.
-    /// </summary>
-    [Fact]
-    public async Task Handle_ImageWithNullAnimalId_ReturnsFailure()
-    {
-        var animalId = "animal-1";
-        var imageId = "image-orphan";
-        
-        var animal = CreateAnimal(animalId);
-        var orphanImage = new Image
-        {
-            Id = imageId,
-            PublicId = $"public-{imageId}",
-            Url = "https://cloudinary.com/orphan.jpg",
-            Description = "Orphan image",
-            IsPrincipal = false,
-            AnimalId = null
-        };
-        
-        _dbContext.Animals.Add(animal);
-        _dbContext.Images.Add(orphanImage);
-        await _dbContext.SaveChangesAsync();
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = imageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(403, result.Code);
-        _mockImageService.Verify(s => s.DeleteImageAsync(
-            It.IsAny<AppDbContext>(),
-            It.IsAny<string>(),
-            It.IsAny<string>(),
-            It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    #endregion
-
-    #region Failure Cases - Image Service Errors
-
-    /// <summary>
-    /// Tests failure when image service fails to delete.
-    /// Equivalence Class: Valid request, but service layer fails.
-    /// </summary>
-    [Fact]
-    public async Task Handle_ImageServiceFails_ReturnsFailure()
-    {
-        var animalId = "animal-1";
-        var imageId = "image-1";
-        
-        var animal = CreateAnimal(animalId);
-        var image = CreateImage(imageId, animalId, isPrincipal: false);
-        
-        _dbContext.Animals.Add(animal);
-        _dbContext.Images.Add(image);
-        await _dbContext.SaveChangesAsync();
-
-        SetupFailedDeletion("Cloudinary deletion failed", 500);
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = imageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(500, result.Code);
-        Assert.Equal("Cloudinary deletion failed", result.Error);
-    }
-
-    /// <summary>
-    /// Tests various service error scenarios.
-    /// Equivalence Classes: Different service error codes.
-    /// </summary>
-    [Theory]
-    [InlineData(400, "Bad request")]
-    [InlineData(500, "Internal server error")]
-    [InlineData(503, "Service unavailable")]
-    public async Task Handle_ImageServiceVariousErrors_PropagatesCorrectly(int errorCode, string errorMessage)
-    {
-        var animalId = "animal-1";
-        var imageId = "image-1";
-        
-        var animal = CreateAnimal(animalId);
-        var image = CreateImage(imageId, animalId, isPrincipal: false);
-        
-        _dbContext.Animals.Add(animal);
-        _dbContext.Images.Add(image);
-        await _dbContext.SaveChangesAsync();
-
-        SetupFailedDeletion(errorMessage, errorCode);
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = imageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(errorCode, result.Code);
-        Assert.Equal(errorMessage, result.Error);
-    }
-
-    #endregion
-
-    #region Validation Order Tests
-
-    /// <summary>
-    /// Tests that validations are performed in the correct order.
-    /// Order: Animal exists -> Image exists -> Image is not principal -> Image belongs to animal -> Delete
-    /// Ensures early validation failures don't trigger unnecessary operations.
-    /// </summary>
-    [Fact]
-    public async Task Handle_ValidationOrder_AnimalCheckedFirst()
-    {
-        var nonExistentAnimalId = "animal-999";
-        var nonExistentImageId = "image-999";
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = nonExistentAnimalId,
-            ImageId = nonExistentImageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.Equal("Animal not found", result.Error);
-    }
-
-    /// <summary>
-    /// Tests that image existence is checked after animal existence.
-    /// </summary>
-    [Fact]
-    public async Task Handle_ValidationOrder_ImageCheckedAfterAnimal()
-    {
-        var animalId = "animal-1";
-        var nonExistentImageId = "image-999";
-        
-        var animal = CreateAnimal(animalId);
-        _dbContext.Animals.Add(animal);
-        await _dbContext.SaveChangesAsync();
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = nonExistentImageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.Equal("Image not found", result.Error);
-    }
-
-    /// <summary>
-    /// Tests that principal check is performed before ownership check.
-    /// </summary>
-    [Fact]
-    public async Task Handle_ValidationOrder_PrincipalCheckedBeforeOwnership()
-    {
-        var animal1Id = "animal-1";
-        var animal2Id = "animal-2";
-        var imageId = "image-principal";
-        
-        var animal1 = CreateAnimal(animal1Id);
-        var animal2 = CreateAnimal(animal2Id);
-        var principalImageOfAnimal2 = CreateImage(imageId, animal2Id, isPrincipal: true);
-        
-        _dbContext.Animals.AddRange(animal1, animal2);
-        _dbContext.Images.Add(principalImageOfAnimal2);
-        await _dbContext.SaveChangesAsync();
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = animal1Id,
-            ImageId = imageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.Equal("Cannot delete Animal's main image", result.Error);
-    }
-
-    #endregion
-
-    #region Cancellation Tests
-
-    /// <summary>
-    /// Tests that cancellation token is passed through the call chain.
-    /// Verifies proper async cancellation support.
-    /// </summary>
-    [Fact]
-    public async Task Handle_WithCancellationToken_PassesToServices()
-    {
-        var animalId = "animal-1";
-        var imageId = "image-1";
-        
-        var animal = CreateAnimal(animalId);
-        var image = CreateImage(imageId, animalId, isPrincipal: false);
-        
-        _dbContext.Animals.Add(animal);
-        _dbContext.Images.Add(image);
-        await _dbContext.SaveChangesAsync();
-
-        SetupSuccessfulDeletion();
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = imageId
-        };
-
-        using var cts = new CancellationTokenSource();
-
-        await _handler.Handle(command, cts.Token);
-
-        _mockImageService.Verify(s => s.DeleteImageAsync(
-            It.IsAny<AppDbContext>(),
-            It.IsAny<string>(),
-            It.IsAny<string>(),
-            cts.Token), Times.Once);
-    }
-
-    #endregion
-
-    #region PublicId Propagation Tests
-
-    /// <summary>
-    /// Tests that correct PublicId is passed to the image service.
-    /// Verifies the handler extracts and passes the right identifier.
-    /// </summary>
-    [Fact]
-    public async Task Handle_PassesCorrectPublicId_ToImageService()
-    {
-        var animalId = "animal-1";
-        var imageId = "image-1";
-        var expectedPublicId = "public-image-1";
-        
-        var animal = CreateAnimal(animalId);
-        var image = new Image
-        {
-            Id = imageId,
-            PublicId = expectedPublicId,
-            Url = "https://cloudinary.com/test.jpg",
-            Description = "Test",
-            IsPrincipal = false,
-            AnimalId = animalId
-        };
-        
-        _dbContext.Animals.Add(animal);
-        _dbContext.Images.Add(image);
-        await _dbContext.SaveChangesAsync();
-
-        SetupSuccessfulDeletion();
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = imageId
-        };
-
-        await _handler.Handle(command, CancellationToken.None);
-
-        _mockImageService.Verify(s => s.DeleteImageAsync(
-            _dbContext,
-            animalId,
-            expectedPublicId,
-            It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    /// <summary>
-    /// Tests deletion with various PublicId formats.
-    /// Ensures PublicId is correctly handled regardless of format.
-    /// </summary>
-    [Theory]
-    [InlineData("simple-public-id")]
-    [InlineData("folder/subfolder/image-id")]
-    [InlineData("SeePaw/Animals/animal-123")]
-    public async Task Handle_VariousPublicIdFormats_PassedCorrectly(string publicId)
-    {
-        var animalId = "animal-1";
-        var imageId = "image-1";
-        
-        var animal = CreateAnimal(animalId);
-        var image = new Image
-        {
-            Id = imageId,
-            PublicId = publicId,
-            Url = "https://cloudinary.com/test.jpg",
-            Description = "Test",
-            IsPrincipal = false,
-            AnimalId = animalId
-        };
-        
-        _dbContext.Animals.Add(animal);
-        _dbContext.Images.Add(image);
-        await _dbContext.SaveChangesAsync();
-
-        SetupSuccessfulDeletion();
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = imageId
-        };
-
-        await _handler.Handle(command, CancellationToken.None);
-
-        _mockImageService.Verify(s => s.DeleteImageAsync(
-            _dbContext,
-            animalId,
-            publicId,
-            It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    #endregion
-
-    #region Integration Scenarios
-
-    /// <summary>
-    /// Tests realistic scenario with multiple images where one is deleted.
-    /// Integration test covering typical use case.
-    /// </summary>
-    [Fact]
-    public async Task Handle_RealisticScenario_DeleteOneOfMultipleImages()
-    {
-        var animalId = Guid.NewGuid().ToString();
-        var animal = CreateAnimal(animalId);
-        
-        var principalImage = CreateImage("img-principal", animalId, isPrincipal: true);
-        var secondaryImage1 = CreateImage("img-secondary-1", animalId, isPrincipal: false);
-        var secondaryImage2 = CreateImage("img-secondary-2", animalId, isPrincipal: false);
-        
-        _dbContext.Animals.Add(animal);
-        _dbContext.Images.AddRange(principalImage, secondaryImage1, secondaryImage2);
-        await _dbContext.SaveChangesAsync();
-
-        SetupSuccessfulDeletion();
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = "img-secondary-1"
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.True(result.IsSuccess);
-        _mockImageService.Verify(s => s.DeleteImageAsync(
-            _dbContext,
-            animalId,
-            "public-img-secondary-1",
-            It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    #endregion
-
-    #region Boundary Value Analysis
-
-    /// <summary>
-    /// Tests with very long IDs.
-    /// Boundary: Maximum practical ID length.
-    /// </summary>
-    [Fact]
-    public async Task Handle_VeryLongIds_HandlesCorrectly()
-    {
-        var longAnimalId = new string('a', 500);
-        var longImageId = new string('b', 500);
-        
-        var animal = CreateAnimal(longAnimalId);
-        var image = CreateImage(longImageId, longAnimalId, isPrincipal: false);
-        
-        _dbContext.Animals.Add(animal);
-        _dbContext.Images.Add(image);
-        await _dbContext.SaveChangesAsync();
-
-        SetupSuccessfulDeletion();
-
-        var command = new DeleteAnimalImage.Command
-        {
-            AnimalId = longAnimalId,
-            ImageId = longImageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.True(result.IsSuccess);
     }
 
     #endregion

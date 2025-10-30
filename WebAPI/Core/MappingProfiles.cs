@@ -40,7 +40,11 @@ public class MappingProfiles : Profile
             .ForMember(dest => dest.Images,
                 opt => opt.MapFrom(src => src.Images));
 
+        CreateMap<ReqCreateImageDto, Image>(MemberList.Source)
+            .ForSourceMember(src => src.File, opt => opt.DoNotValidate());
+        
         CreateMap<ReqImageDto, Image>(MemberList.Source)
+            .ForMember(dest => dest.IsPrincipal, opt => opt.MapFrom(src => false))
             .ForSourceMember(src => src.File, opt => opt.DoNotValidate());
 
         CreateMap<Image, ResImageDto>()
@@ -76,7 +80,7 @@ public class MappingProfiles : Profile
                     {
                         Id = i.Id,
                         Url = i.Url,
-                        Description = i.Description,
+                        Description = i.Description ?? string.Empty,
                         IsPrincipal = i.IsPrincipal,
                         PublicId = i.PublicId
                     }).ToList()))

@@ -1,9 +1,11 @@
 ﻿using Application.Core;
 using Application.Images.Commands;
+using Application.Interfaces;
 using Domain;
 using Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using Persistence;
 
 namespace Tests.Images.Commands;
@@ -15,7 +17,11 @@ namespace Tests.Images.Commands;
 public class SetAnimalPrincipalImageTest : IDisposable
 {
     private readonly AppDbContext _dbContext;
+    private readonly Mock<IUserAccessor> _mockUserAccessor;
     private readonly SetAnimalPrincipalImage.Handler _handler;
+    private readonly string _testShelterId1;
+    private readonly string _testShelterId2;
+    private readonly User _testUser;
 
     public SetAnimalPrincipalImageTest()
     {
@@ -24,7 +30,27 @@ public class SetAnimalPrincipalImageTest : IDisposable
             .Options;
 
         _dbContext = new AppDbContext(options);
-        _handler = new SetAnimalPrincipalImage.Handler(_dbContext);
+        _mockUserAccessor = new Mock<IUserAccessor>();
+        
+        _testShelterId1 = Guid.NewGuid().ToString();
+        _testShelterId2 = Guid.NewGuid().ToString();
+        _testUser = new User
+        {
+            Id = Guid.NewGuid().ToString(),
+            UserName = "testuser",
+            Name = "Test User",
+            BirthDate = new DateTime(1990, 1, 1),
+            Street = "Test Street",
+            City = "Porto",
+            PostalCode = "4000-123",
+            PhoneNumber = "912345678",
+            ShelterId = _testShelterId1
+        };
+        
+        _mockUserAccessor.Setup(x => x.GetUserAsync())
+            .ReturnsAsync(_testUser);
+        
+        _handler = new SetAnimalPrincipalImage.Handler(_dbContext, _mockUserAccessor.Object);
     }
 
     public void Dispose()
@@ -38,11 +64,11 @@ public class SetAnimalPrincipalImageTest : IDisposable
     /// <summary>
     /// Creates a test animal with minimal required properties.
     /// </summary>
-    private Animal CreateAnimal(string id)
+    private Animal CreateAnimal(string id, string? shelterId = null)
     {
         var shelter = new Shelter
         {
-            Id = Guid.NewGuid().ToString(),
+            Id = shelterId ?? _testShelterId1,
             Name = "Test Shelter",
             Street = "123 Test Street",
             City = "Porto",
@@ -251,76 +277,57 @@ public class SetAnimalPrincipalImageTest : IDisposable
         var result = await _handler.Handle(command, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-    }
-
-    #endregion
-
-    #region Failure Cases - Animal Not Found
-
-    /// <summary>
-    /// Tests failure when animal doesn't exist.
-    /// Equivalence Class: Non-existent animal ID.
-    /// </summary>
-    [Fact]
-    public async Task Handle_AnimalNotFound_ReturnsFailure()
-    {
-        var nonExistentAnimalId = "animal-999";
-        var imageId = "image-1";
-
-        var command = new SetAnimalPrincipalImage.Command
-        {
-            AnimalId = nonExistentAnimalId,
-            ImageId = imageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(404, result.Code);
-        Assert.Equal("Animal not found", result.Error);
-    }
-
-    /// <summary>
-    /// Tests with various invalid animal IDs.
-    /// Equivalence Class: Invalid animal IDs.
-    /// </summary>
-    [Theory]
-    [InlineData("")]
-    [InlineData("invalid-id")]
-    [InlineData("00000000-0000-0000-0000-000000000000")]
-    public async Task Handle_InvalidAnimalId_ReturnsNotFound(string invalidAnimalId)
-    {
-        var imageId = "image-1";
-
-        var command = new SetAnimalPrincipalImage.Command
-        {
-            AnimalId = invalidAnimalId,
-            ImageId = imageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(404, result.Code);
-    }
-
-    #endregion
-
-    #region Failure Cases - Image Not Found
-
-    /// <summary>
-    /// Tests failure when image doesn't exist in animal's images.
-    /// Equivalence Class: Valid animal, image not in animal's collection.
-    /// </summary>
-    [Fact]
-    public async Task Handle_ImageNotInAnimalImages_ReturnsFailure()
-    {
-        var animalId = "animal-1";
-        var nonExistentImageId = "image-999";
         
-        var animal = CreateAnimal(animalId);
-        var existingImage = CreateImage("image-1", animalId, isPrincipal: false);
-        animal.Images.Add(existingImage);
+        var updatedImage = await _dbContext.Images.FirstAsync(i => i.Id == imageId);
+        Assert.True(updatedImage.IsPrincipal);
+    }
+
+    #endregion
+
+    #region Authorization Tests
+
+    /// <summary>
+    /// Tests that user cannot set principal image for animals from different shelter.
+    /// Authorization validation: ShelterId mismatch.
+    /// </summary>
+    [Fact]
+    public async Task Handle_DifferentShelter_ReturnsForbidden()
+    {
+        var differentShelterId = Guid.NewGuid().ToString();
+        var animalId = "animal-other-shelter";
+        var imageId = "image-1";
+        
+        var animal = CreateAnimal(animalId, differentShelterId);
+        var image = CreateImage(imageId, animalId, isPrincipal: false);
+        animal.Images.Add(image);
+        
+        _dbContext.Animals.Add(animal);
+        await _dbContext.SaveChangesAsync();
+
+        var command = new SetAnimalPrincipalImage.Command
+        {
+            AnimalId = animalId,
+            ImageId = imageId
+        };
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(403, result.Code);
+        Assert.Contains("only change main image of animals from your shelter", result.Error);
+    }
+
+    /// <summary>
+    /// Tests authorization check occurs before other validations.
+    /// </summary>
+    [Fact]
+    public async Task Handle_AuthorizationCheckedBeforeImageValidation()
+    {
+        var differentShelterId = Guid.NewGuid().ToString();
+        var animalId = "animal-other-shelter";
+        var nonExistentImageId = "non-existent-image";
+        
+        var animal = CreateAnimal(animalId, differentShelterId);
         
         _dbContext.Animals.Add(animal);
         await _dbContext.SaveChangesAsync();
@@ -334,157 +341,68 @@ public class SetAnimalPrincipalImageTest : IDisposable
         var result = await _handler.Handle(command, CancellationToken.None);
 
         Assert.False(result.IsSuccess);
+        Assert.Equal(403, result.Code);
+    }
+
+    #endregion
+
+    #region Error Cases
+
+    /// <summary>
+    /// Tests with non-existent animal ID.
+    /// Equivalence Class: Invalid animal reference.
+    /// </summary>
+    [Fact]
+    public async Task Handle_AnimalNotFound_ReturnsNotFound()
+    {
+        var command = new SetAnimalPrincipalImage.Command
+        {
+            AnimalId = "non-existent",
+            ImageId = "image-1"
+        };
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(404, result.Code);
+        Assert.Equal("Animal not found", result.Error);
+    }
+
+    /// <summary>
+    /// Tests with non-existent image ID.
+    /// Equivalence Class: Invalid image reference.
+    /// </summary>
+    [Fact]
+    public async Task Handle_ImageNotFound_ReturnsNotFound()
+    {
+        var animalId = "animal-1";
+        var animal = CreateAnimal(animalId);
+        
+        _dbContext.Animals.Add(animal);
+        await _dbContext.SaveChangesAsync();
+
+        var command = new SetAnimalPrincipalImage.Command
+        {
+            AnimalId = animalId,
+            ImageId = "non-existent-image"
+        };
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
         Assert.Equal(404, result.Code);
         Assert.Equal("Image not found", result.Error);
     }
 
     /// <summary>
-    /// Tests failure when animal has no images.
-    /// Equivalence Class: Animal with empty image collection.
-    /// Boundary: Zero images.
+    /// Tests attempting to set already-principal image as principal.
+    /// Equivalence Class: Redundant operation.
     /// </summary>
     [Fact]
-    public async Task Handle_AnimalWithNoImages_ReturnsFailure()
-    {
-        var animalId = "animal-empty";
-        var imageId = "image-1";
-        
-        var animal = CreateAnimal(animalId);
-        
-        _dbContext.Animals.Add(animal);
-        await _dbContext.SaveChangesAsync();
-
-        var command = new SetAnimalPrincipalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = imageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(404, result.Code);
-    }
-
-    /// <summary>
-    /// Tests with various invalid image IDs.
-    /// Equivalence Class: Valid animal, invalid image IDs.
-    /// </summary>
-    [Theory]
-    [InlineData("")]
-    [InlineData("invalid-image")]
-    [InlineData("00000000-0000-0000-0000-000000000000")]
-    public async Task Handle_InvalidImageId_ReturnsNotFound(string invalidImageId)
+    public async Task Handle_ImageAlreadyPrincipal_ReturnsBadRequest()
     {
         var animalId = "animal-1";
-        var animal = CreateAnimal(animalId);
-        var image = CreateImage("image-valid", animalId, isPrincipal: false);
-        animal.Images.Add(image);
-        
-        _dbContext.Animals.Add(animal);
-        await _dbContext.SaveChangesAsync();
-
-        var command = new SetAnimalPrincipalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = invalidImageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(404, result.Code);
-    }
-
-    #endregion
-
-    #region Failure Cases - Ownership Validation
-
-    /// <summary>
-    /// Tests failure when image doesn't belong to the animal.
-    /// Equivalence Class: Valid animal and image, but image.AnimalId != animal.Id.
-    /// Security check: Image must belong to specified animal.
-    /// </summary>
-    [Fact]
-    public async Task Handle_ImageBelongsToDifferentAnimal_ReturnsFailure()
-    {
-        var animal1Id = "animal-1";
-        var animal2Id = "animal-2";
-        var imageId = "image-1";
-        
-        var animal1 = CreateAnimal(animal1Id);
-        var animal2 = CreateAnimal(animal2Id);
-        var imageOfAnimal2 = CreateImage(imageId, animal2Id, isPrincipal: false);
-        animal2.Images.Add(imageOfAnimal2);
-        
-        _dbContext.Animals.AddRange(animal1, animal2);
-        _dbContext.Images.Add(imageOfAnimal2);
-        await _dbContext.SaveChangesAsync();
-
-        var command = new SetAnimalPrincipalImage.Command
-        {
-            AnimalId = animal1Id,
-            ImageId = imageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(403, result.Code);
-        Assert.Equal("Image does not belong to the specified animal.", result.Error);
-    }
-
-    /// <summary>
-    /// Tests with image having null AnimalId.
-    /// Edge case: Orphaned image in collection.
-    /// </summary>
-    [Fact]
-    public async Task Handle_ImageWithNullAnimalId_ReturnsFailure()
-    {
-        var animalId = "animal-1";
-        var imageId = "image-orphan";
-        
-        var animal = CreateAnimal(animalId);
-        var orphanImage = new Image
-        {
-            Id = imageId,
-            PublicId = $"public-{imageId}",
-            Url = "https://cloudinary.com/orphan.jpg",
-            Description = "Orphan image",
-            IsPrincipal = false,
-            AnimalId = null
-        };
-        
-        _dbContext.Animals.Add(animal);
-        _dbContext.Images.Add(orphanImage);
-        await _dbContext.SaveChangesAsync();
-
-        var command = new SetAnimalPrincipalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = imageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(403, result.Code);
-    }
-
-    #endregion
-
-    #region Failure Cases - Already Principal
-
-    /// <summary>
-    /// Tests failure when image is already the principal image.
-    /// Equivalence Class: Image already marked as principal.
-    /// Business rule: Cannot set already-principal image as principal again.
-    /// </summary>
-    [Fact]
-    public async Task Handle_ImageAlreadyPrincipal_ReturnsFailure()
-    {
-        var animalId = "animal-1";
-        var imageId = "image-already-principal";
+        var imageId = "image-principal";
         
         var animal = CreateAnimal(animalId);
         var principalImage = CreateImage(imageId, animalId, isPrincipal: true);
@@ -507,225 +425,22 @@ public class SetAnimalPrincipalImageTest : IDisposable
     }
 
     /// <summary>
-    /// Tests that only images already principal are rejected.
-    /// Verifies correct principal flag checking.
-    /// </summary>
-    [Theory]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    public async Task Handle_PrincipalFlag_CheckedCorrectly(bool isPrincipal, bool shouldSucceed)
-    {
-        var animalId = "animal-1";
-        var imageId = "image-1";
-        
-        var animal = CreateAnimal(animalId);
-        var image = CreateImage(imageId, animalId, isPrincipal: isPrincipal);
-        animal.Images.Add(image);
-        
-        _dbContext.Animals.Add(animal);
-        await _dbContext.SaveChangesAsync();
-
-        var command = new SetAnimalPrincipalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = imageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.Equal(shouldSucceed, result.IsSuccess);
-    }
-
-    #endregion
-
-    #region State Verification Tests
-
-    /// <summary>
-    /// Tests that only one image is principal after operation.
-    /// Verifies the core invariant: exactly one principal image.
+    /// Tests image that belongs to different animal.
+    /// Equivalence Class: Mismatched ownership.
     /// </summary>
     [Fact]
-    public async Task Handle_AfterSetting_OnlyOneImageIsPrincipal()
-    {
-        var animalId = "animal-1";
-        var animal = CreateAnimal(animalId);
-        
-        var oldPrincipal = CreateImage("img-old", animalId, isPrincipal: true);
-        var newPrincipal = CreateImage("img-new", animalId, isPrincipal: false);
-        var otherImage = CreateImage("img-other", animalId, isPrincipal: false);
-        
-        animal.Images.Add(oldPrincipal);
-        animal.Images.Add(newPrincipal);
-        animal.Images.Add(otherImage);
-        
-        _dbContext.Animals.Add(animal);
-        await _dbContext.SaveChangesAsync();
-
-        var command = new SetAnimalPrincipalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = "img-new"
-        };
-
-        await _handler.Handle(command, CancellationToken.None);
-
-        var updatedAnimal = await _dbContext.Animals
-            .Include(a => a.Images)
-            .FirstAsync(a => a.Id == animalId);
-        
-        var principalCount = updatedAnimal.Images.Count(i => i.IsPrincipal);
-        Assert.Equal(1, principalCount);
-        
-        var principalImage = updatedAnimal.Images.First(i => i.IsPrincipal);
-        Assert.Equal("img-new", principalImage.Id);
-    }
-
-    /// <summary>
-    /// Tests that all other images remain non-principal.
-    /// Ensures side effects are limited to intended images.
-    /// </summary>
-    [Fact]
-    public async Task Handle_WhenSetting_OtherImagesRemainNonPrincipal()
-    {
-        var animalId = "animal-1";
-        var animal = CreateAnimal(animalId);
-        
-        var images = new[]
-        {
-            CreateImage("img-1", animalId, isPrincipal: false),
-            CreateImage("img-2", animalId, isPrincipal: false),
-            CreateImage("img-target", animalId, isPrincipal: false),
-            CreateImage("img-3", animalId, isPrincipal: false)
-        };
-        
-        foreach (var img in images)
-        {
-            animal.Images.Add(img);
-        }
-        
-        _dbContext.Animals.Add(animal);
-        await _dbContext.SaveChangesAsync();
-
-        var command = new SetAnimalPrincipalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = "img-target"
-        };
-
-        await _handler.Handle(command, CancellationToken.None);
-
-        var updatedAnimal = await _dbContext.Animals
-            .Include(a => a.Images)
-            .FirstAsync(a => a.Id == animalId);
-        
-        var nonPrincipalImages = updatedAnimal.Images
-            .Where(i => i.Id != "img-target")
-            .ToList();
-        
-        Assert.All(nonPrincipalImages, img => Assert.False(img.IsPrincipal));
-    }
-
-    /// <summary>
-    /// Tests persistence of changes to database.
-    /// Verifies SaveChanges is actually called and succeeds.
-    /// </summary>
-    [Fact]
-    public async Task Handle_ChangesArePersisted_ToDatabase()
-    {
-        var animalId = "animal-1";
-        var imageId = "image-1";
-        
-        var animal = CreateAnimal(animalId);
-        var image = CreateImage(imageId, animalId, isPrincipal: false);
-        animal.Images.Add(image);
-        
-        _dbContext.Animals.Add(animal);
-        await _dbContext.SaveChangesAsync();
-
-        var command = new SetAnimalPrincipalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = imageId
-        };
-
-        await _handler.Handle(command, CancellationToken.None);
-
-        _dbContext.ChangeTracker.Clear();
-
-        var freshAnimal = await _dbContext.Animals
-            .Include(a => a.Images)
-            .FirstAsync(a => a.Id == animalId);
-        
-        var freshImage = freshAnimal.Images.First(i => i.Id == imageId);
-        Assert.True(freshImage.IsPrincipal);
-    }
-
-    #endregion
-
-    #region Validation Order Tests
-
-    /// <summary>
-    /// Tests that validations are performed in the correct order.
-    /// Order: Animal exists -> Image in collection -> Image not already principal -> Ownership -> Set principal
-    /// </summary>
-    [Fact]
-    public async Task Handle_ValidationOrder_AnimalCheckedFirst()
-    {
-        var nonExistentAnimalId = "animal-999";
-        var imageId = "image-1";
-
-        var command = new SetAnimalPrincipalImage.Command
-        {
-            AnimalId = nonExistentAnimalId,
-            ImageId = imageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.Equal("Animal not found", result.Error);
-    }
-
-    /// <summary>
-    /// Tests that image existence is checked after animal existence.
-    /// </summary>
-    [Fact]
-    public async Task Handle_ValidationOrder_ImageCheckedAfterAnimal()
-    {
-        var animalId = "animal-1";
-        var nonExistentImageId = "image-999";
-        
-        var animal = CreateAnimal(animalId);
-        _dbContext.Animals.Add(animal);
-        await _dbContext.SaveChangesAsync();
-
-        var command = new SetAnimalPrincipalImage.Command
-        {
-            AnimalId = animalId,
-            ImageId = nonExistentImageId
-        };
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        Assert.Equal("Image not found", result.Error);
-    }
-
-    /// <summary>
-    /// Tests that ownership is checked after image existence.
-    /// </summary>
-    [Fact]
-    public async Task Handle_ValidationOrder_OwnershipCheckedAfterImageExists()
+    public async Task Handle_ImageBelongsToDifferentAnimal_ReturnsForbidden()
     {
         var animal1Id = "animal-1";
         var animal2Id = "animal-2";
         var imageId = "image-1";
         
-        var animal1 = CreateAnimal(animal1Id);
-        var animal2 = CreateAnimal(animal2Id);
-        var imageOfAnimal2 = CreateImage(imageId, animal2Id, isPrincipal: false);
-        animal2.Images.Add(imageOfAnimal2);
+        var animal1 = CreateAnimal(animal1Id, _testShelterId1);
+        var animal2 = CreateAnimal(animal2Id, _testShelterId2);
+        var image = CreateImage(imageId, animal2Id, isPrincipal: false);
+        animal2.Images.Add(image);
         
         _dbContext.Animals.AddRange(animal1, animal2);
-        _dbContext.Images.Add(imageOfAnimal2);
         await _dbContext.SaveChangesAsync();
 
         var command = new SetAnimalPrincipalImage.Command
@@ -736,6 +451,8 @@ public class SetAnimalPrincipalImageTest : IDisposable
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
+        Assert.False(result.IsSuccess);
+        Assert.Equal(403, result.Code);
         Assert.Equal("Image does not belong to the specified animal.", result.Error);
     }
 

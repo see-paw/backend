@@ -77,7 +77,7 @@ namespace WebAPI.Validators.Animals.CreateAnimal
                 .SetValidator(new ImageValidator());
         }
 
-        private static bool HaveAtMostOnePrincipalImage(List<ReqImageDto> images)
+        private static bool HaveAtMostOnePrincipalImage(List<ReqCreateImageDto> images)
         {
             return images.Count(img => img.IsPrincipal) <= 1;
         }

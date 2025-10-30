@@ -14,6 +14,7 @@ public class AnimalImageLinker : IImageOwnerLinker<Animal>
     public void Link(Animal owner, Image img, string entityId)
     {
         img.AnimalId = entityId;
+        img.Animal = owner;
         owner.Images.Add(img);
     }
 }

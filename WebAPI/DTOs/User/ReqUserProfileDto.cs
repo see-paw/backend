@@ -38,6 +38,6 @@
         /// <summary>
         /// Phone number.
         /// </summary>
-        public string PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; } = string.Empty;
     }
 }

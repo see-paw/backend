@@ -37,8 +37,9 @@ public class AddImagesAnimal
     /// <summary>
     /// Handles the image upload process for a specific animal.
     /// </summary>
-    public class Handler(AppDbContext dbContext
-        , IImagesUploader<Animal> uploadService) : IRequestHandler<Command, Result<List<Image>>>
+    public class Handler(AppDbContext dbContext,
+        IUserAccessor userAccessor,
+        IImagesUploader<Animal> uploadService) : IRequestHandler<Command, Result<List<Image>>>
     {
         /// <summary>
         /// Adds images to the specified animal.
@@ -52,6 +53,8 @@ public class AddImagesAnimal
         /// <exception cref="Exception">Thrown if an unexpected error occurs during upload.</exception>
         public async Task<Result<List<Image>>> Handle(Command request, CancellationToken ct)
         {
+            var currentUser = await userAccessor.GetUserAsync();
+            
             await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
 
             var animal = await dbContext.Animals
@@ -60,7 +63,18 @@ public class AddImagesAnimal
 
             if (animal == null)
                 return Result<List<Image>>.Failure("Animal not found", 404);
+            
+            if (animal.ShelterId != currentUser.ShelterId)
+            {
+                return Result<List<Image>>.Failure(
+                    "You can only add images to animals from your shelter", 403);
+            }
 
+            if (animal.AnimalState == Domain.Enums.AnimalState.Inactive)
+            {
+                return Result<List<Image>>.Failure(
+                    "Cannot add images to inactive animals", 400);
+            }
             var imageCountBefore = animal.Images.Count;
 
             var uploadResult = await uploadService.UploadImagesAsync(
@@ -73,7 +87,7 @@ public class AddImagesAnimal
             if (!uploadResult.IsSuccess)
             {
                 await transaction.RollbackAsync(ct);
-                return Result<List<Image>>.Failure(uploadResult.Error, uploadResult.Code);
+                return Result<List<Image>>.Failure(uploadResult.Error ?? string.Empty, uploadResult.Code);
             }
 
             var success = await dbContext.SaveChangesAsync(ct) > 0;

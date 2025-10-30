@@ -8,5 +8,5 @@ public class ReqAddImagesDto
     /// <summary>
     /// The collection of images to be added.
     /// </summary>
-    public required List<ReqImageDto> Images { get; set; }
+    public List<ReqImageDto> Images { get; set; } = new();
 }

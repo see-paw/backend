@@ -16,8 +16,7 @@ public class ImageManager<T>(
     AppDbContext dbContext,
     ICloudinaryService cloudinaryService,
     IImageOwnerLoader<T> loader,
-    IImageOwnerLinker<T> linker,
-    IPrincipalImageEnforcer principalImageEnforcer
+    IImageOwnerLinker<T> linker
 ) : IImageManager<T> where T : class, IHasImages
 {
     /// <summary>
@@ -55,7 +54,6 @@ public class ImageManager<T>(
         };
 
         linker.Link(entity, img, entityId);
-        principalImageEnforcer.EnforceSinglePrincipal(entity.Images, img);
 
         return Result<Image>.Success(img, 201);
     }

@@ -18,7 +18,7 @@ public class Shelter: IHasImages
     /// </summary>
     [Key]
     [MaxLength(36)]
-    public string Id { get; init; } = Guid.NewGuid().ToString();
+    public string Id { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// The official name of the shelter.
