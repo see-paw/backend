@@ -1,5 +1,6 @@
+using Application.Animals.Queries;
 using Application.Core;
-using Application.OwnershipRequests.Queries;
+using Application.Interfaces;
 using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WebAPI.Controllers;
 
-namespace Tests.OwnershipRequestsTest;
+namespace Tests.AnimalControllerTest;
 
 /// <summary>
 /// Unit test suite for <see cref="OwnershipRequestsController"/> that verifies
@@ -21,7 +22,8 @@ public class CheckAnimalEligibityForOwnershipTests
 {
     private readonly Mock<IMediator> _mediatorMock;
     private readonly Mock<IMapper> _mapperMock;
-    private readonly OwnershipRequestsController _controller;
+    private readonly Mock<IUserAccessor> _userAccessorMock;
+    private readonly AnimalsController _controller;
 
     /// <summary>
     /// Initializes the test class by configuring mock dependencies and setting up
@@ -30,9 +32,10 @@ public class CheckAnimalEligibityForOwnershipTests
     public CheckAnimalEligibityForOwnershipTests()
     {
         _mediatorMock = new Mock<IMediator>();
+        _userAccessorMock = new Mock<IUserAccessor>();
         _mapperMock = new Mock<IMapper>();
         // Inject the mocked mapper into the controller
-        _controller = new OwnershipRequestsController(_mapperMock.Object);
+        _controller = new AnimalsController(_mapperMock.Object, _userAccessorMock.Object);
 
         // Mock service provider to supply the IMediator dependency
         var serviceProviderMock = new Mock<IServiceProvider>();

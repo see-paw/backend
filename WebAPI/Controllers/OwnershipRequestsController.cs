@@ -47,45 +47,7 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
         // Return the successful paginated result
         return HandleResult(Result<PagedList<ResOwnershipRequestDto>>.Success(dtoPagedList, 200));
     }
-
-    /// <summary>
-    /// Checks whether a given animal is eligible to be associated with an Ownership request.
-    /// </summary>
-    /// <param name="id">The unique identifier of the animal to verify.</param>
-    /// <returns>
-    /// An <see cref="ActionResult"/> containing:
-    /// <list type="bullet">
-    /// <item><description><c>200 OK</c> with <c>true</c> if the animal is eligible for ownership.</description></item>
-    /// <item><description><c>400 Bad Request</c> if the animal exists but is not eligible (e.g., already adopted or inactive).</description></item>
-    /// <item><description><c>404 Not Found</c> if the animal does not exist in the database.</description></item>
-    /// </list>
-    /// </returns>
-    /// <remarks>
-    /// This endpoint delegates validation to the <see cref="CheckAnimalEligibilityForOwnership"/> query handler
-    /// in the <c>Application</c> layer, ensuring centralized business logic and consistent results.
-    /// <para>
-    /// **Route:** <c>GET /api/ownershiprequests/check-eligibility/{id}</c>
-    /// </para>
-    /// </remarks>
-    [HttpGet("check-eligibility/{id}")]
-    public async Task<ActionResult> CheckEligibility([FromRoute] string id)
-    {
-        // 📨 Send the eligibility check query via Mediator
-        var result = await Mediator.Send(new CheckAnimalEligibilityForOwnership.Query
-        {
-            AnimalId = id
-        });
-        
-        // ⚠️ If the query result indicates failure, return the corresponding HTTP status and message
-        if (!result.IsSuccess)
-        {
-            return HandleResult(result);
-        }
-        
-        // ✅ Map the boolean value and return 200 OK with eligibility result
-        var isPossibleToOwnership = mapper.Map<Boolean>(result.Value);
-        return HandleResult(Result<Boolean>.Success(isPossibleToOwnership, 200));
-    }
+    
 
     /// <summary>
     /// Creates a new ownership request for an animal.

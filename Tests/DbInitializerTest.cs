@@ -348,11 +348,11 @@ namespace Tests
         /// Tests that SeedData creates animals with different states.
         /// </summary>
         [Theory]
-        [InlineData(AnimalState.Available, 9)]
-        [InlineData(AnimalState.Inactive, 1)]
-        [InlineData(AnimalState.HasOwner, 1)]
-        [InlineData(AnimalState.TotallyFostered, 1)]
-        [InlineData(AnimalState.PartiallyFostered, 1)]
+        [InlineData(AnimalState.Available, 10)]
+        [InlineData(AnimalState.Inactive, 2)]
+        [InlineData(AnimalState.HasOwner, 2)]
+        [InlineData(AnimalState.TotallyFostered, 2)]
+        [InlineData(AnimalState.PartiallyFostered, 2)]
         public async Task SeedData_EmptyDatabase_CreatesAnimalsWithDifferentStates(AnimalState state, int expectedCount)
         {
             // Arrange
@@ -371,8 +371,8 @@ namespace Tests
         /// Tests that seeded animals have correct species distribution.
         /// </summary>
         [Theory]
-        [InlineData(Species.Dog, 8)]
-        [InlineData(Species.Cat, 5)]
+        [InlineData(Species.Dog, 11)]
+        [InlineData(Species.Cat, 7)]
         public async Task SeedData_EmptyDatabase_CreatesAnimalsWithCorrectSpecies(Species species, int expectedCount)
         {
             // Arrange

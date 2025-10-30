@@ -1,6 +1,6 @@
-﻿using Application.Core;
+﻿using Application.Animals.Queries;
+using Application.Core;
 using Application.Interfaces;
-using Application.OwnershipRequests.Queries;
 using Domain;
 using Domain.Enums;
 using MediatR;

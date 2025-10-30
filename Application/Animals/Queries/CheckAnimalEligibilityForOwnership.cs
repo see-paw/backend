@@ -4,10 +4,9 @@ using Domain.Enums;
 using MediatR;
 using Persistence;
 
-namespace Application.OwnershipRequests.Queries;
+namespace Application.Animals.Queries;
 /// <summary>
 /// Query responsible for verifying whether a given animal is eligible
-/// to be associated with an Ownership request.
 /// </summary>
 /// <remarks>
 /// An animal is considered <b>not eligible</b> if:
