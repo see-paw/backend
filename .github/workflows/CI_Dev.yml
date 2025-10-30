@@ -347,7 +347,15 @@ jobs:
 
       - name: Login no Postman CLI
         run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
+        
+      - name: Prepare Postman working directory
+        run: |
+          mkdir -p ~/Postman/files
+          cp -r backend/Tests/Assets/* ~/Postman/files/
 
+      - name: List Postman working dir
+        run: ls -l ~/Postman/files
+        
       - name: Executar testes Postman e gerar relatórios
         run: |
           set -e
@@ -362,16 +370,17 @@ jobs:
           # Executar a coleção "Tests" usando o Postman CLI
           # NOTA: Postman CLI suporta apenas: cli, json, junit, html (básico)
           postman collection run "${{ secrets.POSTMAN_COLLECTION_ID }}" \
-            -e "${{ secrets.POSTMAN_ENV_ID }}" \
-            --env-var "url=http://localhost:5000" \
-            --reporters cli,json,html \
-            --reporter-json-export TestResults/postman/results.json \
-            --reporter-html-export TestResults/postman/report.html \
-            --delay-request 300 \
-            --timeout-request 10000 \
-            --bail false \
-            --color on \
-            2>&1 | tee TestResults/postman/console-output.txt
+          -e "${{ secrets.POSTMAN_ENV_ID }}" \
+          --env-var "url=http://localhost:5000" \
+          --working-dir ~/Postman/files \
+          --reporters cli,json,html \
+          --reporter-json-export TestResults/postman/results.json \
+          --reporter-html-export TestResults/postman/report.html \
+          --delay-request 300 \
+          --timeout-request 10000 \
+          --bail false \
+          --color on \
+          2>&1 | tee TestResults/postman/console-output.txt
           
           exit_code=${PIPESTATUS[0]}
           
