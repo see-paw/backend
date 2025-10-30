@@ -532,5 +532,5 @@ jobs:
       - name: Parar API e containers
         if: always()
         run: |
-          echo "🧹 A encerrar ambiente de teste..."
+          echo "🧹 A encerrar ambiente de teste...."
           kill $(cat server_pid.txt) || true
