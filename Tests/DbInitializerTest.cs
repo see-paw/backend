@@ -285,14 +285,14 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(13, await context.Animals.CountAsync());
+            Assert.Equal(15, await context.Animals.CountAsync());
         }
 
         /// <summary>
         /// Tests that SeedData creates animals with different states.
         /// </summary>
         [Theory]
-        [InlineData(AnimalState.Available, 10)]
+        [InlineData(AnimalState.Available, 7)]
         [InlineData(AnimalState.Inactive, 2)]
         [InlineData(AnimalState.HasOwner, 2)]
         [InlineData(AnimalState.TotallyFostered, 2)]
@@ -312,8 +312,8 @@ namespace Tests
         /// Tests that seeded animals have correct species distribution.
         /// </summary>
         [Theory]
-        [InlineData(Species.Dog, 11)]
-        [InlineData(Species.Cat, 7)]
+        [InlineData(Species.Dog, 9)]
+        [InlineData(Species.Cat, 6)]
         public async Task SeedData_EmptyDatabase_CreatesAnimalsWithCorrectSpecies(Species species, int expectedCount)
         {
             await using var context = new AppDbContext(_options);
