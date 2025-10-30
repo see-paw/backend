@@ -24,13 +24,13 @@ public class Activity
     /// The foreign key referencing the animal associated with this activity.
     /// </summary>
     [Required]
-    public string AnimalId { get; init; } = string.Empty;
+    public string AnimalId { get; set; } = string.Empty;
 
     /// <summary>
     /// The foreign key referencing the user involved in this activity.
     /// </summary>
     [Required]
-    public string UserId { get; init; } = string.Empty;
+    public string UserId { get; set; } = string.Empty;
 
     /// <summary>
     /// The type of activity (e.g., fostering or ownership).
@@ -42,7 +42,7 @@ public class Activity
     /// The current status of the activity (e.g., active, cancelled, or completed).
     /// </summary>
     [Required]
-    public ActivityStatus Status { get; init; }
+    public ActivityStatus Status { get; set; }
 
     /// <summary>
     /// The start date of the activity.
@@ -65,7 +65,7 @@ public class Activity
     /// <summary>
     /// The animal entity associated with this activity.
     /// </summary>
-    public Animal Animal { get; init; } = null!;
+    public Animal Animal { get; set; } = null!;
 
     /// <summary>
     /// The user entity participating in this activity.

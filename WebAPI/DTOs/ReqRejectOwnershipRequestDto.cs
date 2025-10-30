@@ -7,6 +7,5 @@ namespace WebAPI.DTOs;
 /// </summary>
 public class ReqRejectOwnershipRequestDto
 {
-    [MaxLength(500, ErrorMessage = "Rejection reason cannot exceed 500 characters")]
     public string? RejectionReason { get; set; }
 }

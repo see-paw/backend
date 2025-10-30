@@ -7,6 +7,5 @@ namespace WebAPI.DTOs;
 /// </summary>
 public class ReqUpdateOwnershipStatusDto
 {
-    [MaxLength(500, ErrorMessage = "Request info cannot exceed 500 characters")]
     public string? RequestInfo { get; set; }
 }

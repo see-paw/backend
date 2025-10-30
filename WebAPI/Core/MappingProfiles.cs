@@ -93,6 +93,11 @@ public class MappingProfiles : Profile
             .ForMember(dest => dest.AnimalName, opt => opt.MapFrom(src => src.Animal.Name))
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Name));
         CreateMap<ReqUserProfileDto, User>();
+
+        // Activity mappings
+        CreateMap<Activity, ResActivityDto>()
+            .ForMember(dest => dest.AnimalName, opt => opt.MapFrom(src => src.Animal.Name))
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Name));
     }
 
     private static int CalculateAge(DateOnly birthDate)
