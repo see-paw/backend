@@ -1,10 +1,8 @@
-using System;
-using System.Collections.Generic;
+
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
+
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+
 
 namespace Domain;
 
@@ -21,8 +19,15 @@ public class Image
     /// Unique identifier of the image (GUID).
     /// </summary>
     [Key]
-    public string Id { get; init; } = Guid.NewGuid().ToString();
+    [MaxLength(36)]
+    public string Id { get; set; } = Guid.NewGuid().ToString();
 
+    /// <summary>
+    /// Public identifier of the resource stored in Cloudinary.
+    /// </summary>
+    [Required]
+    [MaxLength(500)]
+    public required string PublicId { get; init; }
     /// <summary>
     /// Indicates whether this image is marked as the principal image.
     /// </summary>
@@ -32,13 +37,26 @@ public class Image
     /// <summary>
     /// The foreign key referencing the associated animal, if applicable.
     /// </summary>
+    [MaxLength(36)]
     public string? AnimalId { get; set; }
 
+    /// <summary>
+    /// The animal associated with this image.
+    /// Ignored during JSON serialization to prevent circular references.
+    /// </summary>
     [JsonIgnore]
     public Animal? Animal { get; set; }
-
-    // Foreign Key for Shelter 
+    
+    /// <summary>
+    /// The foreign key referencing the shelter that owns this image.
+    /// </summary>
+    [MaxLength(36)]
     public string? ShelterId { get; set; }
+    
+    /// <summary>
+    /// The shelter associated with this image.
+    /// Ignored during JSON serialization to prevent circular references.
+    /// </summary>
     [JsonIgnore]
     public Shelter? Shelter { get; set; }
 
@@ -49,11 +67,11 @@ public class Image
     [MaxLength(500)]
     public string Url { get; set; } = string.Empty;
 
-    [Required]
 
     /// <summary>
     /// A short optional description of the image content.
     /// </summary>
+    [Required]
     [MaxLength(255)]
     public string? Description { get; set; }
 

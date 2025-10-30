@@ -8,7 +8,7 @@ using Persistence;
 using Application.Core;
 
 
-namespace Tests.Users.Queries
+namespace Tests.UsersControllerTest
 {
     //codacy: ignore[complexity]
     public class GetUserProfileTest

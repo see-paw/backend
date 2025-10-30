@@ -36,11 +36,25 @@ namespace Application.Users.Commands
         {
             private readonly AppDbContext _context;
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Handler"/> class.
+            /// </summary>
+            /// <param name="context">The application's database context.</param>
             public Handler(AppDbContext context)
             {
                 _context = context;
             }
 
+            /// <summary>
+            /// Updates an existing user's profile with new personal and contact information.
+            /// </summary>
+            /// <param name="request">The command containing the user's ID and updated data.</param>
+            /// <param name="cancellationToken">A token to cancel the operation if needed.</param>
+            /// <returns>
+            /// A <see cref="Result{T}"/> containing the updated <see cref="User"/> if successful,  
+            /// or an error message with the appropriate status code otherwise.
+            /// </returns>
+            /// <exception cref="Exception">Thrown if a database operation fails unexpectedly.</exception>
             public async Task<Result<User>> Handle(Command request, CancellationToken cancellationToken)
             {
                 // Retrieve the user from the database
