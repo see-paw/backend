@@ -38,7 +38,7 @@ public class CheckAnimalEligibilityForOwnership
     public class Handler(AppDbContext context) : IRequestHandler<Query, Result<bool>>
     {
         
-        // <summary>
+        /// <summary>
         /// Processes the animal eligibility check request.
         /// </summary>
         /// <param name="request">The query containing the animal ID to validate.</param>
@@ -58,13 +58,13 @@ public class CheckAnimalEligibilityForOwnership
             if (animal == null)
                 return Result<bool>.Failure("Animal ID not found", 404);
 
-            // 🚫 Validate if the animal is in a state that makes it ineligible
+            //  Validate if the animal is in a state that makes it ineligible
             if (animal.AnimalState == AnimalState.HasOwner || animal.AnimalState == AnimalState.Inactive ||
                 animal.AnimalState == AnimalState.PartiallyFostered ||
                 animal.AnimalState == AnimalState.TotallyFostered)
                 return Result<bool>.Failure("Animal not eligible for ownership", 400);
             
-             // ✅ The animal is eligible for ownership
+             //  The animal is eligible for ownership
             return Result<bool>.Success(true, 200);
         }
     }

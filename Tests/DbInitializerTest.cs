@@ -285,7 +285,7 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(13, await context.Animals.CountAsync());
+            Assert.Equal(18, await context.Animals.CountAsync());
         }
 
         /// <summary>
