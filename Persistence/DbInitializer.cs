@@ -253,6 +253,110 @@ public static class DbInitializer
                 ShelterId = shelter1Id,
                 Images = new List<Image>()
             },
+            // ======== ANIMAIS PARA TESTES DE ELEGIBILIDADE ========
+
+            // 1. Animal DISPONÍVEL para adoção (200 OK)
+            new()
+            {
+                Id = "available-animal-id-123",
+                Name = "TestDog Available",
+                AnimalState = AnimalState.Available,
+                Description = "Animal de teste disponível para adoção",
+                Species = Species.Dog,
+                Size = SizeType.Medium,
+                Sex = SexType.Male,
+                Colour = "Preto",
+                BirthDate = new DateOnly(2022, 1, 15),
+                Sterilized = true,
+                BreedId = breed2Id,
+                Cost = 40,
+                Features = "Animal de teste - Estado: Available",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+
+            // 2. Animal com DONO (400 Bad Request)
+            new()
+            {
+                Id = "animal-with-owner-id",
+                Name = "TestDog HasOwner",
+                AnimalState = AnimalState.HasOwner,
+                Description = "Animal de teste que já tem dono",
+                Species = Species.Dog,
+                Size = SizeType.Small,
+                Sex = SexType.Female,
+                Colour = "Branco",
+                BirthDate = new DateOnly(2021, 5, 10),
+                Sterilized = true,
+                BreedId = breed2Id,
+                Cost = 35,
+                Features = "Animal de teste - Estado: HasOwner",
+                ShelterId = shelter1Id,
+                OwnerId = user3Id, // Carlos
+                OwnershipStartDate = DateTime.UtcNow.AddMonths(-2),
+                Images = new List<Image>()
+            },
+
+            // 3. Animal INATIVO (400 Bad Request)
+            new()
+            {
+                Id = "inactive-animal-id",
+                Name = "TestCat Inactive",
+                AnimalState = AnimalState.Inactive,
+                Description = "Animal de teste inativo",
+                Species = Species.Cat,
+                Size = SizeType.Small,
+                Sex = SexType.Male,
+                Colour = "Cinzento",
+                BirthDate = new DateOnly(2020, 8, 20),
+                Sterilized = true,
+                BreedId = breed1Id,
+                Cost = 25,
+                Features = "Animal de teste - Estado: Inactive",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+
+            // 4. Animal PARCIALMENTE ACOLHIDO (400 Bad Request)
+            new()
+            {
+                Id = "partially-fostered-animal-id",
+                Name = "TestDog PartiallyFostered",
+                AnimalState = AnimalState.PartiallyFostered,
+                Description = "Animal de teste parcialmente acolhido",
+                Species = Species.Dog,
+                Size = SizeType.Large,
+                Sex = SexType.Male,
+                Colour = "Castanho",
+                BirthDate = new DateOnly(2021, 3, 5),
+                Sterilized = false,
+                BreedId = breed3Id,
+                Cost = 60,
+                Features = "Animal de teste - Estado: PartiallyFostered",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+
+            // 5. Animal TOTALMENTE ACOLHIDO (400 Bad Request)
+            new()
+            {
+                Id = "totally-fostered-animal-id",
+                Name = "TestCat TotallyFostered",
+                AnimalState = AnimalState.TotallyFostered,
+                Description = "Animal de teste totalmente acolhido",
+                Species = Species.Cat,
+                Size = SizeType.Small,
+                Sex = SexType.Female,
+                Colour = "Laranja",
+                BirthDate = new DateOnly(2022, 7, 12),
+                Sterilized = true,
+                BreedId = breed1Id,
+                Cost = 30,
+                Features = "Animal de teste - Estado: TotallyFostered",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+            
             new()
             {
                 Id = Guid.NewGuid().ToString(),
@@ -567,7 +671,6 @@ public static class DbInitializer
         // ======== SEED FOSTERINGS ========
         if (!dbContext.Fosterings.Any())
         {
-            const string fostering1Id = "f0000000-0000-0000-0000-000000000001";
             const string fostering2Id = "f0000000-0000-0000-0000-000000000002";
             const string fostering3Id = "f0000000-0000-0000-0000-000000000003";
 

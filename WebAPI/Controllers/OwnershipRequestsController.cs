@@ -48,12 +48,12 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
         return HandleResult(Result<PagedList<ResOwnershipRequestDto>>.Success(dtoPagedList, 200));
     }
 
-    [HttpGet("check-eligibility")]
-    public async Task<ActionResult> CheckEligibility([FromBody] string animalId)
+    [HttpGet("check-eligibility/{id}")]
+    public async Task<ActionResult> CheckEligibility([FromRoute] string id)
     {
         var result = await Mediator.Send(new CheckAnimalEligibilityForOwnership.Query
         {
-            AnimalId = animalId
+            AnimalId = id
         });
         
         if (!result.IsSuccess)
