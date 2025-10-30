@@ -47,7 +47,6 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
         // Return the successful paginated result
         return HandleResult(Result<PagedList<ResOwnershipRequestDto>>.Success(dtoPagedList, 200));
     }
-    
 
     /// <summary>
     /// Creates a new ownership request for an animal.
@@ -59,7 +58,7 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
     {
         var command = new CreateOwnershipRequest.Command
         {
-            AnimalID = dto.AnimalId
+            AnimalID = dto.AnimalId,
         };
 
         var result = await Mediator.Send(command);

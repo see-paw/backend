@@ -93,6 +93,32 @@ public class MappingProfiles : Profile
             .ForMember(dest => dest.AnimalName, opt => opt.MapFrom(src => src.Animal.Name))
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Name));
         CreateMap<ReqUserProfileDto, User>();
+        
+        //  OwnershipRequests mapping
+        CreateMap<OwnershipRequest, ResUserOwnershipsDto>()
+            .ForMember(d => d.Id, o => o.MapFrom(s => s.Id))
+            .ForMember(d => d.AnimalId, o => o.MapFrom(s => s.Animal.Id))
+            .ForMember(d => d.AnimalName, o => o.MapFrom(s => s.Animal.Name))
+            .ForMember(d => d.AnimalState, o => o.MapFrom(s => s.Animal.AnimalState))
+            .ForMember(d => d.Image, o => o.MapFrom(s => s.Animal.Images.FirstOrDefault(i => i.IsPrincipal)))
+            .ForMember(d => d.Amount, o => o.MapFrom(s => s.Animal.Cost))
+            .ForMember(d => d.OwnershipStatus, o => o.MapFrom(s => s.Status))
+            .ForMember(d => d.RequestInfo, o => o.MapFrom(s => s.RequestInfo))
+            .ForMember(d => d.RequestedAt, o => o.MapFrom(s => s.RequestedAt))
+            .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => s.UpdatedAt));
+           
+
+        //  Animals owned mapping
+        CreateMap<Animal, ResUserOwnershipsDto>()
+            .ForMember(d => d.Id, o => o.MapFrom(s => s.Id))
+            .ForMember(d => d.AnimalId, o => o.MapFrom(s => s.Id))
+            .ForMember(d => d.AnimalName, o => o.MapFrom(s => s.Name))
+            .ForMember(d => d.AnimalState, o => o.MapFrom(s => s.AnimalState))
+            .ForMember(d => d.Image, o => o.MapFrom(s => s.Images.FirstOrDefault(i => i.IsPrincipal)))
+            .ForMember(d => d.Amount, o => o.MapFrom(s => s.Cost))
+            .ForMember(d => d.RequestedAt, o => o.MapFrom(s => s.OwnershipStartDate ?? DateTime.UtcNow))
+            .ForMember(d => d.ApprovedAt, o => o.MapFrom(s => s.OwnershipStartDate))
+            .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => s.UpdatedAt));
     }
 
     private static int CalculateAge(DateOnly birthDate)

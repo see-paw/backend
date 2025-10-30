@@ -87,7 +87,7 @@ public class User : IdentityUser
 
     /// <summary>
     /// The collection of ownership requests submitted by the user.
-    /// </summary>
+    /// </summary>public ICollection<OwnershipRequest> OwnershipRequests { get; set; } = new List<OwnershipRequest>();
     public ICollection<OwnershipRequest> OwnershipRequests { get; set; } = new List<OwnershipRequest>();
 
     /// <summary>

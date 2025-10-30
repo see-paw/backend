@@ -141,7 +141,7 @@ public class ApproveOwnershipRequest
         /// Updates the ownership request to approved status and sets approval timestamps.
         /// </summary>
         /// <param name="ownershipRequest">The ownership request to approve.</param>
-        private static void ApproveRequest(OwnershipRequest ownershipRequest)
+        private void ApproveRequest(OwnershipRequest ownershipRequest)
         {
             ownershipRequest.Status = OwnershipStatus.Approved;
             ownershipRequest.ApprovedAt = DateTime.UtcNow;
