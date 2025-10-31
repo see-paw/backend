@@ -32,6 +32,7 @@ public class AddFostering
             
             if (animal == null)
             {
+                await transaction.RollbackAsync(ct);
                 return Result<Fostering>.Failure("Animal not found", 404);
             }
 
@@ -54,6 +55,7 @@ public class AddFostering
 
             if (fosteringService.IsAlreadyFosteredByUser(animal, user.Id))
             {
+                await transaction.RollbackAsync(ct);
                 return Result<Fostering>.Failure("You already foster this animal", 409);
             }
             
@@ -61,12 +63,8 @@ public class AddFostering
 
             if (newSupport > animal.Cost)
             {
+                await transaction.RollbackAsync(ct);
                 return Result<Fostering>.Failure("Monthly value surpasses animal costs", 422);
-            }
-            
-            if (newSupport == animal.Cost)
-            {
-                animal.AnimalState = AnimalState.TotallyFostered;
             }
 
             var newFostering = new Fostering
@@ -77,6 +75,10 @@ public class AddFostering
                 Animal = animal,
                 User = user,
             };
+
+            animal.Fosterings.Add(newFostering);
+            
+            fosteringService.UpdateFosteringState(animal);
             
             dbContext.Fosterings.Add(newFostering);
             
