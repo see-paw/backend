@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Domain;
 
@@ -15,18 +16,21 @@ public class Favorite
     /// Unique identifier of the favorite entry (GUID).
     /// </summary>
     [Key]
+    [MaxLength(36)]
     public string Id { get; init; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// The foreign key referencing the user who favorited the animal.
     /// </summary>
     [Required]
+    [MaxLength(36)]
     public string UserId { get; set; } = string.Empty;
 
     /// <summary>
     /// The foreign key referencing the favorited animal.
     /// </summary>
     [Required]
+    [MaxLength(36)]
     public string AnimalId { get; set; } = string.Empty;
 
     /// <summary>
@@ -49,10 +53,12 @@ public class Favorite
     /// <summary>
     /// The animal associated with this favorite record.
     /// </summary>
+    [JsonIgnore]
     public Animal Animal { get; set; } = null!;
 
     /// <summary>
     /// The user who marked the animal as a favorite.
     /// </summary>
+    [JsonIgnore]
     public User User { get; set; } = null!;
 }

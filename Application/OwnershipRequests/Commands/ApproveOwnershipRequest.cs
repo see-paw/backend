@@ -22,6 +22,9 @@ public class ApproveOwnershipRequest
     /// </summary>
     public class Command : IRequest<Result<OwnershipRequest>>
     {
+        /// <summary>
+        /// The unique identifier of the ownership request to approve.
+        /// </summary>
         public string OwnershipRequestId { get; set; } = string.Empty;
     }
 

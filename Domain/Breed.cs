@@ -15,7 +15,8 @@ public class Breed
     /// Unique identifier of the breed (GUID).
     /// </summary>
     [Key]
-    public string Id { get; init; } = Guid.NewGuid().ToString();
+    [MaxLength(36)]
+    public string Id { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// The name of the breed.

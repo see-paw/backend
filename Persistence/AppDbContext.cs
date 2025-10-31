@@ -18,14 +18,44 @@ namespace Persistence;
 /// </remarks>
 public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(options)
 {
+    /// <summary>
+    /// The collection of animals stored in the database.
+    /// </summary>
     public DbSet<Animal> Animals { get; set; }
+
+    /// <summary>
+    /// The collection of shelters registered in the system.
+    /// </summary>
     public DbSet<Shelter> Shelters { get; set; }
+
+    /// <summary>
+    /// The collection of fostering records representing animal sponsorships.
+    /// </summary>
     public DbSet<Fostering> Fosterings { get; set; }
+
+    /// <summary>
+    /// The collection of ownership requests made by users.
+    /// </summary>
     public DbSet<OwnershipRequest> OwnershipRequests { get; set; }
+
+    /// <summary>
+    /// The collection of activities scheduled for animals.
+    /// </summary>
     public DbSet<Activity> Activities { get; set; }
+
+    /// <summary>
+    /// The collection of user favorites linking users to their preferred animals.
+    /// </summary>
     public DbSet<Favorite> Favorites { get; set; }
+
+    /// <summary>
+    /// The collection of images associated with animals or shelters.
+    /// </summary>
     public DbSet<Image> Images { get; set; }
 
+    /// <summary>
+    /// The collection of animal breeds available in the system.
+    /// </summary>
     public DbSet<Breed> Breeds { get; set; }
 
     /// <summary>

@@ -1,6 +1,7 @@
 ﻿using Application.Animals.Queries;
 using FluentValidation.TestHelper;
 using WebAPI.Validators;
+using WebAPI.Validators.Animals;
 
 namespace Tests.AnimalControllerTest.cs;
 
@@ -32,7 +33,7 @@ public class GetAnimalDetailsValidatorTest
     [InlineData("not-a-guid")]
     [InlineData("12345")]
     [InlineData("invalid-format")]
-    public void Validate_InvalidIdFormat_ShouldHaveValidationError(string invalidId)
+    public void Validate_InvalidIdFormat_ShouldHaveValidationError(string? invalidId)
     {
         // Arrange
         var query = new GetAnimalDetails.Query { Id = invalidId };

@@ -173,7 +173,7 @@ namespace Tests
         /// <summary>
         /// Tests that behavior respects cancellation token.
         /// </summary>
-        /*[Fact]
+        [Fact]
         public async Task Handle_CancellationRequested_PassesCancellationToken()
         {
             // Arrange
@@ -195,7 +195,7 @@ namespace Tests
 
             // Assert
             mockValidator.Verify(v => v.ValidateAsync(request, cancellationToken), Times.Once);
-        }*/
+        }
 
         /// <summary>
         /// Tests that behavior calls validator exactly once.

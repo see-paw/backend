@@ -28,7 +28,7 @@ public class CustomAuthMiddlewareHandlerTest
     {
         this._httpContext = new DefaultHttpContext();
         this._policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
-        this._next = new RequestDelegate(_ => Task.CompletedTask);
+        this._next = _ => Task.CompletedTask;
         this._handler = new CustomAuthMiddlewareHandler();
     }
 

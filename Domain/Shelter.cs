@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using Domain.Interfaces;
 
 namespace Domain;
 
@@ -10,13 +11,14 @@ namespace Domain;
 /// Contains identification, contact, and scheduling information for a shelter,  
 /// as well as relationships with animals and images registered under it.
 /// </remarks>
-public class Shelter
+public class Shelter: IHasImages
 {
     /// <summary>
     /// Unique identifier of the shelter (GUID).
     /// </summary>
     [Key]
-    public string Id { get; init; } = Guid.NewGuid().ToString();
+    [MaxLength(36)]
+    public string Id { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// The official name of the shelter.
@@ -43,6 +45,7 @@ public class Shelter
     /// The postal code of the shelter, formatted as 0000-000.
     /// </summary>
     [Required]
+    [StringLength(100)]
     [RegularExpression(@"^\d{4}-\d{3}$", ErrorMessage = "Postal Code must be in the format 0000-000.")]
     public string PostalCode { get; set; } = string.Empty;
 
@@ -52,6 +55,7 @@ public class Shelter
     /// </summary>
     [Required]
     [Phone]
+    [StringLength(100)]
     [RegularExpression(@"^[29]\d{8}$", ErrorMessage = "Phone number must have 9 digits and start with 2 or 9.")]
     public string Phone { get; set; } = string.Empty;
 
@@ -60,6 +64,7 @@ public class Shelter
     /// Must contain exactly 9 digits.
     /// </summary>
     [Required]
+    [StringLength(100)]
     [RegularExpression(@"^\d{9}$", ErrorMessage = "Nif must contain exactly 9 digits.")]
     public string NIF { get; init; } = string.Empty;
 
@@ -89,6 +94,7 @@ public class Shelter
     /// <summary>
     /// The list of animals currently registered in the shelter.
     /// </summary>
+    [JsonIgnore]
     public ICollection<Animal> Animals { get; set; } = new List<Animal>();
 
     /// <summary>
