@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WebAPI.Controllers;
-using WebAPI.DTOs;
+using WebAPI.DTOs.Activities;
 using Xunit;
 
 namespace Tests.Activities;

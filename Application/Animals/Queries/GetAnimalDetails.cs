@@ -27,6 +27,9 @@ public class GetAnimalDetails
     /// </remarks>
     public class Query : IRequest<Result<Animal>>
     {
+        /// <summary>
+        /// The unique identifier of the animal to retrieve.
+        /// </summary>
         public required string Id { get; set; }
     }
 

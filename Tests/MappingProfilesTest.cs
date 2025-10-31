@@ -2,7 +2,8 @@
 using Domain;
 using Domain.Enums;
 using WebAPI.Core;
-using WebAPI.DTOs;
+using WebAPI.DTOs.Animals;
+using WebAPI.DTOs.Images;
 using Xunit;
 
 namespace Tests
@@ -15,7 +16,7 @@ namespace Tests
     {
         private readonly IMapper _mapper;
         private readonly MapperConfiguration _configuration;
-
+    
         public MappingProfilesTest()
         {
             _configuration = new MapperConfiguration(cfg =>
@@ -29,12 +30,12 @@ namespace Tests
         /// <summary>
         /// Tests that AutoMapper configuration is valid.
         /// </summary>
-        /*[Fact]
+        [Fact]
         public void Configuration_IsValid()
         {
             // Act & Assert
             _configuration.AssertConfigurationIsValid();
-        }*/
+        }
 
         /// <summary>
         /// Tests that Animal maps to ResAnimalDto correctly.
@@ -46,7 +47,7 @@ namespace Tests
             var breedId = Guid.NewGuid().ToString();
             var shelterId = Guid.NewGuid().ToString();
             var birthDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-3));
-
+            
             var animal = new Animal
             {
                 Id = Guid.NewGuid().ToString(),
@@ -169,12 +170,14 @@ namespace Tests
         {
             // Arrange
             var animalId = Guid.NewGuid().ToString();
+            var publicId =  Guid.NewGuid().ToString();
             var images = new List<Image>
             {
                 new Image
                 {
                     Id = Guid.NewGuid().ToString(),
                     Url = "https://example.com/image1.jpg",
+                    PublicId = publicId,
                     IsPrincipal = true,
                     Description = "Main photo",
                     AnimalId = animalId
@@ -183,6 +186,7 @@ namespace Tests
                 {
                     Id = Guid.NewGuid().ToString(),
                     Url = "https://example.com/image2.jpg",
+                    PublicId = publicId,
                     IsPrincipal = false,
                     Description = "Side view",
                     AnimalId = animalId
@@ -222,11 +226,13 @@ namespace Tests
         [Fact]
         public void Map_ImageToResImageDto_MapsAllProperties()
         {
+            var publicId =  Guid.NewGuid().ToString();
             // Arrange
             var image = new Image
             {
                 Id = Guid.NewGuid().ToString(),
                 Url = "https://example.com/photo.jpg",
+                PublicId = publicId,
                 IsPrincipal = true,
                 Description = "Beautiful photo"
             };

@@ -4,7 +4,7 @@ using Application.Core;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WebAPI.DTOs;
+using WebAPI.DTOs.Activities;
 
 namespace WebAPI.Controllers;
 

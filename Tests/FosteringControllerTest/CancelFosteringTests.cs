@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Persistence;
 using Xunit;
 
-namespace Tests.Fosterings
+namespace Tests.FosteringControllerTest
 {
     // codacy: ignore[complexity]
     public class CancelFosteringTests

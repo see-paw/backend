@@ -3,10 +3,9 @@ using Application.Fosterings.Commands;
 using Application.Fosterings.Queries;
 using Application.Interfaces;
 using AutoMapper;
-using Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WebAPI.DTOs;
+using WebAPI.DTOs.Fostering;
 
 namespace WebAPI.Controllers
 {

@@ -1,0 +1,16 @@
+Tests (11 tests) Failed: 11 tests failed
+  Tests.AnimalControllerTest.cs (11 tests) Failed: 11 tests failed
+    GetAnimalDetailsEndpointTest (11 tests) Failed: One or more child tests failed: 11 tests failed
+      GetAnimalDetails_InvalidAnimalState_ReturnsNotFound (3 tests) Failed: One or more child tests failed: 3 tests failed
+        GetAnimalDetails_InvalidAnimalState_ReturnsNotFound(invalidState: HasOwner) Failed: System.NullReferenceException: Object reference not set to an instance of an object.
+        GetAnimalDetails_InvalidAnimalState_ReturnsNotFound(invalidState: Inactive) Failed: System.NullReferenceException: Object reference not set to an instance of an object.
+        GetAnimalDetails_InvalidAnimalState_ReturnsNotFound(invalidState: TotallyFostered) Failed: System.NullReferenceException: Object reference not set to an instance of an object.
+      GetAnimalDetails_InvalidId_ReturnsBadRequest (5 tests) Failed: One or more child tests failed: 5 tests failed
+        GetAnimalDetails_InvalidId_ReturnsBadRequest(invalidId: " ") Failed: System.NullReferenceException: Object reference not set to an instance of an object.
+        GetAnimalDetails_InvalidId_ReturnsBadRequest(invalidId: "") Failed: System.NullReferenceException: Object reference not set to an instance of an object.
+        GetAnimalDetails_InvalidId_ReturnsBadRequest(invalidId: "12345") Failed: System.NullReferenceException: Object reference not set to an instance of an object.
+        GetAnimalDetails_InvalidId_ReturnsBadRequest(invalidId: "not-a-valid-guid") Failed: System.NullReferenceException: Object reference not set to an instance of an object.
+        GetAnimalDetails_InvalidId_ReturnsBadRequest(invalidId: null) Failed: System.NullReferenceException: Object reference not set to an instance of an object.
+      GetAnimalDetails_NonExistentId_ReturnsNotFound Failed: System.NullReferenceException: Object reference not set to an instance of an object.
+      GetAnimalDetails_PartiallyFosteredAnimal_ReturnsOk Failed: System.NullReferenceException: Object reference not set to an instance of an object.
+      GetAnimalDetails_ValidId_ReturnsOkWithCompleteDto Failed: System.NullReferenceException: Object reference not set to an instance of an object.

@@ -1,7 +1,9 @@
 ﻿using WebAPI.DTOs;
+using WebAPI.DTOs.User;
 using WebAPI.Validators;
+using WebAPI.Validators.User;
 
-namespace Tests.UserControllerTest
+namespace Tests.UsersControllerTest
 {
     //codacy: ignore[complexity]
     public class EditUserProfileTests
@@ -22,7 +24,7 @@ namespace Tests.UserControllerTest
         [InlineData("@na")]
         [InlineData("ThisIsAnExtremelyLongNameThatExceedsTheMaximumAllowedCharacterLimitBecauseItHasMoreThanTwoHundredAndFiftyFiveCharacters_"
                    + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")]
-        public void InvalidName(string name)
+        public void InvalidName(string? name)
         {
             var dto = CreateValidUserDto();
             dto.Name = name;

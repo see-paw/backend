@@ -1,6 +1,6 @@
 ﻿using FluentValidation.TestHelper;
-using WebAPI.DTOs;
-using WebAPI.Validators;
+using WebAPI.DTOs.Ownership;
+using WebAPI.Validators.Ownership;
 using Xunit;
 
 namespace Tests.Validators;

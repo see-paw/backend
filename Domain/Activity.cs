@@ -1,5 +1,5 @@
-﻿using Domain.Enums;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using Domain.Enums;
 
 namespace Domain;
 
@@ -18,6 +18,7 @@ public class Activity
     /// A constraint in <c>AppDbContext.OnModelCreating</c> ensures that the combination of <c>AnimalId</c> and <c>StartDate</c> is unique.
     /// </summary>
     [Key]
+    [MaxLength(36)]
     public string Id { get; init; } = Guid.NewGuid().ToString();
 
     /// <summary>
@@ -30,6 +31,7 @@ public class Activity
     /// The foreign key referencing the user involved in this activity.
     /// </summary>
     [Required]
+    [MaxLength(36)]
     public string UserId { get; set; } = string.Empty;
 
     /// <summary>

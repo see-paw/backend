@@ -3,15 +3,20 @@ using WebAPI.Validators;
 using FluentValidation;
 using Persistence;
 using System.Text.Json.Serialization;
+using Application.Animals;
+using Application.Core;
+using Application.Images;
 using Application.Interfaces;
 using Domain;
-using Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using FluentValidation.AspNetCore;
+using Infrastructure.Images;
+using Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 using WebAPI.Core;
 using WebAPI.Middleware;
+using WebAPI.Validators.Animals;
 
 var inContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 
@@ -55,6 +60,12 @@ builder.Services.AddMediatR(x => {
     x.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 
+builder.Services.AddScoped(typeof(IImagesUploader<>), typeof(ImagesUploader<>));
+builder.Services.AddScoped(typeof(IImageOwnerLoader<>), typeof(ImageOwnerLoader<>));
+builder.Services.AddScoped<IPrincipalImageEnforcer, PrincipalImageEnforcer>();
+builder.Services.AddScoped(typeof(IImageManager<>), typeof(ImageManager<>));
+builder.Services.AddScoped<IImageOwnerLinker<Animal>, AnimalImageLinker>();
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 builder.Services.AddScoped<IUserAccessor, UserAccessor>();
 builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 builder.Services.AddValidatorsFromAssemblyContaining<GetAnimalDetailsValidator>();
@@ -71,6 +82,9 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = IdentityConstants.BearerScheme;
 });
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthMiddlewareHandler>();
+
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("CloudinarySettings"));
 
 var app = builder.Build();
 
@@ -99,8 +113,7 @@ try
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var loggerFactory = services.GetRequiredService<ILoggerFactory>();
     await context.Database.MigrateAsync();
-    await Persistence.DbInitializer.SeedData(context, userManager, roleManager, loggerFactory);
-    
+    await DbInitializer.SeedData(context, userManager, roleManager, loggerFactory, true);
 }
 catch (Exception ex)
 {

@@ -1,5 +1,6 @@
-/*using Application.Animals.Queries;
+using Application.Animals.Queries;
 using Application.Core;
+using Application.Interfaces;
 using AutoMapper;
 using Domain;
 using Domain.Enums;
@@ -9,6 +10,9 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WebAPI.Controllers;
 using WebAPI.DTOs;
+using WebAPI.DTOs.Animals;
+using WebAPI.DTOs.Breeds;
+using WebAPI.DTOs.Images;
 
 namespace Tests.AnimalControllerTest.cs
 {
@@ -23,6 +27,7 @@ namespace Tests.AnimalControllerTest.cs
     {
         private readonly Mock<IMediator> _mockMediator;
         private readonly Mock<IMapper> _mockMapper;
+        private readonly Mock<IUserAccessor> _userAccessor;
         private readonly AnimalsController _controller;
 
         /// <summary>
@@ -32,9 +37,10 @@ namespace Tests.AnimalControllerTest.cs
         {
             _mockMediator = new Mock<IMediator>();
             _mockMapper = new Mock<IMapper>();
-            _controller = new AnimalsController(_mockMapper.Object);
+            _userAccessor = new Mock<IUserAccessor>();
 
-            // Mock HttpContext to provide IMediator
+            _controller = new AnimalsController(_mockMapper.Object, _userAccessor.Object);
+
             var serviceProviderMock = new Mock<IServiceProvider>();
             serviceProviderMock
                 .Setup(sp => sp.GetService(typeof(IMediator)))
@@ -156,7 +162,8 @@ namespace Tests.AnimalControllerTest.cs
                         Id = Guid.NewGuid().ToString(),
                         Url = "https://example.com/max1.jpg",
                         IsPrincipal = true,
-                        Description = "Main photo"
+                        Description = "Main photo",
+                        PublicId = "images_cq2q0f"
                     }
                 }
             };
@@ -188,6 +195,7 @@ namespace Tests.AnimalControllerTest.cs
                     {
                         Id = animal.Images.First().Id,
                         Url = "https://example.com/max1.jpg",
+                        PublicId = "asads",
                         IsPrincipal = true,
                         Description = "Main photo"
                     }
@@ -285,4 +293,4 @@ namespace Tests.AnimalControllerTest.cs
             Assert.Equal(AnimalState.PartiallyFostered, dto.AnimalState);
         }
     }
-}*/
+}

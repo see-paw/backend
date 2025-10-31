@@ -1,15 +1,15 @@
 ﻿using Application.Core;
+using Application.Interfaces;
 using Domain;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 using Persistence;
 
 namespace Application.Animals.Commands
 {
     /// <summary>
-    /// Command and handler responsible for creating a new <see cref="Animal"/> entity
-    /// in the database, ensuring all related entities (e.g., Shelter, Breed) exist
-    /// before persisting the record.
+    /// Provides the command logic to create a new <see cref="Animal"/> entity,
+    /// including database persistence and associated image uploads.
     /// </summary>
     public class CreateAnimal
     {
@@ -23,74 +23,69 @@ namespace Application.Animals.Commands
             /// <summary>
             /// The animal entity containing all its biological and adoption attributes.
             /// </summary>
-            public required Animal Animal { get; set; }
+            public required Animal Animal { get; init; }
 
             /// <summary>
             /// The unique identifier of the shelter where the animal is hosted.
             /// </summary>
-            public required string ShelterId { get; set; }
+            public required string ShelterId { get; init; }
+
+            /// <summary>
+            /// The metadata of the images associated with the animal.
+            /// </summary>
+            public required List<Image> Images { get; init; }
+
+            /// <summary>
+            /// The actual uploaded image files.
+            /// </summary>
+            public required List<IFormFile> Files { get; init; }
         }
-
+        
         /// <summary>
-        /// Handles the creation of an <see cref="Animal"/> by validating
-        /// related entities (Shelter, Breed) and saving the entity into the database.
+        /// Initializes a new instance of the <see cref="Handler"/> class.
         /// </summary>
-        public class Handler : IRequestHandler<Command, Result<string>>
+        /// <param name="dbContext">The application's database context.</param>
+        /// <param name="uploadService">The service used to handle image uploads for animals.</param>
+        public class Handler(AppDbContext dbContext, IImagesUploader<Animal> uploadService) 
+            : IRequestHandler<Command, Result<string>>
         {
-            private readonly AppDbContext _context;
-
             /// <summary>
-            /// Initializes a new instance of the <see cref="Handler"/> class
-            /// with the provided database context.
+            /// Executes the logic to create a new <see cref="Animal"/> and its related images.
             /// </summary>
-            /// <param name="context">Entity Framework Core database context.</param>
-            public Handler(AppDbContext context)
-            {
-                _context = context;
-            }
-
-            /// <summary>
-            /// Executes the command to create a new <see cref="Animal"/>.
-            /// Performs validation checks for shelter and breed existence,
-            /// associates images if provided, and persists the record.
-            /// </summary>
-            /// <param name="request">The command containing the animal details and related IDs.</param>
-            /// <param name="cancellationToken">Token used to cancel the asynchronous operation.</param>
+            /// <param name="request">The <see cref="Command"/> containing the animal data, shelter ID, and image files.</param>
+            /// <param name="cancellationToken">A cancellation token to monitor for operation cancellation.</param>
             /// <returns>
-            /// A <see cref="Result{T}"/> object containing either:
-            /// - The unique ID of the created animal (on success), or
-            /// - An error message and status code (on failure).
+            /// A <see cref="Result{T}"/> containing the unique identifier of the created animal
+            /// if successful, or an error message with a corresponding HTTP status code otherwise.
             /// </returns>
             public async Task<Result<string>> Handle(Command request, CancellationToken cancellationToken)
             {
-                // Validate that the shelter exists
-                var shelterExists = await _context.Shelters
-                    .AnyAsync(s => s.Id == request.ShelterId, cancellationToken);
+                await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
-                if (!shelterExists)
-                    return Result<string>.Failure("Shelter not found", 404);
+                request.Animal.ShelterId = request.ShelterId;
+                dbContext.Animals.Add(request.Animal);
+                
+                var uploadResult = await uploadService.UploadImagesAsync(
+                    request.Animal.Id,
+                    request.Files,
+                    request.Images,
+                    cancellationToken
+                );
 
-                // Validate that the breed exists (if specified)
-                if (!string.IsNullOrEmpty(request.Animal.BreedId))
+                if (!uploadResult.IsSuccess)
                 {
-                    var breedExists = await _context.Breeds
-                        .AnyAsync(b => b.Id == request.Animal.BreedId, cancellationToken);
-
-                    if (!breedExists)
-                        return Result<string>.Failure("Breed not found", 404);
+                    await transaction.RollbackAsync(cancellationToken);
+                    return Result<string>.Failure(uploadResult.Error ?? string.Empty, uploadResult.Code);
                 }
 
-                //Assign the shelter ID to the animal
-                request.Animal.ShelterId = request.ShelterId;
-
-                // Persist the entity in the database
-                _context.Animals.Add(request.Animal);
-                var success = await _context.SaveChangesAsync(cancellationToken) > 0;
-
+                var success = await dbContext.SaveChangesAsync(cancellationToken) > 0;
                 if (!success)
-                    return Result<string>.Failure("Failed to create animal", 400);
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    return Result<string>.Failure("Failed to save animal and images", 400);
+                }
 
-                // Return success with the new animal ID
+                await transaction.CommitAsync(cancellationToken);
                 return Result<string>.Success(request.Animal.Id, 201);
             }
         }

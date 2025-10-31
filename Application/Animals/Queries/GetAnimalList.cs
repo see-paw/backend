@@ -80,10 +80,7 @@ namespace Application.Animals.Queries
                 );
 
                 // Return consistent Result object
-                if (pagedList == null || !pagedList.Any())
-                    return Result<PagedList<Animal>>.Failure("No animals found", 404);
-
-                return Result<PagedList<Animal>>.Success(pagedList, 200);
+                return !pagedList.Any() ? Result<PagedList<Animal>>.Failure("No animals found", 404) : Result<PagedList<Animal>>.Success(pagedList, 200);
             }
         }
     }

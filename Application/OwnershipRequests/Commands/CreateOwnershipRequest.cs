@@ -58,7 +58,7 @@ public class CreateOwnershipRequest
         /// </remarks>
         public async Task<Result<OwnershipRequest>> Handle(Command request, CancellationToken cancellationToken)
         {
-            var userId = userAccessor.GetUserId(); 
+            var userId = userAccessor.GetUserId();
 
             // Validate existence of animal
             var animal = await context.Animals.FindAsync(request.AnimalID);
