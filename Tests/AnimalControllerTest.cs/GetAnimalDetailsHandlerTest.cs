@@ -1,4 +1,4 @@
-﻿/*using Application.Animals.Queries;
+﻿using Application.Animals.Queries;
 using Domain;
 using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -85,12 +85,14 @@ public class GetAnimalDetailsHandlerTest
             new() { Url = "https://example.com/max1.jpg",
                 IsPrincipal = true,
                 AnimalId = animalId,
-                Description = "Gold and beautiful"
+                Description = "Gold and beautiful",
+                PublicId = "images_cq2q0f"
             },
             new() { Url = "https://example.com/max2.jpg",
                 IsPrincipal = false,
                 AnimalId = animalId,
-                Description = "Gold and beautiful"
+                Description = "Gold and beautiful",
+                PublicId = "images_cq2q0f"
             }
         };
 
@@ -154,12 +156,14 @@ public class GetAnimalDetailsHandlerTest
                 Url = "https://example.com/max1.jpg", 
                 IsPrincipal = true, 
                 AnimalId = animalId,
-                Description = "Image of a dog"
+                Description = "Image of a dog",
+                PublicId = "images_cq2q0f"
             },
             new() { Url = "https://example.com/max2.jpg", 
                 IsPrincipal = false, 
                 AnimalId = animalId,
-                Description = "Image of a dog"
+                Description = "Image of a dog",
+                PublicId = "images_cq2q0f"
             }
         };
 
@@ -176,7 +180,7 @@ public class GetAnimalDetailsHandlerTest
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Equal("Golden Retriever", result?.Value?.Breed.Name);
+        Assert.Equal("Golden Retriever", result.Value?.Breed.Name);
         if (result != null)
         {
             Assert.Equal(2, result.Value.Images.Count);
@@ -186,4 +190,4 @@ public class GetAnimalDetailsHandlerTest
             Assert.Equal(animalId, result.Value.Id);
         }
     }
-}*/
+}

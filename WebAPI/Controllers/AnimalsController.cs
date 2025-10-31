@@ -2,18 +2,29 @@
 using Application.Animals.Queries;
 using Application.Core;
 using Application.Fosterings.Commands;
+using Application.Images.Commands;
 using Application.Interfaces;
 using AutoMapper;
 using Domain;
-using Infrastructure;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using Boolean = System.Boolean;
 
+using WebAPI.DTOs.Animals;
+using WebAPI.DTOs.Images;
 
 namespace WebAPI.Controllers;
 
+/// <summary>
+/// Handles all API operations related to animals, including creation, updates, image management, and deactivation.
+/// </summary>
+/// <remarks>
+/// Provides endpoints for public users to view animals and for shelter administrators (<c>AdminCAA</c> role)
+/// to manage animal data and images.  
+/// Uses MediatR to delegate business logic to the Application layer and AutoMapper for DTO mapping.
+/// </remarks>
 public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : BaseApiController
 {
     /// <summary>
@@ -77,98 +88,178 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
 
         return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
     }
-
+    
     /// <summary>
-    /// Creates a new animal record associated with a specific shelter.
+    /// Creates a new animal and uploads its associated images.
     /// </summary>
-    /// <param name="reqAnimalDto">The request DTO containing animal details and optional image data.</param>
+    /// <param name="reqAnimalDto">The data and images required to create the animal.</param>
     /// <returns>
-    /// The unique identifier (<see cref="string"/>) of the created animal on success,
-    /// or an error response (400, 404, 401) depending on the failure condition.
+    /// An <see cref="ActionResult{T}"/> containing the ID of the created animal if successful,  
+    /// or an error message with the corresponding status code otherwise.
     /// </returns>
+    /// <remarks>
+    /// Accessible only to users with the <c>AdminCAA</c> role.  
+    /// Accepts multipart form data to include both animal information and image files.  
+    /// Uses the <see cref="CreateAnimal"/> command via MediatR to handle the creation.
+    /// </remarks>
     [Authorize(Roles = "AdminCAA")]
     [HttpPost]
-    public async Task<ActionResult<string>> CreateAnimal([FromBody] ReqCreateAnimalDto reqAnimalDto)
+    [Consumes("multipart/form-data")]
+    public async Task<ActionResult<string>> CreateAnimal([FromForm] ReqCreateAnimalDto reqAnimalDto)
     {
+            var user = await userAccessor.GetUserAsync();
+            var shelterId = user.ShelterId;
+        
+            if (string.IsNullOrEmpty(shelterId))
+                return Unauthorized("Invalid shelter token");
+        
+            if (reqAnimalDto.Images.Count == 0)
+                return BadRequest("At least one image is required when creating an animal.");
+        
+            var invalidFile = reqAnimalDto.Images.Any(i => i.File.Length == 0);
+            if (invalidFile)
+                return BadRequest("Each image must include a valid file.");
 
-        var user = await userAccessor.GetUserAsync();
-        var shelterId = user.ShelterId;
+            // Map the validated DTO to the domain entity
+            var animal = mapper.Map<Animal>(reqAnimalDto);
+            var imageEntities = mapper.Map<List<Image>>(reqAnimalDto.Images);
+        
+            // Build the command to send to the Application layer
+            var command = new CreateAnimal.Command
+            {
+                Animal = animal,
+                ShelterId = shelterId,
+                Images = imageEntities,
+                Files = reqAnimalDto.Images.Select(i => i.File).ToList()
+            };
 
-
-        if (string.IsNullOrEmpty(shelterId))
-            return Unauthorized("Invalid shelter token");
-
-        // Map the validated DTO to the domain entity
-        var animal = mapper.Map<Animal>(reqAnimalDto);
-
-        // Build the command to send to the Application layer
-        var command = new CreateAnimal.Command
-        {
-            Animal = animal,
-            ShelterId = shelterId
-        };
-
-        // Centralized result handling (200, 400, 404, etc.)
-        return HandleResult(await Mediator.Send(command));
+            // Centralized result handling (200, 400, 404, etc.)
+            return HandleResult(await Mediator.Send(command));
     }
 
+
     /// <summary>
-    /// Updates an existing animal record belonging to the authenticated shelter.
+    /// Updates an existing animal with new information.
     /// </summary>
-    /// <para>
-    /// The animal identifier (<paramref name="id"/>) is obtained from the route, and the shelter context 
-    /// is derived from the authenticated user’s token.
-    /// </para>
-    /// <param name="id">The unique identifier of the animal to be edited.</param>
-    /// <param name="reqEditAnimalDto">
-    /// A <see cref="ReqEditAnimalDto"/> object containing the updated animal data received from the client.
-    /// </param>
+    /// <param name="id">The ID of the animal to update.</param>
+    /// <param name="reqEditAnimalDto">The data containing the updated animal details.</param>
     /// <returns>
-    /// The updated animal record on success, or an appropriate error response on failure.
+    /// An <see cref="ActionResult{T}"/> containing the updated <see cref="ResAnimalDto"/> if successful,  
+    /// or an error message with the corresponding status code otherwise.
     /// </returns>
+    /// <remarks>
+    /// Accessible only to users with the <c>AdminCAA</c> role.  
+    /// Uses the <see cref="EditAnimal"/> command via MediatR to perform the update.
+    /// </remarks>
     [Authorize(Roles = "AdminCAA")]
     [HttpPut("{id}")]
-    public async Task<ActionResult> EditAnimal(string id, [FromBody] ReqEditAnimalDto reqEditAnimalDto)
+    public async Task<ActionResult<ResAnimalDto>> EditAnimal(string id, [FromBody] ReqEditAnimalDto reqEditAnimalDto)
     {
-        // Retrieve the authenticated user and shelter context
-        var user = await userAccessor.GetUserAsync();
 
-        // Check if user is authenticated
-        if (user == null)
-            return HandleResult(Result<ResAnimalDto>.Failure("User is not authenticated", 401));
-
-        var shelterId = user.ShelterId;
-
-        // Ensure the shelter context is valid
-        if (string.IsNullOrEmpty(shelterId))
-            return Unauthorized("Invalid shelter token");
-
-        // Map the incoming DTO to the domain entity
         var animal = mapper.Map<Animal>(reqEditAnimalDto);
 
-        // Create and send the command through the MediatR pipeline
-        var command = new EditAnimal.Command
-        {
-            AnimalId = id,
-            Animal = animal,
-            ShelterId = shelterId
-        };
+        animal.Id = id;
+
+        var command = new EditAnimal.Command { Animal = animal };
 
         var result = await Mediator.Send(command);
 
         if (!result.IsSuccess)
-        {
             return HandleResult(result);
-        }
 
         var animalDto = mapper.Map<ResAnimalDto>(result.Value);
 
-        // Execute the command and return a standardized ActionResult
         return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
-        
     }
 
+    /// <summary>
+    /// Adds one or more images to an existing animal.
+    /// </summary>
+    /// <param name="id">The unique identifier of the animal.</param>
+    /// <param name="reqAddImagesDto">DTO containing the list of images to add.</param>
+    /// <returns>
+    /// A list of <see cref="ResImageDto"/> representing the newly added images on success,
+    /// or an appropriate error response on failure.
+    /// </returns>
+    [Authorize(Roles = "AdminCAA")]
+    [HttpPost("{id}/images")]
+    [Consumes("multipart/form-data")]
+    public async Task<ActionResult<List<ResImageDto>>> AddImagesToAnimal(string id, [FromForm] ReqAddImagesDto reqAddImagesDto)
+    {
+        var imageEntities = mapper.Map<List<Image>>(reqAddImagesDto.Images);
+    
+        var command = new AddImagesAnimal.Command
+        {
+            AnimalId = id,
+            Images = imageEntities,
+            Files = reqAddImagesDto.Images.Select(i => i.File).ToList()
+        };
+    
+        var result = await Mediator.Send(command);
 
+        if (!result.IsSuccess)
+            return HandleResult(result);
+
+        var imageDtos = mapper.Map<List<ResImageDto>>(result.Value);
+
+        return HandleResult(Result<List<ResImageDto>>.Success(imageDtos, 201));
+    }
+    
+    /// <summary>
+    /// Deletes an image from a specific animal.
+    /// </summary>
+    /// <param name="animalId">The ID of the animal that owns the image.</param>
+    /// <param name="imageId">The ID of the image to delete.</param>
+    /// <returns>
+    /// An <see cref="ActionResult{T}"/> indicating success or failure of the deletion.  
+    /// Returns a success result if the image was removed successfully,  
+    /// or an error message with the corresponding status code otherwise.
+    /// </returns>
+    /// <remarks>
+    /// Accessible only to users with the <c>AdminCAA</c> role.  
+    /// Uses the <see cref="DeleteAnimalImage"/> command via MediatR to handle the deletion.
+    /// </remarks>
+    [Authorize(Roles = "AdminCAA")]
+    [HttpDelete("{animalId}/images/{imageId}")]
+    public async Task<ActionResult<Unit>> DeleteAnimalImage(string animalId, string imageId)
+    {
+        var command = new DeleteAnimalImage.Command
+        {
+            AnimalId = animalId,
+            ImageId = imageId
+        };
+
+        return HandleResult(await Mediator.Send(command));
+    }
+
+    /// <summary>
+    /// Sets the main image for a specific animal.
+    /// </summary>
+    /// <param name="animalId">The ID of the animal whose main image will be updated.</param>
+    /// <param name="imageId">The ID of the image to set as the main image.</param>
+    /// <returns>
+    /// An <see cref="ActionResult{T}"/> containing the result of the operation.  
+    /// Returns a success result if the image was updated successfully,  
+    /// or an error message with the corresponding status code otherwise.
+    /// </returns>
+    /// <remarks>
+    /// Accessible only to users with the <c>AdminCAA</c> role.  
+    /// Uses the <see cref="SetAnimalPrincipalImage"/> command via MediatR to handle the update.
+    /// </remarks>
+    [Authorize(Roles = "AdminCAA")]
+    [HttpPut("{animalId}/images/{imageId}/set-principal")]
+    public async Task<ActionResult<Unit>> SetAnimalPrincipalImage(string animalId, string imageId)
+    {
+        var command = new SetAnimalPrincipalImage.Command
+        {
+            AnimalId = animalId,
+            ImageId = imageId
+        };
+        
+        return HandleResult(await Mediator.Send(command));
+    }
+    
+    
     /// <summary>
     /// Deactivates an existing <see cref="Animal"/> entity within the shelter context,
     /// changing its <see cref="Domain.Enums.AnimalState"/> to <c>Inactive</c> instead of deleting it.
@@ -182,7 +273,6 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// </list>
     /// </para>
     /// <param name="id">The unique identifier of the animal to be deactivated.</param>
-    /// <returns>
     [Authorize(Roles = "AdminCAA")]
     [HttpPatch("{id}/deactivate")]
     public async Task<ActionResult> DeactivateAnimal(string id)
@@ -221,5 +311,42 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
         });
     }
 
-
+    /// <summary>
+    /// Checks whether a given animal is eligible to be associated with an Ownership.
+    /// </summary>
+    /// <param name="id">The unique identifier of the animal to verify.</param>
+    /// <returns>
+    /// An <see cref="ActionResult"/> containing:
+    /// <list type="bullet">
+    /// <item><description><c>200 OK</c> with <c>true</c> if the animal is eligible for ownership.</description></item>
+    /// <item><description><c>400 Bad Request</c> if the animal exists but is not eligible (e.g., already adopted or inactive).</description></item>
+    /// <item><description><c>404 Not Found</c> if the animal does not exist in the database.</description></item>
+    /// </list>
+    /// </returns>
+    /// <remarks>
+    /// This endpoint delegates validation to the <see cref="CheckAnimalEligibilityForOwnership"/> query handler
+    /// in the <c>Application</c> layer, ensuring centralized business logic and consistent results.
+    /// <para>
+    /// **Route:** <c>GET /api/ownershiprequests/check-eligibility/{id}</c>
+    /// </para>
+    /// </remarks>
+    [HttpGet("check-eligibility/{id}")]
+    public async Task<ActionResult> CheckEligibility([FromRoute] string id)
+    {
+        // 📨 Send the eligibility check query via Mediator
+        var result = await Mediator.Send(new CheckAnimalEligibilityForOwnership.Query
+        {
+            AnimalId = id
+        });
+        
+        // ⚠️ If the query result indicates failure, return the corresponding HTTP status and message
+        if (!result.IsSuccess)
+        {
+            return HandleResult(result);
+        }
+        
+        // ✅ Map the boolean value and return 200 OK with eligibility result
+        var isPossibleToOwnership = mapper.Map<Boolean>(result.Value);
+        return HandleResult(Result<Boolean>.Success(isPossibleToOwnership, 200));
+    }
 }

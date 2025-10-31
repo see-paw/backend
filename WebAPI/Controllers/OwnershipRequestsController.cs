@@ -5,6 +5,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs;
+using WebAPI.DTOs.Ownership;
 
 namespace WebAPI.Controllers;
 
@@ -16,11 +17,20 @@ namespace WebAPI.Controllers;
 public class OwnershipRequestsController(IMapper mapper) : BaseApiController
 {
     /// <summary>
-    /// Gets all ownership requests for animals in the authenticated admin's shelter with pagination.
+    /// Retrieves all ownership requests associated with animals 
+    /// belonging to the authenticated admin's shelter.
     /// </summary>
-    /// <param name="pageNumber">Page number (default: 1).</param>
-    /// <param name="pageSize">Number of items per page (default: 10).</param>
-    /// <returns>Paginated list of ownership requests.</returns>
+    /// <param name="pageNumber">
+    /// The current page number for pagination. Defaults to <c>1</c>.
+    /// </param>
+    /// <returns>
+    /// A paginated <see cref="PagedList{T}"/> of <see cref="ResOwnershipRequestDto"/> objects 
+    /// representing ownership requests related to the admin's shelter.
+    /// </returns>
+    /// <response code="200">Returns a paginated list of ownership requests.</response>
+    /// <response code="401">Unauthorized — if the user is not authenticated.</response>
+    /// <response code="403">Forbidden — if the user does not have permission to access this data.</response>
+    /// <response code="500">Internal server error — if an unexpected error occurs.</response>
     [HttpGet]
     public async Task<ActionResult> GetOwnershipRequests([FromQuery] int pageNumber = 1)
     {
@@ -47,6 +57,7 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
         // Return the successful paginated result
         return HandleResult(Result<PagedList<ResOwnershipRequestDto>>.Success(dtoPagedList, 200));
     }
+    
 
     /// <summary>
     /// Creates a new ownership request for an animal.

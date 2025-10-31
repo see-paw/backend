@@ -29,13 +29,13 @@ public class IdentityResponseMiddlewareTest
     {
         _context = new DefaultHttpContext();
         _context.Response.Body = new MemoryStream(); 
-        _next = new RequestDelegate(async ctx =>
+        _next = async ctx =>
         {
             // simula a escrita de uma resposta 401 com um corpo JSON específico
             ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
             var responseBody = ctx.Items["SimulatedBody"] as string ?? string.Empty;
             await ctx.Response.WriteAsync(responseBody);
-        });
+        };
         _middleware = new IdentityResponseMiddleware(_next);
     }
 

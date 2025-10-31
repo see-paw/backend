@@ -234,7 +234,7 @@ namespace Tests.SheltersControllerTest
 
             var result = await handler.Handle(query, CancellationToken.None);
 
-            Assert.Equal(1, result.Value.Count);
+            Assert.Single(result.Value);
         }
 
         // Test: Shelter does not exist.
