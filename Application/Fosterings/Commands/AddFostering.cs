@@ -14,7 +14,6 @@ public class AddFostering
     public class Command : IRequest<Result<Fostering>>
     {
         public required string AnimalId { get; set; }
-
         public decimal MonthValue { get; set; }
     }
     
@@ -27,7 +26,8 @@ public class AddFostering
             await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
             
             var animal = await dbContext.Animals
-                .Include(a => a.Fosterings)
+                .Include(a => a.Fosterings
+                    .Where(f => f.Status == FosteringStatus.Active))
                 .FirstOrDefaultAsync(a => a.Id == request.AnimalId, ct);
             
             if (animal == null)
