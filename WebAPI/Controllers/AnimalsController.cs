@@ -13,6 +13,7 @@ using WebAPI.DTOs;
 using Boolean = System.Boolean;
 
 using WebAPI.DTOs.Animals;
+using WebAPI.DTOs.Fostering;
 using WebAPI.DTOs.Images;
 
 namespace WebAPI.Controllers;
@@ -300,15 +301,16 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     
     [Authorize(Roles = "User")]
     [HttpPost("{animalId}/fosterings")]
-    public async Task<ActionResult<ResActiveFosteringDto>> AddFostering(string animalId)
+    public async Task<ActionResult<ResActiveFosteringDto>> AddFostering(string animalId, [FromBody] ReqAddFosteringDto reqAddFosteringDto)
     {
-        var user = await userAccessor.GetUserAsync();
-        
         var result = await Mediator.Send(new AddFostering.Command
         {
             AnimalId = animalId,
-            UserId = user.Id
+            MonthValue = reqAddFosteringDto.MonthValue
+            
         });
+        
+        return HandleResult(result);
     }
 
     /// <summary>
@@ -333,19 +335,19 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     [HttpGet("check-eligibility/{id}")]
     public async Task<ActionResult> CheckEligibility([FromRoute] string id)
     {
-        // 📨 Send the eligibility check query via Mediator
+        // Send the eligibility check query via Mediator
         var result = await Mediator.Send(new CheckAnimalEligibilityForOwnership.Query
         {
             AnimalId = id
         });
         
-        // ⚠️ If the query result indicates failure, return the corresponding HTTP status and message
+        // If the query result indicates failure, return the corresponding HTTP status and message
         if (!result.IsSuccess)
         {
             return HandleResult(result);
         }
         
-        // ✅ Map the boolean value and return 200 OK with eligibility result
+        // Map the boolean value and return 200 OK with eligibility result
         var isPossibleToOwnership = mapper.Map<Boolean>(result.Value);
         return HandleResult(Result<Boolean>.Success(isPossibleToOwnership, 200));
     }

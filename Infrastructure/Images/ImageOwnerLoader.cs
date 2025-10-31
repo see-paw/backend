@@ -2,7 +2,7 @@
 using Domain.Interfaces;
 using Persistence;
 
-namespace Application.Images;
+namespace Infrastructure.Images;
 
 /// <summary>
 /// Loads an entity that owns images from the database.
