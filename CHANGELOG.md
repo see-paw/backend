@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/see-paw/backend/compare/v1.0.3...v1.0.4) (2025-10-31)
+
+
+### Chores
+
+* Enhance release workflow with tag fetching ([ae02ea7](https://github.com/see-paw/backend/commit/ae02ea7cd0680ce22abc94ce09347c9db030630f))
+
 ## 1.0.0 (2025-10-31)
 
 
