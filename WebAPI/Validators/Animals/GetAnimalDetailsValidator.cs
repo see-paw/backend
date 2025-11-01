@@ -1,6 +1,5 @@
 ﻿using Application.Animals.Queries;
 using FluentValidation;
-using WebAPI.Validators.Activities;
 
 namespace WebAPI.Validators.Animals;
 

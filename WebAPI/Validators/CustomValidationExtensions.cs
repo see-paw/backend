@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace WebAPI.Validators.Activities;
+namespace WebAPI.Validators;
 /// <summary>
 /// Provides custom extension methods for FluentValidation rules.
 /// </summary>

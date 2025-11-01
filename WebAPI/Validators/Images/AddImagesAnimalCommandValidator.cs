@@ -2,7 +2,6 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
-using WebAPI.Validators.Activities;
 
 namespace WebAPI.Validators.Images;
 

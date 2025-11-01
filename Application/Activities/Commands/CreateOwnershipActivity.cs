@@ -38,13 +38,19 @@ public class CreateOwnershipActivity
             if (!ownershipValidation.IsSuccess)
                 return ownershipValidation;
 
+            // Validate start date and end date
             var scheduleValidation = ValidateSchedule(request, animal);
             if (!scheduleValidation.IsSuccess)
                 return scheduleValidation;
 
-            var conflictValidation = ValidateNoConflictWithCompletedActivities(animal, userId, request.StartDate);
-            if (!conflictValidation.IsSuccess)
-                return conflictValidation;
+            // Validate conflicts with active activities
+            var timeConflictValidation = ValidateTimeConflicts(animal, userId, request.StartDate, request.EndDate);
+            if (!timeConflictValidation.IsSuccess)
+                return timeConflictValidation;
+
+            //var conflictValidation = ValidateNoConflictWithCompletedActivities(animal, userId, request.StartDate);
+            //if (!conflictValidation.IsSuccess)
+            //    return conflictValidation;
 
             var activity = CreateActivity(request, userId);
             context.Activities.Add(activity);
@@ -155,36 +161,71 @@ public class CreateOwnershipActivity
             return Result<Activity>.Success(null!, 200);
         }
 
+        ///// <summary>
+        ///// Validates that the new activity does not conflict with previously completed activities.
+        ///// </summary>
+        ///// <param name="animal">The animal whose activities will be checked.</param>
+        ///// <param name="userId">The ID of the user creating the activity.</param>
+        ///// <param name="startDate">The proposed start date for the new activity.</param>
+        ///// <returns>
+        ///// A success result if no conflicts exist, or a failure result with the conflict details.
+        ///// </returns>
+        ///// <remarks>
+        ///// Business rule: New activities must start after the end of the most recent completed activity.
+        ///// Cancelled activities are ignored as they did not occur.
+        ///// </remarks>
+        //private static Result<Activity> ValidateNoConflictWithCompletedActivities(Animal animal, string userId, DateTime startDate)
+        //{
+        //    var completedActivities = animal.Activities
+        //        .Where(a => a.UserId == userId
+        //                 && a.Type == ActivityType.Ownership
+        //                 && a.Status == ActivityStatus.Completed)
+        //        .ToList();
+
+        //    if (completedActivities.Any())
+        //    {
+        //        var latestEndDate = completedActivities.Max(a => a.EndDate);
+
+        //        if (startDate <= latestEndDate)
+        //            return Result<Activity>.Failure(
+        //                $"New activity must start after the last completed activity ended at {latestEndDate:yyyy-MM-dd HH:mm}",
+        //                400);
+        //    }
+
+        //    return Result<Activity>.Success(null!, 200);
+        //}
+
         /// <summary>
-        /// Validates that the new activity does not conflict with previously completed activities.
+        /// Validates that the new activity does not overlap with any active or pending activities.
         /// </summary>
         /// <param name="animal">The animal whose activities will be checked.</param>
         /// <param name="userId">The ID of the user creating the activity.</param>
         /// <param name="startDate">The proposed start date for the new activity.</param>
+        /// <param name="endDate">The proposed end date for the new activity.</param>
         /// <returns>
-        /// A success result if no conflicts exist, or a failure result with the conflict details.
+        /// A success result if no time conflicts exist, or a failure result with conflict details.
         /// </returns>
         /// <remarks>
-        /// Business rule: New activities must start after the end of the most recent completed activity.
-        /// Cancelled activities are ignored as they did not occur.
+        /// Business rule: Activities cannot overlap in time. 
+        /// An overlap occurs when:
+        /// - New activity starts during an existing activity
+        /// - New activity ends during an existing activity
+        /// - New activity completely encompasses an existing activity
+        /// - Existing activity completely encompasses the new activity
         /// </remarks>
-        private static Result<Activity> ValidateNoConflictWithCompletedActivities(Animal animal, string userId, DateTime startDate)
+        private static Result<Activity> ValidateTimeConflicts(Animal animal, string userId, DateTime startDate, DateTime endDate)
         {
-            var completedActivities = animal.Activities
-                .Where(a => a.UserId == userId
-                         && a.Type == ActivityType.Ownership
-                         && a.Status == ActivityStatus.Completed)
-                .ToList();
+            var conflictingActivity = animal.Activities
+                .FirstOrDefault(a => a.UserId == userId
+                                  && a.Type == ActivityType.Ownership
+                                  && a.Status == ActivityStatus.Active
+                                  && a.StartDate < endDate        // Existing activity starts before the new one begins
+                                  && a.EndDate > startDate);      // Existing activity ends after the new one begins
 
-            if (completedActivities.Any())
-            {
-                var latestEndDate = completedActivities.Max(a => a.EndDate);
-
-                if (startDate <= latestEndDate)
-                    return Result<Activity>.Failure(
-                        $"New activity must start after the last completed activity ended at {latestEndDate:yyyy-MM-dd HH:mm}",
-                        400);
-            }
+            if (conflictingActivity != null)
+                return Result<Activity>.Failure(
+                    $"This activity conflicts with an existing active activity scheduled from {conflictingActivity.StartDate:yyyy-MM-dd HH:mm} to {conflictingActivity.EndDate:yyyy-MM-dd HH:mm}",
+                    409);
 
             return Result<Activity>.Success(null!, 200);
         }
