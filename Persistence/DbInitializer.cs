@@ -25,6 +25,7 @@ public static class DbInitializer
     /// <param name="userManager">The <see cref="UserManager{TUser}"/> used to manage user creation and role assignment.</param>
     /// <param name="roleManager">The <see cref="RoleManager{TRole}"/> used to manage roles in the identity system.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging seeding operations and errors.</param>
+    /// <param name="resetDatabase">Boolean used to reset or not the database.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public static async Task SeedData(AppDbContext dbContext,
         UserManager<User> userManager,
@@ -817,7 +818,6 @@ public static class DbInitializer
             const string fostering1Id = "f0000000-0000-0000-0000-000000000001";
             const string fostering2Id = "f0000000-0000-0000-0000-000000000002";
             const string fostering3Id = "f0000000-0000-0000-0000-000000000003";
-            const string fostering4Id = "f0000000-0000-0000-0000-000000000004";
 
             var fosterings = new List<Fostering>
             {

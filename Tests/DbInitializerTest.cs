@@ -501,7 +501,7 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(2, await context.Fosterings.CountAsync());
+            Assert.Equal(3, await context.Fosterings.CountAsync());
         }
 
         /// <summary>
