@@ -13,8 +13,6 @@ namespace Application.Animals.Queries;
 /// <item><description>The animal does not exist in the database.</description></item>
 /// <item><description>The animal already has an owner (<see cref="AnimalState.HasOwner"/>).</description></item>
 /// <item><description>The animal is inactive (<see cref="AnimalState.Inactive"/>).</description></item>
-/// <item><description>The animal is partially fostered (<see cref="AnimalState.PartiallyFostered"/>).</description></item>
-/// <item><description>The animal is totally fostered (<see cref="AnimalState.TotallyFostered"/>).</description></item>
 /// </list>
 /// Otherwise, it is considered eligible for Ownership.
 /// </remarks>

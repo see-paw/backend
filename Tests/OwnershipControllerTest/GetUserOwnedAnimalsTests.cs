@@ -8,11 +8,22 @@ using Persistence;
 
 namespace Tests.OwnershipControllerTest;
 
+/// <summary>
+/// Unit tests for <see cref="GetUserOwnedAnimals.Handler"/>.
+/// </summary>
+/// <remarks>
+/// These tests validate the query logic responsible for retrieving animals owned by the currently authenticated user.
+/// The scenarios cover user authentication validation, correct filtering, ordering, entity inclusion,
+/// and respect for cancellation tokens.
+/// </remarks>
 public class GetUserOwnedAnimalsTests
 {
     private readonly Mock<IUserAccessor> _userAccessorMock;
     private readonly AppDbContext _context;
 
+    /// <summary>
+    /// Initializes a new in-memory database context and user accessor mock for each test case.
+    /// </summary>
     public GetUserOwnedAnimalsTests()
     {
         _userAccessorMock = new Mock<IUserAccessor>();
@@ -24,7 +35,9 @@ public class GetUserOwnedAnimalsTests
         _context = new AppDbContext(options);
     }
 
-    // ✅ Cenário 1: User não encontrado
+    /// <summary>
+    /// ✅ Scenario 1 — Ensures a failure is returned when the authenticated user is not found.
+    /// </summary>
     [Fact]
     public async Task Handle_UserNotFound_ReturnsFailure()
     {
@@ -39,7 +52,9 @@ public class GetUserOwnedAnimalsTests
         Assert.Equal(404, result.Code);
     }
 
-    // ✅ Cenário 2: User sem animais
+    /// <summary>
+    /// ✅ Scenario 2 — Returns an empty list when the user has no owned animals.
+    /// </summary>
     [Fact]
     public async Task Handle_UserWithoutAnimals_ReturnsEmptyList()
     {
@@ -54,7 +69,9 @@ public class GetUserOwnedAnimalsTests
         Assert.Equal(200, result.Code);
     }
 
-    // ✅ Cenário 3: User com animais
+    /// <summary>
+    /// ✅ Scenario 3 — Returns only the animals owned by the current user.
+    /// </summary>
     [Fact]
     public async Task Handle_UserWithOwnedAnimals_ReturnsOnlyHisAnimals()
     {
@@ -87,7 +104,9 @@ public class GetUserOwnedAnimalsTests
         Assert.Equal(200, result.Code);
     }
 
-    // ✅ Cenário 4: Ordenação decrescente por OwnershipStartDate
+    /// <summary>
+    /// ✅ Scenario 4 — Ensures animals are returned ordered by <see cref="Animal.OwnershipStartDate"/> descending.
+    /// </summary>
     [Fact]
     public async Task Handle_ReturnsAnimalsOrderedByOwnershipStartDateDescending()
     {
@@ -111,7 +130,9 @@ public class GetUserOwnedAnimalsTests
         Assert.Equal(new[] { "Newest", "Middle", "Oldest" }, result.Value!.Select(a => a.Name));
     }
 
-    // ✅ Cenário 5: Includes funcionam (Breed, Shelter, Images)
+    /// <summary>
+    /// ✅ Scenario 5 — Ensures related entities (Breed, Shelter, Images) are included in the query result.
+    /// </summary>
     [Fact]
     public async Task Handle_IncludesRelatedEntities()
     {
@@ -141,7 +162,9 @@ public class GetUserOwnedAnimalsTests
         Assert.Equal(2, returned.Images.Count);
     }
 
-    // ✅ Cenário 6: Token de cancelamento
+    /// <summary>
+    /// ✅ Scenario 6 — Verifies that the handler respects a cancelled <see cref="CancellationToken"/>.
+    /// </summary>
     [Fact]
     public async Task Handle_RespectsCancellationToken()
     {
@@ -156,7 +179,9 @@ public class GetUserOwnedAnimalsTests
             await handler.Handle(new GetUserOwnedAnimals.Query(), cts.Token));
     }
 
-    // ✅ Cenário 7: Apenas um animal
+    /// <summary>
+    /// ✅ Scenario 7 — Returns a single animal when the user owns only one.
+    /// </summary>
     [Fact]
     public async Task Handle_UserWithOneAnimal_ReturnsSingleAnimal()
     {
@@ -177,9 +202,14 @@ public class GetUserOwnedAnimalsTests
         Assert.Single(result.Value!);
         Assert.Equal("Bob", result.Value!.First().Name);
     }
+    
+    // ------------------------------------------------------------------------
+    // -------------------------- Helper methods ------------------------------
+    // ------------------------------------------------------------------------
 
-    // --- Helpers ---------------------------------------------------
-
+    /// <summary>
+    /// Creates a valid <see cref="Animal"/> object with required relationships populated.
+    /// </summary>
     private static Animal CreateValidAnimal(string? ownerId, Breed breed, Shelter shelter, string name, DateTime startDate)
     {
         return new Animal
@@ -203,7 +233,10 @@ public class GetUserOwnedAnimalsTests
             Images = new List<Image> { new Image { Url = "image.jpg",PublicId = "1", IsPrincipal = true, Description = "image"} }
         };
     }
-
+    
+    /// <summary>
+    /// Creates a valid <see cref="Shelter"/> object for testing purposes.
+    /// </summary>
     private static Shelter CreateValidShelter()
     {
         return new Shelter
@@ -219,7 +252,10 @@ public class GetUserOwnedAnimalsTests
             Images = new List<Image> { new Image { Url = "shelter.jpg",PublicId = "1", IsPrincipal = true, Description = "image"} }
         };
     }
-
+    
+    /// <summary>
+    /// Disposes of the in-memory database context after each test run.
+    /// </summary>
     public void Dispose()
     {
         _context?.Dispose();

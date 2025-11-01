@@ -13,18 +13,31 @@ using WebAPI.DTOs;
 
 namespace Tests.OwnershipControllerTest;
 
+/// <summary>
+/// Unit tests for <see cref="OwnershipsController"/>.
+/// </summary>
+/// <remarks>
+/// Validates controller-level behavior for ownership-related endpoints:
+/// - <see cref="OwnershipsController.GetUserOwnerships"/> (fetches ownership requests)
+/// - <see cref="OwnershipsController.GetOwnedAnimals"/> (fetches animals owned by the user)
+/// These tests mock dependencies (<see cref="IMediator"/> and <see cref="IMapper"/>) to isolate the controller logic.
+/// </remarks>
 public class OwnershipControllerTests
 {
     private readonly Mock<IMediator> _mediatorMock;
     private readonly Mock<IMapper> _mapperMock;
     private readonly OwnershipsController _controller;
 
+    /// <summary>
+    /// Initializes a new instance of the test class with mock dependencies.
+    /// </summary>
     public OwnershipControllerTests()
     {
         _mediatorMock = new Mock<IMediator>();
         _mapperMock = new Mock<IMapper>();
         _controller = new OwnershipsController(_mapperMock.Object);
 
+        // Configure controller context with mocked service provider
         var serviceProviderMock = new Mock<IServiceProvider>();
         serviceProviderMock
             .Setup(sp => sp.GetService(typeof(IMediator)))
@@ -40,7 +53,13 @@ public class OwnershipControllerTests
     }
 
     #region GetUserOwnerships Tests
+    // ------------------------------------------------------------------------
+    // --------------------------- GetUserOwnerships ---------------------------
+    // ------------------------------------------------------------------------
 
+    /// <summary>
+    /// ✅ Ensures the controller returns HTTP 200 (OK) and properly maps ownership requests when successful.
+    /// </summary>
     [Fact]
     public async Task GetUserOwnerships_WhenSuccessful_ReturnsOkWithMappedData()
     {
@@ -93,6 +112,9 @@ public class OwnershipControllerTests
         Assert.Equal("req1", returnedDtos[0].Id);
     }
 
+    /// <summary>
+    /// ✅ Returns an empty list (HTTP 200) when the user has no ownership requests.
+    /// </summary>
     [Fact]
     public async Task GetUserOwnerships_WhenEmptyList_ReturnsOkWithEmptyList()
     {
@@ -119,6 +141,9 @@ public class OwnershipControllerTests
         Assert.Empty(returnedDtos);
     }
 
+    /// <summary>
+    /// ✅ Returns HTTP 404 when the mediator reports "User not found".
+    /// </summary>
     [Fact]
     public async Task GetUserOwnerships_WhenUserNotFound_ReturnsNotFound()
     {
@@ -137,6 +162,9 @@ public class OwnershipControllerTests
         Assert.Equal(404, notFoundResult.StatusCode);
     }
 
+    /// <summary>
+    /// ✅ Returns HTTP 401 when the mediator signals unauthorized access.
+    /// </summary>
     [Fact]
     public async Task GetUserOwnerships_WhenUnauthorized_ReturnsUnauthorized()
     {
@@ -155,6 +183,9 @@ public class OwnershipControllerTests
         Assert.Equal(401, unauthorizedResult.StatusCode);
     }
 
+    /// <summary>
+    /// ✅ Returns HTTP 500 when the mediator result indicates an internal server error.
+    /// </summary>
     [Fact]
     public async Task GetUserOwnerships_WhenInternalServerError_ReturnsInternalServerError()
     {
@@ -173,6 +204,9 @@ public class OwnershipControllerTests
         Assert.Equal(500, serverErrorResult.StatusCode);
     }
 
+    /// <summary>
+    /// ✅ Verifies multiple ownership request statuses are mapped and returned correctly.
+    /// </summary>
     [Fact]
     public async Task GetUserOwnerships_WithMultipleStatuses_ReturnsAllMappedCorrectly()
     {
@@ -213,7 +247,13 @@ public class OwnershipControllerTests
     #endregion
 
     #region GetOwnedAnimals Tests
+    // ------------------------------------------------------------------------
+    // --------------------------- GetOwnedAnimals -----------------------------
+    // ------------------------------------------------------------------------
 
+    /// <summary>
+    /// ✅ Ensures owned animals are successfully returned (HTTP 200) with correct mapping.
+    /// </summary>
     [Fact]
     public async Task GetOwnedAnimals_WhenSuccessful_ReturnsOkWithMappedData()
     {
@@ -266,6 +306,9 @@ public class OwnershipControllerTests
         Assert.Null(returnedDtos[0].OwnershipStatus);
     }
 
+    /// <summary>
+    /// ✅ Returns HTTP 200 with an empty list when the user owns no animals.
+    /// </summary>
     [Fact]
     public async Task GetOwnedAnimals_WhenEmptyList_ReturnsOkWithEmptyList()
     {
@@ -292,6 +335,9 @@ public class OwnershipControllerTests
         Assert.Empty(returnedDtos);
     }
 
+    /// <summary>
+    /// ✅ Returns HTTP 404 when the mediator indicates that the user is not found.
+    /// </summary>
     [Fact]
     public async Task GetOwnedAnimals_WhenUserNotFound_ReturnsNotFound()
     {
@@ -310,6 +356,9 @@ public class OwnershipControllerTests
         Assert.Equal(404, notFoundResult.StatusCode);
     }
 
+    /// <summary>
+    /// ✅ Returns HTTP 401 when the user is unauthorized.
+    /// </summary>
     [Fact]
     public async Task GetOwnedAnimals_WhenUnauthorized_ReturnsUnauthorized()
     {
@@ -328,6 +377,9 @@ public class OwnershipControllerTests
         Assert.Equal(401, unauthorizedResult.StatusCode);
     }
 
+    /// <summary>
+    /// ✅ Returns HTTP 500 when an internal server error occurs in the mediator.
+    /// </summary>
     [Fact]
     public async Task GetOwnedAnimals_WhenInternalServerError_ReturnsInternalServerError()
     {
@@ -346,6 +398,9 @@ public class OwnershipControllerTests
         Assert.Equal(500, serverErrorResult.StatusCode);
     }
 
+    /// <summary>
+    /// ✅ Verifies that multiple owned animals are correctly mapped and returned in the response.
+    /// </summary>
     [Fact]
     public async Task GetOwnedAnimals_WithMultipleAnimals_ReturnsAllMappedCorrectly()
     {
@@ -384,6 +439,9 @@ public class OwnershipControllerTests
         Assert.All(returnedDtos, dto => Assert.Null(dto.OwnershipStatus));
     }
 
+    /// <summary>
+    /// ✅ Confirms that owned animals correctly have <see cref="ResUserOwnershipsDto.OwnershipStatus"/> as <c>null</c>.
+    /// </summary>
     [Fact]
     public async Task GetOwnedAnimals_VerifiesStatusIsNull_ForOwnedAnimals()
     {
@@ -425,7 +483,14 @@ public class OwnershipControllerTests
     #endregion
 
     #region Integration Scenarios
+    // ------------------------------------------------------------------------
+    // --------------------------- Integration Tests ---------------------------
+    // ------------------------------------------------------------------------
 
+    /// <summary>
+    /// ✅ Ensures both endpoints (<see cref="GetUserOwnerships"/> and <see cref="GetOwnedAnimals"/>) 
+    /// can be executed sequentially without state interference.
+    /// </summary>
     [Fact]
     public async Task BothEndpoints_CanBeCalledSequentially_WithoutInterference()
     {

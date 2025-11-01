@@ -8,6 +8,14 @@ using Persistence;
 
 namespace Tests.OwnershipRequestsTest;
 
+/// <summary>
+/// Unit tests for <see cref="GetOwnershipRequestsByUser.Handler"/>.
+/// </summary>
+/// <remarks>
+/// These tests validate the business logic for retrieving ownership requests made by the currently authenticated user.
+/// They verify filtering, ordering, and inclusion of related entities (Animal, Breed, Shelter, Images),
+/// as well as error handling and cancellation behavior.
+/// </remarks>
 public class GetOwnershipRequestsByUserTests
 {
     
@@ -15,6 +23,9 @@ public class GetOwnershipRequestsByUserTests
     private readonly AppDbContext _context;
     private readonly GetOwnershipRequestsByUser.Handler _handler;
 
+    /// <summary>
+    /// Initializes a new in-memory database and user accessor mock for isolated testing.
+    /// </summary>
     public GetOwnershipRequestsByUserTests()
     {
         _userAccessorMock = new Mock<IUserAccessor>();
@@ -27,6 +38,9 @@ public class GetOwnershipRequestsByUserTests
         _handler = new GetOwnershipRequestsByUser.Handler(_context, _userAccessorMock.Object);
     }
 
+    /// <summary>
+    /// Seeds the in-memory database with a user and related ownership requests.
+    /// </summary>
     private void SeedDatabase(User user, List<OwnershipRequest> requests)
     {
         _context.Users.Add(user);
@@ -34,6 +48,9 @@ public class GetOwnershipRequestsByUserTests
         _context.SaveChanges();
     }
 
+    /// <summary>
+    /// Creates a valid <see cref="Animal"/> with related <see cref="Breed"/>, <see cref="Shelter"/> and <see cref="Image"/>.
+    /// </summary>
     private Animal CreateAnimal(string id, string name)
     {
         return new Animal
@@ -56,6 +73,13 @@ public class GetOwnershipRequestsByUserTests
         };
     }
 
+    // ------------------------------------------------------------------------
+    // --------------------------- Failure Scenarios ---------------------------
+    // ------------------------------------------------------------------------
+
+    /// <summary>
+    /// ✅ Returns a failure result (404) when the authenticated user is not found.
+    /// </summary>
     [Fact]
     public async Task Handle_WhenUserNotFound_ReturnsFailureWithNotFound()
     {
@@ -74,6 +98,13 @@ public class GetOwnershipRequestsByUserTests
         Assert.Equal(404, result.Code);
     }
 
+    // ------------------------------------------------------------------------
+    // --------------------------- Basic Scenarios -----------------------------
+    // ------------------------------------------------------------------------
+
+    /// <summary>
+    /// ✅ Returns an empty list (200) when the user has no ownership requests.
+    /// </summary>
     [Fact]
     public async Task Handle_WhenUserHasNoRequests_ReturnsEmptyList()
     {
@@ -96,6 +127,9 @@ public class GetOwnershipRequestsByUserTests
         Assert.Equal(200, result.Code);
     }
 
+    /// <summary>
+    /// ✅ Returns only pending ownership requests.
+    /// </summary>
     [Fact]
     public async Task Handle_WhenUserHasPendingRequests_ReturnsOnlyPendingRequests()
     {
@@ -133,6 +167,9 @@ public class GetOwnershipRequestsByUserTests
         Assert.Equal(OwnershipStatus.Pending, result.Value[0].Status);
     }
 
+    /// <summary>
+    /// ✅ Returns analysing ownership requests.
+    /// </summary>
     [Fact]
     public async Task Handle_WhenUserHasAnalysingRequests_ReturnsAnalysingRequests()
     {
@@ -170,6 +207,9 @@ public class GetOwnershipRequestsByUserTests
         Assert.Equal(OwnershipStatus.Analysing, result.Value[0].Status);
     }
 
+    /// <summary>
+    /// ✅ Returns recently rejected requests (within one month).
+    /// </summary>
     [Fact]
     public async Task Handle_WhenUserHasRecentlyRejectedRequests_ReturnsRejectedRequests()
     {
@@ -208,6 +248,9 @@ public class GetOwnershipRequestsByUserTests
         Assert.Equal(OwnershipStatus.Rejected, result.Value[0].Status);
     }
 
+    /// <summary>
+    /// ✅ Excludes rejected requests older than one month.
+    /// </summary>
     [Fact]
     public async Task Handle_WhenUserHasOldRejectedRequests_DoesNotReturnOldRejected()
     {
@@ -245,6 +288,13 @@ public class GetOwnershipRequestsByUserTests
         Assert.Empty(result.Value); // Should not include requests older than 1 month
     }
 
+    // ------------------------------------------------------------------------
+    // ---------------------------- Ordering Logic -----------------------------
+    // ------------------------------------------------------------------------
+
+    /// <summary>
+    /// ✅ Ensures pending requests appear before rejected ones.
+    /// </summary>
     [Fact]
     public async Task Handle_OrdersPendingBeforeRejected()
     {
@@ -295,6 +345,9 @@ public class GetOwnershipRequestsByUserTests
         Assert.Equal(OwnershipStatus.Rejected, result.Value[1].Status); // Rejected second
     }
 
+    // <summary>
+    /// ✅ Within the same status, orders requests by <see cref="OwnershipRequest.RequestedAt"/> descending.
+    /// </summary>
     [Fact]
     public async Task Handle_WithinSameStatus_OrdersByRequestedAtDescending()
     {
@@ -356,6 +409,9 @@ public class GetOwnershipRequestsByUserTests
         Assert.Equal("req1", result.Value[2].Id); // Oldest last
     }
 
+    /// <summary>
+    /// ✅ Tests complex sorting: prioritizes non-rejected requests, then descending by request date.
+    /// </summary>
     [Fact]
     public async Task Handle_ComplexScenario_OrdersCorrectly()
     {
@@ -446,6 +502,13 @@ public class GetOwnershipRequestsByUserTests
         Assert.Equal(OwnershipStatus.Rejected, result.Value[3].Status);
     }
 
+    // ------------------------------------------------------------------------
+    // -------------------------- Related Entities -----------------------------
+    // ------------------------------------------------------------------------
+
+    /// <summary>
+    /// ✅ Ensures the result includes the associated <see cref="Animal.Breed"/>.
+    /// </summary>
     [Fact]
     public async Task Handle_IncludesAnimalWithBreed()
     {
@@ -484,6 +547,9 @@ public class GetOwnershipRequestsByUserTests
         Assert.Equal("Labrador", result.Value[0].Animal.Breed.Name);
     }
 
+    /// <summary>
+    /// ✅ Ensures the result includes the associated <see cref="Animal.Shelter"/>.
+    /// </summary>
     [Fact]
     public async Task Handle_IncludesAnimalWithShelter()
     {
@@ -522,6 +588,9 @@ public class GetOwnershipRequestsByUserTests
         Assert.Equal("Test Shelter", result.Value[0].Animal.Shelter.Name);
     }
 
+    /// <summary>
+    /// ✅ Ensures the result includes the associated <see cref="Animal.Images"/>.
+    /// </summary>
     [Fact]
     public async Task Handle_IncludesAnimalWithImages()
     {
@@ -560,6 +629,13 @@ public class GetOwnershipRequestsByUserTests
         Assert.True(result.Value[0].Animal.Images.First().IsPrincipal);
     }
 
+    // ------------------------------------------------------------------------
+    // --------------------------- Filtering Logic -----------------------------
+    // ------------------------------------------------------------------------
+
+    /// <summary>
+    /// ✅ Ensures only requests belonging to the current user are returned.
+    /// </summary>
     [Fact]
     public async Task Handle_OnlyReturnsRequestsForCurrentUser()
     {
@@ -612,6 +688,9 @@ public class GetOwnershipRequestsByUserTests
         Assert.Equal(user1.Id, result.Value[0].UserId);
     }
 
+    /// <summary>
+    /// ✅ Validates that the 1-month boundary for rejected requests is respected.
+    /// </summary>
     [Fact]
     public async Task Handle_RespectsOneMonthBoundary_ForRejectedRequests()
     {
@@ -666,6 +745,13 @@ public class GetOwnershipRequestsByUserTests
         Assert.Equal("req1", result.Value[0].Id);
     }
 
+    // ------------------------------------------------------------------------
+    // -------------------------- Cancellation Tests ---------------------------
+    // ------------------------------------------------------------------------
+
+    /// <summary>
+    /// ✅ Throws <see cref="OperationCanceledException"/> when the operation is cancelled via token.
+    /// </summary>
     [Fact]
     public async Task Handle_WithCancellationToken_CanBeCancelled()
     {
@@ -686,6 +772,13 @@ public class GetOwnershipRequestsByUserTests
             await _handler.Handle(query, cts.Token));
     }
 
+    // ------------------------------------------------------------------------
+    // ---------------------------- Cleanup Logic ------------------------------
+    // ------------------------------------------------------------------------
+
+    /// <summary>
+    /// Cleans up the in-memory database after each test.
+    /// </summary>
     public void Dispose()
     {
         _context.Database.EnsureDeleted();
