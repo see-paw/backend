@@ -1,8 +1,12 @@
 ﻿namespace Domain.Enums;
 
 /// <summary>
-/// Represents the current state of an animal within the system.
+/// Represents the possible states of an animal within the system.
 /// </summary>
+/// <remarks>
+/// Used to indicate the animal’s current availability for fostering or ownership,
+/// and to manage visibility and interaction within the platform.
+/// </remarks>
 public enum AnimalState
 {
     /// <summary>
@@ -16,12 +20,12 @@ public enum AnimalState
     PartiallyFostered,
 
     /// <summary>
-    /// The animal is fully fostered and not available for new sponsorships.
+    /// The animal is fully fostered and not available for additional sponsorships.
     /// </summary>
     TotallyFostered,
 
     /// <summary>
-    /// The animal has an owner and is not available for fostering.
+    /// The animal has an owner and is no longer available for fostering.
     /// </summary>
     HasOwner,
 

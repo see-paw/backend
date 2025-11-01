@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ "develop" ]
     paths-ignore:
-       - '.github/workflows/**'
+      - '.github/workflows/**'
 
 # Adicionar permissões para comentar nos PRs
 permissions:
@@ -38,10 +38,10 @@ jobs:
             ${{ runner.os }}-nuget-
 
       - name: Restaurar dependências
-        run: dotnet restore SeePaw.sln
+        run: dotnet restore backend.sln
 
       - name: Compilar projeto
-        run: dotnet build SeePaw.sln --no-restore --configuration Release
+        run: dotnet build backend.sln --no-restore --configuration Release
 
       - name: Guardar artefactos do build
         uses: actions/upload-artifact@v4
@@ -53,8 +53,8 @@ jobs:
 
 
   # ======================================================
-# 2️⃣ UNIT TESTS
-# ======================================================
+  # 2️⃣ UNIT TESTS
+  # ======================================================
   unit_tests:
     runs-on: ubuntu-latest
     container:
@@ -63,19 +63,19 @@ jobs:
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
-        
+
       - name: Restaurar dependências
-        run: dotnet restore SeePaw.sln
-        
+        run: dotnet restore backend.sln
+
       - name: Compilar solução completa
-        run: dotnet build SeePaw.sln --no-restore --configuration Release
-        
+        run: dotnet build backend.sln --no-restore --configuration Release
+
       - name: Instalar ferramentas de cobertura
         run: |
           dotnet add Tests/Tests.csproj package coverlet.collector
           dotnet tool install --global dotnet-reportgenerator-globaltool
           export PATH="$PATH:$HOME/.dotnet/tools"
-      
+
       - name: Correr testes unitários (xUnit) + Cobertura
         run: |
           mkdir -p TestResults
@@ -124,7 +124,7 @@ jobs:
           echo ""
           echo "📂 Ficheiros gerados:"
           ls -lah TestResults/
-      
+
       - name: Verificar se todos os testes passaram
         run: |
           if [ ! -f TestResults/test-results.trx ]; then
@@ -155,7 +155,7 @@ jobs:
             echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
             exit 1
           fi
-      
+
       - name: Gerar relatório HTML de cobertura
         if: success()
         run: |
@@ -163,20 +163,20 @@ jobs:
           
           if [ -f TestResults/coverage.xml ]; then
             echo "📊 A gerar relatório HTML de cobertura..."
-            
+          
             reportgenerator \
               -reports:TestResults/coverage.xml \
               -targetdir:TestResults/CoverageReport \
               -reporttypes:"Html;HtmlSummary" \
               -verbosity:Info
-            
+          
             echo "✅ Relatório HTML gerado em TestResults/CoverageReport/"
             ls -lah TestResults/CoverageReport/
           else
             echo "⚠️ Ficheiro de cobertura não encontrado. Relatório HTML não foi gerado."
             exit 1
           fi
-      
+
       - name: Aplicar Quality Gates personalizadas
         if: success()
         run: |
@@ -232,23 +232,14 @@ jobs:
           
           if echo "$pr_title_lower" | grep -q "basic"; then
             threshold=40
-            criticality="📘 BASIC"
-          elif echo "$pr_title_lower" | grep -q "intermediate"; then
-            threshold=50
-            criticality="📙 INTERMEDIATE"
-          elif echo "$pr_title_lower" | grep -q "critical"; then
+            criticality="🟢 BASIC"
+          elif echo "$pr_title_lower" | grep -q "medium"; then
+            threshold=60
+            criticality="🟡 MEDIUM"
+          elif echo "$pr_title_lower" | grep -q "advanced"; then
             threshold=80
-            criticality="📕 CRITICAL"
-          fi
-          
-          # Aplicar quality gate
-          if [ $threshold -eq 0 ]; then
-            echo "⚠️ Nenhuma criticidade detectada no título do PR"
-            echo "   O título deve conter 'basic', 'intermediate' ou 'critical'"
-            echo "   Exemplos:"
-            echo "   - '[BASIC] Adicionar nova funcionalidade'"
-            echo "   - 'Feature intermediate: Login system'"
-            echo "   - 'Critical bug fix'"
+            criticality="🔴 ADVANCED"
+          else
             echo ""
             echo "⚠️ Sem quality gate para aplicar - assumindo sucesso"
             exit 0
@@ -273,7 +264,7 @@ jobs:
             echo "❌ Quality gate falhou!"
             exit 1
           fi
-      
+
       - name: Exportar resultados de testes e cobertura
         uses: actions/upload-artifact@v4
         if: always()
@@ -314,7 +305,7 @@ jobs:
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
-        
+
       - name: Descarregar artefactos do build
         uses: actions/download-artifact@v4
         with:
@@ -327,15 +318,15 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Restaurar dependências
-        run: dotnet restore SeePaw.sln
+        run: dotnet restore backend.sln
 
       - name: Compilar projeto
-        run: dotnet build SeePaw.sln --no-restore --configuration Release
+        run: dotnet build backend.sln --no-restore --configuration Release
 
       - name: Iniciar API em background
         run: |
           echo "🚀 A iniciar a API..."
-          dotnet run --project API/API.csproj --configuration Release --no-build --urls "http://0.0.0.0:5000" &
+          dotnet run --project WebAPI/WebAPI.csproj --configuration Release --no-build --urls "http://0.0.0.0:5000" &
           echo $! > server_pid.txt
           echo "⏳ A aguardar que a API fique pronta..."
           timeout 60 bash -c '
@@ -344,6 +335,9 @@ jobs:
               sleep 3
           done
           ' || (echo "❌ A API não respondeu a tempo" && exit 1)
+          echo "✅ Porta 5000 está a responder!"
+          echo "⏳ A aguardar que as migrações sejam aplicadas..."
+          sleep 15
           echo "✅ API pronta!"
 
       - name: Instalar Postman CLI
@@ -353,6 +347,64 @@ jobs:
 
       - name: Login no Postman CLI
         run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
+        
+      - name: Debug - Listar estrutura do projeto
+        run: |
+          echo "📂 Diretório atual:"
+          pwd
+          echo ""
+          echo "📂 Conteúdo da raiz:"
+          ls -la
+          echo ""
+          echo "📂 Verificar se Tests/Assets existe:"
+          if [ -d "Tests/Assets" ]; then
+            echo "✅ Tests/Assets encontrado!"
+            echo ""
+            echo "📂 Conteúdo de Tests/Assets:"
+            ls -la Tests/Assets/
+          else
+            echo "❌ Tests/Assets NÃO encontrado!"
+            echo ""
+            echo "🔍 Procurando por Assets em todo o projeto:"
+            find . -type d -name "Assets" 2>/dev/null || echo "Nenhum diretório Assets encontrado"
+          fi
+
+      - name: Prepare Postman working directory
+        run: |
+          mkdir -p ~/Postman/files
+
+          # Verificar se os ficheiros existem antes de copiar
+          if [ -d "Tests/Assets" ] && [ "$(ls -A Tests/Assets 2>/dev/null)" ]; then
+            echo "✅ A copiar ficheiros de Tests/Assets/ para ~/Postman/files/"
+            cp -v Tests/Assets/* ~/Postman/files/ || {
+              echo "❌ Erro ao copiar ficheiros!"
+              echo "🔍 Conteúdo de Tests/Assets:"
+              ls -la Tests/Assets/
+              exit 1
+            }
+          else
+            echo "⚠️ Tests/Assets não existe ou está vazio"
+            echo "🔍 Procurando por ficheiros de teste..."
+
+            # Tentar caminhos alternativos
+            if [ -d "backend/Tests/Assets" ]; then
+              echo "✅ Encontrado em backend/Tests/Assets/"
+              cp -v backend/Tests/Assets/* ~/Postman/files/
+            elif [ -d "../Tests/Assets" ]; then
+              echo "✅ Encontrado em ../Tests/Assets/"
+              cp -v ../Tests/Assets/* ~/Postman/files/
+            else
+              echo "❌ Não foi possível encontrar os ficheiros de teste!"
+              echo "📂 Estrutura do projeto:"
+              find . -name "Assets" -type d
+              exit 1
+            fi
+          fi
+
+      - name: List Postman working dir
+        run: |
+          echo "📂 Conteúdo de ~/Postman/files:"
+          ls -lah ~/Postman/files/ || echo "⚠️ Diretório vazio ou não existe"
 
       - name: Executar testes Postman e gerar relatórios
         run: |
@@ -368,16 +420,17 @@ jobs:
           # Executar a coleção "Tests" usando o Postman CLI
           # NOTA: Postman CLI suporta apenas: cli, json, junit, html (básico)
           postman collection run "${{ secrets.POSTMAN_COLLECTION_ID }}" \
-            -e "${{ secrets.POSTMAN_ENV_ID }}" \
-            --env-var "url=http://localhost:5000" \
-            --reporters cli,json,html \
-            --reporter-json-export TestResults/postman/results.json \
-            --reporter-html-export TestResults/postman/report.html \
-            --delay-request 300 \
-            --timeout-request 10000 \
-            --bail false \
-            --color on \
-            2>&1 | tee TestResults/postman/console-output.txt
+          -e "${{ secrets.POSTMAN_ENV_ID }}" \
+          --env-var "url=http://localhost:5000" \
+          --working-dir ~/Postman/files \
+          --reporters cli,json,html \
+          --reporter-json-export TestResults/postman/results.json \
+          --reporter-html-export TestResults/postman/report.html \
+          --delay-request 300 \
+          --timeout-request 10000 \
+          --bail false \
+          --color on \
+          2>&1 | tee TestResults/postman/console-output.txt
           
           exit_code=${PIPESTATUS[0]}
           
@@ -389,12 +442,12 @@ jobs:
             total=$(jq -r '.run.stats.assertions.total // 0' TestResults/postman/results.json)
             failed=$(jq -r '.run.stats.assertions.failed // 0' TestResults/postman/results.json)
             passed=$((total - failed))
-            
+          
             echo "📊 RESUMO DOS TESTES:"
             echo "   Total: $total"
             echo "   ✅ Passaram: $passed"
             echo "   ❌ Falharam: $failed"
-            
+          
             if [ $failed -gt 0 ]; then
               echo ""
               echo "⚠️  Alguns testes falharam!"
@@ -403,7 +456,7 @@ jobs:
               echo ""
               echo "🎉 Todos os testes passaram!"
             fi
-            
+          
             # Criar resumo em JSON
             cat > TestResults/postman/summary.json <<EOF
           {
@@ -482,5 +535,3 @@ jobs:
         run: |
           echo "🧹 A encerrar ambiente de teste..."
           kill $(cat server_pid.txt) || true
-
-  
