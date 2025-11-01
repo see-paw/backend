@@ -49,6 +49,7 @@ public static class DbInitializer
         const string animal8Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd8b";
         const string animal9Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd9b";
         const string animal10Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd0c";
+        const string animal11Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd1c";
         const string platformAdmin = "PlatformAdmin";
         const string adminCaa = "AdminCAA";
         const string userRole = "User";
@@ -508,6 +509,24 @@ public static class DbInitializer
                     BreedId = breed2Id,
                     Cost = 10,
                     Features = "Muito ativa e adora correr na roda",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
+                new()
+                {
+                    Id = animal11Id,
+                    Name = "Tobias",
+                    AnimalState = AnimalState.Available,
+                    Description = "Cão de porte médio, muito sociável e adora passeios longos.",
+                    Species = Species.Dog,
+                    Size = SizeType.Medium,
+                    Sex = SexType.Male,
+                    Colour = "Preto e branco",
+                    BirthDate = new DateOnly(2020, 6, 12),
+                    Sterilized = true,
+                    BreedId = breed2Id,
+                    Cost = 60,
+                    Features = "Brincalhão, curioso e adaptável a diferentes ambientes",
                     ShelterId = shelter1Id,
                     Images = new List<Image>()
                 },
