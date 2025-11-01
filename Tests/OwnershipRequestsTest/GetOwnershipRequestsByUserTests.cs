@@ -46,7 +46,8 @@ public class GetOwnershipRequestsByUserTests
             {
                 new Image 
                 { 
-                    Id = Guid.NewGuid().ToString(), 
+                    Id = Guid.NewGuid().ToString(),
+                    PublicId = "1",
                     IsPrincipal = true, 
                     Url = "test.jpg",
                     Description = "Test image"

@@ -122,8 +122,8 @@ public class GetUserOwnedAnimalsTests
         var animal = CreateValidAnimal(user.Id, breed, shelter, "Snoopy", DateTime.UtcNow);
         animal.Images = new List<Image>
         {
-            new Image { Url = "url1.jpg", IsPrincipal = true, Description = "im1"},
-            new Image { Url = "url2.jpg", IsPrincipal = false, Description = "im2"}
+            new Image { Url = "url1.jpg", PublicId = "1", IsPrincipal = true, Description = "im1"},
+            new Image { Url = "url2.jpg", PublicId = "1", IsPrincipal = false, Description = "im2"}
         };
 
         await _context.AddRangeAsync(breed, shelter, animal);
@@ -200,7 +200,7 @@ public class GetUserOwnedAnimalsTests
             Cost = 50,
             Features = "Friendly",
             OwnershipStartDate = startDate,
-            Images = new List<Image> { new Image { Url = "image.jpg", IsPrincipal = true, Description = "image"} }
+            Images = new List<Image> { new Image { Url = "image.jpg",PublicId = "1", IsPrincipal = true, Description = "image"} }
         };
     }
 
@@ -216,7 +216,7 @@ public class GetUserOwnedAnimalsTests
             NIF = "123456789",
             OpeningTime = new TimeOnly(9, 0),
             ClosingTime = new TimeOnly(18, 0),
-            Images = new List<Image> { new Image { Url = "shelter.jpg", IsPrincipal = true, Description = "image"} }
+            Images = new List<Image> { new Image { Url = "shelter.jpg",PublicId = "1", IsPrincipal = true, Description = "image"} }
         };
     }
 

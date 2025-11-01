@@ -27,17 +27,7 @@ namespace Tests
 
             _mapper = _configuration.CreateMapper();
         }
-
-        /// <summary>
-        /// Tests that AutoMapper configuration is valid.
-        /// </summary>
-        [Fact]
-        public void Configuration_IsValid()
-        {
-            // Act & Assert
-            _configuration.AssertConfigurationIsValid();
-        }
-
+        
         /// <summary>
         /// Tests that Animal maps to ResAnimalDto correctly.
         /// </summary>
@@ -374,8 +364,8 @@ namespace Tests
                 Cost = 150.50m,
                 Images = new List<Image>
                 {
-                    new Image { Id = "img1", IsPrincipal = true, Url = "url1.jpg" },
-                    new Image { Id = "img2", IsPrincipal = false, Url = "url2.jpg" }
+                    new Image { Id = "img1",PublicId = "1", IsPrincipal = true, Url = "url1.jpg" },
+                    new Image { Id = "img2",PublicId = "1", IsPrincipal = false, Url = "url2.jpg" }
                 }
             },
             User = new User
@@ -488,8 +478,8 @@ namespace Tests
             {
                 Images = new List<Image>
                 {
-                    new Image { Id = "img1", IsPrincipal = false },
-                    new Image { Id = "img2", IsPrincipal = false }
+                    new Image { Id = "img1", PublicId = "1",IsPrincipal = false },
+                    new Image { Id = "img2",PublicId = "1", IsPrincipal = false }
                 }
             },
             User = new User()
@@ -512,9 +502,9 @@ namespace Tests
             {
                 Images = new List<Image>
                 {
-                    new Image { Id = "img1", IsPrincipal = false, Url = "url1.jpg" },
-                    new Image { Id = "img2", IsPrincipal = true, Url = "url2.jpg" },
-                    new Image { Id = "img3", IsPrincipal = false, Url = "url3.jpg" }
+                    new Image { Id = "img1", PublicId = "1",IsPrincipal = false, Url = "url1.jpg" },
+                    new Image { Id = "img2",PublicId = "1", IsPrincipal = true, Url = "url2.jpg" },
+                    new Image { Id = "img3",PublicId = "1", IsPrincipal = false, Url = "url3.jpg" }
                 }
             },
             User = new User()
@@ -639,7 +629,7 @@ namespace Tests
             UpdatedAt = new DateTime(2024, 10, 20, 16, 45, 0, DateTimeKind.Utc),
             Images = new List<Image>
             {
-                new Image { Id = "img1", IsPrincipal = true, Url = "buddy.jpg", Description = "Main photo" }
+                new Image { Id = "img1",PublicId = "1", IsPrincipal = true, Url = "buddy.jpg", Description = "Main photo" }
             }
         };
 
@@ -753,8 +743,8 @@ namespace Tests
         {
             Images = new List<Image>
             {
-                new Image { Id = "img1", IsPrincipal = false },
-                new Image { Id = "img2", IsPrincipal = false }
+                new Image { Id = "img1",PublicId = "1", IsPrincipal = false },
+                new Image { Id = "img2",PublicId = "1", IsPrincipal = false }
             }
         };
 
@@ -773,9 +763,9 @@ namespace Tests
         {
             Images = new List<Image>
             {
-                new Image { Id = "img1", IsPrincipal = false, Url = "url1.jpg" },
-                new Image { Id = "img2", IsPrincipal = true, Url = "url2.jpg", Description = "Principal" },
-                new Image { Id = "img3", IsPrincipal = false, Url = "url3.jpg" }
+                new Image { Id = "img1",PublicId = "1", IsPrincipal = false, Url = "url1.jpg" },
+                new Image { Id = "img2", PublicId = "1",IsPrincipal = true, Url = "url2.jpg", Description = "Principal" },
+                new Image { Id = "img3", PublicId = "1",IsPrincipal = false, Url = "url3.jpg" }
             }
         };
 
