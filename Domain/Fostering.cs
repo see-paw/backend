@@ -39,7 +39,7 @@ public class Fostering
     /// </summary>
     [Required]
     [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be greater than 0.")]
-    public decimal Amount { get; set; }
+    public decimal Amount { get; init; }
 
     /// <summary>
     /// The current status of the fostering (e.g., Active, Completed, or Canceled).
@@ -51,7 +51,7 @@ public class Fostering
     /// The start date of the fostering period.
     /// </summary>
     [Required]
-    public DateTime StartDate { get; set; }
+    public DateTime StartDate { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// The end date of the fostering period, if applicable.
