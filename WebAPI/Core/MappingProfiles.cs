@@ -24,6 +24,15 @@ public class MappingProfiles : Profile
     /// Initializes a new instance of the <see cref="MappingProfiles"/> class  
     /// and registers all entity-to-DTO and DTO-to-entity mappings.
     /// </summary>
+    /// <remarks>
+    /// Configures the mappings between domain entities and DTOs used in the application:
+    /// <list type="bullet">
+    /// <item><description><see cref="ReqAnimalDto"/> → <see cref="Animal"/></description></item>
+    /// <item><description><see cref="Animal"/> → <see cref="ResAnimalDto"/> (includes computed fields such as <c>Age</c> and <c>BreedName</c>)</description></item>
+    /// <item><description><see cref="Image"/> → <see cref="ResImageDto"/></description></item>
+    /// </list>
+    /// These mappings are used by AutoMapper to transform objects between the application and API layers.
+    /// </remarks>
     public MappingProfiles()
     {
         CreateMap<ReqCreateAnimalDto, Animal>(MemberList.Source)
@@ -120,6 +129,33 @@ public class MappingProfiles : Profile
             .ForMember(dest => dest.PrincipalImageUrl, opt => opt.MapFrom(src =>
                 src.Images.FirstOrDefault(i => i.IsPrincipal)!.Url))
             .ForMember(dest => dest.ShelterName, opt => opt.MapFrom(src => src.Shelter.Name));
+
+        CreateMap<ReqUserProfileDto, User>();
+        
+        //  OwnershipRequests mapping
+        CreateMap<OwnershipRequest, ResUserOwnershipsDto>()
+            .ForMember(d => d.Id, o => o.MapFrom(s => s.Id))
+            .ForMember(d => d.AnimalId, o => o.MapFrom(s => s.Animal.Id))
+            .ForMember(d => d.AnimalName, o => o.MapFrom(s => s.Animal.Name))
+            .ForMember(d => d.AnimalState, o => o.MapFrom(s => s.Animal.AnimalState))
+            .ForMember(d => d.Image, o => o.MapFrom(s => s.Animal.Images.FirstOrDefault(i => i.IsPrincipal)))
+            .ForMember(d => d.Amount, o => o.MapFrom(s => s.Animal.Cost))
+            .ForMember(d => d.OwnershipStatus, o => o.MapFrom(s => s.Status))
+            .ForMember(d => d.RequestInfo, o => o.MapFrom(s => s.RequestInfo))
+            .ForMember(d => d.RequestedAt, o => o.MapFrom(s => s.RequestedAt))
+            .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => s.UpdatedAt));
+          
+        //  Animals owned mapping
+        CreateMap<Animal, ResUserOwnershipsDto>()
+            .ForMember(d => d.Id, o => o.MapFrom(s => s.Id))
+            .ForMember(d => d.AnimalId, o => o.MapFrom(s => s.Id))
+            .ForMember(d => d.AnimalName, o => o.MapFrom(s => s.Name))
+            .ForMember(d => d.AnimalState, o => o.MapFrom(s => s.AnimalState))
+            .ForMember(d => d.Image, o => o.MapFrom(s => s.Images.FirstOrDefault(i => i.IsPrincipal)))
+            .ForMember(d => d.Amount, o => o.MapFrom(s => s.Cost))
+            .ForMember(d => d.RequestedAt, o => o.MapFrom(s => s.OwnershipStartDate ?? DateTime.UtcNow))
+            .ForMember(d => d.ApprovedAt, o => o.MapFrom(s => s.OwnershipStartDate))
+            .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => s.UpdatedAt));
     }
 
     private static int CalculateAge(DateOnly birthDate)
@@ -130,3 +166,5 @@ public class MappingProfiles : Profile
             return age;
         }
 }
+
+

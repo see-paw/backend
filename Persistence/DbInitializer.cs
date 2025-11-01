@@ -33,7 +33,6 @@ public static class DbInitializer
         ILoggerFactory loggerFactory,
         bool resetDatabase = false)
     {
-        
         const string breed1Id = "1a1a1111-1111-1111-1111-111111111111";
         const string breed2Id = "2b2b2222-2222-2222-2222-222222222222";
         const string breed3Id = "3c3c3333-3333-3333-3333-333333333333";
@@ -562,89 +561,90 @@ public static class DbInitializer
                     Images = new List<Image>()
                 },
 
-            // ======== ANIMALS FOR ELIGIBITY TESTING  ========
 
-            // 1. Animal Available for Ownership (200 OK)
-            new()
-            {
-                Id = "available-animal-id-123",
-                Name = "TestDog Available",
-                AnimalState = AnimalState.Available,
-                Description = "Animal de teste disponível para adoção",
-                Species = Species.Dog,
-                Size = SizeType.Medium,
-                Sex = SexType.Male,
-                Colour = "Preto",
-                BirthDate = new DateOnly(2022, 1, 15),
-                Sterilized = true,
-                BreedId = breed2Id,
-                Cost = 40,
-                Features = "Animal de teste - Estado: Available",
-                ShelterId = shelter1Id,
-                Images = new List<Image>()
-            },
+                // ======== ANIMALS FOR ELIGIBITY TESTING  ========
 
-            // 2. Animal with owner (400 Bad Request)
-            new()
-            {
-                Id = "animal-with-owner-id",
-                Name = "TestDog HasOwner",
-                AnimalState = AnimalState.HasOwner,
-                Description = "Animal de teste que já tem dono",
-                Species = Species.Dog,
-                Size = SizeType.Small,
-                Sex = SexType.Female,
-                Colour = "Branco",
-                BirthDate = new DateOnly(2021, 5, 10),
-                Sterilized = true,
-                BreedId = breed2Id,
-                Cost = 35,
-                Features = "Animal de teste - Estado: HasOwner",
-                ShelterId = shelter1Id,
-                OwnerId = user3Id, // Carlos
-                OwnershipStartDate = DateTime.UtcNow.AddMonths(-2),
-                Images = new List<Image>()
-            },
+                // 1. Animal Available for Ownership (200 OK)
+                new()
+                {
+                    Id = "available-animal-id-123",
+                    Name = "TestDog Available",
+                    AnimalState = AnimalState.Available,
+                    Description = "Animal de teste disponível para adoção",
+                    Species = Species.Dog,
+                    Size = SizeType.Medium,
+                    Sex = SexType.Male,
+                    Colour = "Preto",
+                    BirthDate = new DateOnly(2022, 1, 15),
+                    Sterilized = true,
+                    BreedId = breed2Id,
+                    Cost = 40,
+                    Features = "Animal de teste - Estado: Available",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
 
-            // 3. Animal Inactive (400 Bad Request)
-            new()
-            {
-                Id = "inactive-animal-id",
-                Name = "TestCat Inactive",
-                AnimalState = AnimalState.Inactive,
-                Description = "Animal de teste inativo",
-                Species = Species.Cat,
-                Size = SizeType.Small,
-                Sex = SexType.Male,
-                Colour = "Cinzento",
-                BirthDate = new DateOnly(2020, 8, 20),
-                Sterilized = true,
-                BreedId = breed1Id,
-                Cost = 25,
-                Features = "Animal de teste - Estado: Inactive",
-                ShelterId = shelter1Id,
-                Images = new List<Image>()
-            },
+                // 2. Animal with owner (400 Bad Request)
+                new()
+                {
+                    Id = "animal-with-owner-id",
+                    Name = "TestDog HasOwner",
+                    AnimalState = AnimalState.HasOwner,
+                    Description = "Animal de teste que já tem dono",
+                    Species = Species.Dog,
+                    Size = SizeType.Small,
+                    Sex = SexType.Female,
+                    Colour = "Branco",
+                    BirthDate = new DateOnly(2021, 5, 10),
+                    Sterilized = true,
+                    BreedId = breed2Id,
+                    Cost = 35,
+                    Features = "Animal de teste - Estado: HasOwner",
+                    ShelterId = shelter1Id,
+                    OwnerId = user3Id, // Carlos
+                    OwnershipStartDate = DateTime.UtcNow.AddMonths(-2),
+                    Images = new List<Image>()
+                },
 
-            // 4. Animal Partially Fostered (400 Bad Request)
-            new()
-            {
-                Id = "partially-fostered-animal-id",
-                Name = "TestDog PartiallyFostered",
-                AnimalState = AnimalState.PartiallyFostered,
-                Description = "Animal de teste parcialmente acolhido",
-                Species = Species.Dog,
-                Size = SizeType.Large,
-                Sex = SexType.Male,
-                Colour = "Castanho",
-                BirthDate = new DateOnly(2021, 3, 5),
-                Sterilized = false,
-                BreedId = breed3Id,
-                Cost = 60,
-                Features = "Animal de teste - Estado: PartiallyFostered",
-                ShelterId = shelter1Id,
-                Images = new List<Image>()
-            },
+                // 3. Animal Inactive (400 Bad Request)
+                new()
+                {
+                    Id = "inactive-animal-id",
+                    Name = "TestCat Inactive",
+                    AnimalState = AnimalState.Inactive,
+                    Description = "Animal de teste inativo",
+                    Species = Species.Cat,
+                    Size = SizeType.Small,
+                    Sex = SexType.Male,
+                    Colour = "Cinzento",
+                    BirthDate = new DateOnly(2020, 8, 20),
+                    Sterilized = true,
+                    BreedId = breed1Id,
+                    Cost = 25,
+                    Features = "Animal de teste - Estado: Inactive",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
+
+                // 4. Animal Partially Fostered (400 Bad Request)
+                new()
+                {
+                    Id = "partially-fostered-animal-id",
+                    Name = "TestDog PartiallyFostered",
+                    AnimalState = AnimalState.PartiallyFostered,
+                    Description = "Animal de teste parcialmente acolhido",
+                    Species = Species.Dog,
+                    Size = SizeType.Large,
+                    Sex = SexType.Male,
+                    Colour = "Castanho",
+                    BirthDate = new DateOnly(2021, 3, 5),
+                    Sterilized = false,
+                    BreedId = breed3Id,
+                    Cost = 60,
+                    Features = "Animal de teste - Estado: PartiallyFostered",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
 
             // 5. Animal Totally Fostered (400 Bad Request)
             new()
@@ -1025,6 +1025,437 @@ public static class DbInitializer
             await dbContext.Fosterings.AddRangeAsync(fosterings);
             await dbContext.SaveChangesAsync();
         }
+
+
+
+//======== SEED FOR OWNERSHIPS CONTROLLER ========
+        // Create Users
+        var user1 = new User
+        {
+            Id = "user-1",
+            UserName = "user1@test.com",
+            Email = "user1@test.com",
+            Name = "João Silva",
+            BirthDate = new DateTime(1990, 5, 15),
+            Street = "Rua das Flores, 123",
+            City = "Porto",
+            PostalCode = "4000-001",
+            PhoneNumber = "912345678",
+            EmailConfirmed = true
+        };
+
+
+        var user2 = new User
+        {
+            Id = "user-2",
+            UserName = "user2@test.com",
+            Email = "user2@test.com",
+            Name = "Maria Santos",
+            BirthDate = new DateTime(1985, 8, 20),
+            Street = "Avenida da Liberdade, 456",
+            City = "Lisboa",
+            PostalCode = "1250-001",
+            PhoneNumber = "923456789",
+            EmailConfirmed = true
+        };
+
+        var user3 = new User
+        {
+            Id = "user-3",
+            UserName = "user3@test.com",
+            Email = "user3@test.com",
+            Name = "Carlos Pereira",
+            BirthDate = new DateTime(1995, 3, 10),
+            Street = "Rua do Comércio, 789",
+            City = "Braga",
+            PostalCode = "4700-001",
+            PhoneNumber = "934567890",
+            EmailConfirmed = true
+        };
+
+        await userManager.CreateAsync(user1, "Test@123");
+        await userManager.CreateAsync(user2, "Test@123");
+        await userManager.CreateAsync(user3, "Test@123");
+        await userManager.AddToRoleAsync(user1, userRole);
+        await userManager.AddToRoleAsync(user2, userRole);
+        await userManager.AddToRoleAsync(user3, userRole);
+
+
+        // Create Shelters
+        var shelter1 = new Shelter
+        {
+            Id = "shelter-1",
+            Name = "Associação Protetora dos Animais do Porto",
+            Street = "Rua dos Animais, 100",
+            City = "Porto",
+            PostalCode = "4100-001",
+            Phone = "222333444",
+            NIF = "501234567",
+            OpeningTime = new TimeOnly(9, 0),
+            ClosingTime = new TimeOnly(18, 0)
+        };
+
+        var shelter2 = new Shelter
+        {
+            Id = "shelter-2",
+            Name = "Centro de Recolha Animal de Lisboa",
+            Street = "Avenida dos Bichos, 200",
+            City = "Lisboa",
+            PostalCode = "1300-001",
+            Phone = "213444555",
+            NIF = "502345678",
+            OpeningTime = new TimeOnly(10, 0),
+            ClosingTime = new TimeOnly(19, 0)
+        };
+
+        await dbContext.Shelters.AddRangeAsync(shelter1, shelter2);
+
+        // Create Shelter Images
+        var shelterImage1 = new Image
+        {
+            Id = "shelter-img-1",
+            PublicId = "shelters/shelter1_main",
+            Url = "https://example.com/shelter1.jpg",
+            Description = "Foto principal do abrigo",
+            IsPrincipal = true,
+            ShelterId = shelter1.Id
+        };
+
+        var shelterImage2 = new Image
+        {
+            Id = "shelter-img-2",
+            PublicId = "shelters/shelter2_main",
+            Url = "https://example.com/shelter2.jpg",
+            Description = "Foto principal do abrigo",
+            IsPrincipal = true,
+            ShelterId = shelter2.Id
+        };
+
+        await dbContext.Images.AddRangeAsync(shelterImage1, shelterImage2);
+
+        // Create Breeds
+        var breed1 = new Breed
+        {
+            Id = "breed-1",
+            Name = "Labrador Retriever",
+            Description = "Cão de porte médio a grande, muito amigável"
+        };
+
+        var breed2 = new Breed
+        {
+            Id = "breed-2",
+            Name = "Golden Retriever",
+            Description = "Cão grande, dócil e muito inteligente"
+        };
+
+        var breed3 = new Breed
+        {
+            Id = "breed-3",
+            Name = "Pastor Português",
+            Description = "Cão grande, protetor e leal"
+        };
+
+        var breed4 = new Breed
+        {
+            Id = "breed-4",
+            Name = "Rafeiro",
+            Description = "Cão de porte médio, curioso e enérgico"
+        };
+
+        await dbContext.Breeds.AddRangeAsync(breed1, breed2, breed3, breed4);
+        await dbContext.SaveChangesAsync();
+
+        // Create Animals WITHOUT owners (available for ownership requests)
+        var animal1 = new Animal
+        {
+            Id = "animal-1",
+            Name = "Rex",
+            AnimalState = AnimalState.Available,
+            Description = "Cão muito amigável e brincalhão",
+            Species = Species.Dog,
+            Size = SizeType.Medium,
+            Sex = SexType.Male,
+            Colour = "Dourado",
+            BirthDate = new DateOnly(2020, 3, 15),
+            Sterilized = true,
+            Cost = 50,
+            Features = "Adora crianças, muito energético",
+            ShelterId = shelter1.Id,
+            BreedId = breed1.Id,
+            OwnerId = null // No owner yet
+        };
+
+        var animal2 = new Animal
+        {
+            Id = "animal-2",
+            Name = "Bella",
+            AnimalState = AnimalState.Available,
+            Description = "Cadela dócil e carinhosa",
+            Species = Species.Dog,
+            Size = SizeType.Large,
+            Sex = SexType.Female,
+            Colour = "Castanho",
+            BirthDate = new DateOnly(2019, 7, 20),
+            Sterilized = true,
+            Cost = 45,
+            Features = "Muito calma, ideal para apartamento",
+            ShelterId = shelter1.Id,
+            BreedId = breed2.Id,
+            OwnerId = null
+        };
+
+        var animal3 = new Animal
+        {
+            Id = "animal-3",
+            Name = "Thor",
+            AnimalState = AnimalState.Available,
+            Description = "Cão protetor e leal",
+            Species = Species.Dog,
+            Size = SizeType.Large,
+            Sex = SexType.Male,
+            Colour = "Preto e castanho",
+            BirthDate = new DateOnly(2018, 11, 10),
+            Sterilized = false,
+            Cost = 60,
+            Features = "Precisa de espaço, bom guarda",
+            ShelterId = shelter2.Id,
+            BreedId = breed3.Id,
+            OwnerId = null
+        };
+
+        // Additional animals for testing different ownership request scenarios
+        var animal7 = new Animal
+        {
+            Id = "animal-7",
+            Name = "Simba",
+            AnimalState = AnimalState.Available,
+            Description = "Cão jovem e cheio de energia",
+            Species = Species.Dog,
+            Size = SizeType.Medium,
+            Sex = SexType.Male,
+            Colour = "Laranja",
+            BirthDate = new DateOnly(2022, 6, 8),
+            Sterilized = false,
+            Cost = 38,
+            Features = "Adora brincar, precisa de treino",
+            ShelterId = shelter2.Id,
+            BreedId = breed4.Id,
+            OwnerId = null
+        };
+
+        var animal8 = new Animal
+        {
+            Id = "animal-8",
+            Name = "Nina",
+            AnimalState = AnimalState.Available,
+            Description = "Cadela idosa e calma",
+            Species = Species.Dog,
+            Size = SizeType.Small,
+            Sex = SexType.Female,
+            Colour = "Cinzento",
+            BirthDate = new DateOnly(2015, 2, 14),
+            Sterilized = true,
+            Cost = 30,
+            Features = "Perfeita para lares tranquilos",
+            ShelterId = shelter1.Id,
+            BreedId = breed1.Id,
+            OwnerId = null
+        };
+
+
+        // Create Animals WITH owners (user2 owns these)
+        var animal4 = new Animal
+        {
+            Id = "animal-4",
+            Name = "Max",
+            AnimalState = AnimalState.HasOwner,
+            Description = "Cão adorável já adotado",
+            Species = Species.Dog,
+            Size = SizeType.Medium,
+            Sex = SexType.Male,
+            Colour = "Branco e preto",
+            BirthDate = new DateOnly(2021, 1, 5),
+            Sterilized = true,
+            Cost = 40,
+            Features = "Ama correr, muito sociável",
+            ShelterId = shelter1.Id,
+            BreedId = breed4.Id,
+            OwnerId = user2.Id,
+            OwnershipStartDate = DateTime.UtcNow.AddMonths(-6)
+        };
+
+        var animal5 = new Animal
+        {
+            Id = "animal-5",
+            Name = "Luna",
+            AnimalState = AnimalState.HasOwner,
+            Description = "Cadela já com família",
+            Species = Species.Dog,
+            Size = SizeType.Small,
+            Sex = SexType.Female,
+            Colour = "Dourado claro",
+            BirthDate = new DateOnly(2022, 4, 12),
+            Sterilized = true,
+            Cost = 35,
+            Features = "Pequena e adorável, boa com gatos",
+            ShelterId = shelter2.Id,
+            BreedId = breed1.Id,
+            OwnerId = user2.Id,
+            OwnershipStartDate = DateTime.UtcNow.AddMonths(-2)
+        };
+
+        var animal6 = new Animal
+        {
+            Id = "animal-6",
+            Name = "Bobby",
+            AnimalState = AnimalState.HasOwner,
+            Description = "Cão feliz com novo dono",
+            Species = Species.Dog,
+            Size = SizeType.Large,
+            Sex = SexType.Male,
+            Colour = "Dourado",
+            BirthDate = new DateOnly(2019, 9, 25),
+            Sterilized = true,
+            Cost = 55,
+            Features = "Calmo, ideal para idosos",
+            ShelterId = shelter1.Id,
+            BreedId = breed2.Id,
+            OwnerId = user2.Id,
+            OwnershipStartDate = DateTime.UtcNow.AddMonths(-10)
+        };
+
+        await dbContext.Animals.AddRangeAsync(animal1, animal2, animal3, animal4, animal5, animal6, animal7, animal8);
+
+
+        // Create Animal Images
+        var animalImages = new List<Image>
+        {
+            new Image
+            {
+                Id = "img-1", PublicId = "animals/rex_1", Url = "https://example.com/rex1.jpg",
+                Description = "Rex brincando", IsPrincipal = true, AnimalId = animal1.Id
+            },
+            new Image
+            {
+                Id = "img-2", PublicId = "animals/rex_2", Url = "https://example.com/rex2.jpg",
+                Description = "Rex descansando", IsPrincipal = false, AnimalId = animal1.Id
+            },
+            new Image
+            {
+                Id = "img-3", PublicId = "animals/bella_1", Url = "https://example.com/bella1.jpg",
+                Description = "Bella sentada", IsPrincipal = true, AnimalId = animal2.Id
+            },
+            new Image
+            {
+                Id = "img-4", PublicId = "animals/thor_1", Url = "https://example.com/thor1.jpg",
+                Description = "Thor em guarda", IsPrincipal = true, AnimalId = animal3.Id
+            },
+            new Image
+            {
+                Id = "img-5", PublicId = "animals/max_1", Url = "https://example.com/max1.jpg",
+                Description = "Max feliz", IsPrincipal = true, AnimalId = animal4.Id
+            },
+            new Image
+            {
+                Id = "img-6", PublicId = "animals/luna_1", Url = "https://example.com/luna1.jpg",
+                Description = "Luna adorável", IsPrincipal = true, AnimalId = animal5.Id
+            },
+            new Image
+            {
+                Id = "img-7", PublicId = "animals/bobby_1", Url = "https://example.com/bobby1.jpg",
+                Description = "Bobby sorrindo", IsPrincipal = true, AnimalId = animal6.Id
+            },
+            new Image
+            {
+                Id = "img-8", PublicId = "animals/simba_1", Url = "https://example.com/simba1.jpg",
+                Description = "Simba brincalhão", IsPrincipal = true, AnimalId = animal7.Id
+            },
+            new Image
+            {
+                Id = "img-9", PublicId = "animals/nina_1", Url = "https://example.com/nina1.jpg",
+                Description = "Nina tranquila", IsPrincipal = true, AnimalId = animal8.Id
+            }
+        };
+
+        await dbContext.Images.AddRangeAsync(animalImages);
+        await dbContext.SaveChangesAsync();
+
+        // Create Ownership Requests for user1 (multiple states)
+        // Each user can only have ONE ownership request per animal (unique constraint on UserId + AnimalId)
+
+        // Pending request for Rex
+
+        var ownershipRequest1 = new OwnershipRequest
+        {
+            Id = "or-1",
+            AnimalId = animal1.Id, // Rex
+            UserId = user1.Id,
+            Amount = 100,
+            Status = OwnershipStatus.Pending,
+            RequestInfo = "Tenho experiência com cães desta raça",
+            RequestedAt = DateTime.UtcNow.AddDays(-5)
+        };
+
+        // Pending request for Bella
+        var ownershipRequest2 = new OwnershipRequest
+        {
+            Id = "or-2",
+            AnimalId = animal2.Id, // Bella
+            UserId = user1.Id,
+            Amount = 90,
+            Status = OwnershipStatus.Pending,
+            RequestInfo = "Procuro uma companheira calma",
+            RequestedAt = DateTime.UtcNow.AddDays(-3)
+        };
+
+        // Recent rejected request for Thor (within last month)
+        var ownershipRequest3 = new OwnershipRequest
+        {
+            Id = "or-3",
+            AnimalId = animal3.Id, // Thor
+            UserId = user1.Id,
+            Amount = 120,
+            Status = OwnershipStatus.Rejected,
+            RequestInfo = "Tenho quintal grande",
+            RequestedAt = DateTime.UtcNow.AddDays(-20),
+            UpdatedAt = DateTime.UtcNow.AddDays(-15) // Rejected 15 days ago (within last month)
+        };
+
+        // Old rejected request for Simba (should NOT appear - more than 1 month old)
+        var ownershipRequest4 = new OwnershipRequest
+        {
+            Id = "or-4",
+            AnimalId = animal7.Id, // Simba (different animal!)
+            UserId = user1.Id,
+            Amount = 80,
+            Status = OwnershipStatus.Rejected,
+            RequestInfo = "Quero um cão jovem",
+            RequestedAt = DateTime.UtcNow.AddDays(-50),
+            UpdatedAt = DateTime.UtcNow.AddDays(-40) // Rejected 40 days ago (more than 1 month)
+        };
+
+        // Approved request for Nina (should NOT appear - approved requests excluded)
+        var ownershipRequest5 = new OwnershipRequest
+        {
+            Id = "or-5",
+            AnimalId = animal8.Id, // Nina (different animal!)
+            UserId = user1.Id,
+            Amount = 95,
+            Status = OwnershipStatus.Approved,
+            RequestInfo = "Perfeita para o meu estilo de vida",
+            RequestedAt = DateTime.UtcNow.AddDays(-60),
+            ApprovedAt = DateTime.UtcNow.AddDays(-55),
+            UpdatedAt = DateTime.UtcNow.AddDays(-55)
+        };
+
+        await dbContext.OwnershipRequests.AddRangeAsync(
+            ownershipRequest1,
+            ownershipRequest2,
+            ownershipRequest3,
+            ownershipRequest4,
+            ownershipRequest5
+        );
+
 
         // ======== SEED FAVORITES ========
         if (!dbContext.Favorites.Any())

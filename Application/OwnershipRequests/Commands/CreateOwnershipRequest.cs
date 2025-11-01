@@ -64,10 +64,11 @@ public class CreateOwnershipRequest
             var animal = await context.Animals.FindAsync(request.AnimalID);
             if (animal == null)
                 return Result<OwnershipRequest>.Failure("Animal ID not found", 404);
-
+            
             // Validate if animal is inactive or if it already has an owner
             if (animal.AnimalState == AnimalState.HasOwner || animal.AnimalState == AnimalState.Inactive)
                 return Result<OwnershipRequest>.Failure("Animal not available for ownership", 400);
+                
 
             // Check for existing ownership request
             var existingRequest = await context.OwnershipRequests

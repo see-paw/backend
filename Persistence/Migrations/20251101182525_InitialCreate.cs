@@ -30,7 +30,7 @@ namespace Persistence.Migrations
                 name: "Breeds",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "text", nullable: false),
+                    Id = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
@@ -44,13 +44,13 @@ namespace Persistence.Migrations
                 name: "Shelters",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "text", nullable: false),
+                    Id = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
                     Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     Street = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     City = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    PostalCode = table.Column<string>(type: "text", nullable: false),
-                    Phone = table.Column<string>(type: "text", nullable: false),
-                    NIF = table.Column<string>(type: "text", nullable: false),
+                    PostalCode = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Phone = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    NIF = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     OpeningTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
                     ClosingTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
@@ -125,7 +125,7 @@ namespace Persistence.Migrations
                 name: "Animals",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "text", nullable: false),
+                    Id = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     AnimalState = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
@@ -139,9 +139,9 @@ namespace Persistence.Migrations
                     Features = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    ShelterId = table.Column<string>(type: "text", nullable: false),
-                    BreedId = table.Column<string>(type: "text", nullable: false),
-                    OwnerId = table.Column<string>(type: "text", nullable: true),
+                    ShelterId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
+                    BreedId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
+                    OwnerId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: true),
                     OwnershipStartDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     OwnershipEndDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
                 },
@@ -257,9 +257,9 @@ namespace Persistence.Migrations
                 name: "Activities",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "text", nullable: false),
-                    AnimalId = table.Column<string>(type: "text", nullable: false),
-                    UserId = table.Column<string>(type: "text", nullable: false),
+                    Id = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
+                    AnimalId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
+                    UserId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
                     Type = table.Column<string>(type: "text", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false),
                     StartDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
@@ -287,9 +287,9 @@ namespace Persistence.Migrations
                 name: "Favorites",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "text", nullable: false),
-                    UserId = table.Column<string>(type: "text", nullable: false),
-                    AnimalId = table.Column<string>(type: "text", nullable: false),
+                    Id = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
+                    UserId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
+                    AnimalId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
@@ -315,9 +315,9 @@ namespace Persistence.Migrations
                 name: "Fosterings",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "text", nullable: false),
-                    AnimalId = table.Column<string>(type: "text", nullable: false),
-                    UserId = table.Column<string>(type: "text", nullable: false),
+                    Id = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
+                    AnimalId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
+                    UserId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
                     Amount = table.Column<decimal>(type: "numeric", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false),
                     StartDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
@@ -345,11 +345,11 @@ namespace Persistence.Migrations
                 name: "Images",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "text", nullable: false),
+                    Id = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
                     PublicId = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     IsPrincipal = table.Column<bool>(type: "boolean", nullable: false),
-                    AnimalId = table.Column<string>(type: "text", nullable: true),
-                    ShelterId = table.Column<string>(type: "text", nullable: true),
+                    AnimalId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: true),
+                    ShelterId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: true),
                     Url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
@@ -375,9 +375,9 @@ namespace Persistence.Migrations
                 name: "OwnershipRequests",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "text", nullable: false),
-                    AnimalId = table.Column<string>(type: "text", nullable: false),
-                    UserId = table.Column<string>(type: "text", nullable: false),
+                    Id = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
+                    AnimalId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
+                    UserId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
                     Amount = table.Column<decimal>(type: "numeric", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false),
                     RequestInfo = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),

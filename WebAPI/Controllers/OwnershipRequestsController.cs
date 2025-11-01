@@ -39,7 +39,7 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
             PageNumber = pageNumber
         });
 
-        if (!result.IsSuccess)
+        if (!result.IsSuccess || result.Value == null)
         {
             return HandleResult(result);
         }
@@ -57,7 +57,6 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
         // Return the successful paginated result
         return HandleResult(Result<PagedList<ResOwnershipRequestDto>>.Success(dtoPagedList, 200));
     }
-
 
     /// <summary>
     /// Creates a new ownership request for an animal.
