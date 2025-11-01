@@ -1,6 +1,7 @@
-﻿﻿using AutoMapper;
+﻿using AutoMapper;
 using Domain;
 using WebAPI.DTOs;
+using WebAPI.DTOs.Activities;
 using WebAPI.DTOs.Animals;
 using WebAPI.DTOs.Breeds;
 using WebAPI.DTOs.Fostering;
@@ -104,8 +105,21 @@ public class MappingProfiles : Profile
         CreateMap<OwnershipRequest, ResOwnershipRequestDto>()
             .ForMember(dest => dest.AnimalName, opt => opt.MapFrom(src => src.Animal.Name))
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Name));
+
+        // Activity mappings
+        CreateMap<Activity, ResActivityDto>()
+            .ForMember(dest => dest.AnimalName, opt => opt.MapFrom(src => src.Animal.Name))
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Name));
         
         CreateMap<ReqUserProfileDto, User>(MemberList.Source);
+
+        // Favorite Animal mappings
+        CreateMap<Animal, ResFavoriteAnimalDto>()
+            .ForMember(dest => dest.Breed, opt => opt.MapFrom(src => src.Breed.Name))
+            .ForMember(dest => dest.Age, opt => opt.MapFrom(src => CalculateAge(src.BirthDate)))
+            .ForMember(dest => dest.PrincipalImageUrl, opt => opt.MapFrom(src =>
+                src.Images.FirstOrDefault(i => i.IsPrincipal)!.Url))
+            .ForMember(dest => dest.ShelterName, opt => opt.MapFrom(src => src.Shelter.Name));
     }
 
     private static int CalculateAge(DateOnly birthDate)

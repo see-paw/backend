@@ -23,4 +23,8 @@
     <ProjectReference Include="..\Persistence\Persistence.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Favorites\Commands\" />
+  </ItemGroup>
+
 </Project>

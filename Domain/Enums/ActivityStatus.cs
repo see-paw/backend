@@ -16,7 +16,7 @@ public enum ActivityStatus
     /// <summary>
     /// The activity has been cancelled before completion.
     /// </summary>
-    Canceled,
+    Cancelled,
 
     /// <summary>
     /// The activity has been successfully completed.
