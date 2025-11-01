@@ -7,7 +7,6 @@ namespace WebAPI.Validators.Fosterings;
 
 public class AddFosteringValidator : AbstractValidator<AddFostering.Command>
 {
-    
     public AddFosteringValidator(IOptions<FosteringSettings> options)
     {
         var fosteringSettings = options.Value;
@@ -18,7 +17,8 @@ public class AddFosteringValidator : AbstractValidator<AddFostering.Command>
             .MustBeValidGuidString("Id with wrong format");
 
         RuleFor(x => x.MonthValue)
-            .GreaterThanOrEqualTo(fosteringSettings.MinMonthlyValue);
+            .GreaterThanOrEqualTo(fosteringSettings.MinMonthlyValue)
+            .WithMessage($"Month value must be greater than or equal than {fosteringSettings.MinMonthlyValue}");
         
     }
 }

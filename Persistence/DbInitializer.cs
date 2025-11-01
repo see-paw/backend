@@ -817,9 +817,19 @@ public static class DbInitializer
             const string fostering1Id = "f0000000-0000-0000-0000-000000000001";
             const string fostering2Id = "f0000000-0000-0000-0000-000000000002";
             const string fostering3Id = "f0000000-0000-0000-0000-000000000003";
+            const string fostering4Id = "f0000000-0000-0000-0000-000000000004";
 
             var fosterings = new List<Fostering>
             {
+                new ()
+                {
+                    Id = fostering1Id,
+                    AnimalId = animal2Id,
+                    UserId = user4Id,   
+                    Amount = 10,
+                    Status = FosteringStatus.Active,
+                    StartDate = DateTime.UtcNow
+                },
                 new()
                 {
                     Id = fostering2Id,

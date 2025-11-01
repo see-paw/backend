@@ -8,6 +8,7 @@ using Application.Core;
 using Application.Fosterings;
 using Application.Images;
 using Application.Interfaces;
+using Application.Services;
 using Domain;
 using Domain.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -62,7 +63,8 @@ builder.Services.AddMediatR(x => {
     x.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 
-builder.Services.AddScoped<FosteringService>();
+builder.Services.AddScoped<IFosteringService, FosteringService>();
+builder.Services.AddScoped<FosteringDomainService>();
 builder.Services.AddScoped(typeof(IImagesUploader<>), typeof(ImagesUploader<>));
 builder.Services.AddScoped(typeof(IImageOwnerLoader<>), typeof(ImageOwnerLoader<>));
 builder.Services.AddScoped<IPrincipalImageEnforcer, PrincipalImageEnforcer>();

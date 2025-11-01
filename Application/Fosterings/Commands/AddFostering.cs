@@ -18,7 +18,8 @@ public class AddFostering
     }
     
     public class Handler(AppDbContext dbContext, 
-        FosteringService fosteringService,
+        FosteringDomainService fosteringDomainService,
+        IFosteringService fosteringService,
         IUserAccessor userAccessor) : IRequestHandler<Command, Result<Fostering>>
     {
         public async Task<Result<Fostering>> Handle(Command request, CancellationToken ct)
@@ -36,35 +37,20 @@ public class AddFostering
                 return Result<Fostering>.Failure("Animal not found", 404);
             }
 
-            if (animal.AnimalState is AnimalState.Inactive 
-                or AnimalState.TotallyFostered 
-                or AnimalState.HasOwner)
+            var result = fosteringService.isInValidStateForFostering(animal);
+            
+            if (!result.IsSuccess)
             {
-                var (message, code) = animal.AnimalState switch
-                {
-                    AnimalState.Inactive => ("Animal is inactive", 409),
-                    AnimalState.TotallyFostered => ("Animal is totally fostered", 409),
-                    AnimalState.HasOwner => ("Animal has an owner, not available for fostering", 409),
-                    _ => ("Invalid animal state", 400)
-                };
-
-                return Result<Fostering>.Failure(message, code);
+                await transaction.RollbackAsync(ct);
+                return Result<Fostering>.Failure(result.Error ?? string.Empty, result.Code);
             }
             
             var user = await userAccessor.GetUserAsync();
 
-            if (fosteringService.IsAlreadyFosteredByUser(animal, user.Id))
+            if (fosteringDomainService.IsAlreadyFosteredByUser(animal, user.Id))
             {
                 await transaction.RollbackAsync(ct);
                 return Result<Fostering>.Failure("You already foster this animal", 409);
-            }
-            
-            var newSupport = fosteringService.GetAnimalCurrentSupport(animal) + request.MonthValue;
-
-            if (newSupport > animal.Cost)
-            {
-                await transaction.RollbackAsync(ct);
-                return Result<Fostering>.Failure("Monthly value surpasses animal costs", 422);
             }
 
             var newFostering = new Fostering
@@ -77,8 +63,16 @@ public class AddFostering
             };
 
             animal.Fosterings.Add(newFostering);
-            
-            fosteringService.UpdateFosteringState(animal);
+
+            try
+            {
+                fosteringService.UpdateFosteringState(animal);
+            }
+            catch (InvalidOperationException e)
+            {
+                await transaction.RollbackAsync(ct);
+                return Result<Fostering>.Failure(e.Message, 422);
+            }
             
             dbContext.Fosterings.Add(newFostering);
             

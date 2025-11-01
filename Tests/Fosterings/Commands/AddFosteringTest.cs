@@ -1,5 +1,6 @@
 ﻿using Application.Fosterings.Commands;
 using Application.Interfaces;
+using Application.Services;
 using Domain;
 using Domain.Enums;
 using Domain.Services;
@@ -20,7 +21,8 @@ public class AddFosteringTests : IDisposable
     private readonly SqliteConnection _connection;
     private readonly AppDbContext _context;
     private readonly Mock<IUserAccessor> _userAccessorMock;
-    private readonly FosteringService _fosteringService;
+    private readonly FosteringDomainService _fosteringDomainService;
+    private readonly IFosteringService _fosteringService;
     private readonly AddFostering.Handler _handler;
     private const decimal MinMonthlyValue = 10.00m;
     private const string ValidUserId = "user-123";
@@ -41,8 +43,9 @@ public class AddFosteringTests : IDisposable
         _context.Database.ExecuteSqlRaw("PRAGMA foreign_keys = OFF;");
         
         _userAccessorMock = new Mock<IUserAccessor>();
-        _fosteringService = new FosteringService();
-        _handler = new AddFostering.Handler(_context, _fosteringService, _userAccessorMock.Object);
+        _fosteringDomainService = new FosteringDomainService();
+        _fosteringService = new FosteringService(_fosteringDomainService);
+        _handler = new AddFostering.Handler(_context, _fosteringDomainService, _fosteringService, _userAccessorMock.Object);
         
         _userAccessorMock.Setup(x => x.GetUserAsync())
             .ReturnsAsync(new User { Id = ValidUserId, Name = "Test User", Email = "test@test.com" });
