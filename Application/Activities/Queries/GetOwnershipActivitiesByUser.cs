@@ -86,7 +86,7 @@ public class GetOwnershipActivitiesByUser
                 else
                 {
                     return Result<PagedList<Activity>>.Failure(
-                        $"Invalid status value: {request.Status}. Valid values are: Active, Completed, Canceled, All", 400);
+                        $"Invalid status value: {request.Status}. Valid values are: Active, Completed, Cancelled, All", 400);
                 }
             }
 

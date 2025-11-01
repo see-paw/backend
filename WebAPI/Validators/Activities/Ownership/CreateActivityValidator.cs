@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using WebAPI.DTOs.Activities;
 
-namespace WebAPI.Validators.Activities;
+namespace WebAPI.Validators.Activities.Ownership;
 
 /// <summary>
 /// Validator for creating ownership activities.

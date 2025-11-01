@@ -62,7 +62,7 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
     /// fall within the shelter's operating hours.
     /// </remarks>
     [Authorize(Roles = "User")]
-    [HttpPost]
+    [HttpPost("ownership")]
     public async Task<ActionResult<ResActivityDto>> CreateOwnershipActivity([FromBody] ReqCreateActivityDto dto)
     {
         var command = new CreateOwnershipActivity.Command
@@ -82,5 +82,31 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
         return HandleResult(Result<ResActivityDto>.Success(responseDto, 201));
     }
 
+    /// <summary>
+    /// Cancels an active ownership activity.
+    /// </summary>
+    /// <param name="id">The unique identifier of the activity to cancel.</param>
+    /// <returns>The cancelled activity object.</returns>
+    /// <remarks>
+    /// This endpoint allows animal owners to cancel their scheduled visits/interactions.
+    /// Only activities with Active status can be cancelled.
+    /// </remarks>
+    [Authorize(Roles = "User")]
+    [HttpPatch("ownership/{id}/cancel")]
+    public async Task<ActionResult<ResActivityDto>> CancelOwnershipActivity(string id)
+    {
+        var command = new CancelOwnershipActivity.Command
+        {
+            ActivityId = id
+        };
 
+        var result = await Mediator.Send(command);
+
+        if (!result.IsSuccess)
+            return HandleResult(result);
+
+        var responseDto = mapper.Map<ResActivityDto>(result.Value);
+
+        return HandleResult(Result<ResActivityDto>.Success(responseDto, 200));
+    }
 }
