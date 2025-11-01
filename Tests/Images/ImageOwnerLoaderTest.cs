@@ -1,6 +1,7 @@
 ﻿using Application.Images;
 using Domain;
 using Domain.Enums;
+using Infrastructure.Images;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 

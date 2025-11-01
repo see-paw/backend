@@ -16,10 +16,6 @@ public class AddImagesAnimalCommandValidator : AbstractValidator<AddImagesAnimal
     /// <summary>
     /// Initializes a new instance of the <see cref="AddImagesAnimalCommandValidator"/> class.
     /// </summary>
-    /// <param name="dbContext">
-    /// The application's <see cref="AppDbContext"/> instance used to perform database-dependent validations,
-    /// ensuring data consistency when associating images to an existing animal.
-    /// </param>
     public AddImagesAnimalCommandValidator()
     {
         RuleFor(x => x.AnimalId)

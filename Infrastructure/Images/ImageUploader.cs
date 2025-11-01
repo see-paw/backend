@@ -5,7 +5,7 @@ using Domain.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 
-namespace Application.Images;
+namespace Infrastructure.Images;
 
 /// <summary>
 /// Service that orchestrates the upload of multiple images for any entity.

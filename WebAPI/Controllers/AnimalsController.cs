@@ -1,6 +1,7 @@
 ﻿using Application.Animals.Commands;
 using Application.Animals.Queries;
 using Application.Core;
+using Application.Fosterings.Commands;
 using Application.Images.Commands;
 using Application.Interfaces;
 using AutoMapper;
@@ -12,6 +13,7 @@ using WebAPI.DTOs;
 using Boolean = System.Boolean;
 
 using WebAPI.DTOs.Animals;
+using WebAPI.DTOs.Fostering;
 using WebAPI.DTOs.Images;
 
 namespace WebAPI.Controllers;
@@ -296,6 +298,39 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
         var animalDto = mapper.Map<ResAnimalDto>(result.Value);
         return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
     }
+    
+    /// <summary>
+    /// Creates a new fostering record for the specified animal, allowing the authenticated user
+    /// to sponsor it with a monthly contribution.
+    /// </summary>
+    /// <param name="animalId">The unique identifier (GUID) of the animal to be fostered.</param>
+    /// <param name="reqAddFosteringDto">The data transfer object containing the monthly contribution value.</param>
+    /// <returns>
+    /// An <see cref="ActionResult{T}"/> containing a <see cref="ResActiveFosteringDto"/> that represents the created fostering record.  
+    /// Returns an appropriate error response if the operation fails.
+    /// <list type="bullet">
+    /// <item><description><c>201 Created</c> – fostering created successfully.</description></item>
+    /// <item><description><c>404 Not Found</c> – the specified animal does not exist.</description></item>
+    /// <item><description><c>409 Conflict</c> – the animal is in an invalid state or already fostered by the same user.</description></item>
+    /// <item><description><c>422 Unprocessable Entity</c> – the monthly value surpasses the animal’s cost.</description></item>
+    /// </list>
+    /// </returns>
+    /// <remarks>
+    /// This endpoint is accessible only to authenticated users with the <c>User</c> role.
+    /// </remarks>
+    [Authorize(Roles = "User")]
+    [HttpPost("{animalId}/fosterings")]
+    public async Task<ActionResult<ResActiveFosteringDto>> AddFostering(string animalId, [FromBody] ReqAddFosteringDto reqAddFosteringDto)
+    {
+        var result = await Mediator.Send(new AddFostering.Command
+        {
+            AnimalId = animalId,
+            MonthValue = reqAddFosteringDto.MonthValue
+            
+        });
+        
+        return HandleResult(result);
+    }
 
     /// <summary>
     /// Checks whether a given animal is eligible to be associated with an Ownership.
@@ -319,19 +354,19 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     [HttpGet("check-eligibility/{id}")]
     public async Task<ActionResult> CheckEligibility([FromRoute] string id)
     {
-        // 📨 Send the eligibility check query via Mediator
+        // Send the eligibility check query via Mediator
         var result = await Mediator.Send(new CheckAnimalEligibilityForOwnership.Query
         {
             AnimalId = id
         });
         
-        // ⚠️ If the query result indicates failure, return the corresponding HTTP status and message
+        // If the query result indicates failure, return the corresponding HTTP status and message
         if (!result.IsSuccess)
         {
             return HandleResult(result);
         }
         
-        // ✅ Map the boolean value and return 200 OK with eligibility result
+        // Map the boolean value and return 200 OK with eligibility result
         var isPossibleToOwnership = mapper.Map<Boolean>(result.Value);
         return HandleResult(Result<Boolean>.Success(isPossibleToOwnership, 200));
     }
