@@ -11,7 +11,6 @@ namespace WebAPI.Controllers;
 /// API controller responsible for handling user favorite operations.
 /// Provides endpoints for retrieving the authenticated user's favorite animals.
 /// </summary>
-[Authorize]
 public class FavoritesController(IMapper mapper) : BaseApiController
 {
     /// <summary>

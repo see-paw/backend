@@ -146,6 +146,24 @@ public static class DbInitializer
         const string imageAnimal7Img1Id = "00000000-0000-0000-0000-000000007101";
         const string imageAnimal7Img2Id = "00000000-0000-0000-0000-000000007102";
 
+        // Favorites test
+        const string user7Id = "77777777-7777-7777-7777-777777777777"; // Gustavo (user with favorites)
+        const string animal12Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd1d";
+        const string animal13Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd2d";
+        const string animal14Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd3d";
+
+        const string favorite1Id = "fav00000-0000-0000-0000-000000000001";
+        const string favorite2Id = "fav00000-0000-0000-0000-000000000002";
+        const string favorite3Id = "fav00000-0000-0000-0000-000000000003";
+
+        // Favorites test, image ids
+        const string imageAnimal12Img1Id = "00000000-0000-0000-0000-000000012101";
+        const string imageAnimal12Img2Id = "00000000-0000-0000-0000-000000012102";
+        const string imageAnimal13Img1Id = "00000000-0000-0000-0000-000000013101";
+        const string imageAnimal13Img2Id = "00000000-0000-0000-0000-000000013102";
+        const string imageAnimal14Img1Id = "00000000-0000-0000-0000-000000014101";
+        const string imageAnimal14Img2Id = "00000000-0000-0000-0000-000000014102";
+
         if (resetDatabase && dbContext.Database.IsRelational())
         {
             await dbContext.Database.EnsureDeletedAsync();
@@ -285,6 +303,19 @@ public static class DbInitializer
                     PhoneNumber = "912345999",
                     CreatedAt = DateTime.UtcNow,
                     ShelterId = "22222222-2222-2222-2222-222222222222" // Test Shelter 2
+                },
+                new()
+                {
+                    Id = user7Id,
+                    Name = "Gustavo Pereira",
+                    UserName = "gustavo@test.com",
+                    Email = "gustavo@test.com",
+                    City = "Lisboa",
+                    Street = "Rua dos Favoritos 15",
+                    PostalCode = "1200-100",
+                    BirthDate = new DateTime(1993, 8, 20),
+                    PhoneNumber = "918888777",
+                    CreatedAt = DateTime.UtcNow
                 }
             };
 
@@ -633,6 +664,61 @@ public static class DbInitializer
                 Features = "Animal de teste - Estado: TotallyFostered",
                 ShelterId = shelter1Id,
                 Images = new List<Image>()
+            },
+            // ========== ANIMALS FOR FAVORITE TESTING =====================
+            new()
+            {
+                Id = animal12Id,
+                Name = "Luna",
+                AnimalState = AnimalState.Available,
+                Description = "Gata carinhosa e tranquila, ideal para apartamento.",
+                Species = Species.Cat,
+                Size = SizeType.Small,
+                Sex = SexType.Female,
+                Colour = "Cinza prateado",
+                BirthDate = new DateOnly(2021, 2, 18),
+                Sterilized = true,
+                BreedId = breed1Id,
+                Cost = 35,
+                Features = "Pelagem sedosa, olhos verdes",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+            new()
+            {
+                Id = animal13Id,
+                Name = "Rex",
+                AnimalState = AnimalState.Available,
+                Description = "Cão ativo e brincalhão, adora crianças.",
+                Species = Species.Dog,
+                Size = SizeType.Medium,
+                Sex = SexType.Male,
+                Colour = "Castanho avermelhado",
+                BirthDate = new DateOnly(2020, 9, 5),
+                Sterilized = true,
+                BreedId = breed2Id,
+                Cost = 55,
+                Features = "Muito energético, gosta de correr",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+            new()
+            {
+                Id = animal14Id,
+                Name = "Simba",
+                AnimalState = AnimalState.Available,
+                Description = "Gato jovem e curioso, adora explorar.",
+                Species = Species.Cat,
+                Size = SizeType.Small,
+                Sex = SexType.Male,
+                Colour = "Laranja tigrado",
+                BirthDate = new DateOnly(2022, 6, 10),
+                Sterilized = false,
+                BreedId = breed1Id,
+                Cost = 28,
+                Features = "Muito brincalhão e ativo",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
             }
         };
 
@@ -824,7 +910,70 @@ public static class DbInitializer
                     Description = "Rockito a brincar no campo",
                     IsPrincipal = false,
                     PublicId = publicIdAnimal7Img2
-                }
+                },
+
+                // =============== FAVORITES IMAGE SEEDS ==================
+
+
+                // === ANIMAL 12 (Luna) ===
+            new()
+            {
+                Id = imageAnimal12Img1Id,
+                AnimalId = animal12Id,
+                Url = imageUrl1_1,
+                Description = "Luna a descansar",
+                IsPrincipal = true,
+                PublicId = publicIdAnimal1Img1
+            },
+            new()
+            {
+                Id = imageAnimal12Img2Id,
+                AnimalId = animal12Id,
+                Url = imageUrl1_2,
+                Description = "Luna a brincar",
+                IsPrincipal = false,
+                PublicId = publicIdAnimal1Img2
+            },
+
+            // === ANIMAL 13 (Rex) ===
+            new()
+            {
+                Id = imageAnimal13Img1Id,
+                AnimalId = animal13Id,
+                Url = imageUrl1_1,
+                Description = "Rex no jardim",
+                IsPrincipal = true,
+                PublicId = publicIdAnimal1Img1
+            },
+            new()
+            {
+                Id = imageAnimal13Img2Id,
+                AnimalId = animal13Id,
+                Url = imageUrl1_2,
+                Description = "Rex a correr",
+                IsPrincipal = false,
+                PublicId = publicIdAnimal1Img2
+            },
+
+            // === ANIMAL 14 (Simba) ===
+            new()
+            {
+                Id = imageAnimal14Img1Id,
+                AnimalId = animal14Id,
+                Url = imageUrl1_1,
+                Description = "Simba a explorar",
+                IsPrincipal = true,
+                PublicId = publicIdAnimal1Img1
+            },
+            new()
+            {
+                Id = imageAnimal14Img2Id,
+                AnimalId = animal14Id,
+                Url = imageUrl1_2,
+                Description = "Simba a dormir",
+                IsPrincipal = false,
+                PublicId = publicIdAnimal1Img2
+            }
             };
 
             await dbContext.Images.AddRangeAsync(images);
@@ -877,5 +1026,39 @@ public static class DbInitializer
             await dbContext.SaveChangesAsync();
         }
 
+        // ======== SEED FAVORITES ========
+        if (!dbContext.Favorites.Any())
+        {
+            var favorites = new List<Favorite>
+            {
+                new()
+                {
+                    Id = favorite1Id,
+                    UserId = user7Id,  // Gustavo
+                    AnimalId = animal12Id,  // Luna
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow.AddDays(-3)
+                },
+                new()
+                {
+                    Id = favorite2Id,
+                    UserId = user7Id,  // Gustavo
+                    AnimalId = animal13Id,  // Rex
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow.AddDays(-2)
+                },
+                new()
+                {
+                    Id = favorite3Id,
+                    UserId = user7Id,  // Gustavo
+                    AnimalId = animal14Id,  // Simba
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow.AddDays(-1)
+                }
+            };
+
+            await dbContext.Favorites.AddRangeAsync(favorites);
+            await dbContext.SaveChangesAsync();
+        }
     }
 }
