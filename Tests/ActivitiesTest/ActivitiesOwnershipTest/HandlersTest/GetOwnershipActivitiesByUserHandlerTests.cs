@@ -150,7 +150,7 @@ public class GetOwnershipActivitiesByUserHandlerTests
             _context.Activities.Add(activity);
         }
 
-        // Add Canceled activities
+        // Add Cancelled activities
         for (int i = 0; i < canceledActivitiesCount; i++)
         {
             var activity = new Activity
@@ -159,7 +159,7 @@ public class GetOwnershipActivitiesByUserHandlerTests
                 AnimalId = i % 2 == 0 ? animal1.Id : animal2.Id,
                 UserId = owner.Id,
                 Type = ActivityType.Ownership,
-                Status = ActivityStatus.Canceled,
+                Status = ActivityStatus.Cancelled,
                 StartDate = baseDate.AddDays(-5 - i),
                 EndDate = baseDate.AddDays(-5 - i).AddHours(2)
             };
@@ -331,7 +331,7 @@ public class GetOwnershipActivitiesByUserHandlerTests
 
         var result = await handler.Handle(new GetOwnershipActivitiesByUser.Query
         {
-            Status = "Canceled"
+            Status = "Cancelled"
         }, default);
 
         Assert.Equal(3, result.Value!.TotalCount);
@@ -351,10 +351,10 @@ public class GetOwnershipActivitiesByUserHandlerTests
 
         var result = await handler.Handle(new GetOwnershipActivitiesByUser.Query
         {
-            Status = "Canceled"
+            Status = "Cancelled"
         }, default);
 
-        Assert.All(result.Value!, a => Assert.Equal(ActivityStatus.Canceled, a.Status));
+        Assert.All(result.Value!, a => Assert.Equal(ActivityStatus.Cancelled, a.Status));
     }
 
     [Fact]

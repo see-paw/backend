@@ -47,16 +47,14 @@ public class CancelOwnershipActivityControllerTests
             }
         };
     }
-
-    private static Activity CreateActivity(ActivityStatus status = ActivityStatus.Active)
+    private static Activity CreateActivity(ActivityStatus status = ActivityStatus.Active, string? activityId = null)
     {
         var animalId = Guid.NewGuid().ToString();
         var userId = Guid.NewGuid().ToString();
-        var activityId = Guid.NewGuid().ToString();
 
         return new Activity
         {
-            Id = activityId,
+            Id = activityId ?? Guid.NewGuid().ToString(), // ← Usa o parâmetro se fornecido
             AnimalId = animalId,
             UserId = userId,
             Type = ActivityType.Ownership,
@@ -155,8 +153,7 @@ public class CancelOwnershipActivityControllerTests
     public async Task CancelOwnershipActivity_ShouldReturnCorrectActivityId()
     {
         var activityId = Guid.NewGuid().ToString();
-        var activity = CreateActivity(ActivityStatus.Cancelled);
-        activity.Id = activityId;
+        var activity = CreateActivity(ActivityStatus.Cancelled, activityId); // ← Passa o activityId aqui
         var responseDto = CreateResponseDto(activity);
 
         _mockMediator
