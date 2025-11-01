@@ -12,8 +12,8 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251101151342_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251101182550_FosteringAmountFixed")]
+    partial class FosteringAmountFixed
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

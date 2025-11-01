@@ -58,9 +58,7 @@ public class CheckAnimalEligibilityForOwnership
                 return Result<bool>.Failure("Animal ID not found", 404);
 
             //  Validate if the animal is in a state that makes it ineligible
-            if (animal.AnimalState == AnimalState.HasOwner || animal.AnimalState == AnimalState.Inactive ||
-                animal.AnimalState == AnimalState.PartiallyFostered ||
-                animal.AnimalState == AnimalState.TotallyFostered)
+            if (animal.AnimalState == AnimalState.HasOwner || animal.AnimalState == AnimalState.Inactive)
                 return Result<bool>.Failure("Animal not eligible for ownership", 400);
             
              //  The animal is eligible for ownership
