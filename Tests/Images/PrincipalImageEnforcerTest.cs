@@ -1,6 +1,7 @@
 ﻿using Application.Images;
 using Application.Interfaces;
 using Domain;
+using Infrastructure.Images;
 
 namespace Tests.Images;
 

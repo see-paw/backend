@@ -25,6 +25,7 @@ public static class DbInitializer
     /// <param name="userManager">The <see cref="UserManager{TUser}"/> used to manage user creation and role assignment.</param>
     /// <param name="roleManager">The <see cref="RoleManager{TRole}"/> used to manage roles in the identity system.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging seeding operations and errors.</param>
+    /// <param name="resetDatabase">Boolean used to reset or not the database.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public static async Task SeedData(AppDbContext dbContext,
         UserManager<User> userManager,
@@ -47,6 +48,7 @@ public static class DbInitializer
         const string animal8Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd8b";
         const string animal9Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd9b";
         const string animal10Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd0c";
+        const string animal11Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd1c";
         const string platformAdmin = "PlatformAdmin";
         const string adminCaa = "AdminCAA";
         const string userRole = "User";
@@ -509,6 +511,24 @@ public static class DbInitializer
                     ShelterId = shelter1Id,
                     Images = new List<Image>()
                 },
+                new()
+                {
+                    Id = animal11Id,
+                    Name = "Tobias",
+                    AnimalState = AnimalState.Available,
+                    Description = "Cão de porte médio, muito sociável e adora passeios longos.",
+                    Species = Species.Dog,
+                    Size = SizeType.Medium,
+                    Sex = SexType.Male,
+                    Colour = "Preto e branco",
+                    BirthDate = new DateOnly(2020, 6, 12),
+                    Sterilized = true,
+                    BreedId = breed2Id,
+                    Cost = 60,
+                    Features = "Brincalhão, curioso e adaptável a diferentes ambientes",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
 
 
                 // ======== ANIMALS FOR ELIGIBITY TESTING  ========
@@ -820,6 +840,15 @@ public static class DbInitializer
 
             var fosterings = new List<Fostering>
             {
+                new ()
+                {
+                    Id = fostering1Id,
+                    AnimalId = animal2Id,
+                    UserId = user4Id,   
+                    Amount = 10,
+                    Status = FosteringStatus.Active,
+                    StartDate = DateTime.UtcNow
+                },
                 new()
                 {
                     Id = fostering2Id,

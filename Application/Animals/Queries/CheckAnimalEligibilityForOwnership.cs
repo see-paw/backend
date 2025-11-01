@@ -1,5 +1,4 @@
 using Application.Core;
-using Domain;
 using Domain.Enums;
 using MediatR;
 using Persistence;
