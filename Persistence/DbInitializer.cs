@@ -1455,7 +1455,7 @@ public static class DbInitializer
             ownershipRequest4,
             ownershipRequest5
         );
-
+        await dbContext.SaveChangesAsync();
 
         // ======== SEED FAVORITES ========
         if (!dbContext.Favorites.Any())
