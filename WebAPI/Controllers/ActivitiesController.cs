@@ -12,7 +12,6 @@ namespace WebAPI.Controllers;
 /// API controller responsible for handling activity operations.
 /// Provides endpoints for creating and managing ownership activities with animals.
 /// </summary>
-[Authorize]
 public class ActivitiesController(IMapper mapper) : BaseApiController
 {
     /// <summary>
@@ -21,6 +20,7 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
     /// <param name="pageNumber">Page number (default: 1).</param>
     /// <param name="status">Optional status filter (Active, Completed, Canceled, All). If not provided, returns all activities.</param>
     /// <returns>Paginated list of ownership activities.</returns>
+    [Authorize(Roles = "User")]
     [HttpGet("ownership")]
     public async Task<ActionResult> GetOwnershipActivities(
         [FromQuery] int pageNumber = 1,
@@ -61,6 +61,7 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
     /// at the shelter. The activity must be scheduled at least 24 hours in advance and must
     /// fall within the shelter's operating hours.
     /// </remarks>
+    [Authorize(Roles = "User")]
     [HttpPost]
     public async Task<ActionResult<ResActivityDto>> CreateOwnershipActivity([FromBody] ReqCreateActivityDto dto)
     {

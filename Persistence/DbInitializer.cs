@@ -23,7 +23,7 @@ public static class DbInitializer
     /// </summary>
     /// <param name="dbContext">The application's database context used to persist entities.</param>
     /// <param name="userManager">The <see cref="UserManager{TUser}"/> used to manage user creation and role assignment.</param>
-    /// <param name="roleManager">The <see cref="RoleManager{TRole}"/> used to manage roles in the identity system.</param>
+    /// <param name="roleManager">The <see cref="RoleManager{TRole}"/> used to manage roles in the identity system.</param>f
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging seeding operations and errors.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public static async Task SeedData(AppDbContext dbContext,
