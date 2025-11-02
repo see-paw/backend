@@ -5,9 +5,12 @@ using Persistence;
 using System.Text.Json.Serialization;
 using Application.Animals;
 using Application.Core;
+using Application.Fosterings;
 using Application.Images;
 using Application.Interfaces;
+using Application.Services;
 using Domain;
+using Domain.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using FluentValidation.AspNetCore;
@@ -60,6 +63,8 @@ builder.Services.AddMediatR(x => {
     x.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 
+builder.Services.AddScoped<IFosteringService, FosteringService>();
+builder.Services.AddScoped<FosteringDomainService>();
 builder.Services.AddScoped(typeof(IImagesUploader<>), typeof(ImagesUploader<>));
 builder.Services.AddScoped(typeof(IImageOwnerLoader<>), typeof(ImageOwnerLoader<>));
 builder.Services.AddScoped<IPrincipalImageEnforcer, PrincipalImageEnforcer>();
@@ -85,6 +90,9 @@ builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthM
 
 builder.Services.Configure<CloudinarySettings>(
     builder.Configuration.GetSection("CloudinarySettings"));
+builder.Services.Configure<FosteringSettings>(
+    builder.Configuration.GetSection("Fostering")
+);
 
 var app = builder.Build();
 

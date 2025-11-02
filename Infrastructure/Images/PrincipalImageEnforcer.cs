@@ -1,7 +1,7 @@
 ﻿using Application.Interfaces;
 using Domain;
 
-namespace Application.Images;
+namespace Infrastructure.Images;
 
 /// <summary>
 /// Ensures that only one image is marked as the main image.

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
-namespace Application.Images;
+namespace Infrastructure.Images;
 
 /// <summary>
 /// Provides application-level services for managing images of an entity.

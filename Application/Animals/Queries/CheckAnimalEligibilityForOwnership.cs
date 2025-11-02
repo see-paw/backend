@@ -1,5 +1,4 @@
 using Application.Core;
-using Domain;
 using Domain.Enums;
 using MediatR;
 using Persistence;
@@ -14,8 +13,6 @@ namespace Application.Animals.Queries;
 /// <item><description>The animal does not exist in the database.</description></item>
 /// <item><description>The animal already has an owner (<see cref="AnimalState.HasOwner"/>).</description></item>
 /// <item><description>The animal is inactive (<see cref="AnimalState.Inactive"/>).</description></item>
-/// <item><description>The animal is partially fostered (<see cref="AnimalState.PartiallyFostered"/>).</description></item>
-/// <item><description>The animal is totally fostered (<see cref="AnimalState.TotallyFostered"/>).</description></item>
 /// </list>
 /// Otherwise, it is considered eligible for Ownership.
 /// </remarks>
@@ -59,9 +56,7 @@ public class CheckAnimalEligibilityForOwnership
                 return Result<bool>.Failure("Animal ID not found", 404);
 
             //  Validate if the animal is in a state that makes it ineligible
-            if (animal.AnimalState == AnimalState.HasOwner || animal.AnimalState == AnimalState.Inactive ||
-                animal.AnimalState == AnimalState.PartiallyFostered ||
-                animal.AnimalState == AnimalState.TotallyFostered)
+            if (animal.AnimalState == AnimalState.HasOwner || animal.AnimalState == AnimalState.Inactive)
                 return Result<bool>.Failure("Animal not eligible for ownership", 400);
             
              //  The animal is eligible for ownership

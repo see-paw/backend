@@ -582,7 +582,7 @@ public class DeleteAnimalImageTest : IDisposable
 
     #region Helper Methods
 
-    private async Task<Animal> CreateAnimalInDb(string shelterId, string animalId = null)
+    private async Task<Animal> CreateAnimalInDb(string shelterId, string animalId = "f055cc31-fdeb-4c65-bb73-4f558f67dd1b")
     {
         var shelter = new Shelter
         {
@@ -609,7 +609,7 @@ public class DeleteAnimalImageTest : IDisposable
 
         var animal = new Animal
         {
-            Id = animalId ?? Guid.NewGuid().ToString(), 
+            Id = animalId,
             Name = "TestAnimal",
             AnimalState = AnimalState.Available,
             Species = Species.Dog,

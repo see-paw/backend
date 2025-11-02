@@ -2,6 +2,7 @@
 using Application.Interfaces;
 using Domain;
 using Domain.Enums;
+using Infrastructure.Images;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Moq;
