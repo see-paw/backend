@@ -6,11 +6,11 @@ using WebAPI.Validators.User;
 namespace Tests.UsersControllerTest
 {
     //codacy: ignore[complexity]
-    public class EditUserProfileTests
+    public class EditUserProfileValidatorTests
     {
         private readonly UserProfileValidator _validator;
 
-        public EditUserProfileTests()
+        public EditUserProfileValidatorTests()
         {
             _validator = new UserProfileValidator();
         }

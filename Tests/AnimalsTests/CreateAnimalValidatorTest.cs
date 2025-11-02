@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using Persistence;
 
-namespace Tests.Animals.Commands;
+namespace Tests.AnimalControllerTest.cs;
 
 /// <summary>
 /// Unit tests for CreateAnimal.Handler using Equivalence Class Partitioning and Boundary Value Analysis.

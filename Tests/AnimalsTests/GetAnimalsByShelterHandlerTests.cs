@@ -1,15 +1,15 @@
-﻿using Application.Animals.Queries;
+﻿
 using Application.Shelters.Queries;
 using Domain;
 using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
-namespace Tests.SheltersControllerTest
+namespace Tests.AnimalControllerTest.cs
 {
 
     //codacy: ignore[complexity]
-    public class GetAnimalsByShelterTests
+    public class GetAnimalsByShelterHandlerTests
     {
         // ===== Helper method =====
         // Creates an AnimalsController with an in-memory database.

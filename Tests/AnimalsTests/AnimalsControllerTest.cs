@@ -12,7 +12,7 @@ using WebAPI.Controllers;
 using WebAPI.DTOs.Animals;
 using WebAPI.DTOs.Images;
 
-namespace Tests.Controllers;
+namespace Tests.AnimalsTests;
 
 /// <summary>
 /// Unit tests for AnimalsController - AddImagesToAnimal endpoint only.
