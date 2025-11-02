@@ -3,6 +3,7 @@ using WebAPI.Validators;
 using FluentValidation;
 using Persistence;
 using System.Text.Json.Serialization;
+using Application;
 using Application.Animals;
 using Application.Core;
 using Application.Fosterings;
@@ -93,6 +94,8 @@ builder.Services.Configure<CloudinarySettings>(
 builder.Services.Configure<FosteringSettings>(
     builder.Configuration.GetSection("Fostering")
 );
+builder.Services.Configure<SchedulingSettings>(
+    builder.Configuration.GetSection("SchedulingSettings"));
 
 var app = builder.Build();
 

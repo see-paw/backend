@@ -1,4 +1,5 @@
 ﻿using Domain;
+using Domain.Enums;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -57,6 +58,11 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
     /// The collection of animal breeds available in the system.
     /// </summary>
     public DbSet<Breed> Breeds { get; set; }
+    
+    /// <summary>
+    /// The collection of time slots available for scheduling activities.
+    /// </summary>
+    public DbSet<Slot> Slots { get; set; }
 
     /// <summary>
     /// Configures the model schema and entity mappings for the database context.
@@ -256,5 +262,54 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
             .WithMany(u => u.Favorites)
             .HasForeignKey(f => f.UserId)
             .OnDelete(DeleteBehavior.Cascade);  // If user is deleted, deletes user's favorite animals
+        
+        // ========== SLOT CONFIGURATIONS ==========
+
+        modelBuilder.Entity<Slot>(entity =>
+        {
+            // Primary key
+            entity.HasKey(s => s.Id);
+            
+            entity.HasDiscriminator<SlotType>("Type")
+                .HasValue<ActivitySlot>(SlotType.Activity)
+                .HasValue<ShelterUnavailabilitySlot>(SlotType.ShelterUnavailable);
+            
+            entity.Property(s => s.Status)
+                .HasConversion<string>()
+                .IsRequired();
+            
+            entity.Property(s => s.Type)
+                .HasConversion<string>()
+                .IsRequired();
+            
+            entity.Property(s => s.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .ValueGeneratedOnAdd();
+
+            entity.Property(s => s.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .ValueGeneratedOnAddOrUpdate();
+        });
+        
+        // ========== ACTIVITY SLOT CONFIGURATIONS ==========
+
+        modelBuilder.Entity<ActivitySlot>(entity =>
+        {
+            
+            entity.HasOne(s => s.Activity)
+                .WithOne(a => a.Slot)
+                .HasForeignKey<ActivitySlot>(s => s.ActivityId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        // ========== SHELTER UNAVAILABILITY SLOT CONFIGURATION ==========
+        modelBuilder.Entity<ShelterUnavailabilitySlot>(entity =>
+        {
+            entity.HasOne(s => s.Shelter)
+                .WithMany(sh => sh.UnavailabilitySlots)
+                .HasForeignKey(s => s.ShelterId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
     }
+    
 }
