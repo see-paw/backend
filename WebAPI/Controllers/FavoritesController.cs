@@ -19,6 +19,9 @@ public class FavoritesController(IMapper mapper) : BaseApiController
     /// <param name="pageNumber">
     /// The current page number for pagination. Defaults to <c>1</c>.
     /// </param>
+    /// <param name="pageSize">
+    /// The number of items per page. Defaults to <c>20</c>.
+    /// </param>
     /// <returns>
     /// A paginated <see cref="PagedList{T}"/> of <see cref="ResFavoriteAnimalDto"/> objects 
     /// representing animals marked as favorites by the user.
@@ -32,11 +35,14 @@ public class FavoritesController(IMapper mapper) : BaseApiController
     /// <response code="500">Internal server error — if an unexpected error occurs.</response>
     [Authorize(Roles = "User")]
     [HttpGet]
-    public async Task<ActionResult> GetUserFavorites([FromQuery] int pageNumber = 1)
+    public async Task<ActionResult> GetUserFavorites(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20)
     {
         var result = await Mediator.Send(new GetUserFavorites.Query
         {
-            PageNumber = pageNumber
+            PageNumber = pageNumber,
+            PageSize = pageSize
         });
 
         if (!result.IsSuccess || result.Value == null)

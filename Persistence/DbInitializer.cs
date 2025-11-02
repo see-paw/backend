@@ -1460,6 +1460,8 @@ public static class DbInitializer
         // ======== SEED FAVORITES ========
         if (!dbContext.Favorites.Any())
         {
+            const string favorite4Id = "fav00000-0000-0000-0000-000000000004";
+
             var favorites = new List<Favorite>
             {
                 new()
@@ -1485,6 +1487,14 @@ public static class DbInitializer
                     AnimalId = animal14Id,  // Simba
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow.AddDays(-1)
+                },
+                new()
+                {
+                    Id = favorite4Id,
+                    UserId = user7Id,  // Gustavo
+                    AnimalId = "f055cc31-fdeb-4c65-bb73-4f558f67dd1b",  // Bolinhas
+                    IsActive = false,  // ⚠️ INATIVO
+                    CreatedAt = DateTime.UtcNow.AddDays(-4)
                 }
             };
 
