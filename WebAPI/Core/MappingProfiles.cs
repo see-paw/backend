@@ -115,6 +115,15 @@ public class MappingProfiles : Profile
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Name));
         
         CreateMap<ReqUserProfileDto, User>(MemberList.Source);
+
+        // Favorite Animal mappings
+        CreateMap<Animal, ResFavoriteAnimalDto>()
+            .ForMember(dest => dest.Breed, opt => opt.MapFrom(src => src.Breed.Name))
+            .ForMember(dest => dest.Age, opt => opt.MapFrom(src => CalculateAge(src.BirthDate)))
+            .ForMember(dest => dest.PrincipalImageUrl, opt => opt.MapFrom(src =>
+                src.Images.FirstOrDefault(i => i.IsPrincipal)!.Url))
+            .ForMember(dest => dest.ShelterName, opt => opt.MapFrom(src => src.Shelter.Name));
+
         CreateMap<ReqUserProfileDto, User>();
         
         //  OwnershipRequests mapping

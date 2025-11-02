@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using Persistence;
 
-namespace Tests.Fosterings.Commands;
+namespace Tests.FosteringsTests;
 
 /// <summary>
 /// Test suite for AddFostering command handler using Equivalence Class Partitioning and Boundary Value Analysis.
