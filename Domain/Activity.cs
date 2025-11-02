@@ -74,4 +74,8 @@ public class Activity
     /// The user entity participating in this activity.
     /// </summary>
     public User User { get; set; } = null!;
+    
+    public string? SlotId { get; set; }
+
+    public Slot? Slot { get; set; }
 }

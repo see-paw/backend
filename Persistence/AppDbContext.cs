@@ -57,6 +57,11 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
     /// The collection of animal breeds available in the system.
     /// </summary>
     public DbSet<Breed> Breeds { get; set; }
+    
+    /// <summary>
+    /// The collection of time slots available for scheduling activities.
+    /// </summary>
+    public DbSet<Slot> Slots { get; set; }
 
     /// <summary>
     /// Configures the model schema and entity mappings for the database context.
@@ -235,6 +240,13 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
             .WithMany(u => u.Activities)
             .HasForeignKey(a => a.UserId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        modelBuilder.Entity<Activity>()
+            .HasOne(a => a.Slot)
+            .WithOne(s => s.Activity)
+            .HasForeignKey<Activity>(a => a.SlotId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // ========== FAVORITE CONFIGURATIONS ==========
 
@@ -256,5 +268,31 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
             .WithMany(u => u.Favorites)
             .HasForeignKey(f => f.UserId)
             .OnDelete(DeleteBehavior.Cascade);  // If user is deleted, deletes user's favorite animals
+        
+        // ========== SLOT CONFIGURATIONS ==========
+
+        modelBuilder.Entity<Slot>(entity =>
+        {
+            // Primary key
+            entity.HasKey(s => s.Id);
+            
+            entity.HasOne(s => s.Shelter)
+                .WithMany(sh => sh.Slots)
+                .HasForeignKey(s => s.ShelterId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.Property(s => s.Status)
+                .HasConversion<string>()
+                .IsRequired();
+            
+            entity.Property(s => s.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .ValueGeneratedOnAdd();
+
+            entity.Property(s => s.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .ValueGeneratedOnAddOrUpdate();
+        });
     }
+    
 }
