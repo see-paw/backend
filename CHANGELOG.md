@@ -1,3 +1,140 @@
+## [1.1.0](https://github.com/see-paw/backend/compare/v1.0.4...v1.1.0) (2025-11-02)
+
+
+### Features
+
+* **activities:** add create ownership activity and get ownership activities with filtering ([3b341c7](https://github.com/see-paw/backend/commit/3b341c7c4ee462011ef10ee090f48e58b22b83bc))
+* **activities:** add endpoint to cancel activity with unit tests ([dd80321](https://github.com/see-paw/backend/commit/dd8032173508ade629d94bb5feab046620db69f3))
+* add ability to seed in production mode, only if DB is empty ([ef203fb](https://github.com/see-paw/backend/commit/ef203fbdeb84b8c7a0f0c7d56a5c0dc922ec9cd2))
+* add activities scheduling ([8443461](https://github.com/see-paw/backend/commit/8443461c909c7595b0d82d551571d2a2d2f16428))
+* add initial data ([5cbf528](https://github.com/see-paw/backend/commit/5cbf528c69acc3d0b48658b327cecdc9de6e2e26))
+* add seed data and check the integration tests ([7cc0a18](https://github.com/see-paw/backend/commit/7cc0a1831ffdf183079506a6f564cacee0ceffe6))
+* added auth to CreateAnimal and GetAnimalsByShelter ([c2ff17e](https://github.com/see-paw/backend/commit/c2ff17ed1cc9ac60ee1b5822e720be90c902e53b))
+* added auth to CreateAnimal and GetAnimalsByShelter ([6b69bdb](https://github.com/see-paw/backend/commit/6b69bdb51e7f8e57ce3f00ca12c2e9d9c68db21c))
+* Added custom response messages for invalid authorization ([d90f0ba](https://github.com/see-paw/backend/commit/d90f0bae8582619bd18bbec6df2420457d2ac64c))
+* added DeactivatedAnimal feature, documentation and unit tests ([dcbf2d0](https://github.com/see-paw/backend/commit/dcbf2d0ae1fe2798101149b3a39d521b020ea179))
+* Added error message for unauthorized and forbidden users. ([86cbe3e](https://github.com/see-paw/backend/commit/86cbe3ed7c541c5357621724847cbbca1fc3e787))
+* added images for animals and shelters ([baf9843](https://github.com/see-paw/backend/commit/baf98436f7bbbcd364f235b88ba3b0fd865d3602))
+* Added Infrastructure Project and IUserAccessor for getting hold of the current user logged in. ([378a2d8](https://github.com/see-paw/backend/commit/378a2d8ff69eb72a229c3c7f7527b92c7227148b))
+* added unit tests ([35daf8d](https://github.com/see-paw/backend/commit/35daf8d2392476547b4c4c468ed2e1e9d9344afe))
+* **Animal:** Refactored EditAnimal endpoint ([b6d2ee5](https://github.com/see-paw/backend/commit/b6d2ee5ce21401da2ae149fc44f0641350578d13))
+* Configured Identity with JWT ([4225b3b](https://github.com/see-paw/backend/commit/4225b3b2aa2b7d62394aa99bb54afc1bf1a63cd9))
+* delete animal and documentation ([ec03380](https://github.com/see-paw/backend/commit/ec033800c315e61d912ecb632a379b8de81c61d9))
+* edit animal dto and validator ([da81b58](https://github.com/see-paw/backend/commit/da81b58ef0a46eb780221c87a27fddff574b0e48))
+* **favorites:** add initial GET structure for user favorites ([2cabad5](https://github.com/see-paw/backend/commit/2cabad5419a0c4bc9907399cde4384cc12acfc04))
+* **Fostering:** Implemented AddFostering Controller and Handler ([b9e6279](https://github.com/see-paw/backend/commit/b9e627987b91c3d19b8c7786ef3400c2f48d96e7))
+* **Fostering:** Initialized AddFostering Controller ([5774c9c](https://github.com/see-paw/backend/commit/5774c9c8e095e3c6fbea8cab75a343e83a5ac66b))
+* get and edit users profile ([bd57bcc](https://github.com/see-paw/backend/commit/bd57bcc4aa474ec0354bd8e57881a48e7020a3d1))
+* getActiveFosterings and CancelFostering ([cc5f40c](https://github.com/see-paw/backend/commit/cc5f40c60dc3be99e5c1d30a0fad54e3c670d4c4))
+* **Image:** Added Cloudinary Image Id ([e682cc7](https://github.com/see-paw/backend/commit/e682cc7c4980f6481ad9f73c45dea4531ffaf7f0))
+* **Image:** Implemented Generic AddPhoto MediatR class ([296622f](https://github.com/see-paw/backend/commit/296622fa47770cdc6e1ab28257afaf1db38b4ea4))
+* **Image:** Integrated Cloudinary Images ([a4456e6](https://github.com/see-paw/backend/commit/a4456e6f2e2f9f4400bae951eec5738c7fb2b3d7))
+* **ownership:** add ownership requests API endpoints ([e483a88](https://github.com/see-paw/backend/commit/e483a889eea95c37a95a07733dda86699ff0c3ba))
+* **ownershipRequests:** add new GET endpoint to list ORs by shelter ([4635639](https://github.com/see-paw/backend/commit/4635639b142a18a05414d02a2fec8b45bd904835))
+* **ownershipRequests:** add ownership request lifecycle commands ([56be3cb](https://github.com/see-paw/backend/commit/56be3cb8cb2c27b890e34eeac58148a5248f2126))
+* **ownershipRequests:** add validators for creating, rejecting and updating ([1a46021](https://github.com/see-paw/backend/commit/1a460213f47148979cc958c10e3a50f74f4cf8b4))
+* refactor editUserProfile, unit tests and documentation for all features ([a111a41](https://github.com/see-paw/backend/commit/a111a4181d5e9ed691e3ad0dcc3c28c2cc216df5))
+* updated CreateAnimal, getAnimalsList and getAnimalsByShelter ([5929cab](https://github.com/see-paw/backend/commit/5929caba2f86ce83edf3bf519fa2f84bdd174043))
+* updated CreateAnimalValidator and CreateAnimalsTests ([aeddc83](https://github.com/see-paw/backend/commit/aeddc830be073cba70f102996f1ba62dab1cc7de))
+
+
+### Bug Fixes
+
+*  Fixed some bugs ([be05ba8](https://github.com/see-paw/backend/commit/be05ba8418b62b1582a2ab1f443764cfb1ee2cbc))
+* **activities:** stop new activity from being created when previous activity exists ([c68cb6e](https://github.com/see-paw/backend/commit/c68cb6e288dfef62bcb31d3a72bfa6c62a850153))
+* Added Integration Test fixes ([c5d11b3](https://github.com/see-paw/backend/commit/c5d11b301b62816417b78a4026a4735909c08fdd))
+* dbinitializer test ([27cf350](https://github.com/see-paw/backend/commit/27cf350891b0a6bdc98196897c15ab61b7af0886))
+* **domain:** changed some parameters from set to init in Animal.cs ([6ec43c2](https://github.com/see-paw/backend/commit/6ec43c27749dd752c6381fb8a492edec6821fda4))
+* Fixed merge problems ([dd736df](https://github.com/see-paw/backend/commit/dd736df68bea2a9c3890aaec2d42b3f5fbeac045))
+* Fixed merge problems ([eeb240f](https://github.com/see-paw/backend/commit/eeb240ff0b85559fcd13480e5d7d46b7658695ca))
+* Fixed wrong middleware order (IdentityResponseMiddleware before ExceptionMiddleware) ([9e7f885](https://github.com/see-paw/backend/commit/9e7f88557f76c60b6b8bb45990a41cfb17eda39c))
+* **Fostering:** Fixed bugs in Add Fostering logic ([c3e3b29](https://github.com/see-paw/backend/commit/c3e3b29f6fdebf1653c839c592760113c8a10c4c))
+* merge with develop branch, correct issues, modify checkEligibility to allow fostered animals to be adopt ([533c95e](https://github.com/see-paw/backend/commit/533c95e15a5cdc05e8a0e3019de7c0ebcf06cc90))
+* **persistence:** removed duplicate rule for shelter images ([e1ac9cd](https://github.com/see-paw/backend/commit/e1ac9cdef33e5dba9ac7b2f1b38416d96ef8ea65))
+* Reinitialized migrations ([d5b3f4e](https://github.com/see-paw/backend/commit/d5b3f4ee973710f662fcb16cc1ec0d35acf0439e))
+* Reinitialized migrations ([0963b36](https://github.com/see-paw/backend/commit/0963b36b5d1c36b247d2f971734e530f15ab55c8))
+* Resetted migrations and fixed automapper configurations ([877a124](https://github.com/see-paw/backend/commit/877a1240559a7fd072f6b1a51653b3592ea8fdec))
+* Resolved some issues in the pipeline ([a8959b0](https://github.com/see-paw/backend/commit/a8959b0f91eff464993257009a26ce574a74a96b))
+* **tests:** refactored ownership request controller tests ([a50307b](https://github.com/see-paw/backend/commit/a50307bfb5bf924ca82265e4d9741dd80f7434c1))
+* typo in tests ([f938084](https://github.com/see-paw/backend/commit/f9380840942148a55f0ca348ee171be04878fabb))
+* unit test ([064b382](https://github.com/see-paw/backend/commit/064b3822c3d95cce526ab6221853da6ad98c9174))
+
+
+### Documentation
+
+*  Added Documentation ([c7ffcd7](https://github.com/see-paw/backend/commit/c7ffcd732cdf2e52bf09fb11b024a2957c17ceeb))
+* Added documentation ([de19d1b](https://github.com/see-paw/backend/commit/de19d1bbf8cbc19c4906a520007c13bc2ca85c8c))
+* added documentation for my features ([ef65ce8](https://github.com/see-paw/backend/commit/ef65ce8e1337049b0c1411988f158d64d1bae582))
+* **Fostering:** Added documentation for Add Fostering ([28a25a7](https://github.com/see-paw/backend/commit/28a25a7ac4111e49e27fe9e7bd66acd19feeeafe)), closes [#63](https://github.com/see-paw/backend/issues/63)
+
+
+### Code Refactoring
+
+* **Animal / Image:** Refactored CreateAnimal and AddImagesToAnimal ([4c48378](https://github.com/see-paw/backend/commit/4c483780d361ca46b5fab9c7dc6fbef240c95b6f))
+* **Fostering:** Refactored Add Fostering logic to FosteringService ([7c761a8](https://github.com/see-paw/backend/commit/7c761a8b3a462c97d76d98fbcb6c2d2eca24ed2e))
+* **Image:** Refactored Image Endpoint logic ([64f3759](https://github.com/see-paw/backend/commit/64f3759571c2006610e8c7dc9b33321eff41ddbb))
+
+
+### Tests
+
+* add more entries to dbinitializer ([94a0d52](https://github.com/see-paw/backend/commit/94a0d520d07f12e8f57d1a6721207e5bbb098fa4))
+* Added new tests for DbInitializer ([5bd391a](https://github.com/see-paw/backend/commit/5bd391adf1e9d45f7dfffa7b6b784a8f6c7030a8))
+* Added new tests for UserAccessor ([82eab56](https://github.com/see-paw/backend/commit/82eab56d5cf20063802e6287eb7d679b961284ad))
+* **favorites:** add unit tests to getUserFavorites query ([90c7870](https://github.com/see-paw/backend/commit/90c787037f827f3a0fb78b5b686a74e30bb9d0fa))
+* **Fostering:** Added Unit Tests for AddFostering Handler ([d591412](https://github.com/see-paw/backend/commit/d591412de266f7e8db17e5a7540cb8c0c220870f))
+* **Images / Animals:** Refactored Animal tests and implemented Tests for the new Image endpoints ([3d37d32](https://github.com/see-paw/backend/commit/3d37d329e7698c00fe9d1d6c3805e3cb6cb82129))
+* **ownershipRequests:** add unit tests ([86caa42](https://github.com/see-paw/backend/commit/86caa427d55399cd504a1c48dc9415eca295062a))
+* **ownershipRequests:** add validators unit tests ([7b47a67](https://github.com/see-paw/backend/commit/7b47a6781150822960c69efecb81431b21483650))
+* **ownershipRequests:** refactor controller tests to have only one assert per test ([24c1fce](https://github.com/see-paw/backend/commit/24c1fcefc02992b90db85707afb997e482fb8df1))
+* tested createAnimals, getAnimalsList and getAnimalsByShelter ([e72307b](https://github.com/see-paw/backend/commit/e72307b840773797ec1af00ec3bbdcdbba7d0c4c))
+
+
+### CI/CD
+
+* added pipeline for local runner ([0c4419f](https://github.com/see-paw/backend/commit/0c4419f6df3b91b67017ffb2294e83b9a3d0242a))
+* added pipeline for local runner ([b33901e](https://github.com/see-paw/backend/commit/b33901e5a124967b811f164028c8c9a8a381fc75))
+* added sleep to lauch db ([5c6d0c7](https://github.com/see-paw/backend/commit/5c6d0c7a256a4903b2ae607c865c1e11e46a2db5))
+* **Images:** Configured Postman working directory for getting files ([3049b59](https://github.com/see-paw/backend/commit/3049b5907a66db8e42d2771843f3554a3d135370))
+
+
+### Chores
+
+* add baseapicontroller from dev for testing ([55a8e3c](https://github.com/see-paw/backend/commit/55a8e3c0bced00ff12d3730d22cfba6a9692702a))
+* add new migration ([aa0fa9e](https://github.com/see-paw/backend/commit/aa0fa9ef938acb546306712bd4fb0cb889c32d36))
+* add new migration ([c7281c0](https://github.com/see-paw/backend/commit/c7281c0bde7110cc1707388f0b0c7803e34b1eb7))
+* add new user to dbinit ([a9803c9](https://github.com/see-paw/backend/commit/a9803c957f72bf5845943f8576cb048e07809a92))
+* add test coverage report to .gitignore ([984e95e](https://github.com/see-paw/backend/commit/984e95e27d9eca6326caf79ce46cb7bb538db491))
+* added comment to tests ([37780a2](https://github.com/see-paw/backend/commit/37780a27ae19431638d73d44964127958e492f6c))
+* changed main pipeline to run on PRs to the main branch ([5d40104](https://github.com/see-paw/backend/commit/5d401047e1998e2c4a29f9b405240e661dd7c0a9))
+* fixed a test ([d1a1028](https://github.com/see-paw/backend/commit/d1a1028850b130532ee05137d77b7cad084e7bda))
+* fixed build problems ([a759e4f](https://github.com/see-paw/backend/commit/a759e4fcee10b4a97ffa39f71c6f40aa8f68a0ac))
+* fixed merge ([d21a30b](https://github.com/see-paw/backend/commit/d21a30bb4df17bfa6b27eb6698929ff16da773a2))
+* fixed merge ([fd74361](https://github.com/see-paw/backend/commit/fd743610b9ba1efb708583211378865bbe781140))
+* fixing merge ([eba00ff](https://github.com/see-paw/backend/commit/eba00ff43a93d1c8a3d3288bfb22c90ea5113187))
+* merged develop into current branch for update ([1b27680](https://github.com/see-paw/backend/commit/1b27680c7c39aa3f03fe5bc56b7588935cfb7216))
+* merged with a more recent branch ([bb1b74c](https://github.com/see-paw/backend/commit/bb1b74c689c26200aa379f108b3b589619feb66c))
+* refactor animalsController and sheltersController ([575127c](https://github.com/see-paw/backend/commit/575127c6f774c27e9828763aa8f0e4c00a20b98f))
+* refactor createAnimal and AnimalsController ([2d7ce27](https://github.com/see-paw/backend/commit/2d7ce27cf0dbed8d710f3d9d183c3f71ccaa088f))
+* refactor getAnimalsByShelter ([57db411](https://github.com/see-paw/backend/commit/57db41161401634d1c06947c37e83e3eb98f10b7))
+* refactor getAnimalsByShelter ([7248edd](https://github.com/see-paw/backend/commit/7248edd252b08ac35f500d04bbb46912102461b2))
+* refactor GetAnimalsByShelter ([47f8a6d](https://github.com/see-paw/backend/commit/47f8a6de7682976e0cf42377ecfbd53b29cb82b6))
+* refactor unitTests ([865d8c7](https://github.com/see-paw/backend/commit/865d8c7b6d1c0c7c39e6e32c3c6adc9e130ab22e))
+* release production update ([eb8162c](https://github.com/see-paw/backend/commit/eb8162c698b2e1f8a6cd2bb3f8af91cf6b4ce4ec))
+* remove old code ([bab2e0d](https://github.com/see-paw/backend/commit/bab2e0d7531f1472bf0b78d85f0f1c7be50a2c5d))
+* resolving conflits ([c105911](https://github.com/see-paw/backend/commit/c1059117f4d2efb1892bc677e12a271a9ee9efc7))
+* trigger CI pipeline ([fbe98f1](https://github.com/see-paw/backend/commit/fbe98f146bce407a317020c0b31db4591b6a86ab))
+* trigger pipeline ([155f7d1](https://github.com/see-paw/backend/commit/155f7d19b02e6839829e155d2982386ec54551b6))
+* trigger pipeline ([c2a7fd0](https://github.com/see-paw/backend/commit/c2a7fd0e0413d2b4cdd371360eadda0ad22c247e))
+* update from dev ([53794e0](https://github.com/see-paw/backend/commit/53794e0b8a574eaa6e1d3b89a322c4ee24b2d4b9))
+* updated DTOs files' name ([39fa5b9](https://github.com/see-paw/backend/commit/39fa5b9c3ea3cc36c817348d4c7071a578c24889))
+* updated EditAnimalController ([129a812](https://github.com/see-paw/backend/commit/129a81288c697c284f2a26adc6e6b87265e89b98))
+* updated MappingProfile ([45e3eed](https://github.com/see-paw/backend/commit/45e3eed5239c9078ef4de46d870d49cec62a859b))
+* updated pageSize in getAnimalsList ([ed20527](https://github.com/see-paw/backend/commit/ed20527d4050d7503cf7df3fb3e482eec8839c68))
+* updated seed ([dc268f9](https://github.com/see-paw/backend/commit/dc268f9d016cd41fb7faa48e3e807e2210e899a2))
+* updated test files ([6968807](https://github.com/see-paw/backend/commit/6968807f484ce44386c0379d26aba04579545cce))
+* updated Tests.csproj ([d960f6a](https://github.com/see-paw/backend/commit/d960f6ace8144e08ffccb0b77a9fe5a352ed1680))
+* updated with develop branch ([994c3d4](https://github.com/see-paw/backend/commit/994c3d4f286125b3ce6cacc9c7444c076e3e5f23))
+
 ## [1.0.4](https://github.com/see-paw/backend/compare/v1.0.3...v1.0.4) (2025-10-31)
 
 
