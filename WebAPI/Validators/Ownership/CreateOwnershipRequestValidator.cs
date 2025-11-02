@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using WebAPI.DTOs;
 using WebAPI.DTOs.Ownership;
 
 namespace WebAPI.Validators.Ownership;
@@ -18,6 +17,6 @@ public class CreateOwnershipRequestValidator : AbstractValidator<ReqCreateOwners
         RuleFor(x => x.AnimalId)
             .NotNull().WithMessage("Animal ID cannot be null")
             .NotEmpty().WithMessage("Animal ID is required")
-            .Length(36).WithMessage("Animal ID must be a valid GUID format");
+            .MustBeValidGuidString("Animal ID must be a valid GUID");
     }
 }

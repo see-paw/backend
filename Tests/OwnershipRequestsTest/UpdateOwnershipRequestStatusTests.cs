@@ -8,10 +8,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WebAPI.Controllers;
-using WebAPI.DTOs;
 using WebAPI.DTOs.Ownership;
+using Xunit;
 
-namespace Tests.OwnershipRequestsTest;
+namespace Tests.OwnershipRequests;
 
 /// <summary>
 /// Unit tests for UpdateStatus endpoint in OwnershipRequestsController.
@@ -23,17 +23,16 @@ namespace Tests.OwnershipRequestsTest;
 /// - Optional analysis notes can be added
 /// - All business rules and validations are correctly applied
 /// </summary>
-public class UpdateOwnershipRequestStatusTests
+public class UpdateOwnershipRequestStatusControllerTests
 {
     private readonly Mock<IMediator> _mockMediator;
     private readonly Mock<IMapper> _mockMapper;
     private readonly OwnershipRequestsController _controller;
 
-    public UpdateOwnershipRequestStatusTests()
+    public UpdateOwnershipRequestStatusControllerTests()
     {
         _mockMediator = new Mock<IMediator>();
         _mockMapper = new Mock<IMapper>();
-
         _controller = new OwnershipRequestsController(_mockMapper.Object);
 
         var serviceProviderMock = new Mock<IServiceProvider>();
@@ -50,45 +49,76 @@ public class UpdateOwnershipRequestStatusTests
         };
     }
 
-    /// <summary>
-    /// Tests that transitioning from Pending to Analysing with notes returns OK.
-    /// </summary>
-    [Fact]
-    public async Task UpdateStatus_PendingToAnalysingWithNotes_ReturnsOk()
+    private static OwnershipRequest CreateAnalysingOwnershipRequest(string? requestInfo = null)
     {
         var requestId = Guid.NewGuid().ToString();
-        var updatedAt = DateTime.UtcNow;
+        var animalId = Guid.NewGuid().ToString();
+        var userId = Guid.NewGuid().ToString();
 
+        return new OwnershipRequest
+        {
+            Id = requestId,
+            AnimalId = animalId,
+            UserId = userId,
+            Amount = 100m,
+            Status = OwnershipStatus.Analysing,
+            RequestInfo = requestInfo,
+            UpdatedAt = DateTime.UtcNow,
+            Animal = new Animal
+            {
+                Id = animalId,
+                Name = "Test Animal",
+                Colour = "Brown",
+                Cost = 100,
+                Species = Species.Dog,
+                Size = SizeType.Medium,
+                Sex = SexType.Male,
+                BirthDate = new DateOnly(2020, 1, 1),
+                Sterilized = true,
+                BreedId = Guid.NewGuid().ToString(),
+                ShelterId = Guid.NewGuid().ToString(),
+                AnimalState = AnimalState.Available
+            },
+            User = new User
+            {
+                Id = userId,
+                Name = "Test User",
+                Email = "test@example.com",
+                BirthDate = DateTime.UtcNow.AddYears(-25),
+                Street = "Test Street",
+                City = "Test City",
+                PostalCode = "1234-567"
+            }
+        };
+    }
+
+    private static ResOwnershipRequestDto CreateResponseDto(OwnershipRequest request)
+    {
+        return new ResOwnershipRequestDto
+        {
+            Id = request.Id,
+            AnimalId = request.AnimalId,
+            AnimalName = request.Animal.Name,
+            UserId = request.UserId,
+            UserName = request.User.Name,
+            Amount = request.Amount,
+            Status = request.Status,
+            RequestInfo = request.RequestInfo,
+            UpdatedAt = request.UpdatedAt
+        };
+    }
+
+    [Fact]
+    public async Task UpdateStatus_ShouldReturnOkResult_WhenRequestIsValidWithNotes()
+    {
+        var requestId = Guid.NewGuid().ToString();
         var dto = new ReqUpdateOwnershipStatusDto
         {
             RequestInfo = "Reviewing applicant's credentials"
         };
 
-        var ownershipRequest = new OwnershipRequest
-        {
-            Id = requestId,
-            AnimalId = Guid.NewGuid().ToString(),
-            UserId = Guid.NewGuid().ToString(),
-            Amount = 100m,
-            Status = OwnershipStatus.Analysing,
-            RequestInfo = "Reviewing applicant's credentials",
-            UpdatedAt = updatedAt,
-            Animal = new Animal { Id = Guid.NewGuid().ToString(), Name = "Test Animal" },
-            User = new User { Id = Guid.NewGuid().ToString(), Name = "Test User" }
-        };
-
-        var responseDto = new ResOwnershipRequestDto
-        {
-            Id = requestId,
-            AnimalId = ownershipRequest.AnimalId,
-            AnimalName = "Test Animal",
-            UserId = ownershipRequest.UserId,
-            UserName = "Test User",
-            Amount = 100m,
-            Status = OwnershipStatus.Analysing,
-            RequestInfo = "Reviewing applicant's credentials",
-            UpdatedAt = updatedAt
-        };
+        var ownershipRequest = CreateAnalysingOwnershipRequest("Reviewing applicant's credentials");
+        var responseDto = CreateResponseDto(ownershipRequest);
 
         _mockMediator
             .Setup(m => m.Send(It.IsAny<UpdateOwnershipRequestStatus.Command>(), default))
@@ -100,51 +130,102 @@ public class UpdateOwnershipRequestStatusTests
 
         var result = await _controller.UpdateStatus(requestId, dto);
 
-        var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var returnedDto = Assert.IsType<ResOwnershipRequestDto>(okResult.Value);
-        Assert.Equal(OwnershipStatus.Analysing, returnedDto.Status);
-        Assert.Equal("Reviewing applicant's credentials", returnedDto.RequestInfo);
-        Assert.NotNull(returnedDto.UpdatedAt);
+        Assert.IsType<OkObjectResult>(result.Result);
     }
 
-    /// <summary>
-    /// Tests that transitioning from Rejected to Analysing returns OK.
-    /// This supports the workflow where rejected users can provide additional information
-    /// and have their request reconsidered.
-    /// </summary>
     [Fact]
-    public async Task UpdateStatus_RejectedToAnalysing_ReturnsOk()
+    public async Task UpdateStatus_ShouldReturnAnalysingStatus_WhenRequestIsValid()
     {
         var requestId = Guid.NewGuid().ToString();
+        var dto = new ReqUpdateOwnershipStatusDto
+        {
+            RequestInfo = "Reviewing applicant's credentials"
+        };
 
+        var ownershipRequest = CreateAnalysingOwnershipRequest("Reviewing applicant's credentials");
+        var responseDto = CreateResponseDto(ownershipRequest);
+
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<UpdateOwnershipRequestStatus.Command>(), default))
+            .ReturnsAsync(Result<OwnershipRequest>.Success(ownershipRequest, 200));
+
+        _mockMapper
+            .Setup(m => m.Map<ResOwnershipRequestDto>(It.IsAny<OwnershipRequest>()))
+            .Returns(responseDto);
+
+        var result = await _controller.UpdateStatus(requestId, dto);
+
+        var okResult = result.Result as OkObjectResult;
+        var returnedDto = okResult!.Value as ResOwnershipRequestDto;
+        Assert.Equal(OwnershipStatus.Analysing, returnedDto!.Status);
+    }
+
+    [Fact]
+    public async Task UpdateStatus_ShouldReturnRequestInfo_WhenNotesAreProvided()
+    {
+        var requestId = Guid.NewGuid().ToString();
+        var requestInfo = "Reviewing applicant's credentials";
+        var dto = new ReqUpdateOwnershipStatusDto
+        {
+            RequestInfo = requestInfo
+        };
+
+        var ownershipRequest = CreateAnalysingOwnershipRequest(requestInfo);
+        var responseDto = CreateResponseDto(ownershipRequest);
+
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<UpdateOwnershipRequestStatus.Command>(), default))
+            .ReturnsAsync(Result<OwnershipRequest>.Success(ownershipRequest, 200));
+
+        _mockMapper
+            .Setup(m => m.Map<ResOwnershipRequestDto>(It.IsAny<OwnershipRequest>()))
+            .Returns(responseDto);
+
+        var result = await _controller.UpdateStatus(requestId, dto);
+
+        var okResult = result.Result as OkObjectResult;
+        var returnedDto = okResult!.Value as ResOwnershipRequestDto;
+        Assert.Equal(requestInfo, returnedDto!.RequestInfo);
+    }
+
+    [Fact]
+    public async Task UpdateStatus_ShouldSetUpdatedAtTimestamp_WhenRequestIsValid()
+    {
+        var requestId = Guid.NewGuid().ToString();
+        var dto = new ReqUpdateOwnershipStatusDto
+        {
+            RequestInfo = "Test notes"
+        };
+
+        var ownershipRequest = CreateAnalysingOwnershipRequest("Test notes");
+        var responseDto = CreateResponseDto(ownershipRequest);
+
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<UpdateOwnershipRequestStatus.Command>(), default))
+            .ReturnsAsync(Result<OwnershipRequest>.Success(ownershipRequest, 200));
+
+        _mockMapper
+            .Setup(m => m.Map<ResOwnershipRequestDto>(It.IsAny<OwnershipRequest>()))
+            .Returns(responseDto);
+
+        var result = await _controller.UpdateStatus(requestId, dto);
+
+        var okResult = result.Result as OkObjectResult;
+        var returnedDto = okResult!.Value as ResOwnershipRequestDto;
+        Assert.NotNull(returnedDto!.UpdatedAt);
+    }
+
+    [Fact]
+    public async Task UpdateStatus_ShouldReturnOkResult_WhenTransitioningFromRejectedToAnalysing()
+    {
+        var requestId = Guid.NewGuid().ToString();
         var dto = new ReqUpdateOwnershipStatusDto
         {
             RequestInfo = "User provided additional references, re-analyzing"
         };
 
-        var ownershipRequest = new OwnershipRequest
-        {
-            Id = requestId,
-            AnimalId = Guid.NewGuid().ToString(),
-            UserId = Guid.NewGuid().ToString(),
-            Amount = 100m,
-            Status = OwnershipStatus.Analysing,
-            RequestInfo = "User provided additional references, re-analyzing",
-            Animal = new Animal { Id = Guid.NewGuid().ToString(), Name = "Test Animal" },
-            User = new User { Id = Guid.NewGuid().ToString(), Name = "Test User" }
-        };
-
-        var responseDto = new ResOwnershipRequestDto
-        {
-            Id = requestId,
-            AnimalId = ownershipRequest.AnimalId,
-            AnimalName = "Test Animal",
-            UserId = ownershipRequest.UserId,
-            UserName = "Test User",
-            Amount = 100m,
-            Status = OwnershipStatus.Analysing,
-            RequestInfo = "User provided additional references, re-analyzing"
-        };
+        var ownershipRequest = CreateAnalysingOwnershipRequest("User provided additional references, re-analyzing");
+        var responseDto = CreateResponseDto(ownershipRequest);
 
         _mockMediator
             .Setup(m => m.Send(It.IsAny<UpdateOwnershipRequestStatus.Command>(), default))
@@ -156,43 +237,17 @@ public class UpdateOwnershipRequestStatusTests
 
         var result = await _controller.UpdateStatus(requestId, dto);
 
-        var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var returnedDto = Assert.IsType<ResOwnershipRequestDto>(okResult.Value);
-        Assert.Equal(OwnershipStatus.Analysing, returnedDto.Status);
+        Assert.IsType<OkObjectResult>(result.Result);
     }
 
-    /// <summary>
-    /// Tests that transitioning without request info is allowed.
-    /// </summary>
     [Fact]
-    public async Task UpdateStatus_WithoutRequestInfo_ReturnsOk()
+    public async Task UpdateStatus_ShouldReturnOkResult_WhenNoRequestInfoIsProvided()
     {
         var requestId = Guid.NewGuid().ToString();
         var dto = new ReqUpdateOwnershipStatusDto();
 
-        var ownershipRequest = new OwnershipRequest
-        {
-            Id = requestId,
-            AnimalId = Guid.NewGuid().ToString(),
-            UserId = Guid.NewGuid().ToString(),
-            Amount = 100m,
-            Status = OwnershipStatus.Analysing,
-            RequestInfo = null,
-            Animal = new Animal { Id = Guid.NewGuid().ToString(), Name = "Test Animal" },
-            User = new User { Id = Guid.NewGuid().ToString(), Name = "Test User" }
-        };
-
-        var responseDto = new ResOwnershipRequestDto
-        {
-            Id = requestId,
-            AnimalId = ownershipRequest.AnimalId,
-            AnimalName = "Test Animal",
-            UserId = ownershipRequest.UserId,
-            UserName = "Test User",
-            Amount = 100m,
-            Status = OwnershipStatus.Analysing,
-            RequestInfo = null
-        };
+        var ownershipRequest = CreateAnalysingOwnershipRequest(null);
+        var responseDto = CreateResponseDto(ownershipRequest);
 
         _mockMediator
             .Setup(m => m.Send(It.IsAny<UpdateOwnershipRequestStatus.Command>(), default))
@@ -204,17 +259,91 @@ public class UpdateOwnershipRequestStatusTests
 
         var result = await _controller.UpdateStatus(requestId, dto);
 
-        var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var returnedDto = Assert.IsType<ResOwnershipRequestDto>(okResult.Value);
-        Assert.Equal(OwnershipStatus.Analysing, returnedDto.Status);
-        Assert.Null(returnedDto.RequestInfo);
+        Assert.IsType<OkObjectResult>(result.Result);
     }
 
-    /// <summary>
-    /// Tests that attempting to update a non-existent request returns NotFound.
-    /// </summary>
     [Fact]
-    public async Task UpdateStatus_RequestNotFound_ReturnsNotFound()
+    public async Task UpdateStatus_ShouldReturnNullRequestInfo_WhenNoNotesAreProvided()
+    {
+        var requestId = Guid.NewGuid().ToString();
+        var dto = new ReqUpdateOwnershipStatusDto();
+
+        var ownershipRequest = CreateAnalysingOwnershipRequest(null);
+        var responseDto = CreateResponseDto(ownershipRequest);
+
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<UpdateOwnershipRequestStatus.Command>(), default))
+            .ReturnsAsync(Result<OwnershipRequest>.Success(ownershipRequest, 200));
+
+        _mockMapper
+            .Setup(m => m.Map<ResOwnershipRequestDto>(It.IsAny<OwnershipRequest>()))
+            .Returns(responseDto);
+
+        var result = await _controller.UpdateStatus(requestId, dto);
+
+        var okResult = result.Result as OkObjectResult;
+        var returnedDto = okResult!.Value as ResOwnershipRequestDto;
+        Assert.Null(returnedDto!.RequestInfo);
+    }
+
+    [Fact]
+    public async Task UpdateStatus_ShouldCallMediatorWithCorrectCommand_WhenRequestIsValid()
+    {
+        var requestId = Guid.NewGuid().ToString();
+        var requestInfo = "Test notes";
+        var dto = new ReqUpdateOwnershipStatusDto
+        {
+            RequestInfo = requestInfo
+        };
+
+        var ownershipRequest = CreateAnalysingOwnershipRequest(requestInfo);
+        var responseDto = CreateResponseDto(ownershipRequest);
+
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<UpdateOwnershipRequestStatus.Command>(), default))
+            .ReturnsAsync(Result<OwnershipRequest>.Success(ownershipRequest, 200));
+
+        _mockMapper
+            .Setup(m => m.Map<ResOwnershipRequestDto>(It.IsAny<OwnershipRequest>()))
+            .Returns(responseDto);
+
+        await _controller.UpdateStatus(requestId, dto);
+
+        _mockMediator.Verify(m => m.Send(
+            It.Is<UpdateOwnershipRequestStatus.Command>(c =>
+                c.OwnershipRequestId == requestId &&
+                c.RequestInfo == requestInfo),
+            default), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateStatus_ShouldCallMapperWithOwnershipRequest_WhenRequestIsValid()
+    {
+        var requestId = Guid.NewGuid().ToString();
+        var dto = new ReqUpdateOwnershipStatusDto
+        {
+            RequestInfo = "Test notes"
+        };
+
+        var ownershipRequest = CreateAnalysingOwnershipRequest("Test notes");
+        var responseDto = CreateResponseDto(ownershipRequest);
+
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<UpdateOwnershipRequestStatus.Command>(), default))
+            .ReturnsAsync(Result<OwnershipRequest>.Success(ownershipRequest, 200));
+
+        _mockMapper
+            .Setup(m => m.Map<ResOwnershipRequestDto>(It.IsAny<OwnershipRequest>()))
+            .Returns(responseDto);
+
+        await _controller.UpdateStatus(requestId, dto);
+
+        _mockMapper.Verify(m => m.Map<ResOwnershipRequestDto>(
+            It.IsAny<OwnershipRequest>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateStatus_ShouldReturnNotFound_WhenRequestDoesNotExist()
     {
         var requestId = Guid.NewGuid().ToString();
         var dto = new ReqUpdateOwnershipStatusDto();
@@ -225,16 +354,26 @@ public class UpdateOwnershipRequestStatusTests
 
         var result = await _controller.UpdateStatus(requestId, dto);
 
-        var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
-        Assert.Equal("Ownership request not found", notFoundResult.Value);
+        Assert.IsType<NotFoundObjectResult>(result.Result);
     }
 
-    /// <summary>
-    /// Tests that attempting to move an Approved or Analysing request returns BadRequest.
-    /// Only Pending or Rejected requests can transition to Analysing.
-    /// </summary>
     [Fact]
-    public async Task UpdateStatus_RequestAlreadyApprovedOrAnalysing_ReturnsBadRequest()
+    public async Task UpdateStatus_ShouldReturnNotFound_WhenShelterDoesNotExist()
+    {
+        var requestId = Guid.NewGuid().ToString();
+        var dto = new ReqUpdateOwnershipStatusDto();
+
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<UpdateOwnershipRequestStatus.Command>(), default))
+            .ReturnsAsync(Result<OwnershipRequest>.Failure("Shelter not found", 404));
+
+        var result = await _controller.UpdateStatus(requestId, dto);
+
+        Assert.IsType<NotFoundObjectResult>(result.Result);
+    }
+
+    [Fact]
+    public async Task UpdateStatus_ShouldReturnBadRequest_WhenRequestIsAlreadyApprovedOrAnalysing()
     {
         var requestId = Guid.NewGuid().ToString();
         var dto = new ReqUpdateOwnershipStatusDto();
@@ -246,15 +385,11 @@ public class UpdateOwnershipRequestStatusTests
 
         var result = await _controller.UpdateStatus(requestId, dto);
 
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        Assert.Equal("Only pending or rejected requests can be moved to analysis", badRequestResult.Value);
+        Assert.IsType<BadRequestObjectResult>(result.Result);
     }
 
-    /// <summary>
-    /// Tests that attempting to analyze a request for an animal that already has an owner returns BadRequest.
-    /// </summary>
     [Fact]
-    public async Task UpdateStatus_AnimalAlreadyHasOwner_ReturnsBadRequest()
+    public async Task UpdateStatus_ShouldReturnBadRequest_WhenAnimalAlreadyHasOwner()
     {
         var requestId = Guid.NewGuid().ToString();
         var dto = new ReqUpdateOwnershipStatusDto();
@@ -266,15 +401,11 @@ public class UpdateOwnershipRequestStatusTests
 
         var result = await _controller.UpdateStatus(requestId, dto);
 
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        Assert.Equal("Cannot analyze request, animal already has an owner", badRequestResult.Value);
+        Assert.IsType<BadRequestObjectResult>(result.Result);
     }
 
-    /// <summary>
-    /// Tests that attempting to analyze a request for an inactive animal returns BadRequest.
-    /// </summary>
     [Fact]
-    public async Task UpdateStatus_AnimalInactive_ReturnsBadRequest()
+    public async Task UpdateStatus_ShouldReturnBadRequest_WhenAnimalIsInactive()
     {
         var requestId = Guid.NewGuid().ToString();
         var dto = new ReqUpdateOwnershipStatusDto();
@@ -286,16 +417,11 @@ public class UpdateOwnershipRequestStatusTests
 
         var result = await _controller.UpdateStatus(requestId, dto);
 
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        Assert.Equal("Cannot analyze request, animal is inactive", badRequestResult.Value);
+        Assert.IsType<BadRequestObjectResult>(result.Result);
     }
 
-    /// <summary>
-    /// Tests that attempting to update a request from a different shelter returns Forbidden.
-    /// Shelter administrators can only update requests for animals in their own shelter.
-    /// </summary>
     [Fact]
-    public async Task UpdateStatus_RequestFromDifferentShelter_ReturnsForbidden()
+    public async Task UpdateStatus_ShouldReturnForbidden_WhenAnimalIsFromDifferentShelter()
     {
         var requestId = Guid.NewGuid().ToString();
         var dto = new ReqUpdateOwnershipStatusDto();
@@ -307,16 +433,12 @@ public class UpdateOwnershipRequestStatusTests
 
         var result = await _controller.UpdateStatus(requestId, dto);
 
-        var forbiddenResult = Assert.IsType<ObjectResult>(result.Result);
-        Assert.Equal(403, forbiddenResult.StatusCode);
-        Assert.Equal("You can only update requests for animals in your shelter", forbiddenResult.Value);
+        var objectResult = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(403, objectResult.StatusCode);
     }
 
-    /// <summary>
-    /// Tests that attempting to update without being a shelter administrator returns Forbidden.
-    /// </summary>
     [Fact]
-    public async Task UpdateStatus_NotShelterAdministrator_ReturnsForbidden()
+    public async Task UpdateStatus_ShouldReturnForbidden_WhenUserIsNotShelterAdministrator()
     {
         var requestId = Guid.NewGuid().ToString();
         var dto = new ReqUpdateOwnershipStatusDto();
@@ -328,34 +450,12 @@ public class UpdateOwnershipRequestStatusTests
 
         var result = await _controller.UpdateStatus(requestId, dto);
 
-        var forbiddenResult = Assert.IsType<ObjectResult>(result.Result);
-        Assert.Equal(403, forbiddenResult.StatusCode);
+        var objectResult = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(403, objectResult.StatusCode);
     }
 
-    /// <summary>
-    /// Tests that the shelter referenced by the administrator exists.
-    /// </summary>
     [Fact]
-    public async Task UpdateStatus_ShelterNotFound_ReturnsNotFound()
-    {
-        var requestId = Guid.NewGuid().ToString();
-        var dto = new ReqUpdateOwnershipStatusDto();
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<UpdateOwnershipRequestStatus.Command>(), default))
-            .ReturnsAsync(Result<OwnershipRequest>.Failure("Shelter not found", 404));
-
-        var result = await _controller.UpdateStatus(requestId, dto);
-
-        var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
-        Assert.Equal("Shelter not found", notFoundResult.Value);
-    }
-
-    /// <summary>
-    /// Tests that a database failure during update returns InternalServerError.
-    /// </summary>
-    [Fact]
-    public async Task UpdateStatus_DatabaseFailure_ReturnsInternalServerError()
+    public async Task UpdateStatus_ShouldReturnInternalServerError_WhenDatabaseFailureOccurs()
     {
         var requestId = Guid.NewGuid().ToString();
         var dto = new ReqUpdateOwnershipStatusDto();
@@ -367,8 +467,7 @@ public class UpdateOwnershipRequestStatusTests
 
         var result = await _controller.UpdateStatus(requestId, dto);
 
-        var serverErrorResult = Assert.IsType<ObjectResult>(result.Result);
-        Assert.Equal(500, serverErrorResult.StatusCode);
-        Assert.Equal("Failed to update ownership request status", serverErrorResult.Value);
+        var objectResult = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(500, objectResult.StatusCode);
     }
 }

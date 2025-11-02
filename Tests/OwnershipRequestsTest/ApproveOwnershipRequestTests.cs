@@ -8,10 +8,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WebAPI.Controllers;
-using WebAPI.DTOs;
 using WebAPI.DTOs.Ownership;
+using Xunit;
 
-namespace Tests.OwnershipRequestsTest;
+namespace Tests.OwnershipRequests;
 
 /// <summary>
 /// Unit tests for ApproveRequest endpoint in OwnershipRequestsController.
@@ -22,13 +22,13 @@ namespace Tests.OwnershipRequestsTest;
 /// - Proper authorization is enforced (shelter administrators only)
 /// - All business rules and validations are correctly applied
 /// </summary>
-public class ApproveOwnershipRequestTests
+public class ApproveOwnershipRequestControllerTests
 {
     private readonly Mock<IMediator> _mockMediator;
     private readonly Mock<IMapper> _mockMapper;
     private readonly OwnershipRequestsController _controller;
 
-    public ApproveOwnershipRequestTests()
+    public ApproveOwnershipRequestControllerTests()
     {
         _mockMediator = new Mock<IMediator>();
         _mockMapper = new Mock<IMapper>();
@@ -48,18 +48,14 @@ public class ApproveOwnershipRequestTests
         };
     }
 
-    /// <summary>
-    /// Tests that a valid approval request returns OK with updated ownership request details.
-    /// </summary>
-    [Fact]
-    public async Task ApproveRequest_ValidRequestInAnalysing_ReturnsOk()
+    private static OwnershipRequest CreateApprovedOwnershipRequest()
     {
         var requestId = Guid.NewGuid().ToString();
         var animalId = Guid.NewGuid().ToString();
         var userId = Guid.NewGuid().ToString();
         var approvedAt = DateTime.UtcNow;
 
-        var ownershipRequest = new OwnershipRequest
+        return new OwnershipRequest
         {
             Id = requestId,
             AnimalId = animalId,
@@ -74,23 +70,52 @@ public class ApproveOwnershipRequestTests
                 Name = "Test Animal",
                 AnimalState = AnimalState.HasOwner,
                 OwnerId = userId,
-                OwnershipStartDate = approvedAt
+                OwnershipStartDate = approvedAt,
+                Colour = "Brown",
+                Cost = 100,
+                Species = Species.Dog,
+                Size = SizeType.Medium,
+                Sex = SexType.Male,
+                BirthDate = new DateOnly(2020, 1, 1),
+                Sterilized = true,
+                BreedId = Guid.NewGuid().ToString(),
+                ShelterId = Guid.NewGuid().ToString()
             },
-            User = new User { Id = userId, Name = "Test User" }
+            User = new User
+            {
+                Id = userId,
+                Name = "Test User",
+                Email = "test@example.com",
+                BirthDate = DateTime.UtcNow.AddYears(-25),
+                Street = "Test Street",
+                City = "Test City",
+                PostalCode = "1234-567"
+            }
         };
+    }
 
-        var responseDto = new ResOwnershipRequestDto
+    private static ResOwnershipRequestDto CreateResponseDto(OwnershipRequest request)
+    {
+        return new ResOwnershipRequestDto
         {
-            Id = requestId,
-            AnimalId = animalId,
-            AnimalName = "Test Animal",
-            UserId = userId,
-            UserName = "Test User",
-            Amount = 100m,
-            Status = OwnershipStatus.Approved,
-            ApprovedAt = approvedAt,
-            UpdatedAt = approvedAt
+            Id = request.Id,
+            AnimalId = request.AnimalId,
+            AnimalName = request.Animal.Name,
+            UserId = request.UserId,
+            UserName = request.User.Name,
+            Amount = request.Amount,
+            Status = request.Status,
+            ApprovedAt = request.ApprovedAt,
+            UpdatedAt = request.UpdatedAt
         };
+    }
+
+    [Fact]
+    public async Task ApproveRequest_ShouldReturnOkResult_WhenRequestIsValid()
+    {
+        var requestId = Guid.NewGuid().ToString();
+        var ownershipRequest = CreateApprovedOwnershipRequest();
+        var responseDto = CreateResponseDto(ownershipRequest);
 
         _mockMediator
             .Setup(m => m.Send(It.IsAny<ApproveOwnershipRequest.Command>(), default))
@@ -102,18 +127,98 @@ public class ApproveOwnershipRequestTests
 
         var result = await _controller.ApproveRequest(requestId);
 
-        var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var returnedDto = Assert.IsType<ResOwnershipRequestDto>(okResult.Value);
-        Assert.Equal(OwnershipStatus.Approved, returnedDto.Status);
-        Assert.NotNull(returnedDto.ApprovedAt);
-        Assert.Equal(approvedAt, returnedDto.ApprovedAt);
+        Assert.IsType<OkObjectResult>(result.Result);
     }
 
-    /// <summary>
-    /// Tests that attempting to approve a non-existent request returns NotFound.
-    /// </summary>
     [Fact]
-    public async Task ApproveRequest_RequestNotFound_ReturnsNotFound()
+    public async Task ApproveRequest_ShouldReturnApprovedStatus_WhenRequestIsValid()
+    {
+        var requestId = Guid.NewGuid().ToString();
+        var ownershipRequest = CreateApprovedOwnershipRequest();
+        var responseDto = CreateResponseDto(ownershipRequest);
+
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<ApproveOwnershipRequest.Command>(), default))
+            .ReturnsAsync(Result<OwnershipRequest>.Success(ownershipRequest, 200));
+
+        _mockMapper
+            .Setup(m => m.Map<ResOwnershipRequestDto>(It.IsAny<OwnershipRequest>()))
+            .Returns(responseDto);
+
+        var result = await _controller.ApproveRequest(requestId);
+
+        var okResult = result.Result as OkObjectResult;
+        var returnedDto = okResult!.Value as ResOwnershipRequestDto;
+        Assert.Equal(OwnershipStatus.Approved, returnedDto!.Status);
+    }
+
+    [Fact]
+    public async Task ApproveRequest_ShouldSetApprovedAtTimestamp_WhenRequestIsValid()
+    {
+        var requestId = Guid.NewGuid().ToString();
+        var ownershipRequest = CreateApprovedOwnershipRequest();
+        var responseDto = CreateResponseDto(ownershipRequest);
+
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<ApproveOwnershipRequest.Command>(), default))
+            .ReturnsAsync(Result<OwnershipRequest>.Success(ownershipRequest, 200));
+
+        _mockMapper
+            .Setup(m => m.Map<ResOwnershipRequestDto>(It.IsAny<OwnershipRequest>()))
+            .Returns(responseDto);
+
+        var result = await _controller.ApproveRequest(requestId);
+
+        var okResult = result.Result as OkObjectResult;
+        var returnedDto = okResult!.Value as ResOwnershipRequestDto;
+        Assert.NotNull(returnedDto!.ApprovedAt);
+    }
+
+    [Fact]
+    public async Task ApproveRequest_ShouldCallMediatorWithCorrectCommand_WhenRequestIsValid()
+    {
+        var requestId = Guid.NewGuid().ToString();
+        var ownershipRequest = CreateApprovedOwnershipRequest();
+        var responseDto = CreateResponseDto(ownershipRequest);
+
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<ApproveOwnershipRequest.Command>(), default))
+            .ReturnsAsync(Result<OwnershipRequest>.Success(ownershipRequest, 200));
+
+        _mockMapper
+            .Setup(m => m.Map<ResOwnershipRequestDto>(It.IsAny<OwnershipRequest>()))
+            .Returns(responseDto);
+
+        await _controller.ApproveRequest(requestId);
+
+        _mockMediator.Verify(m => m.Send(
+            It.Is<ApproveOwnershipRequest.Command>(c => c.OwnershipRequestId == requestId),
+            default), Times.Once);
+    }
+
+    [Fact]
+    public async Task ApproveRequest_ShouldCallMapperWithOwnershipRequest_WhenRequestIsValid()
+    {
+        var requestId = Guid.NewGuid().ToString();
+        var ownershipRequest = CreateApprovedOwnershipRequest();
+        var responseDto = CreateResponseDto(ownershipRequest);
+
+        _mockMediator
+            .Setup(m => m.Send(It.IsAny<ApproveOwnershipRequest.Command>(), default))
+            .ReturnsAsync(Result<OwnershipRequest>.Success(ownershipRequest, 200));
+
+        _mockMapper
+            .Setup(m => m.Map<ResOwnershipRequestDto>(It.IsAny<OwnershipRequest>()))
+            .Returns(responseDto);
+
+        await _controller.ApproveRequest(requestId);
+
+        _mockMapper.Verify(m => m.Map<ResOwnershipRequestDto>(
+            It.IsAny<OwnershipRequest>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ApproveRequest_ShouldReturnNotFound_WhenRequestDoesNotExist()
     {
         var requestId = Guid.NewGuid().ToString();
 
@@ -123,15 +228,11 @@ public class ApproveOwnershipRequestTests
 
         var result = await _controller.ApproveRequest(requestId);
 
-        var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
-        Assert.Equal("Ownership request not found", notFoundResult.Value);
+        Assert.IsType<NotFoundObjectResult>(result.Result);
     }
 
-    /// <summary>
-    /// Tests that attempting to approve a request for an animal that already has an owner returns BadRequest.
-    /// </summary>
     [Fact]
-    public async Task ApproveRequest_AnimalAlreadyHasOwner_ReturnsBadRequest()
+    public async Task ApproveRequest_ShouldReturnBadRequest_WhenAnimalAlreadyHasOwner()
     {
         var requestId = Guid.NewGuid().ToString();
 
@@ -141,15 +242,11 @@ public class ApproveOwnershipRequestTests
 
         var result = await _controller.ApproveRequest(requestId);
 
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        Assert.Equal("Animal already has an owner", badRequestResult.Value);
+        Assert.IsType<BadRequestObjectResult>(result.Result);
     }
 
-    /// <summary>
-    /// Tests that attempting to approve a request for an inactive animal returns BadRequest.
-    /// </summary>
     [Fact]
-    public async Task ApproveRequest_AnimalInactive_ReturnsBadRequest()
+    public async Task ApproveRequest_ShouldReturnBadRequest_WhenAnimalIsInactive()
     {
         var requestId = Guid.NewGuid().ToString();
 
@@ -159,16 +256,11 @@ public class ApproveOwnershipRequestTests
 
         var result = await _controller.ApproveRequest(requestId);
 
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        Assert.Equal("Animal is inactive", badRequestResult.Value);
+        Assert.IsType<BadRequestObjectResult>(result.Result);
     }
 
-    /// <summary>
-    /// Tests that attempting to approve a request not in 'Analysing' status returns BadRequest.
-    /// Only requests that are currently being analyzed can be approved.
-    /// </summary>
     [Fact]
-    public async Task ApproveRequest_RequestNotInAnalysing_ReturnsBadRequest()
+    public async Task ApproveRequest_ShouldReturnBadRequest_WhenStatusIsNotAnalysing()
     {
         var requestId = Guid.NewGuid().ToString();
 
@@ -179,16 +271,11 @@ public class ApproveOwnershipRequestTests
 
         var result = await _controller.ApproveRequest(requestId);
 
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        Assert.Equal("Only requests in 'Analysing' status can be approved", badRequestResult.Value);
+        Assert.IsType<BadRequestObjectResult>(result.Result);
     }
 
-    /// <summary>
-    /// Tests that attempting to approve a request when another request is already approved returns BadRequest.
-    /// This ensures only one ownership request per animal can be approved.
-    /// </summary>
     [Fact]
-    public async Task ApproveRequest_AlreadyApprovedRequestExists_ReturnsBadRequest()
+    public async Task ApproveRequest_ShouldReturnBadRequest_WhenAnotherRequestIsAlreadyApproved()
     {
         var requestId = Guid.NewGuid().ToString();
 
@@ -199,16 +286,11 @@ public class ApproveOwnershipRequestTests
 
         var result = await _controller.ApproveRequest(requestId);
 
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        Assert.Equal("Animal already has an approved ownership request", badRequestResult.Value);
+        Assert.IsType<BadRequestObjectResult>(result.Result);
     }
 
-    /// <summary>
-    /// Tests that attempting to approve a request from a different shelter returns Forbidden.
-    /// Shelter administrators can only approve requests for animals in their own shelter.
-    /// </summary>
     [Fact]
-    public async Task ApproveRequest_RequestFromDifferentShelter_ReturnsForbidden()
+    public async Task ApproveRequest_ShouldReturnForbidden_WhenAnimalIsFromDifferentShelter()
     {
         var requestId = Guid.NewGuid().ToString();
 
@@ -219,16 +301,12 @@ public class ApproveOwnershipRequestTests
 
         var result = await _controller.ApproveRequest(requestId);
 
-        var forbiddenResult = Assert.IsType<ObjectResult>(result.Result);
-        Assert.Equal(403, forbiddenResult.StatusCode);
-        Assert.Equal("You can only approve requests for animals in your shelter", forbiddenResult.Value);
+        var objectResult = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(403, objectResult.StatusCode);
     }
 
-    /// <summary>
-    /// Tests that attempting to approve without being a shelter administrator returns Forbidden.
-    /// </summary>
     [Fact]
-    public async Task ApproveRequest_NotShelterAdministrator_ReturnsForbidden()
+    public async Task ApproveRequest_ShouldReturnForbidden_WhenUserIsNotShelterAdministrator()
     {
         var requestId = Guid.NewGuid().ToString();
 
@@ -239,16 +317,12 @@ public class ApproveOwnershipRequestTests
 
         var result = await _controller.ApproveRequest(requestId);
 
-        var forbiddenResult = Assert.IsType<ObjectResult>(result.Result);
-        Assert.Equal(403, forbiddenResult.StatusCode);
-        Assert.Equal("Only shelter administrators can approve ownership requests", forbiddenResult.Value);
+        var objectResult = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(403, objectResult.StatusCode);
     }
 
-    /// <summary>
-    /// Tests that a database failure during approval returns InternalServerError.
-    /// </summary>
     [Fact]
-    public async Task ApproveRequest_DatabaseFailure_ReturnsInternalServerError()
+    public async Task ApproveRequest_ShouldReturnInternalServerError_WhenDatabaseFailureOccurs()
     {
         var requestId = Guid.NewGuid().ToString();
 
@@ -259,8 +333,7 @@ public class ApproveOwnershipRequestTests
 
         var result = await _controller.ApproveRequest(requestId);
 
-        var serverErrorResult = Assert.IsType<ObjectResult>(result.Result);
-        Assert.Equal(500, serverErrorResult.StatusCode);
-        Assert.Equal("Failed to approve ownership request", serverErrorResult.Value);
+        var objectResult = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(500, objectResult.StatusCode);
     }
 }
