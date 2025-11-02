@@ -1,39 +1,76 @@
-﻿using Domain.Enums;
-using System;
-using System.ComponentModel.DataAnnotations;
-
+﻿using System.ComponentModel.DataAnnotations;
+using Domain.Enums;
 
 namespace Domain;
 
+/// <summary>
+/// Represents an activity related to an animal within the system.
+/// </summary>
+/// <remarks>
+/// An activity defines a period and relationship between a user and an animal,
+/// such as fostering or ownership.  
+/// Each activity is uniquely identified by its ID and is associated with specific status and type values.
+/// </remarks>
 public class Activity
-{   
-    [Key] // There is a constraint in AppDbContext.OnModelCreating that makes sure that (AnimalId, StartDate) is unique
-    public string Id { get; init; } = Guid.NewGuid().ToString(); // Init instead of set to prevent changes after creation
+{
+    /// <summary>
+    /// Unique identifier of the activity (GUID).  
+    /// A constraint in <c>AppDbContext.OnModelCreating</c> ensures that the combination of <c>AnimalId</c> and <c>StartDate</c> is unique.
+    /// </summary>
+    [Key]
+    [MaxLength(36)]
+    public string Id { get; init; } = Guid.NewGuid().ToString();
 
-    // Foreign Keys
+    /// <summary>
+    /// The foreign key referencing the animal associated with this activity.
+    /// </summary>
     [Required]
     public string AnimalId { get; set; } = string.Empty;
 
+    /// <summary>
+    /// The foreign key referencing the user involved in this activity.
+    /// </summary>
     [Required]
+    [MaxLength(36)]
     public string UserId { get; set; } = string.Empty;
 
-    // Properties
+    /// <summary>
+    /// The type of activity (e.g., fostering or ownership).
+    /// </summary>
     [Required]
-    public ActivityType Type { get; set; } // "Fostering" or "Ownership"
+    public ActivityType Type { get; init; }
 
+    /// <summary>
+    /// The current status of the activity (e.g., active, cancelled, or completed).
+    /// </summary>
     [Required]
-    public ActivityStatus Status { get; set; } // "Active", "Cancelled", "Completed"
+    public ActivityStatus Status { get; set; }
 
+    /// <summary>
+    /// The start date of the activity.
+    /// </summary>
     [Required]
-    public DateTime StartDate { get; set; }
+    public DateTime StartDate { get; init; }
 
+    /// <summary>
+    /// The end date of the activity.
+    /// </summary>
     [Required]
-    public DateTime EndDate { get; set; }
+    public DateTime EndDate { get; init; }
 
+    /// <summary>
+    /// The UTC timestamp when the activity record was created.
+    /// </summary>
     [Required]
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 
-    // Navigation Properties
+    /// <summary>
+    /// The animal entity associated with this activity.
+    /// </summary>
     public Animal Animal { get; set; } = null!;
+
+    /// <summary>
+    /// The user entity participating in this activity.
+    /// </summary>
     public User User { get; set; } = null!;
 }

@@ -1,12 +1,37 @@
 ﻿using Domain;
 using Domain.Enums;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Persistence;
 
+/// <summary>
+/// Provides initial seeding logic for the application's database.
+/// 
+/// This class is responsible for populating the database with essential data, 
+/// including roles, users, shelters, breeds, animals, and images, ensuring 
+/// the system starts with a consistent baseline dataset for development, testing, or demonstration.
+/// </summary>
 public static class DbInitializer
 {
-
-    public static async Task SeedData(AppDbContext dbContext)
+    /// <summary>
+    /// Seeds the database with default data such as user roles, users, shelters, breeds, animals, and images.
+    /// 
+    /// This method ensures that core entities are created only when they do not already exist, 
+    /// preventing duplication and maintaining idempotent execution.
+    /// </summary>
+    /// <param name="dbContext">The application's database context used to persist entities.</param>
+    /// <param name="userManager">The <see cref="UserManager{TUser}"/> used to manage user creation and role assignment.</param>
+    /// <param name="roleManager">The <see cref="RoleManager{TRole}"/> used to manage roles in the identity system.</param>f
+    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging seeding operations and errors.</param>
+    /// <param name="resetDatabase">Boolean used to reset or not the database.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public static async Task SeedData(AppDbContext dbContext,
+        UserManager<User> userManager,
+        RoleManager<IdentityRole> roleManager,
+        ILoggerFactory loggerFactory,
+        bool resetDatabase = false)
     {
         const string breed1Id = "1a1a1111-1111-1111-1111-111111111111";
         const string breed2Id = "2b2b2222-2222-2222-2222-222222222222";
@@ -23,6 +48,126 @@ public static class DbInitializer
         const string animal8Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd8b";
         const string animal9Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd9b";
         const string animal10Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd0c";
+        const string animal11Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd1c";
+        const string platformAdmin = "PlatformAdmin";
+        const string adminCaa = "AdminCAA";
+        const string userRole = "User";
+        const string user1Id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"; // Alice
+        const string user2Id = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"; // Bob
+        const string user3Id = "cccccccc-cccc-cccc-cccc-cccccccccccc"; // Carlos
+        const string user4Id = "dddddddd-dddd-dddd-dddd-dddddddddddd"; // Diana
+        const string user5Id = "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"; // Eduardo
+        const string user6Id = "66666666-6666-6666-6666-666666666666"; // Filipe
+        const string imageShelterUrl1_1 =
+            "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761835433/shelter_qnix0r.jpg";
+        const string imageShelterUrl1_2 =
+            "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761835501/shelter_lvjzl4.jpg";
+        const string imageShelterUrl2_1 =
+            "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761835423/shelter_pypelc.jpg";
+        const string imageShelterUrl2_2 =
+            "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761835552/shelter_q44gwo.jpg";
+        const string imageUrl1_1 =
+            "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761835037/image2_gjkcko.jpg";
+        const string imageUrl1_2 =
+            "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761835034/images_fcbmbh.jpg";
+        const string imageUrl2_1 =
+            "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761835062/image2_da9jlw.jpg";
+        const string imageUrl2_2 =
+            "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761835058/images_t0jnkr.jpg";
+        const string imageUrl3_1 =
+            "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761835079/image2_fcck0q.jpg";
+        const string imageUrl3_2 =
+            "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761835075/images_jfawej.jpg";
+        const string imageUrl4_1 =
+            "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761835089/image2_qnjamf.jpg";
+        const string imageUrl4_2 =
+            "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761835085/images_jofy7m.jpg";
+        const string imageUrl5_1 =
+            "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761835098/image2_pxn6g2.jpg";
+        const string imageUrl5_2 =
+            "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761835093/images_rn6vpn.jpg";
+        const string imageUrl6_1 =
+            "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761834737/image2_rugk8b.jpg";
+        const string imageUrl6_2 =
+            "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761834219/images_jop2o1.jpg";
+        const string imageUrl7_1 =
+            "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761835978/images_mn2jce.jpg";
+        const string imageUrl7_2 =
+            "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761835981/image2_kk3max.jpg";
+        // ======== PUBLIC IDS ========
+
+        var publicIdShelter1Img1 = "shelter_qnix0r";
+        var publicIdShelter1Img2 = "shelter_lvjzl4";
+
+        var publicIdShelter2Img1 = "shelter_pypelc";
+        var publicIdShelter2Img2 = "shelter_q44gwo";
+
+        var publicIdAnimal1Img1 = "image2_gjkcko";
+        var publicIdAnimal1Img2 = "images_fcbmbh";
+
+        var publicIdAnimal2Img1 = "image2_da9jlw";
+        var publicIdAnimal2Img2 = "images_t0jnkr";
+
+        var publicIdAnimal3Img1 = "image2_fcck0q";
+        var publicIdAnimal3Img2 = "images_jfawej";
+
+        var publicIdAnimal4Img1 = "image2_qnjamf";
+        var publicIdAnimal4Img2 = "images_jofy7m";
+
+        var publicIdAnimal5Img1 = "image2_pxn6g2";
+        var publicIdAnimal5Img2 = "images_rn6vpn";
+
+        var publicIdAnimal6Img1 = "image2_rugk8b";
+        var publicIdAnimal6Img2 = "images_jop2o1";
+
+        var publicIdAnimal7Img1 = "images_mn2jce";
+        var publicIdAnimal7Img2 = "image2_kk3max";
+
+        // Shelters
+        const string imageShelter1Img1Id = "00000000-0000-0000-0000-000000000101";
+        const string imageShelter1Img2Id = "00000000-0000-0000-0000-000000000102";
+        const string imageShelter2Img1Id = "00000000-0000-0000-0000-000000000201";
+        const string imageShelter2Img2Id = "00000000-0000-0000-0000-000000000202";
+
+        // Animals
+        const string imageAnimal1Img1Id = "00000000-0000-0000-0000-000000001101";
+        const string imageAnimal1Img2Id = "00000000-0000-0000-0000-000000001102";
+        const string imageAnimal2Img1Id = "00000000-0000-0000-0000-000000002101";
+        const string imageAnimal2Img2Id = "00000000-0000-0000-0000-000000002102";
+        const string imageAnimal3Img1Id = "00000000-0000-0000-0000-000000003101";
+        const string imageAnimal3Img2Id = "00000000-0000-0000-0000-000000003102";
+        const string imageAnimal4Img1Id = "00000000-0000-0000-0000-000000004101";
+        const string imageAnimal4Img2Id = "00000000-0000-0000-0000-000000004102";
+        const string imageAnimal5Img1Id = "00000000-0000-0000-0000-000000005101";
+        const string imageAnimal5Img2Id = "00000000-0000-0000-0000-000000005102";
+        const string imageAnimal6Img1Id = "00000000-0000-0000-0000-000000006101";
+        const string imageAnimal6Img2Id = "00000000-0000-0000-0000-000000006102";
+        const string imageAnimal7Img1Id = "00000000-0000-0000-0000-000000007101";
+        const string imageAnimal7Img2Id = "00000000-0000-0000-0000-000000007102";
+
+        // Favorites test
+        const string user7Id = "77777777-7777-7777-7777-777777777777"; // Gustavo (user with favorites)
+        const string animal12Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd1d";
+        const string animal13Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd2d";
+        const string animal14Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd3d";
+
+        const string favorite1Id = "fav00000-0000-0000-0000-000000000001";
+        const string favorite2Id = "fav00000-0000-0000-0000-000000000002";
+        const string favorite3Id = "fav00000-0000-0000-0000-000000000003";
+
+        // Favorites test, image ids
+        const string imageAnimal12Img1Id = "00000000-0000-0000-0000-000000012101";
+        const string imageAnimal12Img2Id = "00000000-0000-0000-0000-000000012102";
+        const string imageAnimal13Img1Id = "00000000-0000-0000-0000-000000013101";
+        const string imageAnimal13Img2Id = "00000000-0000-0000-0000-000000013102";
+        const string imageAnimal14Img1Id = "00000000-0000-0000-0000-000000014101";
+        const string imageAnimal14Img2Id = "00000000-0000-0000-0000-000000014102";
+
+        if (resetDatabase && dbContext.Database.IsRelational())
+        {
+            await dbContext.Database.EnsureDeletedAsync();
+            await dbContext.Database.MigrateAsync();
+        }
 
         // ======== SEED SHELTERS ========
         if (!dbContext.Shelters.Any())
@@ -61,6 +206,142 @@ public static class DbInitializer
             await dbContext.SaveChangesAsync();
         }
 
+        // ======== USERS SHELTERS ========
+
+        if (!userManager.Users.Any())
+        {
+            var roles = new List<string> { platformAdmin, adminCaa, userRole };
+            var logger = loggerFactory.CreateLogger("DbInitializer");
+
+            foreach (var role in roles)
+            {
+                if (!await roleManager.RoleExistsAsync(role))
+                {
+                    await roleManager.CreateAsync(new IdentityRole(role));
+                }
+            }
+
+            var users = new List<User>
+            {
+                new()
+                {
+                    Id = user2Id,
+                    Name = "Bob Johnson",
+                    UserName = "bob@test.com",
+                    Email = "bob@test.com",
+                    City = "Porto",
+                    Street = "Rua das Flores 10",
+                    PostalCode = "4000-123",
+                    BirthDate = new DateTime(1995, 4, 12),
+                    PhoneNumber = "912345678",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new()
+                {
+                    Id = user1Id,
+                    Name = "Alice Ferreira",
+                    UserName = "alice@test.com",
+                    Email = "alice@test.com",
+                    City = "Lisboa",
+                    Street = "Avenida da Liberdade 55",
+                    PostalCode = "1250-123",
+                    BirthDate = new DateTime(1998, 11, 2),
+                    PhoneNumber = "934567890",
+                    CreatedAt = DateTime.UtcNow,
+                    ShelterId = shelter1Id
+                },
+                new()
+                {
+                    Id = user3Id,
+                    Name = "Carlos Santos",
+                    UserName = "carlos@test.com",
+                    Email = "carlos@test.com",
+                    City = "Coimbra",
+                    Street = "Rua do Penedo 32",
+                    PostalCode = "3000-222",
+                    BirthDate = new DateTime(1992, 6, 8),
+                    PhoneNumber = "967123456",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new()
+                {
+                    Id = user4Id,
+                    Name = "Diana Silva",
+                    UserName = "diana@test.com",
+                    Email = "diana@test.com",
+                    City = "Faro",
+                    Street = "Rua das Oliveiras 8",
+                    PostalCode = "8000-333",
+                    BirthDate = new DateTime(1990, 9, 30),
+                    PhoneNumber = "925111333",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new()
+                {
+                    Id = user5Id,
+                    Name = "Eduardo Lima",
+                    UserName = "eduardo@test.com",
+                    Email = "eduardo@test.com",
+                    City = "Braga",
+                    Street = "Rua Nova 42",
+                    PostalCode = "4700-321",
+                    BirthDate = new DateTime(1988, 2, 14),
+                    PhoneNumber = "915222444",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new()
+                {
+                    Id = user6Id,
+                    Name = "Filipe Marques",
+                    UserName = "filipe@test.com",
+                    Email = "filipe@test.com",
+                    City = "Porto",
+                    Street = "Rua das Oliveiras 99",
+                    PostalCode = "4000-450",
+                    BirthDate = new DateTime(1994, 5, 27),
+                    PhoneNumber = "912345999",
+                    CreatedAt = DateTime.UtcNow,
+                    ShelterId = "22222222-2222-2222-2222-222222222222" // Test Shelter 2
+                },
+                new()
+                {
+                    Id = user7Id,
+                    Name = "Gustavo Pereira",
+                    UserName = "gustavo@test.com",
+                    Email = "gustavo@test.com",
+                    City = "Lisboa",
+                    Street = "Rua dos Favoritos 15",
+                    PostalCode = "1200-100",
+                    BirthDate = new DateTime(1993, 8, 20),
+                    PhoneNumber = "918888777",
+                    CreatedAt = DateTime.UtcNow
+                }
+            };
+
+            foreach (var user in users)
+            {
+                var result = await userManager.CreateAsync(user, "Pa$$w0rd");
+
+                if (result.Succeeded)
+                {
+                    var role = user.Email switch
+                    {
+                        "bob@test.com" => platformAdmin,
+                        "alice@test.com" => adminCaa,
+                        "filipe@test.com" => adminCaa,
+                        _ => userRole
+                    };
+
+                    await userManager.AddToRoleAsync(user, role);
+                }
+                else
+                {
+                    logger.LogWarning("Erro ao criar utilizador {Email}: {Errors}", user.Email,
+                        string.Join(", ", result.Errors.Select(e => e.Description)));
+                }
+            }
+        }
+
         // ======== SEED BREEDS ========
         if (!dbContext.Breeds.Any())
         {
@@ -80,238 +361,362 @@ public static class DbInitializer
         if (!dbContext.Animals.Any())
         {
             var animals = new List<Animal>
-        {
+            {
+                new()
+                {
+                    Id = animal1Id,
+                    Name = "Bolinhas",
+                    AnimalState = AnimalState.Available,
+                    Description = "Gato muito meigo e brincalhão, gosta de dormir ao sol.",
+                    Species = Species.Cat,
+                    Size = SizeType.Small,
+                    Sex = SexType.Male,
+                    Colour = "Branco e cinzento",
+                    BirthDate = new DateOnly(2022, 4, 15),
+                    Sterilized = true,
+                    BreedId = breed2Id,
+                    Cost = 30,
+                    Features = "Olhos verdes, muito sociável",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
+                new()
+                {
+                    Id = animal2Id,
+                    Name = "Lunica",
+                    AnimalState = AnimalState.Available,
+                    Description = "Cadela jovem e energética, ideal para famílias com crianças.",
+                    Species = Species.Dog,
+                    Size = SizeType.Medium,
+                    Sex = SexType.Female,
+                    Colour = "Castanho claro",
+                    BirthDate = new DateOnly(2021, 11, 5),
+                    Sterilized = true,
+                    BreedId = breed2Id,
+                    Cost = 50,
+                    Features = "Muito obediente e adora correr",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
+                new()
+                {
+                    Id = animal3Id,
+                    Name = "Tico",
+                    AnimalState = AnimalState.Available,
+                    Description = "Papagaio falador que adora companhia humana.",
+                    Species = Species.Cat,
+                    Size = SizeType.Small,
+                    Sex = SexType.Male,
+                    Colour = "Verde com azul",
+                    BirthDate = new DateOnly(2020, 2, 10),
+                    Sterilized = false,
+                    BreedId = breed2Id,
+                    Cost = 80,
+                    Features = "Sabe dizer 'Olá!' e assobiar",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
+                new()
+                {
+                    Id = animal4Id,
+                    Name = "Mika",
+                    AnimalState = AnimalState.Available,
+                    Description = "Gata calma e dócil, procura um lar tranquilo.",
+                    Species = Species.Cat,
+                    Size = SizeType.Small,
+                    Sex = SexType.Female,
+                    Colour = "Preto",
+                    BirthDate = new DateOnly(2020, 8, 22),
+                    Sterilized = true,
+                    BreedId = breed2Id,
+                    Cost = 25,
+                    Features = "Olhos azuis intensos",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
+                new()
+                {
+                    Id = animal5Id,
+                    Name = "Thor",
+                    AnimalState = AnimalState.Available,
+                    Description = "Cão de guarda muito protetor, mas fiel à família.",
+                    Species = Species.Dog,
+                    Size = SizeType.Large,
+                    Sex = SexType.Male,
+                    Colour = "Preto e castanho",
+                    BirthDate = new DateOnly(2019, 6, 30),
+                    Sterilized = false,
+                    BreedId = breed2Id,
+                    Cost = 100,
+                    Features = "Muito atento e obediente",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
+                new()
+                {
+                    Id = animal6Id,
+                    Name = "Nina",
+                    AnimalState = AnimalState.Available,
+                    Description = "Coelha curiosa e afetuosa, gosta de cenouras e de brincar.",
+                    Species = Species.Dog,
+                    Size = SizeType.Small,
+                    Sex = SexType.Female,
+                    Colour = "Branco com manchas castanhas",
+                    BirthDate = new DateOnly(2023, 3, 10),
+                    Sterilized = false,
+                    BreedId = breed2Id,
+                    Cost = 15,
+                    Features = "Orelhas pequenas e pelo macio",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
+                new()
+                {
+                    Id = animal7Id,
+                    Name = "Rockito",
+                    AnimalState = AnimalState.Inactive,
+                    Description = "Cão atlético e leal, ideal para quem gosta de caminhadas.",
+                    Species = Species.Dog,
+                    Size = SizeType.Medium,
+                    Sex = SexType.Male,
+                    Colour = "Cinza",
+                    BirthDate = new DateOnly(2022, 7, 19),
+                    Sterilized = true,
+                    BreedId = breed2Id,
+                    Cost = 70,
+                    Features = "Olhos azuis e muita energia",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
+                new()
+                {
+                    Id = animal8Id,
+                    Name = "Amora",
+                    AnimalState = AnimalState.HasOwner,
+                    Description = "Gata jovem e curiosa, adora caçar brinquedos.",
+                    Species = Species.Cat,
+                    Size = SizeType.Small,
+                    Sex = SexType.Female,
+                    Colour = "Cinzento e branco",
+                    BirthDate = new DateOnly(2023, 5, 14),
+                    Sterilized = false,
+                    BreedId = breed2Id,
+                    Cost = 20,
+                    Features = "Bigodes longos e muito expressiva",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
+                new()
+                {
+                    Id = animal9Id,
+                    Name = "Zeus",
+                    AnimalState = AnimalState.TotallyFostered,
+                    Description = "Cavalo calmo e bem treinado, ótimo para equitação.",
+                    Species = Species.Dog,
+                    Size = SizeType.Large,
+                    Sex = SexType.Male,
+                    Colour = "Castanho escuro",
+                    BirthDate = new DateOnly(2017, 9, 1),
+                    Sterilized = true,
+                    BreedId = breed2Id,
+                    Cost = 500,
+                    Features = "Crina longa e brilhante",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
+                new()
+                {
+                    Id = animal10Id,
+                    Name = "Pipoca",
+                    AnimalState = AnimalState.PartiallyFostered,
+                    Description = "Hamster pequena e simpática, ideal para crianças.",
+                    Species = Species.Dog,
+                    Size = SizeType.Small,
+                    Sex = SexType.Female,
+                    Colour = "Dourado",
+                    BirthDate = new DateOnly(2024, 1, 12),
+                    Sterilized = false,
+                    BreedId = breed2Id,
+                    Cost = 10,
+                    Features = "Muito ativa e adora correr na roda",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
+                new()
+                {
+                    Id = animal11Id,
+                    Name = "Tobias",
+                    AnimalState = AnimalState.Available,
+                    Description = "Cão de porte médio, muito sociável e adora passeios longos.",
+                    Species = Species.Dog,
+                    Size = SizeType.Medium,
+                    Sex = SexType.Male,
+                    Colour = "Preto e branco",
+                    BirthDate = new DateOnly(2020, 6, 12),
+                    Sterilized = true,
+                    BreedId = breed2Id,
+                    Cost = 60,
+                    Features = "Brincalhão, curioso e adaptável a diferentes ambientes",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
+
+
+                // ======== ANIMALS FOR ELIGIBITY TESTING  ========
+
+                // 1. Animal Available for Ownership (200 OK)
+                new()
+                {
+                    Id = "available-animal-id-123",
+                    Name = "TestDog Available",
+                    AnimalState = AnimalState.Available,
+                    Description = "Animal de teste disponível para adoção",
+                    Species = Species.Dog,
+                    Size = SizeType.Medium,
+                    Sex = SexType.Male,
+                    Colour = "Preto",
+                    BirthDate = new DateOnly(2022, 1, 15),
+                    Sterilized = true,
+                    BreedId = breed2Id,
+                    Cost = 40,
+                    Features = "Animal de teste - Estado: Available",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
+
+                // 2. Animal with owner (400 Bad Request)
+                new()
+                {
+                    Id = "animal-with-owner-id",
+                    Name = "TestDog HasOwner",
+                    AnimalState = AnimalState.HasOwner,
+                    Description = "Animal de teste que já tem dono",
+                    Species = Species.Dog,
+                    Size = SizeType.Small,
+                    Sex = SexType.Female,
+                    Colour = "Branco",
+                    BirthDate = new DateOnly(2021, 5, 10),
+                    Sterilized = true,
+                    BreedId = breed2Id,
+                    Cost = 35,
+                    Features = "Animal de teste - Estado: HasOwner",
+                    ShelterId = shelter1Id,
+                    OwnerId = user3Id, // Carlos
+                    OwnershipStartDate = DateTime.UtcNow.AddMonths(-2),
+                    Images = new List<Image>()
+                },
+
+                // 3. Animal Inactive (400 Bad Request)
+                new()
+                {
+                    Id = "inactive-animal-id",
+                    Name = "TestCat Inactive",
+                    AnimalState = AnimalState.Inactive,
+                    Description = "Animal de teste inativo",
+                    Species = Species.Cat,
+                    Size = SizeType.Small,
+                    Sex = SexType.Male,
+                    Colour = "Cinzento",
+                    BirthDate = new DateOnly(2020, 8, 20),
+                    Sterilized = true,
+                    BreedId = breed1Id,
+                    Cost = 25,
+                    Features = "Animal de teste - Estado: Inactive",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
+
+                // 4. Animal Partially Fostered (400 Bad Request)
+                new()
+                {
+                    Id = "partially-fostered-animal-id",
+                    Name = "TestDog PartiallyFostered",
+                    AnimalState = AnimalState.PartiallyFostered,
+                    Description = "Animal de teste parcialmente acolhido",
+                    Species = Species.Dog,
+                    Size = SizeType.Large,
+                    Sex = SexType.Male,
+                    Colour = "Castanho",
+                    BirthDate = new DateOnly(2021, 3, 5),
+                    Sterilized = false,
+                    BreedId = breed3Id,
+                    Cost = 60,
+                    Features = "Animal de teste - Estado: PartiallyFostered",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
+
+            // 5. Animal Totally Fostered (400 Bad Request)
             new()
             {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Bolinhas",
-                AnimalState = AnimalState.Available,
-                Description = "Gato muito meigo e brincalhão, gosta de dormir ao sol.",
-                Species = Species.Cat,
-                Size = SizeType.Small,
-                Sex = SexType.Male,
-                Colour = "Branco e cinzento",
-                BirthDate = new DateOnly(2022, 4, 15),
-                Sterilized = true,
-                 BreedId = breed1Id,
-                Cost = 30,
-                Features = "Olhos verdes, muito sociável",
-                ShelterId = shelter1Id,
-                Images = new List<Image>()
-            },
-            new()
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Luna",
-                AnimalState = AnimalState.Available,
-                Description = "Cadela jovem e energética, ideal para famílias com crianças.",
-                Species = Species.Dog,
-                Size = SizeType.Medium,
-                Sex = SexType.Female,
-                Colour = "Castanho claro",
-                BirthDate = new DateOnly(2021, 11, 5),
-                Sterilized = true,
-                 BreedId = breed2Id,
-                Cost = 50,
-                Features = "Muito obediente e adora correr",
-                ShelterId = shelter1Id,
-                Images = new List<Image>()
-            },
-            new()
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Rocky",
-                AnimalState = AnimalState.Available,
-                Description = "Cão atlético e leal, ideal para quem gosta de caminhadas.",
-                Species = Species.Dog,
-                Size = SizeType.Medium,
-                Sex = SexType.Male,
-                Colour = "Cinza",
-                BirthDate = new DateOnly(2022, 7, 19),
-                Sterilized = true,
-                 BreedId = breed3Id,
-                Cost = 70,
-                Features = "Olhos azuis e muita energia",
-                ShelterId = "22222222-2222-2222-2222-222222222222",
-                Images = new List<Image>()
-            },
-            new()
-            {
-                Id = animal1Id,
-                Name = "Bolinhas",
-                AnimalState = AnimalState.Available,
-                Description = "Gato muito meigo e brincalhão, gosta de dormir ao sol.",
-                Species = Species.Cat,
-                Size = SizeType.Small,
-                Sex = SexType.Male,
-                Colour = "Branco e cinzento",
-                BirthDate = new DateOnly(2022, 4, 15),
-                Sterilized = true,
-                BreedId = breed2Id,
-                Cost = 30,
-                Features = "Olhos verdes, muito sociável",
-                ShelterId = shelter1Id,
-                Images = new List<Image>()
-            },
-            new()
-            {
-                Id = animal2Id,
-                Name = "Luna",
-                AnimalState = AnimalState.Available,
-                Description = "Cadela jovem e energética, ideal para famílias com crianças.",
-                Species = Species.Dog,
-                Size = SizeType.Medium,
-                Sex = SexType.Female,
-                Colour = "Castanho claro",
-                BirthDate = new DateOnly(2021, 11, 5),
-                Sterilized = true,
-                BreedId = breed2Id,
-                Cost = 50,
-                Features = "Muito obediente e adora correr",
-                ShelterId = shelter1Id,
-                Images = new List<Image>()
-            },
-            new()
-            {
-                Id = animal3Id,
-                Name = "Tico",
-                AnimalState = AnimalState.Available,
-                Description = "Papagaio falador que adora companhia humana.",
-                Species = Species.Cat,
-                Size = SizeType.Small,
-                Sex = SexType.Male,
-                Colour = "Verde com azul",
-                BirthDate = new DateOnly(2020, 2, 10),
-                Sterilized = false,
-                BreedId = breed2Id,
-                Cost = 80,
-                Features = "Sabe dizer 'Olá!' e assobiar",
-                ShelterId = shelter1Id,
-                Images = new List<Image>()
-            },
-            new()
-            {
-                Id = animal4Id,
-                Name = "Mika",
-                AnimalState = AnimalState.Available,
-                Description = "Gata calma e dócil, procura um lar tranquilo.",
-                Species = Species.Cat,
-                Size = SizeType.Small,
-                Sex = SexType.Female,
-                Colour = "Preto",
-                BirthDate = new DateOnly(2020, 8, 22),
-                Sterilized = true,
-                BreedId = breed2Id,
-                Cost = 25,
-                Features = "Olhos azuis intensos",
-                ShelterId = shelter1Id,
-                Images = new List<Image>()
-            },
-            new()
-            {
-                Id = animal5Id,
-                Name = "Thor",
-                AnimalState = AnimalState.Available,
-                Description = "Cão de guarda muito protetor, mas fiel à família.",
-                Species = Species.Dog,
-                Size = SizeType.Large,
-                Sex = SexType.Male,
-                Colour = "Preto e castanho",
-                BirthDate = new DateOnly(2019, 6, 30),
-                Sterilized = false,
-                BreedId = breed2Id,
-                Cost = 100,
-                Features = "Muito atento e obediente",
-                ShelterId = shelter1Id,
-                Images = new List<Image>()
-            },
-            new()
-            {
-                Id = animal6Id,
-                Name = "Nina",
-                AnimalState = AnimalState.Available,
-                Description = "Coelha curiosa e afetuosa, gosta de cenouras e de brincar.",
-                Species = Species.Dog,
-                Size = SizeType.Small,
-                Sex = SexType.Female,
-                Colour = "Branco com manchas castanhas",
-                BirthDate = new DateOnly(2023, 3, 10),
-                Sterilized = false,
-                BreedId = breed2Id,
-                Cost = 15,
-                Features = "Orelhas pequenas e pelo macio",
-                ShelterId = shelter1Id,
-                Images = new List<Image>()
-            },
-            new()
-            {
-                Id = animal7Id,
-                Name = "Rocky",
-                AnimalState = AnimalState.Inactive,
-                Description = "Cão atlético e leal, ideal para quem gosta de caminhadas.",
-                Species = Species.Dog,
-                Size = SizeType.Medium,
-                Sex = SexType.Male,
-                Colour = "Cinza",
-                BirthDate = new DateOnly(2022, 7, 19),
-                Sterilized = true,
-                BreedId = breed2Id,
-                Cost = 70,
-                Features = "Olhos azuis e muita energia",
-                ShelterId = shelter1Id,
-                Images = new List<Image>()
-            },
-            new()
-            {
-                Id = animal8Id,
-                Name = "Amora",
-                AnimalState = AnimalState.HasOwner,
-                Description = "Gata jovem e curiosa, adora caçar brinquedos.",
-                Species = Species.Cat,
-                Size = SizeType.Small,
-                Sex = SexType.Female,
-                Colour = "Cinzento e branco",
-                BirthDate = new DateOnly(2023, 5, 14),
-                Sterilized = false,
-                BreedId = breed2Id,
-                Cost = 20,
-                Features = "Bigodes longos e muito expressiva",
-                ShelterId = shelter1Id,
-                Images = new List<Image>()
-            },
-            new()
-            {
-                Id = animal9Id,
-                Name = "Zeus",
+                Id = "totally-fostered-animal-id",
+                Name = "TestCat TotallyFostered",
                 AnimalState = AnimalState.TotallyFostered,
-                Description = "Cavalo calmo e bem treinado, ótimo para equitação.",
-                Species = Species.Dog,
-                Size = SizeType.Large,
-                Sex = SexType.Male,
-                Colour = "Castanho escuro",
-                BirthDate = new DateOnly(2017, 9, 1),
+                Description = "Animal de teste totalmente acolhido",
+                Species = Species.Cat,
+                Size = SizeType.Small,
+                Sex = SexType.Female,
+                Colour = "Laranja",
+                BirthDate = new DateOnly(2022, 7, 12),
                 Sterilized = true,
-                BreedId = breed2Id,
-                Cost = 500,
-                Features = "Crina longa e brilhante",
+                BreedId = breed1Id,
+                Cost = 30,
+                Features = "Animal de teste - Estado: TotallyFostered",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+            // ========== ANIMALS FOR FAVORITE TESTING =====================
+            new()
+            {
+                Id = animal12Id,
+                Name = "Luna",
+                AnimalState = AnimalState.Available,
+                Description = "Gata carinhosa e tranquila, ideal para apartamento.",
+                Species = Species.Cat,
+                Size = SizeType.Small,
+                Sex = SexType.Female,
+                Colour = "Cinza prateado",
+                BirthDate = new DateOnly(2021, 2, 18),
+                Sterilized = true,
+                BreedId = breed1Id,
+                Cost = 35,
+                Features = "Pelagem sedosa, olhos verdes",
                 ShelterId = shelter1Id,
                 Images = new List<Image>()
             },
             new()
             {
-                Id = animal10Id,
-                Name = "Pipoca",
-                AnimalState = AnimalState.PartiallyFostered,
-                Description = "Hamster pequena e simpática, ideal para crianças.",
+                Id = animal13Id,
+                Name = "Rex",
+                AnimalState = AnimalState.Available,
+                Description = "Cão ativo e brincalhão, adora crianças.",
                 Species = Species.Dog,
-                Size = SizeType.Small,
-                Sex = SexType.Female,
-                Colour = "Dourado",
-                BirthDate = new DateOnly(2024, 1, 12),
-                Sterilized = false,
+                Size = SizeType.Medium,
+                Sex = SexType.Male,
+                Colour = "Castanho avermelhado",
+                BirthDate = new DateOnly(2020, 9, 5),
+                Sterilized = true,
                 BreedId = breed2Id,
-                Cost = 10,
-                Features = "Muito ativa e adora correr na roda",
+                Cost = 55,
+                Features = "Muito energético, gosta de correr",
+                ShelterId = shelter1Id,
+                Images = new List<Image>()
+            },
+            new()
+            {
+                Id = animal14Id,
+                Name = "Simba",
+                AnimalState = AnimalState.Available,
+                Description = "Gato jovem e curioso, adora explorar.",
+                Species = Species.Cat,
+                Size = SizeType.Small,
+                Sex = SexType.Male,
+                Colour = "Laranja tigrado",
+                BirthDate = new DateOnly(2022, 6, 10),
+                Sterilized = false,
+                BreedId = breed1Id,
+                Cost = 28,
+                Features = "Muito brincalhão e ativo",
                 ShelterId = shelter1Id,
                 Images = new List<Image>()
             }
@@ -321,94 +726,780 @@ public static class DbInitializer
             await dbContext.SaveChangesAsync();
         }
 
-        // ======== SEED IMAGES ========
+        // ======== IMAGES SEED ========
 
         if (!dbContext.Images.Any())
         {
             var images = new List<Image>
             {
-                // === Shelter 1 ===
+                // === SHELTER 1 ===
                 new()
                 {
-                    Id = Guid.NewGuid().ToString(),
+                    Id = imageShelter1Img1Id,
                     ShelterId = shelter1Id,
-                    Url = "https://placekitten.com/600/400",
+                    Url = imageShelterUrl1_1,
                     Description = "Fachada principal do CAA Porto",
-                    IsPrincipal = true
+                    IsPrincipal = true,
+                    PublicId = publicIdShelter1Img1
                 },
                 new()
                 {
-                    Id = Guid.NewGuid().ToString(),
+                    Id = imageShelter1Img2Id,
                     ShelterId = shelter1Id,
-                    Url = "https://placekitten.com/601/401",
-                    Description = "Área de recreio dos animais",
-                    IsPrincipal = false
+                    Url = imageShelterUrl1_2,
+                    Description = "Área exterior do abrigo",
+                    IsPrincipal = false,
+                    PublicId = publicIdShelter1Img2
                 },
 
-                // === Shelter 2 ===
+                // === SHELTER 2 ===
                 new()
                 {
-                    Id = Guid.NewGuid().ToString(),
-                    ShelterId = "22222222-2222-2222-2222-222222222222",
-                    Url = "https://placedog.net/600/400?id=2",
-                    Description = "Instalações do CAA de Cima",
-                    IsPrincipal = true
+                    Id = imageShelter2Img1Id,
+                    ShelterId = shelter2Id,
+                    Url = imageShelterUrl2_1,
+                    Description = "Entrada principal do CAA de Cima",
+                    IsPrincipal = true,
+                    PublicId = publicIdShelter2Img1
+                },
+                new()
+                {
+                    Id = imageShelter2Img2Id,
+                    ShelterId = shelter2Id,
+                    Url = imageShelterUrl2_2,
+                    Description = "Zona de descanso dos animais",
+                    IsPrincipal = false,
+                    PublicId = publicIdShelter2Img2
                 },
 
-                // === Animais ===
+                // === ANIMAL 1 ===
                 new()
                 {
-                    Id = Guid.NewGuid().ToString(),
+                    Id = imageAnimal1Img1Id,
                     AnimalId = animal1Id,
-                    Url = "https://placekitten.com/500/400",
+                    Url = imageUrl1_1,
                     Description = "Bolinhas deitado ao sol",
-                    IsPrincipal = true
+                    IsPrincipal = true,
+                    PublicId = publicIdAnimal1Img1
                 },
                 new()
                 {
-                    Id = Guid.NewGuid().ToString(),
+                    Id = imageAnimal1Img2Id,
+                    AnimalId = animal1Id,
+                    Url = imageUrl1_2,
+                    Description = "Bolinhas a brincar com bola",
+                    IsPrincipal = false,
+                    PublicId = publicIdAnimal1Img2
+                },
+
+                // === ANIMAL 2 ===
+                new()
+                {
+                    Id = imageAnimal2Img1Id,
                     AnimalId = animal2Id,
-                    Url = "https://placedog.net/501/401?id=1",
+                    Url = imageUrl2_1,
                     Description = "Luna a correr no jardim",
-                    IsPrincipal = true
+                    IsPrincipal = true,
+                    PublicId = publicIdAnimal2Img1
                 },
                 new()
                 {
-                    Id = Guid.NewGuid().ToString(),
+                    Id = imageAnimal2Img2Id,
+                    AnimalId = animal2Id,
+                    Url = imageUrl2_2,
+                    Description = "Luna a dormir tranquilamente",
+                    IsPrincipal = false,
+                    PublicId = publicIdAnimal2Img2
+                },
+
+                // === ANIMAL 3 ===
+                new()
+                {
+                    Id = imageAnimal3Img1Id,
                     AnimalId = animal3Id,
-                    Url = "https://placeparrot.com/400/300",
+                    Url = imageUrl3_1,
                     Description = "Tico no poleiro",
-                    IsPrincipal = true
+                    IsPrincipal = true,
+                    PublicId = publicIdAnimal3Img1
                 },
                 new()
                 {
-                    Id = Guid.NewGuid().ToString(),
+                    Id = imageAnimal3Img2Id,
+                    AnimalId = animal3Id,
+                    Url = imageUrl3_2,
+                    Description = "Tico a abrir as asas",
+                    IsPrincipal = false,
+                    PublicId = publicIdAnimal3Img2
+                },
+
+                // === ANIMAL 4 ===
+                new()
+                {
+                    Id = imageAnimal4Img1Id,
                     AnimalId = animal4Id,
-                    Url = "https://placekitten.com/401/301",
+                    Url = imageUrl4_1,
                     Description = "Mika deitada no sofá",
-                    IsPrincipal = true
+                    IsPrincipal = true,
+                    PublicId = publicIdAnimal4Img1
                 },
                 new()
                 {
-                    Id = Guid.NewGuid().ToString(),
+                    Id = imageAnimal4Img2Id,
+                    AnimalId = animal4Id,
+                    Url = imageUrl4_2,
+                    Description = "Mika a brincar com uma corda",
+                    IsPrincipal = false,
+                    PublicId = publicIdAnimal4Img2
+                },
+
+                // === ANIMAL 5 ===
+                new()
+                {
+                    Id = imageAnimal5Img1Id,
                     AnimalId = animal5Id,
-                    Url = "https://placedog.net/502/402?id=2",
+                    Url = imageUrl5_1,
                     Description = "Thor atento ao portão",
-                    IsPrincipal = true
+                    IsPrincipal = true,
+                    PublicId = publicIdAnimal5Img1
                 },
                 new()
                 {
-                    Id = Guid.NewGuid().ToString(),
+                    Id = imageAnimal5Img2Id,
+                    AnimalId = animal5Id,
+                    Url = imageUrl5_2,
+                    Description = "Thor a correr no pátio",
+                    IsPrincipal = false,
+                    PublicId = publicIdAnimal5Img2
+                },
+
+                // === ANIMAL 6 ===
+                new()
+                {
+                    Id = imageAnimal6Img1Id,
                     AnimalId = animal6Id,
-                    Url = "https://placebunny.com/500/350",
-                    Description = "Nina comendo cenoura",
-                    IsPrincipal = true
-                }
+                    Url = imageUrl6_1,
+                    Description = "Nina a comer cenoura",
+                    IsPrincipal = true,
+                    PublicId = publicIdAnimal6Img1
+                },
+                new()
+                {
+                    Id = imageAnimal6Img2Id,
+                    AnimalId = animal6Id,
+                    Url = imageUrl6_2,
+                    Description = "Nina a explorar o jardim",
+                    IsPrincipal = false,
+                    PublicId = publicIdAnimal6Img2
+                },
+
+                // === ANIMAL 7 ===
+                new()
+                {
+                    Id = imageAnimal7Img1Id,
+                    AnimalId = animal7Id,
+                    Url = imageUrl7_1,
+                    Description = "Rockito a observar o horizonte",
+                    IsPrincipal = true,
+                    PublicId = publicIdAnimal7Img1
+                },
+                new()
+                {
+                    Id = imageAnimal7Img2Id,
+                    AnimalId = animal7Id,
+                    Url = imageUrl7_2,
+                    Description = "Rockito a brincar no campo",
+                    IsPrincipal = false,
+                    PublicId = publicIdAnimal7Img2
+                },
+
+                // =============== FAVORITES IMAGE SEEDS ==================
+
+
+                // === ANIMAL 12 (Luna) ===
+            new()
+            {
+                Id = imageAnimal12Img1Id,
+                AnimalId = animal12Id,
+                Url = imageUrl1_1,
+                Description = "Luna a descansar",
+                IsPrincipal = true,
+                PublicId = publicIdAnimal1Img1
+            },
+            new()
+            {
+                Id = imageAnimal12Img2Id,
+                AnimalId = animal12Id,
+                Url = imageUrl1_2,
+                Description = "Luna a brincar",
+                IsPrincipal = false,
+                PublicId = publicIdAnimal1Img2
+            },
+
+            // === ANIMAL 13 (Rex) ===
+            new()
+            {
+                Id = imageAnimal13Img1Id,
+                AnimalId = animal13Id,
+                Url = imageUrl1_1,
+                Description = "Rex no jardim",
+                IsPrincipal = true,
+                PublicId = publicIdAnimal1Img1
+            },
+            new()
+            {
+                Id = imageAnimal13Img2Id,
+                AnimalId = animal13Id,
+                Url = imageUrl1_2,
+                Description = "Rex a correr",
+                IsPrincipal = false,
+                PublicId = publicIdAnimal1Img2
+            },
+
+            // === ANIMAL 14 (Simba) ===
+            new()
+            {
+                Id = imageAnimal14Img1Id,
+                AnimalId = animal14Id,
+                Url = imageUrl1_1,
+                Description = "Simba a explorar",
+                IsPrincipal = true,
+                PublicId = publicIdAnimal1Img1
+            },
+            new()
+            {
+                Id = imageAnimal14Img2Id,
+                AnimalId = animal14Id,
+                Url = imageUrl1_2,
+                Description = "Simba a dormir",
+                IsPrincipal = false,
+                PublicId = publicIdAnimal1Img2
+            }
             };
 
             await dbContext.Images.AddRangeAsync(images);
             await dbContext.SaveChangesAsync();
         }
+
+        // ======== SEED FOSTERINGS ========
+        if (!dbContext.Fosterings.Any())
+        {
+            const string fostering1Id = "f0000000-0000-0000-0000-000000000001";
+            const string fostering2Id = "f0000000-0000-0000-0000-000000000002";
+            const string fostering3Id = "f0000000-0000-0000-0000-000000000003";
+
+            var fosterings = new List<Fostering>
+            {
+                new ()
+                {
+                    Id = fostering1Id,
+                    AnimalId = animal2Id,
+                    UserId = user4Id,   
+                    Amount = 10,
+                    Status = FosteringStatus.Active,
+                    StartDate = DateTime.UtcNow
+                },
+                new()
+                {
+                    Id = fostering2Id,
+                    UserId = user4Id, // Diana
+                    AnimalId = animal3Id, // Rocky
+                    Amount = 20.00m,
+                    Status = FosteringStatus.Active,
+                    StartDate = DateTime.UtcNow.AddDays(-10),
+                    EndDate = DateTime.UtcNow.AddDays(50),
+                    UpdatedAt = DateTime.UtcNow
+                },
+                new()
+                {
+                    Id = fostering3Id,
+                    UserId = user4Id, // Diana
+                    AnimalId = animal4Id, // Mika
+                    Amount = 10.00m,
+                    Status = FosteringStatus.Active,
+                    StartDate = DateTime.UtcNow.AddDays(-5),
+                    EndDate = DateTime.UtcNow.AddDays(25),
+                    UpdatedAt = DateTime.UtcNow
+                }
+            };
+
+            await dbContext.Fosterings.AddRangeAsync(fosterings);
+            await dbContext.SaveChangesAsync();
+        }
+
+
+
+//======== SEED FOR OWNERSHIPS CONTROLLER ========
+        // Create Users
+        var user1 = new User
+        {
+            Id = "user-1",
+            UserName = "user1@test.com",
+            Email = "user1@test.com",
+            Name = "João Silva",
+            BirthDate = new DateTime(1990, 5, 15),
+            Street = "Rua das Flores, 123",
+            City = "Porto",
+            PostalCode = "4000-001",
+            PhoneNumber = "912345678",
+            EmailConfirmed = true
+        };
+
+
+        var user2 = new User
+        {
+            Id = "user-2",
+            UserName = "user2@test.com",
+            Email = "user2@test.com",
+            Name = "Maria Santos",
+            BirthDate = new DateTime(1985, 8, 20),
+            Street = "Avenida da Liberdade, 456",
+            City = "Lisboa",
+            PostalCode = "1250-001",
+            PhoneNumber = "923456789",
+            EmailConfirmed = true
+        };
+
+        var user3 = new User
+        {
+            Id = "user-3",
+            UserName = "user3@test.com",
+            Email = "user3@test.com",
+            Name = "Carlos Pereira",
+            BirthDate = new DateTime(1995, 3, 10),
+            Street = "Rua do Comércio, 789",
+            City = "Braga",
+            PostalCode = "4700-001",
+            PhoneNumber = "934567890",
+            EmailConfirmed = true
+        };
+
+        await userManager.CreateAsync(user1, "Test@123");
+        await userManager.CreateAsync(user2, "Test@123");
+        await userManager.CreateAsync(user3, "Test@123");
+        await userManager.AddToRoleAsync(user1, userRole);
+        await userManager.AddToRoleAsync(user2, userRole);
+        await userManager.AddToRoleAsync(user3, userRole);
+
+
+        // Create Shelters
+        var shelter1 = new Shelter
+        {
+            Id = "shelter-1",
+            Name = "Associação Protetora dos Animais do Porto",
+            Street = "Rua dos Animais, 100",
+            City = "Porto",
+            PostalCode = "4100-001",
+            Phone = "222333444",
+            NIF = "501234567",
+            OpeningTime = new TimeOnly(9, 0),
+            ClosingTime = new TimeOnly(18, 0)
+        };
+
+        var shelter2 = new Shelter
+        {
+            Id = "shelter-2",
+            Name = "Centro de Recolha Animal de Lisboa",
+            Street = "Avenida dos Bichos, 200",
+            City = "Lisboa",
+            PostalCode = "1300-001",
+            Phone = "213444555",
+            NIF = "502345678",
+            OpeningTime = new TimeOnly(10, 0),
+            ClosingTime = new TimeOnly(19, 0)
+        };
+
+        await dbContext.Shelters.AddRangeAsync(shelter1, shelter2);
+
+        // Create Shelter Images
+        var shelterImage1 = new Image
+        {
+            Id = "shelter-img-1",
+            PublicId = "shelters/shelter1_main",
+            Url = "https://example.com/shelter1.jpg",
+            Description = "Foto principal do abrigo",
+            IsPrincipal = true,
+            ShelterId = shelter1.Id
+        };
+
+        var shelterImage2 = new Image
+        {
+            Id = "shelter-img-2",
+            PublicId = "shelters/shelter2_main",
+            Url = "https://example.com/shelter2.jpg",
+            Description = "Foto principal do abrigo",
+            IsPrincipal = true,
+            ShelterId = shelter2.Id
+        };
+
+        await dbContext.Images.AddRangeAsync(shelterImage1, shelterImage2);
+
+        // Create Breeds
+        var breed1 = new Breed
+        {
+            Id = "breed-1",
+            Name = "Labrador Retriever",
+            Description = "Cão de porte médio a grande, muito amigável"
+        };
+
+        var breed2 = new Breed
+        {
+            Id = "breed-2",
+            Name = "Golden Retriever",
+            Description = "Cão grande, dócil e muito inteligente"
+        };
+
+        var breed3 = new Breed
+        {
+            Id = "breed-3",
+            Name = "Pastor Português",
+            Description = "Cão grande, protetor e leal"
+        };
+
+        var breed4 = new Breed
+        {
+            Id = "breed-4",
+            Name = "Rafeiro",
+            Description = "Cão de porte médio, curioso e enérgico"
+        };
+
+        await dbContext.Breeds.AddRangeAsync(breed1, breed2, breed3, breed4);
+        await dbContext.SaveChangesAsync();
+
+        // Create Animals WITHOUT owners (available for ownership requests)
+        var animal1 = new Animal
+        {
+            Id = "animal-1",
+            Name = "Rex",
+            AnimalState = AnimalState.Available,
+            Description = "Cão muito amigável e brincalhão",
+            Species = Species.Dog,
+            Size = SizeType.Medium,
+            Sex = SexType.Male,
+            Colour = "Dourado",
+            BirthDate = new DateOnly(2020, 3, 15),
+            Sterilized = true,
+            Cost = 50,
+            Features = "Adora crianças, muito energético",
+            ShelterId = shelter1.Id,
+            BreedId = breed1.Id,
+            OwnerId = null // No owner yet
+        };
+
+        var animal2 = new Animal
+        {
+            Id = "animal-2",
+            Name = "Bella",
+            AnimalState = AnimalState.Available,
+            Description = "Cadela dócil e carinhosa",
+            Species = Species.Dog,
+            Size = SizeType.Large,
+            Sex = SexType.Female,
+            Colour = "Castanho",
+            BirthDate = new DateOnly(2019, 7, 20),
+            Sterilized = true,
+            Cost = 45,
+            Features = "Muito calma, ideal para apartamento",
+            ShelterId = shelter1.Id,
+            BreedId = breed2.Id,
+            OwnerId = null
+        };
+
+        var animal3 = new Animal
+        {
+            Id = "animal-3",
+            Name = "Thor",
+            AnimalState = AnimalState.Available,
+            Description = "Cão protetor e leal",
+            Species = Species.Dog,
+            Size = SizeType.Large,
+            Sex = SexType.Male,
+            Colour = "Preto e castanho",
+            BirthDate = new DateOnly(2018, 11, 10),
+            Sterilized = false,
+            Cost = 60,
+            Features = "Precisa de espaço, bom guarda",
+            ShelterId = shelter2.Id,
+            BreedId = breed3.Id,
+            OwnerId = null
+        };
+
+        // Additional animals for testing different ownership request scenarios
+        var animal7 = new Animal
+        {
+            Id = "animal-7",
+            Name = "Simba",
+            AnimalState = AnimalState.Available,
+            Description = "Cão jovem e cheio de energia",
+            Species = Species.Dog,
+            Size = SizeType.Medium,
+            Sex = SexType.Male,
+            Colour = "Laranja",
+            BirthDate = new DateOnly(2022, 6, 8),
+            Sterilized = false,
+            Cost = 38,
+            Features = "Adora brincar, precisa de treino",
+            ShelterId = shelter2.Id,
+            BreedId = breed4.Id,
+            OwnerId = null
+        };
+
+        var animal8 = new Animal
+        {
+            Id = "animal-8",
+            Name = "Nina",
+            AnimalState = AnimalState.Available,
+            Description = "Cadela idosa e calma",
+            Species = Species.Dog,
+            Size = SizeType.Small,
+            Sex = SexType.Female,
+            Colour = "Cinzento",
+            BirthDate = new DateOnly(2015, 2, 14),
+            Sterilized = true,
+            Cost = 30,
+            Features = "Perfeita para lares tranquilos",
+            ShelterId = shelter1.Id,
+            BreedId = breed1.Id,
+            OwnerId = null
+        };
+
+
+        // Create Animals WITH owners (user2 owns these)
+        var animal4 = new Animal
+        {
+            Id = "animal-4",
+            Name = "Max",
+            AnimalState = AnimalState.HasOwner,
+            Description = "Cão adorável já adotado",
+            Species = Species.Dog,
+            Size = SizeType.Medium,
+            Sex = SexType.Male,
+            Colour = "Branco e preto",
+            BirthDate = new DateOnly(2021, 1, 5),
+            Sterilized = true,
+            Cost = 40,
+            Features = "Ama correr, muito sociável",
+            ShelterId = shelter1.Id,
+            BreedId = breed4.Id,
+            OwnerId = user2.Id,
+            OwnershipStartDate = DateTime.UtcNow.AddMonths(-6)
+        };
+
+        var animal5 = new Animal
+        {
+            Id = "animal-5",
+            Name = "Luna",
+            AnimalState = AnimalState.HasOwner,
+            Description = "Cadela já com família",
+            Species = Species.Dog,
+            Size = SizeType.Small,
+            Sex = SexType.Female,
+            Colour = "Dourado claro",
+            BirthDate = new DateOnly(2022, 4, 12),
+            Sterilized = true,
+            Cost = 35,
+            Features = "Pequena e adorável, boa com gatos",
+            ShelterId = shelter2.Id,
+            BreedId = breed1.Id,
+            OwnerId = user2.Id,
+            OwnershipStartDate = DateTime.UtcNow.AddMonths(-2)
+        };
+
+        var animal6 = new Animal
+        {
+            Id = "animal-6",
+            Name = "Bobby",
+            AnimalState = AnimalState.HasOwner,
+            Description = "Cão feliz com novo dono",
+            Species = Species.Dog,
+            Size = SizeType.Large,
+            Sex = SexType.Male,
+            Colour = "Dourado",
+            BirthDate = new DateOnly(2019, 9, 25),
+            Sterilized = true,
+            Cost = 55,
+            Features = "Calmo, ideal para idosos",
+            ShelterId = shelter1.Id,
+            BreedId = breed2.Id,
+            OwnerId = user2.Id,
+            OwnershipStartDate = DateTime.UtcNow.AddMonths(-10)
+        };
+
+        await dbContext.Animals.AddRangeAsync(animal1, animal2, animal3, animal4, animal5, animal6, animal7, animal8);
+
+
+        // Create Animal Images
+        var animalImages = new List<Image>
+        {
+            new Image
+            {
+                Id = "img-1", PublicId = "animals/rex_1", Url = "https://example.com/rex1.jpg",
+                Description = "Rex brincando", IsPrincipal = true, AnimalId = animal1.Id
+            },
+            new Image
+            {
+                Id = "img-2", PublicId = "animals/rex_2", Url = "https://example.com/rex2.jpg",
+                Description = "Rex descansando", IsPrincipal = false, AnimalId = animal1.Id
+            },
+            new Image
+            {
+                Id = "img-3", PublicId = "animals/bella_1", Url = "https://example.com/bella1.jpg",
+                Description = "Bella sentada", IsPrincipal = true, AnimalId = animal2.Id
+            },
+            new Image
+            {
+                Id = "img-4", PublicId = "animals/thor_1", Url = "https://example.com/thor1.jpg",
+                Description = "Thor em guarda", IsPrincipal = true, AnimalId = animal3.Id
+            },
+            new Image
+            {
+                Id = "img-5", PublicId = "animals/max_1", Url = "https://example.com/max1.jpg",
+                Description = "Max feliz", IsPrincipal = true, AnimalId = animal4.Id
+            },
+            new Image
+            {
+                Id = "img-6", PublicId = "animals/luna_1", Url = "https://example.com/luna1.jpg",
+                Description = "Luna adorável", IsPrincipal = true, AnimalId = animal5.Id
+            },
+            new Image
+            {
+                Id = "img-7", PublicId = "animals/bobby_1", Url = "https://example.com/bobby1.jpg",
+                Description = "Bobby sorrindo", IsPrincipal = true, AnimalId = animal6.Id
+            },
+            new Image
+            {
+                Id = "img-8", PublicId = "animals/simba_1", Url = "https://example.com/simba1.jpg",
+                Description = "Simba brincalhão", IsPrincipal = true, AnimalId = animal7.Id
+            },
+            new Image
+            {
+                Id = "img-9", PublicId = "animals/nina_1", Url = "https://example.com/nina1.jpg",
+                Description = "Nina tranquila", IsPrincipal = true, AnimalId = animal8.Id
+            }
+        };
+
+        await dbContext.Images.AddRangeAsync(animalImages);
+        await dbContext.SaveChangesAsync();
+
+        // Create Ownership Requests for user1 (multiple states)
+        // Each user can only have ONE ownership request per animal (unique constraint on UserId + AnimalId)
+
+        // Pending request for Rex
+
+        var ownershipRequest1 = new OwnershipRequest
+        {
+            Id = "or-1",
+            AnimalId = animal1.Id, // Rex
+            UserId = user1.Id,
+            Amount = 100,
+            Status = OwnershipStatus.Pending,
+            RequestInfo = "Tenho experiência com cães desta raça",
+            RequestedAt = DateTime.UtcNow.AddDays(-5)
+        };
+
+        // Pending request for Bella
+        var ownershipRequest2 = new OwnershipRequest
+        {
+            Id = "or-2",
+            AnimalId = animal2.Id, // Bella
+            UserId = user1.Id,
+            Amount = 90,
+            Status = OwnershipStatus.Pending,
+            RequestInfo = "Procuro uma companheira calma",
+            RequestedAt = DateTime.UtcNow.AddDays(-3)
+        };
+
+        // Recent rejected request for Thor (within last month)
+        var ownershipRequest3 = new OwnershipRequest
+        {
+            Id = "or-3",
+            AnimalId = animal3.Id, // Thor
+            UserId = user1.Id,
+            Amount = 120,
+            Status = OwnershipStatus.Rejected,
+            RequestInfo = "Tenho quintal grande",
+            RequestedAt = DateTime.UtcNow.AddDays(-20),
+            UpdatedAt = DateTime.UtcNow.AddDays(-15) // Rejected 15 days ago (within last month)
+        };
+
+        // Old rejected request for Simba (should NOT appear - more than 1 month old)
+        var ownershipRequest4 = new OwnershipRequest
+        {
+            Id = "or-4",
+            AnimalId = animal7.Id, // Simba (different animal!)
+            UserId = user1.Id,
+            Amount = 80,
+            Status = OwnershipStatus.Rejected,
+            RequestInfo = "Quero um cão jovem",
+            RequestedAt = DateTime.UtcNow.AddDays(-50),
+            UpdatedAt = DateTime.UtcNow.AddDays(-40) // Rejected 40 days ago (more than 1 month)
+        };
+
+        // Approved request for Nina (should NOT appear - approved requests excluded)
+        var ownershipRequest5 = new OwnershipRequest
+        {
+            Id = "or-5",
+            AnimalId = animal8.Id, // Nina (different animal!)
+            UserId = user1.Id,
+            Amount = 95,
+            Status = OwnershipStatus.Approved,
+            RequestInfo = "Perfeita para o meu estilo de vida",
+            RequestedAt = DateTime.UtcNow.AddDays(-60),
+            ApprovedAt = DateTime.UtcNow.AddDays(-55),
+            UpdatedAt = DateTime.UtcNow.AddDays(-55)
+        };
+
+        await dbContext.OwnershipRequests.AddRangeAsync(
+            ownershipRequest1,
+            ownershipRequest2,
+            ownershipRequest3,
+            ownershipRequest4,
+            ownershipRequest5
+        );
+        await dbContext.SaveChangesAsync();
+
+        // ======== SEED FAVORITES ========
+        if (!dbContext.Favorites.Any())
+        {
+            const string favorite4Id = "fav00000-0000-0000-0000-000000000004";
+
+            var favorites = new List<Favorite>
+            {
+                new()
+                {
+                    Id = favorite1Id,
+                    UserId = user7Id,  // Gustavo
+                    AnimalId = animal12Id,  // Luna
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow.AddDays(-3)
+                },
+                new()
+                {
+                    Id = favorite2Id,
+                    UserId = user7Id,  // Gustavo
+                    AnimalId = animal13Id,  // Rex
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow.AddDays(-2)
+                },
+                new()
+                {
+                    Id = favorite3Id,
+                    UserId = user7Id,  // Gustavo
+                    AnimalId = animal14Id,  // Simba
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow.AddDays(-1)
+                },
+                new()
+                {
+                    Id = favorite4Id,
+                    UserId = user7Id,  // Gustavo
+                    AnimalId = "f055cc31-fdeb-4c65-bb73-4f558f67dd1b",  // Bolinhas
+                    IsActive = false,  // ⚠️ INATIVO
+                    CreatedAt = DateTime.UtcNow.AddDays(-4)
+                }
+            };
+
+            await dbContext.Favorites.AddRangeAsync(favorites);
+            await dbContext.SaveChangesAsync();
+        }
     }
 }
-

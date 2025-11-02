@@ -1,4 +1,5 @@
 ﻿using Domain;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Persistence;
@@ -15,18 +16,46 @@ namespace Persistence;
 /// The context also configures the mapping of enumeration properties to string values
 /// to ensure data readability and consistency across database records.
 /// </remarks>
-
-public class AppDbContext(DbContextOptions options) : DbContext(options)
+public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(options)
 {
+    /// <summary>
+    /// The collection of animals stored in the database.
+    /// </summary>
     public DbSet<Animal> Animals { get; set; }
+
+    /// <summary>
+    /// The collection of shelters registered in the system.
+    /// </summary>
     public DbSet<Shelter> Shelters { get; set; }
-    public DbSet<User> Users { get; set; }
+
+    /// <summary>
+    /// The collection of fostering records representing animal sponsorships.
+    /// </summary>
     public DbSet<Fostering> Fosterings { get; set; }
+
+    /// <summary>
+    /// The collection of ownership requests made by users.
+    /// </summary>
     public DbSet<OwnershipRequest> OwnershipRequests { get; set; }
+
+    /// <summary>
+    /// The collection of activities scheduled for animals.
+    /// </summary>
     public DbSet<Activity> Activities { get; set; }
+
+    /// <summary>
+    /// The collection of user favorites linking users to their preferred animals.
+    /// </summary>
     public DbSet<Favorite> Favorites { get; set; }
+
+    /// <summary>
+    /// The collection of images associated with animals or shelters.
+    /// </summary>
     public DbSet<Image> Images { get; set; }
 
+    /// <summary>
+    /// The collection of animal breeds available in the system.
+    /// </summary>
     public DbSet<Breed> Breeds { get; set; }
 
     /// <summary>
@@ -49,7 +78,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
 
         modelBuilder.Entity<Shelter>(entity =>
         {
-            // NIF único
+            // Nif unique
             entity.HasIndex(s => s.NIF).IsUnique();
         });
 
@@ -59,6 +88,15 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             .WithMany(shelter => shelter.Animals)
             .HasForeignKey(animal => animal.ShelterId)
             .OnDelete(DeleteBehavior.Restrict);
+
+
+        // Shelter -> Images (1:Many relationship)
+        modelBuilder.Entity<Shelter>()
+           .HasMany(s => s.Images)
+           .WithOne(i => i.Shelter)
+           .HasForeignKey(i => i.ShelterId)
+           .OnDelete(DeleteBehavior.Cascade);
+
 
         // ========== USER CONFIGURATIONS ==========
 
@@ -76,7 +114,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // User - Animal (Owner) (1:N, optional)
+        // User - Animal (Owner) (1:N, opcional)
         modelBuilder.Entity<Animal>()
             .HasOne(animal => animal.Owner) // only one ownership per animal
             .WithMany(user => user.OwnedAnimals) // an user can own multiple animals
@@ -87,7 +125,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
         modelBuilder.Entity<User>()
         .HasIndex(u => u.ShelterId)
         .IsUnique() // Only one Admin CAA per shelter
-        .HasFilter("\"ShelterId\" IS NOT NULL");  // Only applied when ShelterId is not null
+        .HasFilter("\"ShelterId\" IS NOT NULL");  // Onlu applied when ShelterId is not null
 
         // ========== ANIMAL CONFIGURATIONS ==========
 
@@ -104,7 +142,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
 
         modelBuilder.Entity<Breed>(entity =>
         {
-            // Breed name único
+            // Breed name unique
             entity.HasIndex(b => b.Name).IsUnique();
         });
 
@@ -119,7 +157,7 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
 
         modelBuilder.Entity<Image>(entity =>
         {
-            // Apenas uma imagem principal por animal
+            // One Main image for each animal
             entity.HasIndex(i => new { i.AnimalId, i.IsPrincipal })
                   .IsUnique()
                   .HasFilter("\"IsPrincipal\" = true");
@@ -131,12 +169,6 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             .WithMany(a => a.Images)
             .HasForeignKey(i => i.AnimalId)
             .OnDelete(DeleteBehavior.Cascade);  // If animal is deleted, deletes its images
-
-        modelBuilder.Entity<Image>()
-            .HasOne(i => i.Shelter)
-            .WithMany(s => s.Images)
-            .HasForeignKey(i => i.ShelterId)
-            .OnDelete(DeleteBehavior.Cascade);
 
         // ========== FOSTERING CONFIGURATIONS ==========
 
@@ -226,4 +258,3 @@ public class AppDbContext(DbContextOptions options) : DbContext(options)
             .OnDelete(DeleteBehavior.Cascade);  // If user is deleted, deletes user's favorite animals
     }
 }
-

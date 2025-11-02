@@ -1,0 +1,863 @@
+Tests (700 tests) Failed: 11 tests failed
+  Tests (700 tests) Failed: 11 tests failed
+    AnimalControllerTest.cs (44 tests) Failed: 11 tests failed
+      DeactivateAnimalTests (7 tests) Success
+        DeactivateAnimal_ShouldSucceed_WhenAnimalIsAlreadyInactive Success
+        DeactivateAnimal_WhenAnimalDoesNotExist Success
+        DeactivateAnimal_WhenAnimalHasOwner Success
+        DeactivateAnimal_WhenAnimalIsAvailable Success
+        DeactivateAnimal_WhenAnimalIsPartiallyFostered Success
+        DeactivateAnimal_WhenAnimalIsTotallyFostered Success
+        DeactivateAnimal_WhenShelterDoesNotExist Success
+      GetAnimalDetailsEndpointTest (11 tests) Failed: One or more child tests failed: 11 tests failed
+        GetAnimalDetails_InvalidAnimalState_ReturnsNotFound (3 tests) Failed: One or more child tests failed: 3 tests failed
+          GetAnimalDetails_InvalidAnimalState_ReturnsNotFound(invalidState: HasOwner) Failed: System.NullReferenceException: Object reference not set to an instance of an object.
+          GetAnimalDetails_InvalidAnimalState_ReturnsNotFound(invalidState: Inactive) Failed: System.NullReferenceException: Object reference not set to an instance of an object.
+          GetAnimalDetails_InvalidAnimalState_ReturnsNotFound(invalidState: TotallyFostered) Failed: System.NullReferenceException: Object reference not set to an instance of an object.
+        GetAnimalDetails_InvalidId_ReturnsBadRequest (5 tests) Failed: One or more child tests failed: 5 tests failed
+          GetAnimalDetails_InvalidId_ReturnsBadRequest(invalidId: " ") Failed: System.NullReferenceException: Object reference not set to an instance of an object.
+          GetAnimalDetails_InvalidId_ReturnsBadRequest(invalidId: "") Failed: System.NullReferenceException: Object reference not set to an instance of an object.
+          GetAnimalDetails_InvalidId_ReturnsBadRequest(invalidId: "12345") Failed: System.NullReferenceException: Object reference not set to an instance of an object.
+          GetAnimalDetails_InvalidId_ReturnsBadRequest(invalidId: "not-a-valid-guid") Failed: System.NullReferenceException: Object reference not set to an instance of an object.
+          GetAnimalDetails_InvalidId_ReturnsBadRequest(invalidId: null) Failed: System.NullReferenceException: Object reference not set to an instance of an object.
+        GetAnimalDetails_NonExistentId_ReturnsNotFound Failed: System.NullReferenceException: Object reference not set to an instance of an object.
+        GetAnimalDetails_PartiallyFosteredAnimal_ReturnsOk Failed: System.NullReferenceException: Object reference not set to an instance of an object.
+        GetAnimalDetails_ValidId_ReturnsOkWithCompleteDto Failed: System.NullReferenceException: Object reference not set to an instance of an object.
+      GetAnimalDetailsHandlerTest (6 tests) Success
+        NonExistentId_ReturnsNotFound (1 test) Success
+          NonExistentId_ReturnsNotFound(invalidId: "ffffffff-ffff-ffff-ffff-ffffffffffff", expectedCode: 404, expectedError: "Animal not found") Success
+        NonRetrievableStates_ReturnsNotFound (3 tests) Success
+          NonRetrievableStates_ReturnsNotFound(invalidState: HasOwner) Success
+          NonRetrievableStates_ReturnsNotFound(invalidState: Inactive) Success
+          NonRetrievableStates_ReturnsNotFound(invalidState: TotallyFostered) Success
+        ValidAvailableAnimal_ReturnsSuccess (2 tests) Success
+          ValidAvailableAnimal_ReturnsSuccess(animalState: Available) Success
+          ValidAvailableAnimal_ReturnsSuccess(animalState: PartiallyFostered) Success
+      GetAnimalDetailsValidatorTest (7 tests) Success
+        Validate_InvalidIdFormat_ShouldHaveValidationError (6 tests) Success
+          Validate_InvalidIdFormat_ShouldHaveValidationError(invalidId: " ") Success
+          Validate_InvalidIdFormat_ShouldHaveValidationError(invalidId: "") Success
+          Validate_InvalidIdFormat_ShouldHaveValidationError(invalidId: "12345") Success
+          Validate_InvalidIdFormat_ShouldHaveValidationError(invalidId: "invalid-format") Success
+          Validate_InvalidIdFormat_ShouldHaveValidationError(invalidId: "not-a-guid") Success
+          Validate_InvalidIdFormat_ShouldHaveValidationError(invalidId: null) Success
+        Validate_ValidGuidFormat_ShouldNotHaveValidationError (1 test) Success
+          Validate_ValidGuidFormat_ShouldNotHaveValidationError(validGuid: "123e4567-e89b-12d3-a456-426614174000") Success
+      GetAnimalListTests (6 tests) Success
+        AnimalsInAlphabeticalOrder Success
+        NoAnimalsExist Success
+        OnlyAvailableAndPartiallyFostered Success
+        PaginateResultsCorrectly Success
+        ReturnAllAnimalsWithPageNumberValid Success
+        ShouldCalculateTotalPagesCorrectly Success
+      GetAnimalsByShelterTests (7 tests) Success
+        CalculateTotalPagesCorrectly Success
+        GetAnimalsByShelter Success
+        GetAnimalsByShelterInAlphabeticalOrder Success
+        NoAnimalsFoundForShelter Success
+        PaginateResultsCorrectlly Success
+        ShelterDoesNotExist Success
+        ShouldNotReturnAnimalsFromOtherShelters Success
+    Animals (145 tests) Success
+      Commands (101 tests) Success
+        CreateAnimalTests (59 tests) Success
+          Handle_AllOperationsSucceed_CommitsTransaction Success
+          Handle_BoundaryBirthDates_CreatesSuccessfully (3 tests) Success
+            Handle_BoundaryBirthDates_CreatesSuccessfully(year: 0, month: 0, day: 0) Success
+            Handle_BoundaryBirthDates_CreatesSuccessfully(year: 1995, month: 1, day: 1) Success
+            Handle_BoundaryBirthDates_CreatesSuccessfully(year: 2000, month: 6, day: 15) Success
+          Handle_BoundaryNameLength_CreatesSuccessfully (3 tests) Success
+            Handle_BoundaryNameLength_CreatesSuccessfully(length: 100, specificName: null) Success
+            Handle_BoundaryNameLength_CreatesSuccessfully(length: 2, specificName: "AB") Success
+            Handle_BoundaryNameLength_CreatesSuccessfully(length: 2, specificName: "Bo") Success
+          Handle_BreedNotFound_ReturnsFailure Success
+          Handle_DifferentAnimalStates_CreatesSuccessfully (5 tests) Success
+            Handle_DifferentAnimalStates_CreatesSuccessfully(state: Available) Success
+            Handle_DifferentAnimalStates_CreatesSuccessfully(state: HasOwner) Success
+            Handle_DifferentAnimalStates_CreatesSuccessfully(state: Inactive) Success
+            Handle_DifferentAnimalStates_CreatesSuccessfully(state: PartiallyFostered) Success
+            Handle_DifferentAnimalStates_CreatesSuccessfully(state: TotallyFostered) Success
+          Handle_DifferentSexTypes_CreatesSuccessfully (2 tests) Success
+            Handle_DifferentSexTypes_CreatesSuccessfully(sex: Female) Success
+            Handle_DifferentSexTypes_CreatesSuccessfully(sex: Male) Success
+          Handle_DifferentSizes_CreatesSuccessfully (3 tests) Success
+            Handle_DifferentSizes_CreatesSuccessfully(size: Large) Success
+            Handle_DifferentSizes_CreatesSuccessfully(size: Medium) Success
+            Handle_DifferentSizes_CreatesSuccessfully(size: Small) Success
+          Handle_DifferentSpecies_CreatesSuccessfully (2 tests) Success
+            Handle_DifferentSpecies_CreatesSuccessfully(species: Cat) Success
+            Handle_DifferentSpecies_CreatesSuccessfully(species: Dog) Success
+          Handle_DifferentSterilizedStates_CreatesSuccessfully (2 tests) Success
+            Handle_DifferentSterilizedStates_CreatesSuccessfully(sterilized: False) Success
+            Handle_DifferentSterilizedStates_CreatesSuccessfully(sterilized: True) Success
+          Handle_EmptyFilesAndMetadata_ReturnsFailure Success
+          Handle_EmptyImageDescriptions_CreatesSuccessfully Success
+          Handle_FirstImageUploadFails_RollsBackAnimalCreation Success
+          Handle_ImageServiceReturnsError_PropagatesStatusCode (3 tests) Success
+            Handle_ImageServiceReturnsError_PropagatesStatusCode(errorCode: 400, errorMessage: "Bad request") Success
+            Handle_ImageServiceReturnsError_PropagatesStatusCode(errorCode: 500, errorMessage: "Internal server error") Success
+            Handle_ImageServiceReturnsError_PropagatesStatusCode(errorCode: 503, errorMessage: "Service unavailable") Success
+          Handle_ImageUploadFails_AnimalNotPersisted Success
+          Handle_InvalidBreedIdFormats_ReturnsFailure (3 tests) Success
+            Handle_InvalidBreedIdFormats_ReturnsFailure(invalidBreedId: "") Success
+            Handle_InvalidBreedIdFormats_ReturnsFailure(invalidBreedId: "00000000-0000-0000-0000-000000000000") Success
+            Handle_InvalidBreedIdFormats_ReturnsFailure(invalidBreedId: "invalid-breed") Success
+          Handle_InvalidShelterIdFormats_ReturnsFailure (3 tests) Success
+            Handle_InvalidShelterIdFormats_ReturnsFailure(invalidShelterId: "") Success
+            Handle_InvalidShelterIdFormats_ReturnsFailure(invalidShelterId: "00000000-0000-0000-0000-000000000000") Success
+            Handle_InvalidShelterIdFormats_ReturnsFailure(invalidShelterId: "invalid-id") Success
+          Handle_MiddleImageUploadFails_RollsBackAllChanges Success
+          Handle_MoreFilesThanMetadata_ReturnsFailure (3 tests) Success
+            Handle_MoreFilesThanMetadata_ReturnsFailure(fileCount: 2, metadataCount: 1) Success
+            Handle_MoreFilesThanMetadata_ReturnsFailure(fileCount: 3, metadataCount: 2) Success
+            Handle_MoreFilesThanMetadata_ReturnsFailure(fileCount: 5, metadataCount: 3) Success
+          Handle_MoreMetadataThanFiles_ReturnsFailure (3 tests) Success
+            Handle_MoreMetadataThanFiles_ReturnsFailure(fileCount: 1, metadataCount: 2) Success
+            Handle_MoreMetadataThanFiles_ReturnsFailure(fileCount: 2, metadataCount: 3) Success
+            Handle_MoreMetadataThanFiles_ReturnsFailure(fileCount: 3, metadataCount: 5) Success
+          Handle_NullOptionalFields_CreatesSuccessfully Success
+          Handle_ProcessesImagesInOrder_MaintainsSequence Success
+          Handle_RealisticScenario_CompleteAnimalWithMultipleImages Success
+          Handle_ShelterNotFound_ReturnsFailure Success
+          Handle_ValidAnimalWithMultipleImages_ReturnsSuccess (4 tests) Success
+            Handle_ValidAnimalWithMultipleImages_ReturnsSuccess(imageCount: 10) Success
+            Handle_ValidAnimalWithMultipleImages_ReturnsSuccess(imageCount: 2) Success
+            Handle_ValidAnimalWithMultipleImages_ReturnsSuccess(imageCount: 3) Success
+            Handle_ValidAnimalWithMultipleImages_ReturnsSuccess(imageCount: 5) Success
+          Handle_ValidAnimalWithSingleImage_ReturnsSuccess Success
+          Handle_ValidationOrder_ShelterCheckedBeforeBreed Success
+          Handle_ValidCostBoundaries_CreatesSuccessfully (6 tests) Success
+            Handle_ValidCostBoundaries_CreatesSuccessfully(cost: 0,01) Success
+            Handle_ValidCostBoundaries_CreatesSuccessfully(cost: 0) Success
+            Handle_ValidCostBoundaries_CreatesSuccessfully(cost: 1000) Success
+            Handle_ValidCostBoundaries_CreatesSuccessfully(cost: 50) Success
+            Handle_ValidCostBoundaries_CreatesSuccessfully(cost: 500,5) Success
+            Handle_ValidCostBoundaries_CreatesSuccessfully(cost: 999,99) Success
+          Handle_WithCancellationToken_PassesToServices Success
+        EditAnimalTests (42 tests) Success
+          Handle_AnimalNotFound_ReturnsFailure Success
+          Handle_BirthDateToday_ReturnsSuccess Success
+          Handle_BoundaryBirthDates_ReturnsSuccess (3 tests) Success
+            Handle_BoundaryBirthDates_ReturnsSuccess(year: 1995, month: 1, day: 1) Success
+            Handle_BoundaryBirthDates_ReturnsSuccess(year: 2000, month: 6, day: 15) Success
+            Handle_BoundaryBirthDates_ReturnsSuccess(year: 2023, month: 12, day: 31) Success
+          Handle_BreedNotFound_ReturnsFailure Success
+          Handle_ChangeBreed_ReturnsSuccess Success
+          Handle_ClearOptionalFields_ReturnsSuccess Success
+          Handle_ColourAtMaximumBoundary_ReturnsSuccess Success
+          Handle_ColourJustInsideMaximum_ReturnsSuccess Success
+          Handle_CostAtMaximumBoundary_ReturnsSuccess Success
+          Handle_CostAtMinimumBoundary_ReturnsSuccess Success
+          Handle_CostJustInsideBoundaries_ReturnsSuccess (2 tests) Success
+            Handle_CostJustInsideBoundaries_ReturnsSuccess(cost: 0,01) Success
+            Handle_CostJustInsideBoundaries_ReturnsSuccess(cost: 999,99) Success
+          Handle_CostValidMidRange_ReturnsSuccess (4 tests) Success
+            Handle_CostValidMidRange_ReturnsSuccess(cost: 100,75) Success
+            Handle_CostValidMidRange_ReturnsSuccess(cost: 25,5) Success
+            Handle_CostValidMidRange_ReturnsSuccess(cost: 50) Success
+            Handle_CostValidMidRange_ReturnsSuccess(cost: 500) Success
+          Handle_DescriptionAtMaximumBoundary_ReturnsSuccess Success
+          Handle_DescriptionJustInsideMaximum_ReturnsSuccess Success
+          Handle_DisposedContext_ThrowsObjectDisposedException Success
+          Handle_EmptyOptionalFields_ReturnsSuccess Success
+          Handle_FeaturesAtMaximumBoundary_ReturnsSuccess Success
+          Handle_FeaturesJustInsideMaximum_ReturnsSuccess Success
+          Handle_NameAtMaximumBoundary_ReturnsSuccess Success
+          Handle_NameAtMinimumBoundary_ReturnsSuccess (3 tests) Success
+            Handle_NameAtMinimumBoundary_ReturnsSuccess(name: "AB") Success
+            Handle_NameAtMinimumBoundary_ReturnsSuccess(name: "Bo") Success
+            Handle_NameAtMinimumBoundary_ReturnsSuccess(name: "Xi") Success
+          Handle_NameJustInsideBoundaries_ReturnsSuccess (2 tests) Success
+            Handle_NameJustInsideBoundaries_ReturnsSuccess(length: 3) Success
+            Handle_NameJustInsideBoundaries_ReturnsSuccess(length: 99) Success
+          Handle_NoChanges_ReturnsSuccess Success
+          Handle_RealisticCompleteUpdate_ReturnsSuccess Success
+          Handle_ToggleSterilized_ReturnsSuccess (4 tests) Success
+            Handle_ToggleSterilized_ReturnsSuccess(original: False, updated: False) Success
+            Handle_ToggleSterilized_ReturnsSuccess(original: False, updated: True) Success
+            Handle_ToggleSterilized_ReturnsSuccess(original: True, updated: False) Success
+            Handle_ToggleSterilized_ReturnsSuccess(original: True, updated: True) Success
+          Handle_ValidEdit_ReturnsSuccess Success
+          Handle_ValidEnumChanges_ReturnsSuccess (5 tests) Success
+            Handle_ValidEnumChanges_ReturnsSuccess(state: Available, species: Dog, size: Small, sex: Male) Success
+            Handle_ValidEnumChanges_ReturnsSuccess(state: HasOwner, species: Cat, size: Small, sex: Female) Success
+            Handle_ValidEnumChanges_ReturnsSuccess(state: Inactive, species: Dog, size: Medium, sex: Male) Success
+            Handle_ValidEnumChanges_ReturnsSuccess(state: PartiallyFostered, species: Cat, size: Medium, sex: Female) Success
+            Handle_ValidEnumChanges_ReturnsSuccess(state: TotallyFostered, species: Dog, size: Large, sex: Male) Success
+      AnimalImageLinkerTest (44 tests) Success
+        Link_AddsImageReference_NotCopy Success
+        Link_AnimalWithExistingImages_PreservesExistingImages (4 tests) Success
+          Link_AnimalWithExistingImages_PreservesExistingImages(existingImageCount: 1) Success
+          Link_AnimalWithExistingImages_PreservesExistingImages(existingImageCount: 10) Success
+          Link_AnimalWithExistingImages_PreservesExistingImages(existingImageCount: 20) Success
+          Link_AnimalWithExistingImages_PreservesExistingImages(existingImageCount: 5) Success
+        Link_AnimalWithManyExistingImages_CompletesQuickly Success
+        Link_AnimalWithNoImages_LinksImageCorrectly Success
+        Link_AnimalWithOneImage_AddsSecondImage Success
+        Link_CreatesCorrectRelationship_ImageToAnimal Success
+        Link_DifferentCollectionImplementations_WorksCorrectly Success
+        Link_DifferentEntityIdFromAnimalId_UsesProvidedEntityId Success
+        Link_EntityIdWithSpecialCharacters_SetsCorrectly (5 tests) Success
+          Link_EntityIdWithSpecialCharacters_SetsCorrectly(entityId: "animal@123") Success
+          Link_EntityIdWithSpecialCharacters_SetsCorrectly(entityId: "animal&xyz") Success
+          Link_EntityIdWithSpecialCharacters_SetsCorrectly(entityId: "animal#456") Success
+          Link_EntityIdWithSpecialCharacters_SetsCorrectly(entityId: "animal%abc") Success
+          Link_EntityIdWithSpecialCharacters_SetsCorrectly(entityId: "animal$789") Success
+        Link_EntityIdWithUnicodeCharacters_SetsCorrectly (3 tests) Success
+          Link_EntityIdWithUnicodeCharacters_SetsCorrectly(entityId: "animal-🐕") Success
+          Link_EntityIdWithUnicodeCharacters_SetsCorrectly(entityId: "animal-مرحبا") Success
+          Link_EntityIdWithUnicodeCharacters_SetsCorrectly(entityId: "animal-中文") Success
+        Link_GuidFormattedEntityId_SetsAnimalIdCorrectly Success
+        Link_ImageWithExistingAnimalId_OverwritesAnimalId Success
+        Link_ImageWithNullDescription_LinksCorrectly Success
+        Link_ImageWithVariousPrincipalStates_LinksCorrectly (2 tests) Success
+          Link_ImageWithVariousPrincipalStates_LinksCorrectly(isPrincipal: False) Success
+          Link_ImageWithVariousPrincipalStates_LinksCorrectly(isPrincipal: True) Success
+        Link_ManyImages_HandlesCorrectly (3 tests) Success
+          Link_ManyImages_HandlesCorrectly(imageCount: 100) Success
+          Link_ManyImages_HandlesCorrectly(imageCount: 200) Success
+          Link_ManyImages_HandlesCorrectly(imageCount: 50) Success
+        Link_MultipleImages_AllHaveCorrectAnimalId Success
+        Link_MultipleImages_PreservesInsertionOrder Success
+        Link_MultipleImagesSequentially_AllLinkedCorrectly (4 tests) Success
+          Link_MultipleImagesSequentially_AllLinkedCorrectly(imagesToAdd: 10) Success
+          Link_MultipleImagesSequentially_AllLinkedCorrectly(imagesToAdd: 2) Success
+          Link_MultipleImagesSequentially_AllLinkedCorrectly(imagesToAdd: 3) Success
+          Link_MultipleImagesSequentially_AllLinkedCorrectly(imagesToAdd: 5) Success
+        Link_PreservesImageProperties_OnlyModifiesAnimalId Success
+        Link_RealisticScenario_AddingMultipleImagesToNewAnimal Success
+        Link_SameImageMultipleTimes_AddsMultipleReferences Success
+        Link_SameImageTwiceWithSameEntityId_AnimalIdRemainsConsistent Success
+        Link_SingleCharacterEntityId_SetsCorrectly Success
+        Link_VariousEntityIdFormats_SetsAnimalIdCorrectly (5 tests) Success
+          Link_VariousEntityIdFormats_SetsAnimalIdCorrectly(entityId: "123456") Success
+          Link_VariousEntityIdFormats_SetsAnimalIdCorrectly(entityId: "animal_with_underscores") Success
+          Link_VariousEntityIdFormats_SetsAnimalIdCorrectly(entityId: "animal-123") Success
+          Link_VariousEntityIdFormats_SetsAnimalIdCorrectly(entityId: "ANIMAL-UPPERCASE") Success
+          Link_VariousEntityIdFormats_SetsAnimalIdCorrectly(entityId: "animal-with-dashes") Success
+        Link_VeryLongEntityId_SetsCorrectly Success
+    Controllers (61 tests) Success
+      AnimalsControllerTests (61 tests) Success
+        AddImagesToAnimal_ImageUploadFails_ReturnsBadRequest Success
+        AddImagesToAnimal_MismatchedFilesAndMetadata_ReturnsBadRequest Success
+        AddImagesToAnimal_MultipleImages_ReturnsCreated (3 tests) Success
+          AddImagesToAnimal_MultipleImages_ReturnsCreated(imageCount: 10) Success
+          AddImagesToAnimal_MultipleImages_ReturnsCreated(imageCount: 2) Success
+          AddImagesToAnimal_MultipleImages_ReturnsCreated(imageCount: 5) Success
+        AddImagesToAnimal_NoImages_ReturnsBadRequest Success
+        AddImagesToAnimal_NonExistentAnimal_ReturnsNotFound Success
+        AddImagesToAnimal_SingleImage_ReturnsCreated Success
+        CreateAnimal_BoundaryFileSizes_ReturnsCreated (4 tests) Success
+          CreateAnimal_BoundaryFileSizes_ReturnsCreated(fileSize: 1) Success
+          CreateAnimal_BoundaryFileSizes_ReturnsCreated(fileSize: 1024) Success
+          CreateAnimal_BoundaryFileSizes_ReturnsCreated(fileSize: 1048576) Success
+          CreateAnimal_BoundaryFileSizes_ReturnsCreated(fileSize: 5242880) Success
+        CreateAnimal_EmptyFile_ReturnsBadRequest Success
+        CreateAnimal_EmptyShelterId_ReturnsUnauthorized Success
+        CreateAnimal_NoImages_ReturnsBadRequest Success
+        CreateAnimal_NoShelterId_ReturnsUnauthorized Success
+        CreateAnimal_ValidDataMultipleImages_ReturnsCreated (3 tests) Success
+          CreateAnimal_ValidDataMultipleImages_ReturnsCreated(imageCount: 10) Success
+          CreateAnimal_ValidDataMultipleImages_ReturnsCreated(imageCount: 2) Success
+          CreateAnimal_ValidDataMultipleImages_ReturnsCreated(imageCount: 5) Success
+        CreateAnimal_ValidDataSingleImage_ReturnsCreated Success
+        DeactivateAnimal_DifferentShelter_ReturnsForbidden Success
+        DeactivateAnimal_EmptyShelterId_ReturnsUnauthorized Success
+        DeactivateAnimal_HasActiveAssociations_ReturnsConflict Success
+        DeactivateAnimal_NonExistentAnimal_ReturnsNotFound Success
+        DeactivateAnimal_NoShelterId_ReturnsUnauthorized Success
+        DeactivateAnimal_ValidData_ReturnsOk Success
+        DeleteAnimalImage_NonExistentAnimal_ReturnsNotFound Success
+        DeleteAnimalImage_NonExistentImage_ReturnsNotFound Success
+        DeleteAnimalImage_ValidIds_ReturnsNoContent Success
+        EditAnimal_AllValidStates_ReturnsOk (5 tests) Success
+          EditAnimal_AllValidStates_ReturnsOk(state: Available) Success
+          EditAnimal_AllValidStates_ReturnsOk(state: HasOwner) Success
+          EditAnimal_AllValidStates_ReturnsOk(state: Inactive) Success
+          EditAnimal_AllValidStates_ReturnsOk(state: PartiallyFostered) Success
+          EditAnimal_AllValidStates_ReturnsOk(state: TotallyFostered) Success
+        EditAnimal_BoundaryCostValues_ReturnsOk (5 tests) Success
+          EditAnimal_BoundaryCostValues_ReturnsOk(cost: 0,01) Success
+          EditAnimal_BoundaryCostValues_ReturnsOk(cost: 0) Success
+          EditAnimal_BoundaryCostValues_ReturnsOk(cost: 1000) Success
+          EditAnimal_BoundaryCostValues_ReturnsOk(cost: 50) Success
+          EditAnimal_BoundaryCostValues_ReturnsOk(cost: 999,99) Success
+        EditAnimal_NonExistentId_ReturnsNotFound Success
+        EditAnimal_ValidData_ReturnsOk Success
+        GetAnimalDetails_InvalidIdFormat_ReturnsNotFound (4 tests) Success
+          GetAnimalDetails_InvalidIdFormat_ReturnsNotFound(invalidId: "") Success
+          GetAnimalDetails_InvalidIdFormat_ReturnsNotFound(invalidId: "123") Success
+          GetAnimalDetails_InvalidIdFormat_ReturnsNotFound(invalidId: "invalid-id") Success
+          GetAnimalDetails_InvalidIdFormat_ReturnsNotFound(invalidId: "not-a-guid") Success
+        GetAnimalDetails_NonExistentId_ReturnsNotFound Success
+        GetAnimalDetails_ValidId_ReturnsOk Success
+        GetAnimals_DefaultPageNumber_ReturnsOk Success
+        GetAnimals_InvalidPageNumbers_ReturnsBadRequest (3 tests) Success
+          GetAnimals_InvalidPageNumbers_ReturnsBadRequest(pageNumber: -1) Success
+          GetAnimals_InvalidPageNumbers_ReturnsBadRequest(pageNumber: -10) Success
+          GetAnimals_InvalidPageNumbers_ReturnsBadRequest(pageNumber: 0) Success
+        GetAnimals_NoAnimalsExist_ReturnsEmptyList Success
+        GetAnimals_QueryFails_ReturnsInternalServerError Success
+        GetAnimals_ValidPageNumbers_ReturnsOk (6 tests) Success
+          GetAnimals_ValidPageNumbers_ReturnsOk(pageNumber: 1) Success
+          GetAnimals_ValidPageNumbers_ReturnsOk(pageNumber: 10) Success
+          GetAnimals_ValidPageNumbers_ReturnsOk(pageNumber: 100) Success
+          GetAnimals_ValidPageNumbers_ReturnsOk(pageNumber: 2) Success
+          GetAnimals_ValidPageNumbers_ReturnsOk(pageNumber: 5) Success
+          GetAnimals_ValidPageNumbers_ReturnsOk(pageNumber: 999) Success
+        SetAnimalPrincipalImage_NonExistentImage_ReturnsNotFound Success
+        SetAnimalPrincipalImage_ValidIds_ReturnsNoContent Success
+    FosteringControllerTest (8 tests) Success
+      CancelFosteringTests (5 tests) Success
+        CancelFostering_ShouldFail_WhenRecordBelongsToDifferentUser Success
+        CancelFostering_ShouldFail_WhenRecordDoesNotExist Success
+        CancelFostering_ShouldFail_WhenStatusIsCancelled Success
+        CancelFostering_ShouldFail_WhenStatusIsTerminated Success
+        CancelFostering_ShouldSucceed_WhenStatusIsActive Success
+      GetActiveFosteringsTests (3 tests) Success
+        ReturnActiveFosteringsWhenTheyExist Success
+        ShouldFail_WhenNoActiveFosteringsExist Success
+        ShouldFail_WhenUserNeverHadFosteringsAtAll Success
+    Images (258 tests) Success
+      Commands (99 tests) Success
+        AddImagesAnimalTest (29 tests) Success
+          Handle_AllImagesMarkedAsPrincipal_ServiceHandles Success
+          Handle_AnimalNotFound_ReturnsFailure Success
+          Handle_EmptyCollections_ReturnsSuccess Success
+          Handle_EmptyStringDescriptions_PassedAsIs Success
+          Handle_ImageServiceFailsOnFirst_ReturnsFailureImmediately Success
+          Handle_ImageServiceFailsOnSecond_StopsProcessing Success
+          Handle_ImageServiceReturnsNullValue_ReturnsFailure Success
+          Handle_ImageWithNullDescription_UsesEmptyString Success
+          Handle_InvalidAnimalId_ReturnsNotFound (3 tests) Success
+            Handle_InvalidAnimalId_ReturnsNotFound(invalidId: "") Success
+            Handle_InvalidAnimalId_ReturnsNotFound(invalidId: "00000000-0000-0000-0000-000000000000") Success
+            Handle_InvalidAnimalId_ReturnsNotFound(invalidId: "invalid-id") Success
+          Handle_LargeNumberOfImages_HandlesCorrectly (3 tests) Success
+            Handle_LargeNumberOfImages_HandlesCorrectly(imageCount: 100) Success
+            Handle_LargeNumberOfImages_HandlesCorrectly(imageCount: 20) Success
+            Handle_LargeNumberOfImages_HandlesCorrectly(imageCount: 50) Success
+          Handle_MismatchedFileAndMetadataCount_ReturnsFailure (4 tests) Success
+            Handle_MismatchedFileAndMetadataCount_ReturnsFailure(fileCount: 1, metadataCount: 2) Success
+            Handle_MismatchedFileAndMetadataCount_ReturnsFailure(fileCount: 2, metadataCount: 1) Success
+            Handle_MismatchedFileAndMetadataCount_ReturnsFailure(fileCount: 3, metadataCount: 5) Success
+            Handle_MismatchedFileAndMetadataCount_ReturnsFailure(fileCount: 5, metadataCount: 3) Success
+          Handle_MultipleImagesUpload_ReturnsSuccess (4 tests) Success
+            Handle_MultipleImagesUpload_ReturnsSuccess(imageCount: 10) Success
+            Handle_MultipleImagesUpload_ReturnsSuccess(imageCount: 2) Success
+            Handle_MultipleImagesUpload_ReturnsSuccess(imageCount: 3) Success
+            Handle_MultipleImagesUpload_ReturnsSuccess(imageCount: 5) Success
+          Handle_ProcessesImagesInOrder_MaintainsSequence Success
+          Handle_RealisticScenario_MultipleImagesWithOnePrincipal Success
+          Handle_SingleImageUpload_ReturnsSuccess Success
+          Handle_VariousPrincipalStates_PassedCorrectly (2 tests) Success
+            Handle_VariousPrincipalStates_PassedCorrectly(isPrincipal: False) Success
+            Handle_VariousPrincipalStates_PassedCorrectly(isPrincipal: True) Success
+          Handle_VeryLongDescription_HandlesCorrectly Success
+          Handle_WithCancellationToken_PassesToServices Success
+        DeleteAnimalImageTest (33 tests) Success
+          Handle_AnimalNotFound_ReturnsFailure Success
+          Handle_CorrectOwnership_AllowsDeletion Success
+          Handle_GuidFormattedIds_DeletesSuccessfully Success
+          Handle_ImageBelongsToDifferentAnimal_ReturnsFailure Success
+          Handle_ImageNotFound_ReturnsFailure Success
+          Handle_ImageServiceFails_ReturnsFailure Success
+          Handle_ImageServiceVariousErrors_PropagatesCorrectly (3 tests) Success
+            Handle_ImageServiceVariousErrors_PropagatesCorrectly(errorCode: 400, errorMessage: "Bad request") Success
+            Handle_ImageServiceVariousErrors_PropagatesCorrectly(errorCode: 500, errorMessage: "Internal server error") Success
+            Handle_ImageServiceVariousErrors_PropagatesCorrectly(errorCode: 503, errorMessage: "Service unavailable") Success
+          Handle_ImageWithNullAnimalId_ReturnsFailure Success
+          Handle_InvalidAnimalId_ReturnsNotFound (3 tests) Success
+            Handle_InvalidAnimalId_ReturnsNotFound(invalidAnimalId: "") Success
+            Handle_InvalidAnimalId_ReturnsNotFound(invalidAnimalId: "00000000-0000-0000-0000-000000000000") Success
+            Handle_InvalidAnimalId_ReturnsNotFound(invalidAnimalId: "invalid-animal") Success
+          Handle_InvalidImageId_ReturnsNotFound (3 tests) Success
+            Handle_InvalidImageId_ReturnsNotFound(invalidImageId: "") Success
+            Handle_InvalidImageId_ReturnsNotFound(invalidImageId: "00000000-0000-0000-0000-000000000000") Success
+            Handle_InvalidImageId_ReturnsNotFound(invalidImageId: "invalid-image") Success
+          Handle_PassesCorrectPublicId_ToImageService Success
+          Handle_PrincipalFlag_CheckedCorrectly (2 tests) Success
+            Handle_PrincipalFlag_CheckedCorrectly(isPrincipal: False, shouldSucceed: True) Success
+            Handle_PrincipalFlag_CheckedCorrectly(isPrincipal: True, shouldSucceed: False) Success
+          Handle_PrincipalImage_ReturnsFailure Success
+          Handle_RealisticScenario_DeleteOneOfMultipleImages Success
+          Handle_ValidationOrder_AnimalCheckedFirst Success
+          Handle_ValidationOrder_ImageCheckedAfterAnimal Success
+          Handle_ValidationOrder_PrincipalCheckedBeforeOwnership Success
+          Handle_ValidNonPrincipalImage_ReturnsSuccess Success
+          Handle_VariousIdFormats_DeletesSuccessfully (3 tests) Success
+            Handle_VariousIdFormats_DeletesSuccessfully(animalId: "animal_with_underscore", imageId: "image_with_underscore") Success
+            Handle_VariousIdFormats_DeletesSuccessfully(animalId: "animal-123", imageId: "image-456") Success
+            Handle_VariousIdFormats_DeletesSuccessfully(animalId: "ANIMAL-UPPERCASE", imageId: "IMAGE-UPPERCASE") Success
+          Handle_VariousPublicIdFormats_PassedCorrectly (3 tests) Success
+            Handle_VariousPublicIdFormats_PassedCorrectly(publicId: "folder/subfolder/image-id") Success
+            Handle_VariousPublicIdFormats_PassedCorrectly(publicId: "SeePaw/Animals/animal-123") Success
+            Handle_VariousPublicIdFormats_PassedCorrectly(publicId: "simple-public-id") Success
+          Handle_VeryLongIds_HandlesCorrectly Success
+          Handle_WithCancellationToken_PassesToServices Success
+        SetAnimalPrincipalImageTest (37 tests) Success
+          Handle_AfterSetting_OnlyOneImageIsPrincipal Success
+          Handle_AnimalNotFound_ReturnsFailure Success
+          Handle_AnimalWithManyImages_HandlesCorrectly (2 tests) Success
+            Handle_AnimalWithManyImages_HandlesCorrectly(imageCount: 100) Success
+            Handle_AnimalWithManyImages_HandlesCorrectly(imageCount: 50) Success
+          Handle_AnimalWithNoImages_ReturnsFailure Success
+          Handle_AnimalWithSingleImage_SetsPrincipal Success
+          Handle_ChangesArePersisted_ToDatabase Success
+          Handle_ImageAlreadyPrincipal_ReturnsFailure Success
+          Handle_ImageBelongsToDifferentAnimal_ReturnsFailure Success
+          Handle_ImageNotInAnimalImages_ReturnsFailure Success
+          Handle_ImageWithNullAnimalId_ReturnsFailure Success
+          Handle_InvalidAnimalId_ReturnsNotFound (3 tests) Success
+            Handle_InvalidAnimalId_ReturnsNotFound(invalidAnimalId: "") Success
+            Handle_InvalidAnimalId_ReturnsNotFound(invalidAnimalId: "00000000-0000-0000-0000-000000000000") Success
+            Handle_InvalidAnimalId_ReturnsNotFound(invalidAnimalId: "invalid-id") Success
+          Handle_InvalidImageId_ReturnsNotFound (3 tests) Success
+            Handle_InvalidImageId_ReturnsNotFound(invalidImageId: "") Success
+            Handle_InvalidImageId_ReturnsNotFound(invalidImageId: "00000000-0000-0000-0000-000000000000") Success
+            Handle_InvalidImageId_ReturnsNotFound(invalidImageId: "invalid-image") Success
+          Handle_MultipleNonPrincipalImages_SetsCorrectOne (4 tests) Success
+            Handle_MultipleNonPrincipalImages_SetsCorrectOne(totalImages: 10, indexToSetAsPrincipal: 5) Success
+            Handle_MultipleNonPrincipalImages_SetsCorrectOne(totalImages: 2, indexToSetAsPrincipal: 0) Success
+            Handle_MultipleNonPrincipalImages_SetsCorrectOne(totalImages: 3, indexToSetAsPrincipal: 1) Success
+            Handle_MultipleNonPrincipalImages_SetsCorrectOne(totalImages: 5, indexToSetAsPrincipal: 2) Success
+          Handle_NoPreviousPrincipal_SetsPrincipalSuccessfully Success
+          Handle_PrincipalFlag_CheckedCorrectly (2 tests) Success
+            Handle_PrincipalFlag_CheckedCorrectly(isPrincipal: False, shouldSucceed: True) Success
+            Handle_PrincipalFlag_CheckedCorrectly(isPrincipal: True, shouldSucceed: False) Success
+          Handle_RealisticScenario_ChangePrincipalMultipleTimes Success
+          Handle_RealisticScenario_WithGuidIds Success
+          Handle_ValidationOrder_AlreadyPrincipalCheckedAfterOwnership Success
+          Handle_ValidationOrder_AnimalCheckedFirst Success
+          Handle_ValidationOrder_ImageCheckedAfterAnimal Success
+          Handle_ValidationOrder_OwnershipCheckedAfterImageExists Success
+          Handle_VariousIdFormats_WorksCorrectly (3 tests) Success
+            Handle_VariousIdFormats_WorksCorrectly(animalId: "animal_underscore", imageId: "image_underscore") Success
+            Handle_VariousIdFormats_WorksCorrectly(animalId: "animal-123", imageId: "image-456") Success
+            Handle_VariousIdFormats_WorksCorrectly(animalId: "ANIMAL-UPPER", imageId: "IMAGE-UPPER") Success
+          Handle_VeryLongIds_HandlesCorrectly Success
+          Handle_WhenSetting_OtherImagesRemainNonPrincipal Success
+          Handle_WithCancellationToken_PassesToDatabaseOperations Success
+          Handle_WithExistingPrincipal_ReplacesSuccessfully Success
+      ImageAppServiceTest (21 tests) Success
+        AddImageAsync_DatabaseSaveFails_ReturnsFailure Success
+        AddImageAsync_GeneratesCorrectFolderPath (2 tests) Success
+          AddImageAsync_GeneratesCorrectFolderPath(entityId: "animal-abc", expectedType: "Animal") Success
+          AddImageAsync_GeneratesCorrectFolderPath(entityId: "shelter-xyz", expectedType: "Animal") Success
+        AddImageAsync_UploadFails_ReturnsFailure (2 tests) Success
+          AddImageAsync_UploadFails_ReturnsFailure(entityId: "animal-123", fileName: "test.jpg", description: "Valid description") Success
+          AddImageAsync_UploadFails_ReturnsFailure(entityId: "animal-456", fileName: "photo.png", description: "Another description") Success
+        AddImageAsync_ValidInput_ReturnsSuccess (3 tests) Success
+          AddImageAsync_ValidInput_ReturnsSuccess(isPrincipal: False, description: "Side view", entityId: "animal-456") Success
+          AddImageAsync_ValidInput_ReturnsSuccess(isPrincipal: True, description: "Main photo of Rex", entityId: "animal-123") Success
+          AddImageAsync_ValidInput_ReturnsSuccess(isPrincipal: True, description: "Profile picture", entityId: "animal-789") Success
+        AddImageAsync_VariousDescriptions_HandlesCorrectly (4 tests) Success
+          AddImageAsync_VariousDescriptions_HandlesCorrectly(description: "") Success
+          AddImageAsync_VariousDescriptions_HandlesCorrectly(description: "Valid description") Success
+          AddImageAsync_VariousDescriptions_HandlesCorrectly(description: "Very long description that might exceed database l"···) Success
+          AddImageAsync_VariousDescriptions_HandlesCorrectly(description: null) Success
+        DeleteImageAsync_CloudinaryFails_ReturnsFailure (4 tests) Success
+          DeleteImageAsync_CloudinaryFails_ReturnsFailure(cloudinaryResponse: "error", expectedCode: 502) Success
+          DeleteImageAsync_CloudinaryFails_ReturnsFailure(cloudinaryResponse: "failed", expectedCode: 502) Success
+          DeleteImageAsync_CloudinaryFails_ReturnsFailure(cloudinaryResponse: "network_error", expectedCode: 502) Success
+          DeleteImageAsync_CloudinaryFails_ReturnsFailure(cloudinaryResponse: "not_found", expectedCode: 502) Success
+        DeleteImageAsync_ImageNotFound_ReturnsFailure (2 tests) Success
+          DeleteImageAsync_ImageNotFound_ReturnsFailure(entityId: "animal-123", publicId: "non-existent-id") Success
+          DeleteImageAsync_ImageNotFound_ReturnsFailure(entityId: "animal-456", publicId: "wrong-public-id") Success
+        DeleteImageAsync_ValidPublicId_ReturnsSuccess (3 tests) Success
+          DeleteImageAsync_ValidPublicId_ReturnsSuccess(entityId: "animal-123", publicId: "public-id-1", cloudinaryResponse: "ok") Success
+          DeleteImageAsync_ValidPublicId_ReturnsSuccess(entityId: "animal-456", publicId: "public-id-2", cloudinaryResponse: "OK") Success
+          DeleteImageAsync_ValidPublicId_ReturnsSuccess(entityId: "animal-789", publicId: "public-id-3", cloudinaryResponse: "Ok") Success
+      ImageOwnerLoaderTest (24 tests) Success
+        LoadAsync_EmptyDatabase_ThrowsKeyNotFoundException Success
+        LoadAsync_EmptyEntityId_ThrowsArgumentException Success
+        LoadAsync_EntityNotFound_ErrorMessageContainsEntityType Success
+        LoadAsync_EntityWithImages_ReturnsEntityWithImagesCollection Success
+        LoadAsync_GenericType_WorksWithAnimalEntity Success
+        LoadAsync_GuidFormattedId_ReturnsEntity Success
+        LoadAsync_MultipleEntitiesSequentially_ReturnsCorrectEntities Success
+        LoadAsync_NonExistentEntityId_ThrowsKeyNotFoundException Success
+        LoadAsync_NullEntityId_ThrowsArgumentException Success
+        LoadAsync_SameEntityTwice_ReturnsSameInstance Success
+        LoadAsync_SpecialCharactersInId_ReturnsEntity (5 tests) Success
+          LoadAsync_SpecialCharactersInId_ReturnsEntity(entityId: "animal_with_underscores") Success
+          LoadAsync_SpecialCharactersInId_ReturnsEntity(entityId: "ANIMAL-UPPERCASE") Success
+          LoadAsync_SpecialCharactersInId_ReturnsEntity(entityId: "animal-with-dashes") Success
+          LoadAsync_SpecialCharactersInId_ReturnsEntity(entityId: "animal.with.dots") Success
+          LoadAsync_SpecialCharactersInId_ReturnsEntity(entityId: "animal123") Success
+        LoadAsync_UsesFindAsync_ForPerformance Success
+        LoadAsync_ValidEntityId_ReturnsEntity Success
+        LoadAsync_VeryLongEntityId_ReturnsEntity Success
+        LoadAsync_WhitespaceEntityId_ThrowsArgumentException (5 tests) Success
+          LoadAsync_WhitespaceEntityId_ThrowsArgumentException(entityId: "   \t\n   ") Success
+          LoadAsync_WhitespaceEntityId_ThrowsArgumentException(entityId: "  ") Success
+          LoadAsync_WhitespaceEntityId_ThrowsArgumentException(entityId: " ") Success
+          LoadAsync_WhitespaceEntityId_ThrowsArgumentException(entityId: "\n") Success
+          LoadAsync_WhitespaceEntityId_ThrowsArgumentException(entityId: "\t") Success
+        LoadAsync_WithCancellationToken_ReturnsEntity Success
+      ImageServiceTests (76 tests) Success
+        Constructor_InvalidConfiguration_HasInvalidValues (11 tests) Success
+          Constructor_InvalidConfiguration_HasInvalidValues(cloudName: "   ", apiKey: "api-key", apiSecret: "api-secret") Success
+          Constructor_InvalidConfiguration_HasInvalidValues(cloudName: "", apiKey: "", apiSecret: "") Success
+          Constructor_InvalidConfiguration_HasInvalidValues(cloudName: "", apiKey: "api-key", apiSecret: "api-secret") Success
+          Constructor_InvalidConfiguration_HasInvalidValues(cloudName: "cloud-name", apiKey: "   ", apiSecret: "api-secret") Success
+          Constructor_InvalidConfiguration_HasInvalidValues(cloudName: "cloud-name", apiKey: "", apiSecret: "api-secret") Success
+          Constructor_InvalidConfiguration_HasInvalidValues(cloudName: "cloud-name", apiKey: "api-key", apiSecret: "   ") Success
+          Constructor_InvalidConfiguration_HasInvalidValues(cloudName: "cloud-name", apiKey: "api-key", apiSecret: "") Success
+          Constructor_InvalidConfiguration_HasInvalidValues(cloudName: "cloud-name", apiKey: "api-key", apiSecret: null) Success
+          Constructor_InvalidConfiguration_HasInvalidValues(cloudName: "cloud-name", apiKey: null, apiSecret: "api-secret") Success
+          Constructor_InvalidConfiguration_HasInvalidValues(cloudName: null, apiKey: "api-key", apiSecret: "api-secret") Success
+          Constructor_InvalidConfiguration_HasInvalidValues(cloudName: null, apiKey: null, apiSecret: null) Success
+        Constructor_ValidConfiguration_InitializesSuccessfully (3 tests) Success
+          Constructor_ValidConfiguration_InitializesSuccessfully(cloudName: "a", apiKey: "b", apiSecret: "c") Success
+          Constructor_ValidConfiguration_InitializesSuccessfully(cloudName: "cloud-name", apiKey: "api-key", apiSecret: "api-secret") Success
+          Constructor_ValidConfiguration_InitializesSuccessfully(cloudName: "very-long-cloud-name-with-many-characters", apiKey: "very-long-api-key", apiSecret: "very-long-api-secret") Success
+        DeleteImage_InvalidPublicId_IsDetected (3 tests) Success
+          DeleteImage_InvalidPublicId_IsDetected(publicId: "   ") Success
+          DeleteImage_InvalidPublicId_IsDetected(publicId: "") Success
+          DeleteImage_InvalidPublicId_IsDetected(publicId: null) Success
+        DeleteImage_SpecialCharactersInPublicId_IsAccepted (4 tests) Success
+          DeleteImage_SpecialCharactersInPublicId_IsAccepted(publicId: "SeePaw/animals/image!@#$%") Success
+          DeleteImage_SpecialCharactersInPublicId_IsAccepted(publicId: "SeePaw/animals/image\twith\ttabs") Success
+          DeleteImage_SpecialCharactersInPublicId_IsAccepted(publicId: "SeePaw/shelters/image with spaces") Success
+          DeleteImage_SpecialCharactersInPublicId_IsAccepted(publicId: "SeePaw/users/image\nwith\nnewlines") Success
+        DeleteImage_ValidPublicId_IsAccepted (5 tests) Success
+          DeleteImage_ValidPublicId_IsAccepted(publicId: "a") Success
+          DeleteImage_ValidPublicId_IsAccepted(publicId: "SeePaw/animals/123456789") Success
+          DeleteImage_ValidPublicId_IsAccepted(publicId: "SeePaw/animals/image123") Success
+          DeleteImage_ValidPublicId_IsAccepted(publicId: "SeePaw/shelters/abc-def-ghi") Success
+          DeleteImage_ValidPublicId_IsAccepted(publicId: "very-long-public-id-with-many-characters-and-segme"···) Success
+        ImageTransformation_InvalidParameters_AreDetected (6 tests) Success
+          ImageTransformation_InvalidParameters_AreDetected(height: -1, width: 500, crop: "fill") Success
+          ImageTransformation_InvalidParameters_AreDetected(height: -100, width: -100, crop: "fill") Success
+          ImageTransformation_InvalidParameters_AreDetected(height: 500, width: -1, crop: "fill") Success
+          ImageTransformation_InvalidParameters_AreDetected(height: 500, width: 500, crop: "   ") Success
+          ImageTransformation_InvalidParameters_AreDetected(height: 500, width: 500, crop: "") Success
+          ImageTransformation_InvalidParameters_AreDetected(height: 500, width: 500, crop: null) Success
+        ImageTransformation_VariousDimensions_AreValid (7 tests) Success
+          ImageTransformation_VariousDimensions_AreValid(height: 0, width: 0, crop: "fill") Success
+          ImageTransformation_VariousDimensions_AreValid(height: 1, width: 1, crop: "fill") Success
+          ImageTransformation_VariousDimensions_AreValid(height: 1000, width: 1000, crop: "fill") Success
+          ImageTransformation_VariousDimensions_AreValid(height: 499, width: 499, crop: "fill") Success
+          ImageTransformation_VariousDimensions_AreValid(height: 500, width: 500, crop: "fill") Success
+          ImageTransformation_VariousDimensions_AreValid(height: 501, width: 501, crop: "fill") Success
+          ImageTransformation_VariousDimensions_AreValid(height: 9999, width: 9999, crop: "fill") Success
+        UploadImage_EdgeCaseCombinations_AreHandled (3 tests) Success
+          UploadImage_EdgeCaseCombinations_AreHandled(fileLength: 1, fileName: "a.jpg", folderType: "a") Success
+          UploadImage_EdgeCaseCombinations_AreHandled(fileLength: 1, fileName: "single-byte.png", folderType: "single") Success
+          UploadImage_EdgeCaseCombinations_AreHandled(fileLength: 9223372036854775807, fileName: "max-file.jpg", folderType: "max-folder") Success
+        UploadImage_ExtremelyLargeFileLength_HandledAppropriately (3 tests) Success
+          UploadImage_ExtremelyLargeFileLength_HandledAppropriately(fileLength: 104857600, fileName: "100mb.jpg", folderType: "shelters") Success
+          UploadImage_ExtremelyLargeFileLength_HandledAppropriately(fileLength: 52428800, fileName: "50mb.jpg", folderType: "animals") Success
+          UploadImage_ExtremelyLargeFileLength_HandledAppropriately(fileLength: 9223372036854775807, fileName: "max-value.jpg", folderType: "animals") Success
+        UploadImage_InvalidFileLength_ReturnsNull (3 tests) Success
+          UploadImage_InvalidFileLength_ReturnsNull(fileLength: -1, fileName: "negative.jpg", folderType: "animals") Success
+          UploadImage_InvalidFileLength_ReturnsNull(fileLength: -100, fileName: "large-negative.png", folderType: "shelters") Success
+          UploadImage_InvalidFileLength_ReturnsNull(fileLength: 0, fileName: "zero.jpg", folderType: "animals") Success
+        UploadImage_InvalidFileName_IsDetected (3 tests) Success
+          UploadImage_InvalidFileName_IsDetected(fileName: "   ", fileLength: 1024, folderType: "animals") Success
+          UploadImage_InvalidFileName_IsDetected(fileName: "", fileLength: 1024, folderType: "shelters") Success
+          UploadImage_InvalidFileName_IsDetected(fileName: null, fileLength: 1024, folderType: "animals") Success
+        UploadImage_InvalidFolderType_IsDetected (3 tests) Success
+          UploadImage_InvalidFolderType_IsDetected(folderType: "   ", fileName: "image.gif", fileLength: 512) Success
+          UploadImage_InvalidFolderType_IsDetected(folderType: "", fileName: "image.png", fileLength: 2048) Success
+          UploadImage_InvalidFolderType_IsDetected(folderType: null, fileName: "image.jpg", fileLength: 1024) Success
+        UploadImage_MultipleInvalidParameters_AreAllDetected (4 tests) Success
+          UploadImage_MultipleInvalidParameters_AreAllDetected(fileLength: -1, fileName: null, folderType: "") Success
+          UploadImage_MultipleInvalidParameters_AreAllDetected(fileLength: -100, fileName: "", folderType: null) Success
+          UploadImage_MultipleInvalidParameters_AreAllDetected(fileLength: 0, fileName: "   ", folderType: "   ") Success
+          UploadImage_MultipleInvalidParameters_AreAllDetected(fileLength: 0, fileName: "", folderType: null) Success
+        UploadImage_ValidFileLength_ProcessesSuccessfully (5 tests) Success
+          UploadImage_ValidFileLength_ProcessesSuccessfully(fileLength: 1, fileName: "smallest-valid.jpg", folderType: "animals") Success
+          UploadImage_ValidFileLength_ProcessesSuccessfully(fileLength: 1024, fileName: "1kb.jpg", folderType: "shelters") Success
+          UploadImage_ValidFileLength_ProcessesSuccessfully(fileLength: 1048576, fileName: "1mb.png", folderType: "animals") Success
+          UploadImage_ValidFileLength_ProcessesSuccessfully(fileLength: 10485760, fileName: "10mb.png", folderType: "animals") Success
+          UploadImage_ValidFileLength_ProcessesSuccessfully(fileLength: 5242880, fileName: "5mb.jpg", folderType: "shelters") Success
+        UploadImage_ValidFileName_IsAccepted (8 tests) Success
+          UploadImage_ValidFileName_IsAccepted(fileName: "file with spaces.png", fileLength: 2048, folderType: "animals") Success
+          UploadImage_ValidFileName_IsAccepted(fileName: "image.gif", fileLength: 1536, folderType: "shelters") Success
+          UploadImage_ValidFileName_IsAccepted(fileName: "image.jpeg", fileLength: 2048, folderType: "shelters") Success
+          UploadImage_ValidFileName_IsAccepted(fileName: "image.jpg", fileLength: 1024, folderType: "animals") Success
+          UploadImage_ValidFileName_IsAccepted(fileName: "image.png", fileLength: 512, folderType: "animals") Success
+          UploadImage_ValidFileName_IsAccepted(fileName: "image.webp", fileLength: 768, folderType: "animals") Success
+          UploadImage_ValidFileName_IsAccepted(fileName: "special!@#$%chars.jpg", fileLength: 512, folderType: "shelters") Success
+          UploadImage_ValidFileName_IsAccepted(fileName: "very-long-file-name-with-multiple-words-and-number"···, fileLength: 1024, folderType: "shelters") Success
+        UploadImage_ValidFolderType_GeneratesCorrectPath (5 tests) Success
+          UploadImage_ValidFolderType_GeneratesCorrectPath(folderType: "animals", fileName: "image.jpg", fileLength: 1024, expectedPath: "SeePaw/animals") Success
+          UploadImage_ValidFolderType_GeneratesCorrectPath(folderType: "folder_with_underscore", fileName: "image.jpg", fileLength: 1024, expectedPath: "SeePaw/folder_with_underscore") Success
+          UploadImage_ValidFolderType_GeneratesCorrectPath(folderType: "shelters", fileName: "image.png", fileLength: 2048, expectedPath: "SeePaw/shelters") Success
+          UploadImage_ValidFolderType_GeneratesCorrectPath(folderType: "test-folder", fileName: "image.webp", fileLength: 768, expectedPath: "SeePaw/test-folder") Success
+          UploadImage_ValidFolderType_GeneratesCorrectPath(folderType: "users", fileName: "image.gif", fileLength: 512, expectedPath: "SeePaw/users") Success
+      PrincipalImageEnforcerTest (38 tests) Success
+        EnforceSinglePrincipal_AlternatingPrincipalPattern_RemovesAllAndSetsNew (3 tests) Success
+          EnforceSinglePrincipal_AlternatingPrincipalPattern_RemovesAllAndSetsNew(imageCount: 10) Success
+          EnforceSinglePrincipal_AlternatingPrincipalPattern_RemovesAllAndSetsNew(imageCount: 20) Success
+          EnforceSinglePrincipal_AlternatingPrincipalPattern_RemovesAllAndSetsNew(imageCount: 6) Success
+        EnforceSinglePrincipal_AnyCollection_PreservesCollectionSize (4 tests) Success
+          EnforceSinglePrincipal_AnyCollection_PreservesCollectionSize(imageCount: 0) Success
+          EnforceSinglePrincipal_AnyCollection_PreservesCollectionSize(imageCount: 1) Success
+          EnforceSinglePrincipal_AnyCollection_PreservesCollectionSize(imageCount: 10) Success
+          EnforceSinglePrincipal_AnyCollection_PreservesCollectionSize(imageCount: 5) Success
+        EnforceSinglePrincipal_AnyScenario_ResultsInExactlyOnePrincipal (5 tests) Success
+          EnforceSinglePrincipal_AnyScenario_ResultsInExactlyOnePrincipal(existingImageCount: 0) Success
+          EnforceSinglePrincipal_AnyScenario_ResultsInExactlyOnePrincipal(existingImageCount: 1) Success
+          EnforceSinglePrincipal_AnyScenario_ResultsInExactlyOnePrincipal(existingImageCount: 10) Success
+          EnforceSinglePrincipal_AnyScenario_ResultsInExactlyOnePrincipal(existingImageCount: 2) Success
+          EnforceSinglePrincipal_AnyScenario_ResultsInExactlyOnePrincipal(existingImageCount: 5) Success
+        EnforceSinglePrincipal_CalledMultipleTimes_IsIdempotent Success
+        EnforceSinglePrincipal_DifferentCollectionTypes_WorksCorrectly Success
+        EnforceSinglePrincipal_DuplicateImageReferences_HandlesCorrectly Success
+        EnforceSinglePrincipal_EmptyCollection_SetsNewImageAsPrincipal Success
+        EnforceSinglePrincipal_LargeCollection_CompletesQuickly Success
+        EnforceSinglePrincipal_LargeCollection_HandlesCorrectly (3 tests) Success
+          EnforceSinglePrincipal_LargeCollection_HandlesCorrectly(imageCount: 100) Success
+          EnforceSinglePrincipal_LargeCollection_HandlesCorrectly(imageCount: 50) Success
+          EnforceSinglePrincipal_LargeCollection_HandlesCorrectly(imageCount: 500) Success
+        EnforceSinglePrincipal_MixedPrincipalStates_RemovesAllAndSetsNew Success
+        EnforceSinglePrincipal_ModifiesExistingImages_PreservesReferences Success
+        EnforceSinglePrincipal_MultipleImagesAllPrincipal_RemovesAllAndSetsNew (3 tests) Success
+          EnforceSinglePrincipal_MultipleImagesAllPrincipal_RemovesAllAndSetsNew(imageCount: 2) Success
+          EnforceSinglePrincipal_MultipleImagesAllPrincipal_RemovesAllAndSetsNew(imageCount: 3) Success
+          EnforceSinglePrincipal_MultipleImagesAllPrincipal_RemovesAllAndSetsNew(imageCount: 5) Success
+        EnforceSinglePrincipal_MultipleImagesNonePrincipal_SetsOnlyNewAsPrincipal (4 tests) Success
+          EnforceSinglePrincipal_MultipleImagesNonePrincipal_SetsOnlyNewAsPrincipal(imageCount: 10) Success
+          EnforceSinglePrincipal_MultipleImagesNonePrincipal_SetsOnlyNewAsPrincipal(imageCount: 2) Success
+          EnforceSinglePrincipal_MultipleImagesNonePrincipal_SetsOnlyNewAsPrincipal(imageCount: 3) Success
+          EnforceSinglePrincipal_MultipleImagesNonePrincipal_SetsOnlyNewAsPrincipal(imageCount: 5) Success
+        EnforceSinglePrincipal_MultipleImagesOnePrincipal_RemovesPrincipalAndSetsNew (4 tests) Success
+          EnforceSinglePrincipal_MultipleImagesOnePrincipal_RemovesPrincipalAndSetsNew(imageCount: 10, principalIndex: 9) Success
+          EnforceSinglePrincipal_MultipleImagesOnePrincipal_RemovesPrincipalAndSetsNew(imageCount: 2, principalIndex: 0) Success
+          EnforceSinglePrincipal_MultipleImagesOnePrincipal_RemovesPrincipalAndSetsNew(imageCount: 3, principalIndex: 1) Success
+          EnforceSinglePrincipal_MultipleImagesOnePrincipal_RemovesPrincipalAndSetsNew(imageCount: 5, principalIndex: 2) Success
+        EnforceSinglePrincipal_NewImageAnyState_AlwaysSetsToPrincipal (2 tests) Success
+          EnforceSinglePrincipal_NewImageAnyState_AlwaysSetsToPrincipal(newImageInitialState: False) Success
+          EnforceSinglePrincipal_NewImageAnyState_AlwaysSetsToPrincipal(newImageInitialState: True) Success
+        EnforceSinglePrincipal_NewImageInCollection_StillEnforcesCorrectly Success
+        EnforceSinglePrincipal_SingleExistingImage_RemovesPrincipalAndSetsNew (2 tests) Success
+          EnforceSinglePrincipal_SingleExistingImage_RemovesPrincipalAndSetsNew(existingIsPrincipal: False) Success
+          EnforceSinglePrincipal_SingleExistingImage_RemovesPrincipalAndSetsNew(existingIsPrincipal: True) Success
+    Middleware (7 tests) Success
+      CustomAuthMiddlewareHandlerTest (3 tests) Success
+        AuthorizedUser_CallsNextWithoutChangingResponse Success
+        ForbiddenUser_Returns403Forbidden Success
+        UnauthorizedUser_Returns401Unauthorized Success
+      IdentityResponseMiddlewareTest (4 tests) Success
+        InvokeAsync_ReturnsExpectedCustomJson (4 tests) Success
+          InvokeAsync_ReturnsExpectedCustomJson(inputBody: "InvalidLoginAttempt", expectedMessage: "Invalid credentials. Please check your email or pa"···, expectedDetails: null) Success
+          InvokeAsync_ReturnsExpectedCustomJson(inputBody: "LockedOut", expectedMessage: "Account temporarily blocked: maximum login attempt"···, expectedDetails: "LockedOut") Success
+          InvokeAsync_ReturnsExpectedCustomJson(inputBody: "NotAllowed", expectedMessage: "Account not confirmed. Please verify your email.", expectedDetails: "NotAllowed") Success
+          InvokeAsync_ReturnsExpectedCustomJson(inputBody: "OtherText", expectedMessage: "Authentication required. Please provide valid cred"···, expectedDetails: "Unauthorized") Success
+    OwnershipRequestsTest (40 tests) Success
+      ApproveOwnershipRequestTests (9 tests) Success
+        ApproveRequest_AlreadyApprovedRequestExists_ReturnsBadRequest Success
+        ApproveRequest_AnimalAlreadyHasOwner_ReturnsBadRequest Success
+        ApproveRequest_AnimalInactive_ReturnsBadRequest Success
+        ApproveRequest_DatabaseFailure_ReturnsInternalServerError Success
+        ApproveRequest_NotShelterAdministrator_ReturnsForbidden Success
+        ApproveRequest_RequestFromDifferentShelter_ReturnsForbidden Success
+        ApproveRequest_RequestNotFound_ReturnsNotFound Success
+        ApproveRequest_RequestNotInAnalysing_ReturnsBadRequest Success
+        ApproveRequest_ValidRequestInAnalysing_ReturnsOk Success
+      CreateOwnershipRequestTests (7 tests) Success
+        CreateOwnershipRequest_AmountSetFromAnimalCost_ReturnsOk Success
+        CreateOwnershipRequest_AnimalHasOwner_ReturnsBadRequest Success
+        CreateOwnershipRequest_AnimalInactive_ReturnsBadRequest Success
+        CreateOwnershipRequest_AnimalNotFound_ReturnsNotFound Success
+        CreateOwnershipRequest_DatabaseFailure_ReturnsInternalServerError Success
+        CreateOwnershipRequest_DuplicateRequest_ReturnsBadRequest Success
+        CreateOwnershipRequest_ValidRequest_ReturnsOk Success
+      GetOwnershipRequestsByShelterTests (6 tests) Success
+        GetOwnershipRequests_CustomPageSize_SendsCorrectQuery Success
+        GetOwnershipRequests_NoRequests_ReturnsEmptyPagedList Success
+        GetOwnershipRequests_ShelterNotFound_ReturnsNotFound Success
+        GetOwnershipRequests_UserNotShelterAdmin_ReturnsForbidden Success
+        GetOwnershipRequests_ValidData_CallsMapperCorrectly Success
+        GetOwnershipRequests_ValidRequest_ReturnsPagedList Success
+      RejectOwnershipRequestTests (7 tests) Success
+        RejectRequest_DatabaseFailure_ReturnsInternalServerError Success
+        RejectRequest_NotShelterAdministrator_ReturnsForbidden Success
+        RejectRequest_RequestFromDifferentShelter_ReturnsForbidden Success
+        RejectRequest_RequestNotFound_ReturnsNotFound Success
+        RejectRequest_RequestNotInAnalysing_ReturnsBadRequest Success
+        RejectRequest_ValidRequestWithReason_ReturnsOk Success
+        RejectRequest_WithoutReason_ReturnsOk Success
+      UpdateOwnershipRequestStatusTests (11 tests) Success
+        UpdateStatus_AnimalAlreadyHasOwner_ReturnsBadRequest Success
+        UpdateStatus_AnimalInactive_ReturnsBadRequest Success
+        UpdateStatus_DatabaseFailure_ReturnsInternalServerError Success
+        UpdateStatus_NotShelterAdministrator_ReturnsForbidden Success
+        UpdateStatus_PendingToAnalysingWithNotes_ReturnsOk Success
+        UpdateStatus_RejectedToAnalysing_ReturnsOk Success
+        UpdateStatus_RequestAlreadyApprovedOrAnalysing_ReturnsBadRequest Success
+        UpdateStatus_RequestFromDifferentShelter_ReturnsForbidden Success
+        UpdateStatus_RequestNotFound_ReturnsNotFound Success
+        UpdateStatus_ShelterNotFound_ReturnsNotFound Success
+        UpdateStatus_WithoutRequestInfo_ReturnsOk Success
+    SheltersControllerTest (7 tests) Success
+      GetAnimalsByShelterTests (7 tests) Success
+        CalculateTotalPagesCorrectly Success
+        GetAnimalsByShelter Success
+        GetAnimalsByShelterInAlphabeticalOrder Success
+        NoAnimalsFoundForShelter Success
+        PaginateResultsCorrectlly Success
+        ShelterDoesNotExist Success
+        ShouldNotReturnAnimalsFromOtherShelters Success
+    UsersControllerTest (44 tests) Success
+      EditUserProfileTests (42 tests) Success
+        BirthDateInFutureIsInvalid Success
+        BirthDateTooOldIsInvalid Success
+        InvalidCity (3 tests) Success
+          InvalidCity(city: " ") Success
+          InvalidCity(city: "") Success
+          InvalidCity(city: null) Success
+        InvalidName (6 tests) Success
+          InvalidName(name: " ") Success
+          InvalidName(name: "") Success
+          InvalidName(name: "@na") Success
+          InvalidName(name: "12345") Success
+          InvalidName(name: "ThisIsAnExtremelyLongNameThatExceedsTheMaximumAllo"···) Success
+          InvalidName(name: null) Success
+        InvalidPhoneNumber (6 tests) Success
+          InvalidPhoneNumber(phone: "") Success
+          InvalidPhoneNumber(phone: "123456789") Success
+          InvalidPhoneNumber(phone: "91234567") Success
+          InvalidPhoneNumber(phone: "9123456789") Success
+          InvalidPhoneNumber(phone: "91234A678") Success
+          InvalidPhoneNumber(phone: null) Success
+        InvalidPostalCode (6 tests) Success
+          InvalidPostalCode(code: "") Success
+          InvalidPostalCode(code: "12-") Success
+          InvalidPostalCode(code: "123") Success
+          InvalidPostalCode(code: "12345678901") Success
+          InvalidPostalCode(code: "80@0-333") Success
+          InvalidPostalCode(code: null) Success
+        InvalidStreet (3 tests) Success
+          InvalidStreet(street: " ") Success
+          InvalidStreet(street: "") Success
+          InvalidStreet(street: null) Success
+        ValidBirthDate Success
+        ValidCity (3 tests) Success
+          ValidCity(city: "Coimbra") Success
+          ValidCity(city: "Lisboa") Success
+          ValidCity(city: "Porto") Success
+        ValidName (5 tests) Success
+          ValidName(name: "Ana-Maria") Success
+          ValidName(name: "Diana Silva") Success
+          ValidName(name: "Jean-Pierre") Success
+          ValidName(name: "João D’Água") Success
+          ValidName(name: "José António") Success
+        ValidPhoneNumber (3 tests) Success
+          ValidPhoneNumber(phone: "912345678") Success
+          ValidPhoneNumber(phone: "934567890") Success
+          ValidPhoneNumber(phone: "999999999") Success
+        ValidPostalCode (1 test) Success
+          ValidPostalCode(code: "8000-333") Success
+        ValidStreet (2 tests) Success
+          ValidStreet(street: "Av. da Liberdade 200") Success
+          ValidStreet(street: "Rua das Oliveiras 10") Success
+        ValidUserProfile_AllFieldsPass Success
+      GetUserProfileTest (2 tests) Success
+        ShouldFail_WhenUserNotFound Success
+        ShouldReturnUserProfile_WhenUserExists Success
+    BaseApiControllerTest (21 tests) Success
+      HandleResult_CustomSuccessCode_ReturnsCorrectStatusCode (2 tests) Success
+        HandleResult_CustomSuccessCode_ReturnsCorrectStatusCode(statusCode: 202, value: "Accepted") Success
+        HandleResult_CustomSuccessCode_ReturnsCorrectStatusCode(statusCode: 206, value: "Partial content") Success
+      HandleResult_Failure400_ReturnsBadRequest Success
+      HandleResult_Failure401_ReturnsUnauthorized Success
+      HandleResult_Failure404_ReturnsNotFound Success
+      HandleResult_Failure409_ReturnsConflict Success
+      HandleResult_Failure500_ReturnsInternalServerError Success
+      HandleResult_Failure500WithNullError_ReturnsDefaultMessage Success
+      HandleResult_FailureWithErrorCode_ReturnsCorrectStatusCode (6 tests) Success
+        HandleResult_FailureWithErrorCode_ReturnsCorrectStatusCode(errorCode: 400, errorMessage: "BadRequest") Success
+        HandleResult_FailureWithErrorCode_ReturnsCorrectStatusCode(errorCode: 401, errorMessage: "Unauthorized") Success
+        HandleResult_FailureWithErrorCode_ReturnsCorrectStatusCode(errorCode: 403, errorMessage: "Forbidden") Success
+        HandleResult_FailureWithErrorCode_ReturnsCorrectStatusCode(errorCode: 404, errorMessage: "NotFound") Success
+        HandleResult_FailureWithErrorCode_ReturnsCorrectStatusCode(errorCode: 409, errorMessage: "Conflict") Success
+        HandleResult_FailureWithErrorCode_ReturnsCorrectStatusCode(errorCode: 500, errorMessage: "InternalServerError") Success
+      HandleResult_NullResult_Returns500 Success
+      HandleResult_Success200_ReturnsOk Success
+      HandleResult_Success201WithActionName_ReturnsCreatedAtAction Success
+      HandleResult_Success201WithoutActionName_Returns201StatusCode Success
+      HandleResult_Success204_ReturnsNoContent Success
+      HandleResult_UnexpectedErrorCode_ReturnsCorrectStatusCode (2 tests) Success
+        HandleResult_UnexpectedErrorCode_ReturnsCorrectStatusCode(errorCode: 418, errorMessage: "I'm a teapot") Success
+        HandleResult_UnexpectedErrorCode_ReturnsCorrectStatusCode(errorCode: 503, errorMessage: "Service unavailable") Success
+    DbInitializerTest (24 tests) Success
+      SeedData_AnimalsExist_DoesNotDuplicate Success
+      SeedData_EmptyDatabase_AssignsAdminCAARole Success
+      SeedData_EmptyDatabase_AssignsPlatformAdminRole Success
+      SeedData_EmptyDatabase_AssignsUserRole (3 tests) Success
+        SeedData_EmptyDatabase_AssignsUserRole(email: "carlos@test.com") Success
+        SeedData_EmptyDatabase_AssignsUserRole(email: "diana@test.com") Success
+        SeedData_EmptyDatabase_AssignsUserRole(email: "eduardo@test.com") Success
+      SeedData_EmptyDatabase_Creates6Users Success
+      SeedData_EmptyDatabase_CreatesAllRoles Success
+      SeedData_EmptyDatabase_CreatesAnimalsWithCorrectSpecies (2 tests) Success
+        SeedData_EmptyDatabase_CreatesAnimalsWithCorrectSpecies(species: Cat, expectedCount: 5) Success
+        SeedData_EmptyDatabase_CreatesAnimalsWithCorrectSpecies(species: Dog, expectedCount: 8) Success
+      SeedData_EmptyDatabase_CreatesAnimalsWithDifferentStates (5 tests) Success
+        SeedData_EmptyDatabase_CreatesAnimalsWithDifferentStates(state: Available, expectedCount: 9) Success
+        SeedData_EmptyDatabase_CreatesAnimalsWithDifferentStates(state: HasOwner, expectedCount: 1) Success
+        SeedData_EmptyDatabase_CreatesAnimalsWithDifferentStates(state: Inactive, expectedCount: 1) Success
+        SeedData_EmptyDatabase_CreatesAnimalsWithDifferentStates(state: PartiallyFostered, expectedCount: 1) Success
+        SeedData_EmptyDatabase_CreatesAnimalsWithDifferentStates(state: TotallyFostered, expectedCount: 1) Success
+      SeedData_EmptyDatabase_CreatesBreeds Success
+      SeedData_EmptyDatabase_CreatesImages Success
+      SeedData_EmptyDatabase_CreatesImagesForSheltersAndAnimals Success
+      SeedData_EmptyDatabase_CreatesPrincipalImages Success
+      SeedData_EmptyDatabase_CreatesUsersWithCorrectPassword Success
+      SeedData_EmptyDatabase_CreatesUsersWithValidPhoneNumbers Success
+      SeedData_ImagesExist_DoesNotDuplicate Success
+      SeedData_SheltersExist_DoesNotDuplicate Success
+      SeedData_UsersExist_DoesNotDuplicate Success
+    ExceptionMiddlewareTest (13 tests) Success
+      InvokeAsync_DifferentExceptionTypes_Returns500 (3 tests) Success
+        InvokeAsync_DifferentExceptionTypes_Returns500(exceptionType: typeof(System.ArgumentException)) Success
+        InvokeAsync_DifferentExceptionTypes_Returns500(exceptionType: typeof(System.InvalidOperationException)) Success
+        InvokeAsync_DifferentExceptionTypes_Returns500(exceptionType: typeof(System.NullReferenceException)) Success
+      InvokeAsync_GeneralException_LogsError Success
+      InvokeAsync_GeneralException_Returns500 Success
+      InvokeAsync_GeneralException_ReturnsCorrectJsonStructure Success
+      InvokeAsync_GeneralExceptionInDevelopment_IncludesStackTrace Success
+      InvokeAsync_GeneralExceptionInProduction_ExcludesStackTrace Success
+      InvokeAsync_NoException_CallsNextDelegate Success
+      InvokeAsync_ValidationException_Returns400 Success
+      InvokeAsync_ValidationException_ReturnsValidationProblemDetails Success
+      InvokeAsync_ValidationExceptionMultipleErrorsSameProperty_ReturnsAllErrors Success
+      InvokeAsync_ValidationExceptionWithNoErrors_Returns400 Success
+    MappingProfilesTest (17 tests) Success
+      Configuration_IsValid Success
+      Map_AnimalToResAnimalDto_CalculatesAgeCorrectly (4 tests) Success
+        Map_AnimalToResAnimalDto_CalculatesAgeCorrectly(yearsOld: 1) Success
+        Map_AnimalToResAnimalDto_CalculatesAgeCorrectly(yearsOld: 10) Success
+        Map_AnimalToResAnimalDto_CalculatesAgeCorrectly(yearsOld: 3) Success
+        Map_AnimalToResAnimalDto_CalculatesAgeCorrectly(yearsOld: 5) Success
+      Map_AnimalToResAnimalDto_MapsAllProperties Success
+      Map_AnimalToResAnimalDto_MapsAnimalStateCorrectly (5 tests) Success
+        Map_AnimalToResAnimalDto_MapsAnimalStateCorrectly(state: Available) Success
+        Map_AnimalToResAnimalDto_MapsAnimalStateCorrectly(state: HasOwner) Success
+        Map_AnimalToResAnimalDto_MapsAnimalStateCorrectly(state: Inactive) Success
+        Map_AnimalToResAnimalDto_MapsAnimalStateCorrectly(state: PartiallyFostered) Success
+        Map_AnimalToResAnimalDto_MapsAnimalStateCorrectly(state: TotallyFostered) Success
+      Map_AnimalToResAnimalDto_MapsBreedName Success
+      Map_AnimalToResAnimalDto_MapsImagesCollection Success
+      Map_AnimalToResAnimalDto_MapsSpeciesCorrectly (2 tests) Success
+        Map_AnimalToResAnimalDto_MapsSpeciesCorrectly(species: Cat) Success
+        Map_AnimalToResAnimalDto_MapsSpeciesCorrectly(species: Dog) Success
+      Map_AnimalWithNoImages_ReturnsEmptyImageCollection Success
+      Map_ImageToResImageDto_MapsAllProperties Success
+    UserAccessorTest (4 tests) Success
+      GetUserAsync_ShouldReturnUser_WhenUserExists Success
+      GetUserAsync_ShouldThrowUnauthorizedAccess_WhenUserDoesNotExist Success
+      GetUserId_ShouldReturnUserId_WhenUserIsAuthenticated Success
+      GetUserId_ShouldThrowException_WhenUserIsNotAuthenticated Success
+    ValidationBehaviorTest (7 tests) Success
+      Handle_InvalidRequest_DoesNotCallNextHandler Success
+      Handle_InvalidRequest_ThrowsValidationException Success
+      Handle_MultipleValidationErrors_ThrowsValidationExceptionWithAllErrors Success
+      Handle_NoValidator_CallsNextHandler Success
+      Handle_ValidRequest_CallsNextHandler Success
+      Handle_ValidRequest_CallsValidatorOnce Success
+      Handle_ValidRequest_ReturnsResponseFromNextHandler Success

@@ -1,19 +1,25 @@
 ﻿namespace Domain.Enums;
 
+/// <summary>
+/// Represents the possible states of an activity within the system.
+/// </summary>
+/// <remarks>
+/// Used to indicate whether an activity is ongoing, has been cancelled, or has been successfully completed.
+/// </remarks>
 public enum ActivityStatus
 {
     /// <summary>
-    /// Activity is currently active.
+    /// The activity is currently ongoing and active.
     /// </summary>
     Active,
 
     /// <summary>
-    /// Activity has been cancelled.
+    /// The activity has been cancelled before completion.
     /// </summary>
-    Canceled,
+    Cancelled,
 
     /// <summary>
-    /// Activity has been completed.
+    /// The activity has been successfully completed.
     /// </summary>
     Completed
 }

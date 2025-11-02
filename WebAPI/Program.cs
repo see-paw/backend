@@ -3,19 +3,47 @@ using WebAPI.Validators;
 using FluentValidation;
 using Persistence;
 using System.Text.Json.Serialization;
+using Application.Animals;
+using Application.Core;
+using Application.Fosterings;
+using Application.Images;
+using Application.Interfaces;
+using Application.Services;
+using Domain;
+using Domain.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using FluentValidation.AspNetCore;
+using Infrastructure.Images;
+using Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 using WebAPI.Core;
 using WebAPI.Middleware;
+using WebAPI.Validators.Animals;
 
 var inContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+var isProduction = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production"; // Azure provides this env variable
+
+string environmentName;
+if (isProduction)
+{
+    environmentName = "Production";
+}
+else if (inContainer)
+{
+    environmentName = "Docker";
+}
+else
+{
+    environmentName = "Development";
+}
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
     Args = args,
-    EnvironmentName = inContainer ? "Docker" : null
+    EnvironmentName = environmentName
 });
 
-// Config: base + por ambiente + env vars; secrets só em Dev local (não Docker)
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false)
@@ -24,7 +52,6 @@ builder.Configuration
 if (builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironment("Docker"))
     builder.Configuration.AddUserSecrets<Program>(optional: true);
 
-// Connection string (config → env fallback)
 var connectionString =
     builder.Configuration.GetConnectionString("DefaultConnection") ??
     Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
@@ -42,14 +69,45 @@ builder.Services.AddControllers().AddJsonOptions(o =>
     o.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
 });
 
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
+
 builder.Services.AddCors();
 builder.Services.AddMediatR(x => {
-    x.RegisterServicesFromAssemblyContaining<GetAnimalList.Handler>();
+    x.RegisterServicesFromAssemblyContaining<GetAnimalDetails.Handler>();
     x.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
+
+builder.Services.AddScoped<IFosteringService, FosteringService>();
+builder.Services.AddScoped<FosteringDomainService>();
+builder.Services.AddScoped(typeof(IImagesUploader<>), typeof(ImagesUploader<>));
+builder.Services.AddScoped(typeof(IImageOwnerLoader<>), typeof(ImageOwnerLoader<>));
+builder.Services.AddScoped<IPrincipalImageEnforcer, PrincipalImageEnforcer>();
+builder.Services.AddScoped(typeof(IImageManager<>), typeof(ImageManager<>));
+builder.Services.AddScoped<IImageOwnerLinker<Animal>, AnimalImageLinker>();
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+builder.Services.AddScoped<IUserAccessor, UserAccessor>();
 builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
-builder.Services.AddValidatorsFromAssemblyContaining<CreateAnimalValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<GetAnimalDetailsValidator>();
 builder.Services.AddTransient<ExceptionMiddleware>();
+builder.Services.AddIdentityApiEndpoints<User>(opt =>
+    {
+        opt.User.RequireUniqueEmail = true;
+    }).AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<AppDbContext>();
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = IdentityConstants.BearerScheme;
+    options.DefaultAuthenticateScheme = IdentityConstants.BearerScheme;
+    options.DefaultChallengeScheme = IdentityConstants.BearerScheme;
+});
+builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, CustomAuthMiddlewareHandler>();
+
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("CloudinarySettings"));
+builder.Services.Configure<FosteringSettings>(
+    builder.Configuration.GetSection("Fostering")
+);
 
 var app = builder.Build();
 
@@ -59,10 +117,14 @@ app.UseCors(c => c
     .AllowAnyMethod()
     .WithOrigins("http://localhost:3000", "https://localhost:3000"));
 
+app.UseMiddleware<IdentityResponseMiddleware>();
 app.UseMiddleware<ExceptionMiddleware>();
 
-app.MapControllers();
+app.UseAuthentication();
+app.UseAuthorization();
 
+app.MapControllers();
+app.MapGroup("api").MapIdentityApi<User>();
 
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
@@ -70,13 +132,46 @@ var services = scope.ServiceProvider;
 try
 {
     var context = services.GetRequiredService<AppDbContext>();
+    var userManager = services.GetRequiredService<UserManager<User>>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+    var logger = loggerFactory.CreateLogger<Program>();
+
+    logger.LogInformation("=================================================");
+    logger.LogInformation($"Environment: {app.Environment.EnvironmentName}");
+    logger.LogInformation($"Is Production: {app.Environment.IsProduction()}");
+    logger.LogInformation("=================================================");
+
+    // Apply migrations
     await context.Database.MigrateAsync();
-    await DbInitializer.SeedData(context);
+    logger.LogInformation("Migrations applied successfully.");
+
+    // How the DB is seeded dependending on the environment type
+    if (app.Environment.IsProduction())
+    {
+        // Production mode (currently for testing): will only seed if the DB is empty
+        if (!context.Shelters.Any())
+        {
+            logger.LogWarning("PRODUCTION MODE - Database is empty. Running seed for the FIRST TIME.");
+            await DbInitializer.SeedData(context, userManager, roleManager, loggerFactory, false);
+            logger.LogInformation("Database seeded successfully.");
+        }
+        else
+        {
+            logger.LogInformation("PRODUCTION MODE - Database already has data. Skipping seed.");
+        }
+    }
+    else
+    {
+        logger.LogWarning($"DEVELOPMENT MODE ({app.Environment.EnvironmentName}) - Database will be reset and seeded.");
+        await DbInitializer.SeedData(context, userManager, roleManager, loggerFactory, true);
+        logger.LogInformation("Database seeded successfully.");
+    }
 }
 catch (Exception ex)
 {
     var logger = services.GetRequiredService<ILogger<Program>>();
-    logger.LogError(ex, "An error occurred during migration.");
+    logger.LogError(ex, "An error occurred during migration or seeding.");
 }
 
 app.Run();
