@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 
-namespace WebAPI.Hubs;
+namespace Infrastructure.Hubs;
 
 /// <summary>
 /// SignalR hub for real-time notifications. This is a SignalR endpoint.

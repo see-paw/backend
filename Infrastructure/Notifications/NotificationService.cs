@@ -1,13 +1,13 @@
 ﻿using Application.Interfaces;
 using Domain;
 using Domain.Enums;
+using Infrastructure.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Persistence;
-using WebAPI.Hubs;
 
-namespace Infrastructure;
+namespace Infrastructure.Notifications;
 
 /// <summary>
 /// Implementation of notification service using SignalR for real-time delivery.
