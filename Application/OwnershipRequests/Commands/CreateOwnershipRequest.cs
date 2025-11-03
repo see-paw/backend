@@ -3,8 +3,10 @@ using Application.Interfaces;
 using Domain;
 using Domain.Enums;
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
+using System.Threading;
 
 namespace Application.OwnershipRequests.Commands;
 
@@ -30,7 +32,10 @@ public class CreateOwnershipRequest
     /// <summary>
     /// Handles the creation of ownership requests with validation and duplicate prevention.
     /// </summary>
-    public class Handler(AppDbContext context, IUserAccessor userAccessor) : IRequestHandler<Command, Result<OwnershipRequest>>
+    public class Handler(
+        AppDbContext context, 
+        IUserAccessor userAccessor, 
+        INotificationService notificationService) : IRequestHandler<Command, Result<OwnershipRequest>>
     {
 
         /// <summary>
@@ -69,7 +74,6 @@ public class CreateOwnershipRequest
             if (animal.AnimalState == AnimalState.HasOwner || animal.AnimalState == AnimalState.Inactive)
                 return Result<OwnershipRequest>.Failure("Animal not available for ownership", 400);
                 
-
             // Check for existing ownership request
             var existingRequest = await context.OwnershipRequests
                 .Where(or => or.AnimalId == request.AnimalID
@@ -90,8 +94,14 @@ public class CreateOwnershipRequest
 
             var createdRequest = await context.OwnershipRequests
                 .Include(or => or.Animal)
+                .ThenInclude(a => a.Shelter)
                 .Include(or => or.User)
                 .FirstOrDefaultAsync(or => or.Id == ownershipRequest.Id, cancellationToken);
+
+            if (createdRequest == null)
+                return Result<OwnershipRequest>.Failure("Failed to retrieve created request", 500);
+
+            await NotifyAdmin(createdRequest, cancellationToken);
 
             return Result<OwnershipRequest>.Success(createdRequest!, 200);
         }
@@ -112,6 +122,39 @@ public class CreateOwnershipRequest
                 Amount = amount,
                 Status = OwnershipStatus.Pending
             };
+        }
+
+        /// <summary>
+        /// Notifies the shelter administrator (AdminCAA) about a new ownership request.
+        /// </summary>
+        /// <param name="createdRequest">The newly created ownership request with loaded navigation properties (Animal, Shelter, User).</param>
+        /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
+        /// <remarks>
+        /// This is a best-effort notification. If the notification fails to send (e.g., admin is offline),
+        /// it does not affect the ownership request creation, which has already been persisted to the database.
+        /// The notification is only sent if the animal's shelter and admin user exist.
+        /// </remarks>
+        private async Task NotifyAdmin(OwnershipRequest createdRequest, CancellationToken cancellationToken)
+        {
+            var user = createdRequest.User;
+            var animal = createdRequest.Animal;
+
+            if (animal?.Shelter != null && user?.Id != null)
+            {
+                var adminCAA = await context.Users
+                    .FirstOrDefaultAsync(u => u.ShelterId == animal.ShelterId, cancellationToken);
+
+                if (adminCAA != null)
+                {
+                    await notificationService.CreateAndSendToUserAsync(
+                        userId: adminCAA.Id,
+                        type: NotificationType.NEW_OWNERSHIP_REQUEST,
+                        message: $"{user.Name} fez um pedido para adotar {animal.Name}",
+                        animalId: animal.Id,
+                        ownershipRequestId: createdRequest.Id
+                    );
+                }
+            }
         }
     }
 }
