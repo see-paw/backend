@@ -1,4 +1,5 @@
 ﻿using Application.Core;
+using Application.Interfaces;
 using AutoMapper;
 using Domain;
 using MediatR;
@@ -30,7 +31,7 @@ namespace Application.Animals.Commands
         /// Uses Entity Framework Core to load the target animal and its related entities,  
         /// applies updates using AutoMapper, and saves the changes to the database.
         /// </remarks>
-        public class Handler(AppDbContext dbContext, IMapper mapper) : IRequestHandler<Command, Result<Animal>>
+        public class Handler(AppDbContext dbContext, IMapper mapper, IUserAccessor userAccessor) : IRequestHandler<Command, Result<Animal>>
         {
             /// <summary>
             /// Updates an existing animal with new data.
@@ -42,34 +43,42 @@ namespace Application.Animals.Commands
             /// or an error message with the corresponding status code otherwise.
             /// </returns>
             /// <exception cref="Exception">Thrown if a database operation fails unexpectedly.</exception>
-             public async Task<Result<Animal>> Handle(Command request, CancellationToken ct)
-             {
+            public async Task<Result<Animal>> Handle(Command request, CancellationToken ct)
+            {
+                var user = await userAccessor.GetUserAsync();
+
                 var breed = await dbContext.Breeds.FirstOrDefaultAsync(b => b.Id == request.Animal.BreedId, ct);
 
                 if (breed == null)
                 {
-                    return Result<Animal>.Failure("Breed not found", 404);
+                    return Result<Animal>.Failure(error: "Breed not found", code: 404);
                 }
-                
+
                 request.Animal.Breed = breed;
-                
-                var animal = await dbContext.Animals
-                    .Include(a => a.Breed)
-                    .Include(a => a.Shelter)
-                    .Include(a => a.Images)
-                    .FirstOrDefaultAsync(a => a.Id == request.Animal.Id, ct);
+
+                var animal = await dbContext.Animals // DbSet<Animal>
+                    .Include(a => a.Breed) // IIncludableQueryable<Animal,Breed>
+                    .Include(a => a.Shelter) // IIncludableQueryable<Animal,Shelter>
+                    .Include(a => a.Images) // IIncludableQueryable<Animal,Collection<...>>
+                    .FirstOrDefaultAsync(a => a.Id == request.Animal.Id, ct); // Task<Animal?>
 
                 if (animal == null)
-                    return Result<Animal>.Failure("Animal not found or not owned by this shelter", 404);
-                
-                mapper.Map(request.Animal, animal);
-                
-                var success = await dbContext.SaveChangesAsync(ct) > 0;
+                    return Result<Animal>.Failure(error: "Animal not found", code: 404);
+
+                if (animal.ShelterId != user.ShelterId)
+                {
+                    return Result<Animal>.Failure(error: "Animal not owned by this shelter", code: 404);
+                }
+
+                mapper.Map(source: request.Animal, destination: animal);
+            
+
+            var success = await dbContext.SaveChangesAsync(ct) > 0;
 
                 return success
                     ? Result<Animal>.Success(animal, 200)
                     : Result<Animal>.Failure("Failed to update animal", 400);
             }
         }
-        }
     }
+}

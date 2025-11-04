@@ -1,0 +1,997 @@
+- Feature/ Criar apadrinhamento (Fostering) #63 - basic`nDescrição do Pull Request
+
+Este pull request implementa o endpoint responsável pela criação de apadrinhamentos de animais, permitindo que um utilizador autenticado se torne padrinho de um animal com um valor mensal definido.
+A operação está totalmente integrada com o domínio e respeita as regras de negócio estabelecidas para o processo de apadrinhamento (RFFOS-01).
+
+Principais alterações
+
+Adicionado handler AddFostering (Application.Fosterings.Commands.AddFostering) com lógica de criação de apadrinhamentos, validação de estado e transação atómica.
+
+Criado serviço de domínio FosteringDomainService para cálculos de apoio atual e verificação de apadrinhamentos ativos por utilizador.
+
+Implementado serviço de aplicação FosteringService para atualização de estado do animal (Available, PartiallyFostered, TotallyFostered) e controlo de limites de custo.
+
+Adicionados validadores FluentValidation:
+
+AddFosteringValidator — valida formato do AnimalId e mínimo configurado de valor mensal.
+
+ReqAddFosteringDtoValidator — valida dados do corpo do pedido (valor > 0 e não nulo).
+
+Atualizado o controller AnimalsController com o endpoint:
+
+Closes - #63 
+- feat: Consultar Ownerships Ativos #35`n<h2>🧩 Overview</h2>
+<p>Implementação da <b>consulta de Ownerships ativos</b> de um utilizador, incluindo a listagem dos animais atualmente adotados e o histórico recente de pedidos de adoção.<br>
+Além disso, foi ajustada a verificação de elegibilidade de animais para permitir adoções mesmo quando o animal tem padrinhos ativos.</p>
+
+<hr>
+
+<h2>📦 Queries</h2>
+
+<h3><b>GetUserOwnedAnimals – Listar Ownerships Ativos</b></h3>
+<ul>
+  <li>Retorna todos os animais atualmente <b>adotados (HasOwner)</b> pelo utilizador autenticado.</li>
+  <li>Ordena por <code>OwnershipStartDate</code> decrescente (animais mais recentes primeiro).</li>
+  <li>Garante que apenas animais com <code>OwnerId</code> igual ao utilizador autenticado são retornados.</li>
+</ul>
+
+<p><b>Validações principais:</b></p>
+<table>
+<thead><tr><th>Verificação</th><th>Código</th><th>Mensagem</th></tr></thead>
+<tbody>
+<tr><td>Utilizador autenticado existente</td><td>404</td><td>"User not found"</td></tr>
+<tr><td>Lista vazia quando não há animais</td><td>200</td><td><code>[]</code></td></tr>
+</tr>
+</tbody>
+</table>
+
+<hr>
+
+<h3><b>GetOwnershipRequestsByUser – Listar Pedidos de Adoção do Utilizador</b></h3>
+<ul>
+  <li>Retorna pedidos de ownership submetidos pelo utilizador autenticado.</li>
+  <li>Inclui pedidos <b>ativos</b> (pendentes, em análise, aprovados) e <b>rejeitados no último mês</b>.</li>
+  <li>Ordena pedidos <b>não rejeitados primeiro</b> e, dentro do mesmo estado, por <code>RequestedAt</code> decrescente.</li>
+</ul>
+
+<p><b>Regras de inclusão:</b></p>
+<ul>
+  <li>Exclui pedidos rejeitados há mais de 30 dias.</li>
+  <li>Inclui rejeitados recentes (≤ 1 mês).</li>
+  <li>Mostra dados resumidos do animal, estado do pedido e data.</li>
+</ul>
+
+<hr>
+
+<h3><b>CheckAnimalEligibilityForOwnership – Atualização</b></h3>
+<ul>
+  <li>Atualizada a lógica para permitir adoções de animais com <b>padrinhos ativos</b>, desde que o animal não tenha dono (<code>AnimalState.HasOwner</code>) e não esteja inativo.</li>
+  <li>Continua a validar a existência do animal e o seu estado.</li>
+</ul>
+
+<p><b>Novas condições:</b></p>
+<table>
+<thead><tr><th>Condição</th><th>Resultado</th></tr></thead>
+<tbody>
+<tr><td>Animal com padrinhos mas sem dono</td><td>✅ Elegível para adoção</td></tr>
+<tr><td>Animal com dono (<code>HasOwner</code>) ou inativo</td><td>❌ Não elegível</td></tr>
+<tr><td>Animal inexistente</td><td>❌ 404 – "Animal ID not found"</td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<h2>🔗 API Endpoints</h2>
+<p>Base URL: <code>/api/ownerships</code></p>
+
+<table>
+<thead><tr><th>Método</th><th>Endpoint</th><th>Descrição</th><th>Autenticação</th></tr></thead>
+<tbody>
+<tr><td>GET</td><td><code>/requests</code></td><td>Lista pedidos de adoção do utilizador</td><td><code>User</code> autenticado</td></tr>
+<tr><td>GET</td><td><code>/owned-animals</code></td><td>Lista animais atualmente adotados (ownerships ativos)</td><td><code>User</code> autenticado</td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<h2>📤 Request & Response</h2>
+
+<h3><b>GET /api/ownerships/owned-animals</b></h3>
+<p><b>Response (200):</b></p>
+<pre><code class="language-json">[
+  {
+    "id": "animal-123",
+    "animalId": "animal-123",
+    "animalName": "Max",
+    "animalState": "HasOwner",
+    "amount": 50,
+    "image": {
+      "url": "https://res.cloudinary.com/.../max.jpg",
+      "isPrincipal": true
+    },
+    "requestedAt": "2025-07-01T12:00:00Z",
+    "approvedAt": "2025-07-03T12:00:00Z"
+  }
+]
+</code></pre>
+
+<h3><b>GET /api/ownerships/requests</b></h3>
+<p><b>Response (200):</b></p>
+<pre><code class="language-json">[
+  {
+    "id": "req-456",
+    "animalId": "animal-123",
+    "animalName": "Max",
+    "ownershipStatus": "Pending",
+    "requestedAt": "2025-10-10T10:00:00Z",
+    "updatedAt": "2025-10-15T12:00:00Z",
+    "image": {
+      "url": "https://res.cloudinary.com/.../max.jpg",
+      "isPrincipal": true
+    }
+  }
+]
+</code></pre>
+
+<hr>
+
+<h2>🧪 Testes Unitários</h2>
+<p>Foram adicionados e atualizados testes nas seguintes classes:</p>
+<table>
+<thead><tr><th>Ficheiro</th><th>Descrição</th></tr></thead>
+<tbody>
+<tr><td><code>GetUserOwnedAnimalsTests.cs</code></td><td>Testes de consulta de animais adotados — cenários de sucesso, ordenação, inclusão de entidades e cancelamento.</td></tr>
+<tr><td><code>GetOwnershipRequestsByUserTests.cs</code></td><td>Testes de filtragem, ordenação e tempo de rejeição (1 mês) em pedidos de ownership.</td></tr>
+<tr><td><code>OwnershipControllerTests.cs</code></td><td>Testes de integração e mapeamento para os endpoints <code>/requests</code> e <code>/owned-animals</code>.</td></tr>
+</tbody>
+</table>
+
+<p><b>Cobertura validada:</b></p>
+<ul>
+  <li>7 cenários no <code>GetUserOwnedAnimalsTests</code></li>
+  <li>15+ cenários no <code>GetOwnershipRequestsByUserTests</code></li>
+  <li>Controlador testado isoladamente com mocks de <code>Mediator</code> e <code>Mapper</code></li>
+</ul>
+
+<hr>
+
+<h2>✅ Regras e Validações</h2>
+<table>
+<thead><tr><th>Verificação</th><th>Código</th><th>Mensagem</th></tr></thead>
+<tbody>
+<tr><td>Utilizador não autenticado</td><td>401</td><td>"Unauthorized"</td></tr>
+<tr><td>Utilizador inexistente</td><td>404</td><td>"User not found"</td></tr>
+<tr><td>Pedido inexistente</td><td>404</td><td>"No ownership requests found"</td></tr>
+<tr><td>Animal com dono/inativo</td><td>400</td><td>"Animal not eligible for ownership"</td></tr>
+<tr><td>Consulta bem-sucedida</td><td>200</td><td>Lista de ownerships ou lista vazia</td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<h2>📚 Documentação e Testes</h2>
+<ul>
+  <li>Documentação XML e comentários <code>///</code> adicionados a todas as classes e métodos públicos.</li>
+  <li>DTO <code>ResUserOwnershipsDto</code> atualizado para incluir campos <code>RequestInfo</code>, <code>ApprovedAt</code>, <code>UpdatedAt</code>.</li>
+  <li>Todos os testes passaram com sucesso no pipeline CI.</li>
+</ul>
+
+<hr>
+
+<h3>🔒 Autorização</h3>
+<table>
+<thead><tr><th>Ação</th><th>Papel Necessário</th></tr></thead>
+<tbody>
+<tr><td>Consultar pedidos de ownership</td><td><code>User</code></td></tr>
+<tr><td>Consultar animais adotados</td><td><code>User</code></td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<p><b>Closes issue #35</b><br>
+Implementa o requisito <b>RFOWN-10 – Consultar lista de Ownerships ativos</b><br>
+e atualiza a elegibilidade de animais para adoção.</p>
+
+- feat: verify eligibility ownership request (#23)- basic`n### 🧩 Feature: Verificação de Elegibilidade de Animal para Ownership
+
+**🔹 Descrição geral**
+Foi implementada uma verificação centralizada de elegibilidade de animais para pedidos de Ownership, garantindo que apenas animais com estado disponível possam ser associados a novos pedidos.
+A lógica foi reorganizada para maior coerência arquitetónica:
+A query de validação pertence agora à camada Application.Animals, uma vez que a elegibilidade é uma característica intrínseca ao animal, e não ao pedido.
+O endpoint HTTP responsável por esta verificação foi movido para o AnimalsController, refletindo a nova estrutura.
+Esta abordagem assegura consistência entre o domínio, a API e as camadas de aplicação, eliminando duplicação de código e melhorando a manutenibilidade.
+
+**🔹 Principais alterações**
+
+1. Query CheckAnimalEligibilityForOwnership
+Agora localizada em Application/Animals/Queries/CheckAnimalEligibilityForOwnership.cs.
+Responsável por validar:
+
+- Se o animal existe.
+- Se o seu estado é compatível com ownership (Available).
+
+Retorna Result<bool> com:
+
+- 404 → Animal não encontrado.
+- 400 → Animal inelegível (estado HasOwner, Inactive, PartiallyFostered ou TotallyFostered).
+- 200 → Animal elegível (Available).
+
+2. Integração no CreateOwnershipRequest
+
+- O handler do comando continua a invocar a query CheckAnimalEligibilityForOwnership via Mediator, garantindo que a verificação é sempre feita antes de criar o pedido.
+- Elimina lógica duplicada e mantém a coerência entre fluxos da API e da aplicação.
+
+3. Novo endpoint no AnimalsController
+
+- GET /api/animals/check-eligibility/{id}
+- Permite verificar, via API, se um animal está elegível para ownership antes de criar o pedido.
+- Retorna resposta estruturada com o estado da verificação.
+
+4. Testes unitários
+
+- Foram atualizados e reorganizados os testes para refletir a nova estrutura:
+- 404 → Animal inexistente.
+- 400 → Animal inelegível.
+- 200 → Animal elegível (retorna true).
+- Verificam também chamadas ao Mediator e ao Mapper.
+
+5. Seed da base de dados
+DbInitializer atualizado com 5 animais em diferentes estados:
+
+- ✅ Available — elegível.
+- ❌ HasOwner, Inactive, PartiallyFostered, TotallyFostered — inelegíveis.
+- Permite testar todos os cenários de elegibilidade automaticamente.
+
+**🔹 Benefícios**
+✅ Lógica de elegibilidade centralizada na entidade correta (Animals).
+✅ Eliminação de duplicação no CreateOwnershipRequest.
+✅ Arquitetura mais limpa e modular.
+✅ Testes unitários com cobertura total dos cenários.
+✅ API mais intuitiva e coerente com o domínio.
+- Feature/Add image storage service - basic `n
+## 🧩 Feature: Add Image Storage Service
+
+### 🔹 Descrição geral
+
+Foi implementado um **serviço genérico e reutilizável para gestão de imagens** em toda a aplicação, permitindo associar fotos a diferentes entidades do domínio (`Animal`, `Shelter`, e futuramente `Activity`).
+O objetivo principal é **centralizar a lógica de upload, armazenamento e associação** de imagens, garantindo consistência, reuso e fácil extensibilidade.
+
+A implementação suporta:
+
+* Upload de ficheiros através do **Cloudinary** (via `IImageService` / `ImageService`);
+* Associação automática da imagem à entidade correta através de **linkers específicos**;
+* Garantia de que apenas **uma imagem principal** está marcada por entidade;
+* Invocação genérica via **MediatR**, permitindo reutilização do mesmo *command* e *handler* em qualquer agregado.
+
+---
+
+### 🔹 Funcionamento
+
+Ao criar um novo `Animal` (`POST /api/animals`), é obrigatória a inclusão de uma imagem principal.
+O **handler `CreateAnimal`**:
+
+1. Cria o registo do animal na base de dados;
+2. Invoca o comando genérico `AddImage<Animal>` via `Mediator`, que:
+
+   * Faz o upload da imagem para o Cloudinary (`SeePaw/Animal/{id}`);
+   * Cria a entidade `Image` e associa-a ao `Animal`;
+   * Garante que a imagem é marcada como principal (`IsPrincipal = true`).
+
+Posteriormente, o mesmo handler genérico é reutilizado no endpoint `POST /api/animals/{id}/images`, permitindo adicionar novas fotos ao mesmo animal (galeria) sem duplicar lógica.
+
+---
+
+### 🔹 Principais classes e ficheiros criados
+
+📁 **Application/Images/**
+
+* `AddImage<T>` – *Command* e *Handler* genéricos responsáveis por gerir o upload e a associação de imagens.
+
+📁 **Application/Images/Services/**
+
+* `IImageOwnerLoader<T>` / `ImageOwnerLoader<T>` – Carregam a entidade alvo (`Animal`, `Shelter`, etc.) a partir do `AppDbContext`.
+* `IPrincipalImageEnforcer` / `PrincipalImageEnforcer` – Garantem unicidade da imagem principal por entidade.
+* `IImageOwnerLinker<T>` – Interface genérica que define como associar uma imagem a uma entidade.
+* `AnimalImageLinker` – Implementação específica que define a associação de `Image` a `Animal`.
+* `ShelterImageLinker` – Implementação específica que define a associação de `Image` a `Shelter`.
+
+---
+
+### 🔹 Classes alteradas
+
+📄 **Application/Animals/Commands/CreateAnimal.cs**
+
+* Passou a invocar o comando genérico `AddImage<Animal>` via `IMediator`, evitando replicação de lógica de upload.
+* A imagem passou a ser **obrigatória** no processo de criação de um animal.
+
+📄 **WebAPI/Controllers/AnimalsController.cs**
+
+* Atualizado para receber dados via `multipart/form-data` (animal + imagem obrigatória).
+* O endpoint `POST /api/animals` cria o animal e adiciona automaticamente a imagem principal através do handler genérico.
+* Criado o endpoint `POST /api/animals/{id}/images` para permitir adicionar imagens adicionais.
+
+---
+
+### 🔹 Benefícios
+
+* Reutilização de código e eliminação de duplicações.
+* Extensível para novas entidades (`Activity`, `UserProfile`, etc.) sem alterações estruturais.
+* Maior coerência na gestão de imagens e simplificação do `CreateAnimal`.
+* Lógica de upload totalmente isolada e testável.
+
+---
+
+- feat: getActiveFosterings and CancelFostering (#69 #72) - basic`nThis PR closes user stories #69 and #72 .
+
+**Summary**
+
+This PR introduces the implementation of the GetActiveFosterings and CancelFostering features, enabling authenticated users to view and manage their active fostering relationships.
+
+**Main Changes**
+Added new endpoints to FosteringsController:
+
+- GET /api/fosterings → Retrieve all active fosterings for the authenticated user. This endpoint returns a list of the currently active fostering records associated with the authenticated user. Each fostering entry includes the fostered animal’s details (name, age, images), the monthly contribution amount and the start date of the fostering.
+
+Example Response:
+
+```
+[
+  {
+    "animalName": "Tico",
+    "animalAge": 5,
+    "images": [
+      {
+        "id": "4af54a5c-73cf-48f9-a973-f4401bea984a",
+        "isPrincipal": true,
+        "url": "https://example.com/image.jpg",
+        "description": "Tico no poleiro"
+      }
+    ],
+    "amount": 10,
+    "startDate": "2025-10-01T00:00:00"
+  },
+  {
+    "animalName": "Rocky",
+    "animalAge": 3,
+    "images": [
+{
+        "id": "4af54a5c-73cf-48f9-a973-f4401bea984a",
+        "isPrincipal": true,
+        "url": "https://example.com/image.jpg",
+        "description": "Rocky no poleiro"
+      }
+],
+    "amount": 15,
+    "startDate": "2025-09-15T00:00:00"
+  }
+]
+```
+
+- PATCH /api/fosterings/{id}/cancel → Cancel an active fostering.
+This endpoint allows an authenticated user to cancel one of their active fosterings by providing the fostering’s unique identifier (id). It validates that the fostering must belong to the authenticated user, updates the record’s status to Cancelled, and sets the EndDate to the current UTC time.
+
+Example Response:
+
+```
+{
+  "animalName": "Tico",
+  "animalAge": 5,
+  "amount": 10,
+  "startDate": "2025-10-01T00:00:00",
+  "endDate": "2025-10-26T12:00:00"
+}
+```
+
+**DTOs and Validation**
+
+- ResActiveFosteringDto – Represents an active fostering record including animal details and images.
+- ResCancelFosteringDto – Represents a cancelled fostering, including the animal info, contribution amount, and start/end dates.
+
+
+**Handlers**
+
+- GetActiveFosterings.Query: Retrieves all fosterings where Status == Active and UserId == CurrentUserId, including related Animal and its Images.
+
+- CancelFostering.Command: Validates ownership (UserId) and updates the fostering’s Status to Cancelled and sets EndDate = DateTime.UtcNow.
+
+**Other Implementation:**
+
+- Updated MappingProfiles.cs to include: CreateMap<Fostering, ResActiveFosteringDto>() and CreateMap<Fostering, ResCancelFosteringDto>();
+- Documentation to all new classes.
+
+**Unit Tests**
+
+Added GetActiveFosteringsTests and CancelFosteringTests to validate success and failure cases for both query and command handlers, using isolated in-memory EF Core contexts
+
+- Feature/update animal ownership approval`n## Overview
+
+Implementação completa do módulo de **Ownership Requests** para gestão de pedidos de Ownership. 
+
+### **Commands**
+
+#### 1. **CreateOwnershipRequest** - Criar Pedido de Ownership
+- Utilizadores autenticados podem submeter pedidos para adotar animais
+- Validações automáticas de disponibilidade do animal
+- Cálculo automático do montante baseado no custo do animal
+- Prevenção de pedidos duplicados
+
+#### 2. **UpdateOwnershipRequestStatus** - Mover para Análise
+- Administradores CAA podem mover pedidos Pending/Rejected para Analysing
+- Suporta workflow de reconsideração (Rejected → Analysing)
+- Validação de disponibilidade do animal
+- Notas opcionais sobre o processo de análise
+
+#### 3. **ApproveOwnershipRequest** - Aprovar Pedido
+- Aprovação de pedidos em análise
+- Transferência automática de ownership do animal
+- Cancelamento automático de fosterings ativos
+- Rejeição automática de outros pedidos pendentes para o mesmo animal
+
+#### 4. **RejectOwnershipRequest** - Rejeitar Pedido
+- Rejeição de pedidos em análise
+- Razão de rejeição opcional (visível ao utilizador)
+- Permite reconsideração posterior
+
+### **Query**
+
+#### 5. **GetOwnershipRequestsByShelter** - Listar Pedidos
+- Listagem paginada de todos os pedidos do shelter do administrador
+- Ordenação por data de submissão (mais recentes primeiro)
+- Inclui informações do animal e utilizador
+
+
+## 🔗 API Endpoints
+
+### **Base URL:** `/api/ownershiprequests`
+
+| Método | Endpoint | Descrição | Autenticação |
+|--------|----------|-----------|--------------|
+| **POST** | `/` | Criar pedido de ownership | User autenticado |
+| **PUT** | `/analysing/{id}` | Mover pedido para análise | Admin CAA |
+| **PUT** | `/approve/{id}` | Aprovar pedido | Admin CAA |
+| **PUT** | `/reject/{id}` | Rejeitar pedido | Admin CAA |
+| **GET** | `/` | Listar pedidos (paginado) | Admin CAA |
+
+
+
+## Request & Response
+
+### **1. Create Ownership Request**
+
+**Request:**
+```http
+POST /api/ownershiprequests
+Content-Type: application/json
+
+{
+  "animalID": "animal-123"
+}
+```
+
+**Response (200):**
+```json
+{
+  "id": "request-456",
+  "animalId": "animal-123",
+  "animalName": "Bolinhas",
+  "userId": "user-789",
+  "userName": "João Silva",
+  "amount": 150.00,
+  "status": "Pending",
+  "requestInfo": null,
+  "requestedAt": "2025-01-01T10:00:00Z",
+  "approvedAt": null,
+  "updatedAt": "2025-01-01T10:00:00Z"
+}
+```
+
+---
+
+### **2. Move to Analysis**
+
+**Request:**
+```http
+PUT /api/ownershiprequests/analysing/request-456
+Content-Type: application/json
+
+{
+  "requestInfo": "Checking user references and home conditions"
+}
+```
+
+**Response (200):**
+```json
+{
+  "id": "request-456",
+  "animalId": "animal-123",
+  "animalName": "Bolinhas",
+  "userId": "user-789",
+  "userName": "João Silva",
+  "amount": 150.00,
+  "status": "Analysing",
+  "requestInfo": "Checking user references and home conditions",
+  "requestedAt": "2025-01-01T10:00:00Z",
+  "approvedAt": null,
+  "updatedAt": "2025-01-02T14:30:00Z"
+}
+```
+
+---
+
+### **3. Approve Request**
+
+**Request:**
+```http
+PUT /api/ownershiprequests/approve/request-456
+```
+
+**Response (200):**
+```json
+{
+  "id": "request-456",
+  "animalId": "animal-123",
+  "animalName": "Bolinhas",
+  "userId": "user-789",
+  "userName": "João Silva",
+  "amount": 150.00,
+  "status": "Approved",
+  "requestInfo": "Checking user references and home conditions",
+  "requestedAt": "2025-01-01T10:00:00Z",
+  "approvedAt": "2025-01-05T16:45:00Z",
+  "updatedAt": "2025-01-05T16:45:00Z"
+}
+```
+
+**O que implica uma aprovação:**
+- Animal ownership é do User
+- Todos os fosterings para este animal são cancelados
+- Todos os pedidos pendentes/em análise para este animal são rejeitados
+
+---
+
+### **4. Reject Request**
+
+**Request:**
+```http
+PUT /api/ownershiprequests/reject/request-456
+Content-Type: application/json
+
+{
+  "rejectionReason": "User does not meet shelter requirements"
+}
+```
+
+**Response (200):**
+```json
+{
+  "id": "request-456",
+  "animalId": "animal-123",
+  "animalName": "Bolinhas",
+  "userId": "user-789",
+  "userName": "João Silva",
+  "amount": 150.00,
+  "status": "Rejected",
+  "requestInfo": "User does not meet shelter requirements",
+  "requestedAt": "2025-01-01T10:00:00Z",
+  "approvedAt": null,
+  "updatedAt": "2025-01-03T11:20:00Z"
+}
+```
+
+---
+
+## Regras e Validações
+### **Autorização**
+| Ação | Papel Necessário | Validação |
+|------|------------------|-----------|
+| Criar Pedido | Utilizador Autenticado | ✅ Qualquer utilizador autenticado |
+| Gerir Pedidos | Admin CAA | ✅ Tem de ser administrador do abrigo<br>❌ Não pode gerir pedidos de outros abrigos |
+### **Possíveis Fluxos de Trabalho**
+```
+Pendente → Em Análise → Aprovado
+               ↓
+           Rejeitado → Em Análise (reconsideração) → Aprovado
+```
+Em qualquer dos 2 casos pode terminar em Rejeitado.
+### **Validações de Criação de Pedido**
+| Validação | Código de Erro | Mensagem |
+|-----------|----------------|----------|
+| Animal existe | 404 | "Animal ID not found" |
+| Animal não está Inativo | 400 | "Animal is not available for ownership" |
+| Animal não tem dono | 400 | "Animal is not available for ownership" |
+| Sem pedido duplicado | 400 | "You already have a pending ownership request for this animal" |
+### **Validações de Movimentação para Análise**
+| Validação | Código de Erro | Mensagem |
+|-----------|----------------|----------|
+| Pedido existe | 404 | "Ownership request not found" |
+| Estado é Pendente/Rejeitado | 400 | "Only pending or rejected requests can be moved to analysis" |
+| Animal não está Inativo | 400 | "Cannot analyze request, animal is inactive" |
+| Animal não tem dono | 400 | "Cannot analyze request, animal already has an owner" |
+| Utilizador é admin do abrigo | 403 | "Only shelter administrators can update ownership requests" |
+| Animal é do mesmo abrigo | 403 | "You can only update requests for animals in your shelter" |
+### **Validações de Aprovação de Pedido**
+| Validação | Código de Erro | Mensagem |
+|-----------|----------------|----------|
+| Pedido existe | 404 | "Ownership request not found" |
+| Estado é Em Análise | 400 | "Only requests in 'Analysing' status can be approved" |
+| Animal não está Inativo | 400 | "Cannot approve request, animal is inactive" |
+| Animal não tem dono | 400 | "Cannot approve request, animal already has an owner" |
+| Sem outro pedido aprovado | 400 | "Cannot approve, animal already has an approved ownership request" |
+| Utilizador é admin do abrigo | 403 | "Only shelter administrators can approve ownership requests" |
+| Animal é do mesmo abrigo | 403 | "You can only approve requests for animals in your shelter" |
+### **Validações de Rejeição de Pedido**
+| Validação | Código de Erro | Mensagem |
+|-----------|----------------|----------|
+| Pedido existe | 404 | "Ownership request not found" |
+| Estado é Em Análise | 400 | "Only requests in 'Analysing' status can be rejected" |
+| Utilizador é admin do abrigo | 403 | "Only shelter administrators can reject ownership requests" |
+| Animal é do mesmo abrigo | 403 | "You can only reject requests for animals in your shelter" |
+
+---
+## Outras mudanças:
+- Modifiquei a classe "dbinitializer" para que os users tenham IDs fixos para que os testes de integração funcionem sem conflitos
+- Acrescentei um user que é administrador do Shelter 2, para incluir mais um caso de teste de integração importante para os Ownership Requests
+---
+
+Segundo reviewer: @joelpinto-aw 
+
+Fecha as issues #26 e #28 
+- feat: get and edit users profile (#47 #49) - basic`nThis PR closes user stories #47 and #49 .
+
+**Summary**
+
+This PR introduces the implementation of the GetUserProfile and EditUserProfile functionalities, allowing both regular users and Admin CAA accounts to view and update their personal information.
+
+**Main Changes**
+Added new endpoints in UsersController:
+
+- GET /api/users: Retrieve the currently authenticated user's profile (GetUserProfile)
+
+This endpoint returns the profile details of the authenticated user, whether they are a regular user or an Admin CAA. If the user is not authenticated, the endpoint returns an error saying "User is not authenticated".
+
+Response Example:
+
+```
+{
+    "id": "38bd42ca-c819-4496-be10-0d312a08c837",
+    "name": "Diana Silva",
+    "birthDate": "1990-09-30",
+    "street": "Rua das Oliveiras 10",
+    "city": "Faro",
+    "postalCode": "8000-333",
+    "phoneNumber": "912345678",
+}
+```
+
+- PUT /api/users: Edit the authenticated user's profile (EditUserProfile)
+
+This endpoint allows updating editable personal details for the logged-in user.
+It returns the new user object updated or an error in case any field does't follow the validation rules.
+Request Example:
+
+```
+{
+    "name": "Diana Ferreira",
+    "birthDate": "1990-09-30",
+    "street": "Avenida 25 de Abril, 101",
+    "city": "Faro",
+    "postalCode": "8000-333",
+    "phoneNumber": "913456789"
+}
+```
+
+**DTOs and Validation**
+
+- ReqUserProfileDto → Defines editable fields available for user profile updates.
+- ResUserProfileDto → Defines the structure of the user profile data returned.
+- UserProfileValidator, enforcing domain constraints.
+
+**Handlers and Core Changes**
+
+- Added GetUserProfile.Handler: Retrieves the authenticated user’s data. Returns a Result<User> with full user information or a 404 error if not found.
+- Added EditUserProfile.Handler:  Validates user existence → Updates editable fields only →  Persists changes via EF Core while preserving authentication data integrity.
+
+
+**Unit Tests**
+
+- GetUserProfileTest: Ensures only an existing user can see its own personal data.
+- EditUserProfileTest: Ensures invalid inputs are rejected by the validator and a valid user profile can be edited.
+
+
+**Other Implementations**
+- Updated MappingProfiles to include mappings between: User ↔ ResUserProfileDto and ReqUserProfileDto ↔ User
+- Documentation for all DTOs, validators, and handlers.
+- Added authentication checks to prevent unauthorized access to both endpoints.
+- feat: edit and deactivated animal - basic`nThis PR closes user stories #30 and #31.
+
+
+**Summary**
+
+This PR introduces the implementation for the EditAnimal and DeactivateAnimal functionalities, ensuring compliance with business rules that govern animal management in shelters.
+Both endpoints follow domain restrictions and maintain the consistency and integrity of the stored data.
+
+**Main Changes**
+
+Added new endpoints to AnimalsController:
+
+- PUT /api/animals/{id} → Edit an existing animal (EditAnimal)
+
+Allows updating selected attributes of an existing animal record, returning the updated animal or an error if the updates fails.
+The following JSON payload represents the data required to update an animal:
+```
+{
+        "id": "f055cc31-fdeb-4c65-bb73-4f558f67dd0c",
+        "name": "Pipoca",
+        "species": "Dog",
+        "size": "Small",
+        "sex": "Female",
+        "breedId": "2b2b2222-2222-2222-2222-222222222222",
+        "animalState": "PartiallyFostered",
+        "colour": "Dourado",
+        "birthDate": "2024-01-12",
+        "age": 1,
+        "description": "Cadela pequena e simpática, ideal para crianças.",
+        "sterilized": false,
+        "features": "Muito ativa e adora correr na roda",
+        "cost": 10,
+        "shelterId": "11111111-1111-1111-1111-111111111111",
+         "images": [
+            {
+                "id": "11fe0ca9-5f41-498c-a82a-74fd46914ed3",
+                "isPrincipal": true,
+                "url": "https://example.com/image.jpg",
+                "description": "Thor atento ao portão"
+            }
+        ]
+    }
+```
+This endpoint returns the full updated animal object.
+
+- PATCH /api/animals/{id}/deactivate → Deactivate an animal (DeactivateAnimal)
+
+This endpoint performs a logical deactivation of the animal record.
+
+It receives only the animal ID in the request and returns the full updated animal object after changing its state to Inactive or an error if it fails.
+Animals with states HasOwner, PartiallyFostered, or TotallyFostered cannot be deactivated.
+
+
+**DTOs and Validation**
+
+- Added a new ReqEditAnimalDto, which inherits from ReqCreateAnimalDto, allowing reuse of common fields and validation rules while introducing the additional editable property. 
+- Created the EditAnimalValidator, which inherits from CreateAnimalValidator, automatically applying all creation validation rules.
+- It also adds new specific rules for editing operations, such as validating the provided AnimalState. 
+
+**Other Implementations**
+
+- Added new EditAnimal and DeactivateAnimal command handlers in Application.Animals.Commands.
+- Updated MappingProfiles to support conversion between ReqEditAnimalDto ↔ Animal and return ResAnimalDto in the response.
+- Added documentation to all new classes.
+
+**Unit Tests**
+
+Comprehensive unit tests were implemented for both features 
+
+- EditAnimalTests: Ensures invalid inputs are rejected by the validator and a valid animal can be edited.
+
+- DeactivateAnimalTests: Ensures that animals that are owned or fostered cannot change their status to Inactive and also checks if a shelterId or an animalId doesn't exist it's also not possible to change the animal's status to Inactive.
+ 
+
+
+
+- feat: added auth to CreateAnimal and GetAnimalsByShelter (#26 #36) - basic`nThis PR closes user stories #29 and #36. It fully meets all acceptance criteria, including the AdminCAA authorization feature in #29 and #36, which has now been implemented with JWT authentication and authorization.
+
+**Key Changes:**
+
+- JWT authentication and authorization fully integrated
+- AdminCAA role-based authorization implemented for protected endpoints
+- POST /api/animals (CreateAnimal) now requires AdminCAA authorization via Bearer token in headers
+- GET /api/animals/shelter/{id} (GetAnimalsByShelter) now requires authentication via Bearer token in headers
+
+- Feature(auth): Implementar a autenticação do utilizador (#44) - basic`nImplementação do endpoint de login (RFAP-02).
+
+- Criado endpoint POST /api/login
+- Validação de credenciais (Identity)
+- Geração de token JWT com role
+- Testes unitários incluídos
+- Mensagens JSON uniformizadas via IdentityResponseMiddleware
+
+Testes:
+- Login com credenciais válidas
+- Mensagem clara para erro de credenciais
+- Token JWT válido para rotas protegidas
+
+Closes #44 
+
+- Feature: Endpoint para detalhe de animal (#53) - basic`n### 📝 Descrição
+Este *pull request* implementa o endpoint responsável por devolver a informação detalhada de um animal, conforme o requisito **RFCA-02 – Detalhe do Animal**.
+
+### 🔧 Alterações principais
+- Implementado o endpoint `GET /api/animals/{id}` no controlador de animais.  
+- Adicionada validação do ID e controlo de acesso aos dados.  
+- Filtrados animais com estados **“Não Disponível”**, **“Apadrinhamento Total”** e **“Ownership”** (não são apresentados).  
+- Tratamento de erros:
+  - ID inválido ou inexistente → devolve `404 Not Found`;
+  - Outros erros → devolvem mensagens apropriadas via `BaseApiController.HandleResult`.
+- Criados testes unitários para validar os diferentes cenários de sucesso e falha.
+
+### ✅ Critérios de aceitação cobertos
+- O endpoint devolve corretamente o detalhe de um animal por ID.  
+- O ID é validado e os dados são obtidos da base de dados.  
+- Animais ocultos não são expostos.  
+- Em caso de falha, é devolvida uma mensagem de erro adequada.
+
+- feat: add createAnimal, ListAnimals and ListAnimalsByShelter endpoints (#29 #51 #36) - basic`nThis PR closses user stories #29, #51, and #36,.  It meets the acceptance criteria with the exception of the AdminCAA authorization feature in #29 and #36, which will be completed once JWT authentication is integrated.
+
+### Summary
+This PR introduces the implementation for the **Animals** and **Shelters** modules, including endpoints, entity definitions, validation, and global error handling middleware.
+
+### Main Changes
+
+**Added new endpoints to AnimalsController:**
+- `POST /api/animals` → Create a new animal (CreateAnimal) and returns the animal id created (9a77dab7-d0cb-42c1-9a15-9a5d18607a73)
+The following JSON payload represents the data required to create a new animal record in the system.
+
+```
+{
+  "name": "Leo",
+  "species": "Cat",
+  "description": "A calm and friendly cat who loves attention.",
+  "size": "Small",
+  "sex": "Male",
+  "colour": "Grey",
+  "birthDate": "2018-05-10",
+  "sterilized": false,
+  "breedId": "4dd8e9a3-5490-4f60-8604-4a90c532c257",
+  "cost": 30.6,
+  "features": "Microchipped and vaccinated.",
+  "images": [
+    {
+      "isPrincipal": true,
+      "url": "https://example.com/images/celinho1.jpg",
+      "description": "Celinho posing for the camera."
+    },
+    {
+      "isPrincipal": false,
+      "url": "https://example.com/images/celinho2.jpg",
+      "description": "Celinho relaxing in the sun."
+    }
+  ]
+}
+
+
+```
+
+- `GET /api/animals` → Retrieve a paginated list of available and partially fostered animals (ListAnimals). 
+This endpoint receives optionally a pageNumber parameter, returning the following ordered list of animals that are currently available or partially fostered.
+```
+[
+    {
+            "animalId": "9b4fac41-6bc5-464c-b6da-bbe3aeffd93c",
+            "name": "Bolinhas",
+            "species": "Cat",
+            "size": "Small",
+            "sex": "Male",
+            "breed": {
+                "id": "4dd8e9a3-5490-4f60-8604-4a90c532c257",
+                "name": "Siamês",
+                "description": "Raça de gato elegante e sociável."
+            },
+            "animalState": "Available",
+            "colour": "Branco e cinzento",
+            "birthDate": "2022-04-15",
+            "age": 3,
+            "description": "Gato muito meigo e brincalhão, gosta de dormir ao sol.",
+            "sterilized": true,
+            "features": "Olhos verdes, muito sociável",
+            "cost": 30,
+            "shelterId": "11111111-1111-1111-1111-111111111111",
+            "images": [
+                {
+                    "imageId": "3d04f390-6c11-493e-9dd3-ef7c16b69a08",
+                    "isPrincipal": false,
+                    "url": "https://example.com/images/bolinhas2.jpg",
+                    "description": "Bolinhas a brincar."
+                },
+                {
+                    "imageId": "3e557884-179f-4045-9b3c-27a3f0f3f6c6",
+                    "isPrincipal": true,
+                    "url": "https://example.com/images/bolinhas1.jpg",
+                    "description": "Bolinhas."
+                }
+            ]
+        },
+...
+]
+```
+
+**Added new endpoints to SheltersController:**
+- `GET /api/shelters/{shelterId}/animals` → List all animals by shelter (ListAnimalsByShelter)
+This endpoint receives a shelterId and optionally a pageNumber parameter, returning the following ordered list of animals associated with that shelter.
+
+```
+[
+    {
+        "animalId": "7409efd8-371d-4ddf-acc0-3c4384d621e0",
+        "name": "Leo",
+        "species": "Cat",
+        "size": "Small",
+        "sex": "Male",
+        "breed": {
+            "id": "4dd8e9a3-5490-4f60-8604-4a90c532c257",
+            "name": "Siamês",
+            "description": "Raça de gato elegante e sociável."
+        },
+        "animalState": "Available",
+        "colour": "Grey",
+        "birthDate": "2018-05-10",
+        "age": 7,
+        "description": "A calm and friendly cat who loves attention.",
+        "sterilized": false,
+        "features": "Microchipped and vaccinated.",
+        "cost": 30.6,
+        "shelterId": "22222222-2222-2222-2222-222222222222",
+        "images": [
+            {
+                "imageId": "420c5869-bb01-4c49-bafb-0df4f4a98796",
+                "isPrincipal": false,
+                "url": "https://example.com/images/celinho2.jpg",
+                "description": "Celinho relaxing in the sun."
+            },
+            {
+                "imageId": "ed999539-8efe-454a-9004-e39d954f1d5c",
+                "isPrincipal": true,
+                "url": "https://example.com/images/celinho1.jpg",
+                "description": "Celinho posing for the camera."
+            }
+        ]
+    },
+...
+]
+```
+
+### Other Implementations
+- Implemented `ExceptionMiddleware` to handle unhandled exceptions globally and return structured JSON error responses using the `AppException` model.
+- Added specific handling for `ValidationException` from FluentValidation.
+- Integrated FluentValidation for automatic validation of DTOs (`BaseAnimalDTO`, `CreateAnimalDTO`).
+- Updated `Program.cs` configuration accordingly.
+
+### Documentation
+
+Added documentation to:
+- Validators (CreateAnimalValidator)
+- Controllers (AnimalsControllers, SheltersControllers)
+- Core ( MappingProfils, PagedList)
+- DTOs (CreateAnimalDTO)
+- Added inline comments for clarity and maintainability across the domain and persistence layers.
+
+---
+
+### Unit Tests
+- Added comprehensive **unit test suites** for both controllers:
+   - **CreateAnimalValidator** → covering field-level validation for name, breed, enums, cost, images and date constraints using an isolated valid DTO baseline
+  - **GetAnimalsTests** → covering listing animals, filtering by state, pagination and ordering.
+  - **GetAnimalsByShelterTests** → covering listing animals by shelter, ordering, pagination and filtering by shelter ID.
+- Moq was used to mock dependencies such as IMapper, allowing controller and handler tests to run without relying on the real AutoMapper configuration or external services.
+- EF Core’s InMemory provider was used to simulate a database context (AppDbContext) for data-driven tests, eliminating the need for a real PostgreSQL instance.
+
+
+- Revert " feat(animals): implement endpoint to get animal details by ID #53 - (basic)"`nReverts see-paw/backend#95
+-  feat(animals): implement endpoint to get animal details by ID #53 - (basic)`nEsta PR implementa o endpoint GET /api/animals/{id}, que devolve o detalhe de um animal identificado por ID.
+
+Alterações principais:
+
+Validação de GUID através do GuidStringValidator
+Repositório atualizado para retornar apenas animais visíveis
+Mensagens de erro para estados “Não Disponível”, “Apadrinhamento Total” e “Ownership”
+Testes unitários e de integração adicionados
+
+Critérios de aceitação:
+
+GET devolve o detalhe do animal por ID
+O ID é validado
+Animais ocultos não são expostos
+Em caso de erro é devolvida mensagem adequada
+
+Relacionado:
+Closes #53 

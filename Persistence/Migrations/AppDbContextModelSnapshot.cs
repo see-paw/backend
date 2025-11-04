@@ -30,7 +30,6 @@ namespace Persistence.Migrations
 
                     b.Property<string>("AnimalId")
                         .IsRequired()
-                        .HasMaxLength(36)
                         .HasColumnType("character varying(36)");
 
                     b.Property<DateTime>("CreatedAt")

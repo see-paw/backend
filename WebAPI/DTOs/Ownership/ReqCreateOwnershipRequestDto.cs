@@ -7,6 +7,5 @@ namespace WebAPI.DTOs.Ownership;
 /// </summary>
 public class ReqCreateOwnershipRequestDto
 {
-    [Required(ErrorMessage = "Animal ID is required")]
     public string AnimalId { get; set; } = string.Empty;
 }

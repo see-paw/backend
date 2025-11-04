@@ -13,7 +13,6 @@ namespace WebAPI.Controllers;
 /// API controller responsible for handling ownership request operations.
 /// Provides endpoints for creating, updating status, approving and rejecting ownership requests.
 /// </summary>
-[Authorize]
 public class OwnershipRequestsController(IMapper mapper) : BaseApiController
 {
     /// <summary>
@@ -31,6 +30,7 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
     /// <response code="401">Unauthorized — if the user is not authenticated.</response>
     /// <response code="403">Forbidden — if the user does not have permission to access this data.</response>
     /// <response code="500">Internal server error — if an unexpected error occurs.</response>
+    [Authorize(Roles = "AdminCAA")]
     [HttpGet]
     public async Task<ActionResult> GetOwnershipRequests([FromQuery] int pageNumber = 1)
     {
@@ -39,7 +39,7 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
             PageNumber = pageNumber
         });
 
-        if (!result.IsSuccess)
+        if (!result.IsSuccess || result.Value == null)
         {
             return HandleResult(result);
         }
@@ -57,13 +57,13 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
         // Return the successful paginated result
         return HandleResult(Result<PagedList<ResOwnershipRequestDto>>.Success(dtoPagedList, 200));
     }
-    
 
     /// <summary>
     /// Creates a new ownership request for an animal.
     /// </summary>
     /// <param name="dto">The request DTO containing animal ID.</param>
     /// <returns>The created ownership request object.</returns>
+    [Authorize(Roles = "User")]
     [HttpPost]
     public async Task<ActionResult<ResOwnershipRequestDto>> CreateOwnershipRequest([FromBody] ReqCreateOwnershipRequestDto dto)
     {
@@ -88,6 +88,7 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
     /// <param name="id">The ownership request ID.</param>
     /// <param name="dto">Optional request info to update.</param>
     /// <returns>The updated ownership request object.</returns>
+    [Authorize(Roles = "AdminCAA")]
     [HttpPut("analysing/{id}")]
     public async Task<ActionResult<ResOwnershipRequestDto>> UpdateStatus(string id, [FromBody] ReqUpdateOwnershipStatusDto dto)
     {
@@ -112,6 +113,7 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
     /// </summary>
     /// <param name="id">The ownership request ID.</param>
     /// <returns>The approved ownership request object.</returns>
+    [Authorize(Roles = "AdminCAA")]
     [HttpPut("approve/{id}")]
     public async Task<ActionResult<ResOwnershipRequestDto>> ApproveRequest(string id)
     {
@@ -136,6 +138,7 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
     /// <param name="id">The ownership request ID.</param>
     /// <param name="dto">The rejection reason.</param>
     /// <returns>The rejected ownership request object.</returns>
+    [Authorize(Roles = "AdminCAA")]
     [HttpPut("reject/{id}")]
     public async Task<ActionResult<ResOwnershipRequestDto>> RejectRequest(string id, [FromBody] ReqRejectOwnershipRequestDto dto)
     {
