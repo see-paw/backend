@@ -1493,7 +1493,7 @@ public static class DbInitializer
                     Id = favorite4Id,
                     UserId = user7Id,  // Gustavo
                     AnimalId = "f055cc31-fdeb-4c65-bb73-4f558f67dd1b",  // Bolinhas
-                    IsActive = false,  // ⚠️ INATIVO
+                    IsActive = false,  // INATIVO
                     CreatedAt = DateTime.UtcNow.AddDays(-4)
                 }
             };

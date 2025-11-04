@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Application.Notifications.DTOs;
+using AutoMapper;
 using Domain;
 using WebAPI.DTOs;
 using WebAPI.DTOs.Activities;
@@ -156,6 +157,10 @@ public class MappingProfiles : Profile
             .ForMember(d => d.RequestedAt, o => o.MapFrom(s => s.OwnershipStartDate ?? DateTime.UtcNow))
             .ForMember(d => d.ApprovedAt, o => o.MapFrom(s => s.OwnershipStartDate))
             .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => s.UpdatedAt));
+
+        // Notifications
+        CreateMap<Notification, ResNotificationDto>()
+            .ForMember(d => d.Type, o => o.MapFrom(s => s.Type.ToString()));
     }
 
     private static int CalculateAge(DateOnly birthDate)
