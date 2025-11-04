@@ -44,7 +44,6 @@
 
   <ItemGroup>
     <Folder Include="Assets\bcRBCk4Z\" />
-    <Folder Include="FavoritesTest\Validators\" />
   </ItemGroup>
 
 </Project>
