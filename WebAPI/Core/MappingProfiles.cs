@@ -157,7 +157,7 @@ public class MappingProfiles : Profile
             .ForMember(d => d.ApprovedAt, o => o.MapFrom(s => s.OwnershipStartDate))
             .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => s.UpdatedAt));
 
-
+        // User Registration mapping
         CreateMap<ReqRegisterUserDto, User>()
             // Set the Identity username to the user's email (login is based on UserName).
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email))
@@ -172,6 +172,10 @@ public class MappingProfiles : Profile
             .ForMember(dest => dest.Fosterings, opt => opt.Ignore())
             .ForMember(dest => dest.OwnershipRequests, opt => opt.Ignore())
             .ForMember(dest => dest.Activities, opt => opt.Ignore());
+
+        CreateMap<User, ResRegisterUserDto>()
+            .ForMember(dest => dest.Role, opt => opt.Ignore());
+
     }
 
     private static int CalculateAge(DateOnly birthDate)

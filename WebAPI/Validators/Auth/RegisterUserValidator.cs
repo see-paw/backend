@@ -4,6 +4,7 @@ public class ReqRegisterUserValidator : AbstractValidator<ReqRegisterUserDto>
 {
     public ReqRegisterUserValidator()
     {
+        // USER (always required)
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Name is required.")
             .MaximumLength(255);
@@ -42,5 +43,45 @@ public class ReqRegisterUserValidator : AbstractValidator<ReqRegisterUserDto>
             .NotEmpty().WithMessage("SelectedRole is required.")
             .Must(role => role == "User" || role == "AdminCAA")
             .WithMessage("SelectedRole must be either 'User' or 'AdminCAA'.");
+
+        When(x => x.SelectedRole == "AdminCAA", () =>
+        {
+            RuleFor(x => x.ShelterName)
+                .NotEmpty()
+                .Length(2, 255);
+
+            RuleFor(x => x.ShelterStreet)
+                .NotEmpty()
+                .MaximumLength(255);
+
+            RuleFor(x => x.ShelterCity)
+                .NotEmpty()
+                .MaximumLength(100);
+
+            RuleFor(x => x.ShelterPostalCode)
+                .NotEmpty()
+                .Matches(@"^\d{4}-\d{3}$")
+                .WithMessage("Shelter Postal Code must be in the format 0000-000.");
+
+            RuleFor(x => x.ShelterPhone)
+                .NotEmpty()
+                .Matches(@"^[29]\d{8}$")
+                .WithMessage("Phone must have 9 digits and start with 2 or 9.");
+
+            RuleFor(x => x.ShelterNIF)
+                .NotEmpty()
+                .Matches(@"^\d{9}$")
+                .WithMessage("NIF must contain exactly 9 digits.");
+
+            RuleFor(x => x.ShelterOpeningTime)
+                .NotNull()
+                .WithMessage("Opening time is required.");
+
+            RuleFor(x => x.ShelterClosingTime)
+                .NotNull()
+                .WithMessage("Closing time is required.");
+
+        });
+
     }
 }

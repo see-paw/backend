@@ -78,6 +78,7 @@ builder.Services.AddMediatR(x => {
     x.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 
+
 builder.Services.AddScoped<IFosteringService, FosteringService>();
 builder.Services.AddScoped<FosteringDomainService>();
 builder.Services.AddScoped(typeof(IImagesUploader<>), typeof(ImagesUploader<>));
