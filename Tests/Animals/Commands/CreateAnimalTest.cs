@@ -392,7 +392,75 @@ public class CreateAnimalTests : IDisposable
         Assert.False(result.IsSuccess);
         Assert.Equal(500, result.Code);
     }
-    
+
+    #endregion
+
+    #region Notification Tests
+
+    [Fact]
+    public async Task Handle_SuccessfulCreation_ShouldNotifyAllUsers()
+    {
+        var (shelter, breed) = await SetupEntities();
+        var animal = CreateValidAnimal(shelter.Id, breed.Id);
+        SetupSuccessfulUpload();
+
+        var command = new CreateAnimal.Command
+        {
+            Animal = animal,
+            ShelterId = shelter.Id,
+            Images = new List<Image> { CreateImage("Test", true) },
+            Files = new List<IFormFile> { CreateMockFile("test.jpg", 1024).Object }
+        };
+
+        var result = await _sut.Handle(command, CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        _mockNotificationService.Verify(
+            x => x.CreateAndSendToRoleAsync(
+                "User",
+                NotificationType.NEW_ANIMAL_ADDED,
+                It.IsAny<string>(),
+                animal.Id
+            ),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task Handle_UploadFails_ShouldNotNotifyUsers()
+    {
+        var (shelter, breed) = await SetupEntities();
+        var animal = CreateValidAnimal(shelter.Id, breed.Id);
+
+        _mockUploadService.Setup(x => x.UploadImagesAsync(
+                It.IsAny<string>(),
+                It.IsAny<List<IFormFile>>(),
+                It.IsAny<List<Image>>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<Unit>.Failure("Upload failed", 500));
+
+        var command = new CreateAnimal.Command
+        {
+            Animal = animal,
+            ShelterId = shelter.Id,
+            Images = new List<Image> { CreateImage("Test", true) },
+            Files = new List<IFormFile> { CreateMockFile("test.jpg", 1024).Object }
+        };
+
+        var result = await _sut.Handle(command, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        _mockNotificationService.Verify(
+            x => x.CreateAndSendToRoleAsync(
+                It.IsAny<string>(),
+                It.IsAny<NotificationType>(),
+                It.IsAny<string>(),
+                It.IsAny<string>()
+            ),
+            Times.Never
+        );
+    }
+
     #endregion
 
     #region Edge Cases
