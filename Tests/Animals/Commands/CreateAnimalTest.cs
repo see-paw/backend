@@ -19,6 +19,7 @@ public class CreateAnimalTests : IDisposable
     private readonly AppDbContext _dbContext;
     private readonly Mock<IImagesUploader<Animal>> _mockUploadService;
     private readonly CreateAnimal.Handler _sut;
+    private readonly Mock<INotificationService> _mockNotificationService;
 
     public CreateAnimalTests()
     {
@@ -29,7 +30,8 @@ public class CreateAnimalTests : IDisposable
 
         _dbContext = new AppDbContext(options);
         _mockUploadService = new Mock<IImagesUploader<Animal>>();
-        _sut = new CreateAnimal.Handler(_dbContext, _mockUploadService.Object);
+        _mockNotificationService = new Mock<INotificationService>();
+        _sut = new CreateAnimal.Handler(_dbContext, _mockUploadService.Object, _mockNotificationService.Object);
     }
 
     public void Dispose()

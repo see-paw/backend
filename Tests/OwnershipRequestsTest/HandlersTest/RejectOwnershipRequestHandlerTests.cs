@@ -13,7 +13,7 @@ public class RejectOwnershipRequestHandlerTests
 {
     private readonly AppDbContext _context;
     private readonly Mock<IUserAccessor> _mockUserAccessor;
-
+    private readonly Mock<INotificationService> _mockNotificationService;
     public RejectOwnershipRequestHandlerTests()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -22,6 +22,7 @@ public class RejectOwnershipRequestHandlerTests
 
         _context = new AppDbContext(options);
         _mockUserAccessor = new Mock<IUserAccessor>();
+        _mockNotificationService = new Mock<INotificationService>();
     }
 
     private async Task<(Animal animal, OwnershipRequest request, User user, Shelter shelter)> SeedOwnershipRequestAsync(
@@ -108,7 +109,7 @@ public class RejectOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(nonAdminUser);
 
-        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new RejectOwnershipRequest.Command
         {
@@ -130,7 +131,7 @@ public class RejectOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new RejectOwnershipRequest.Command
         {
@@ -158,7 +159,7 @@ public class RejectOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new RejectOwnershipRequest.Command
         {
@@ -185,7 +186,7 @@ public class RejectOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new RejectOwnershipRequest.Command
         {
@@ -212,7 +213,7 @@ public class RejectOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new RejectOwnershipRequest.Command
         {
@@ -239,7 +240,7 @@ public class RejectOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         await handler.Handle(new RejectOwnershipRequest.Command
         {
@@ -267,7 +268,7 @@ public class RejectOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         await handler.Handle(new RejectOwnershipRequest.Command
         {
@@ -295,7 +296,7 @@ public class RejectOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var rejectionReason = "Does not meet requirements";
 
@@ -326,7 +327,7 @@ public class RejectOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         await handler.Handle(new RejectOwnershipRequest.Command
         {
@@ -355,7 +356,7 @@ public class RejectOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new RejectOwnershipRequest.Command
         {
@@ -382,7 +383,7 @@ public class RejectOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new RejectOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new RejectOwnershipRequest.Command
         {

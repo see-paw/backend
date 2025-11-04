@@ -76,6 +76,10 @@ public class ApproveOwnershipRequest
             if (!validationResult.IsSuccess)
                 return validationResult;
 
+            var activeFosterings = ownershipRequest.Animal.Fosterings
+                .Where(f => f.Status == FosteringStatus.Active)
+                .ToList();
+
             ApproveRequest(ownershipRequest);
             UpdateAnimalToOwned(ownershipRequest);
             CancelActiveFosterings(ownershipRequest.Animal);
@@ -85,7 +89,7 @@ public class ApproveOwnershipRequest
             if (!success)
                 return Result<OwnershipRequest>.Failure("Failed to approve ownership request", 500);
 
-            await NotifyUser(ownershipRequest, cancellationToken);
+            await NotifyUser(ownershipRequest, activeFosterings, cancellationToken);
 
             return Result<OwnershipRequest>.Success(ownershipRequest, 200);
         }
@@ -219,13 +223,14 @@ public class ApproveOwnershipRequest
         /// </summary>
         /// <param name="ownershipRequest">The approved ownership request with loaded navigation properties.</param>
         /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
+        /// <param name="activeFosterings">List of active fosterings before the cancellation of active fosterings
         /// <remarks>
         /// Sends two types of notifications:
         /// - Notifies the requesting user that their adoption request was approved
         /// - Notifies all active fostering sponsors that the animal they sponsor has been adopted
         /// This is a best-effort operation and does not affect the approval if notifications fail.
         /// </remarks>
-        private async Task NotifyUser(OwnershipRequest ownershipRequest, CancellationToken cancellationToken)
+        private async Task NotifyUser(OwnershipRequest ownershipRequest, ICollection<Fostering> activeFosterings, CancellationToken cancellationToken)
         {
             // Notify the user that made the owernship request
             await notificationService.CreateAndSendToUserAsync(
@@ -236,11 +241,6 @@ public class ApproveOwnershipRequest
                 ownershipRequestId: ownershipRequest.Id,
                 cancellationToken: cancellationToken
              );
-
-            // Notify fostering sponsors that the animal was adopted
-            var activeFosterings = ownershipRequest.Animal.Fosterings
-                .Where(f => f.Status == FosteringStatus.Active)
-                .ToList();
 
             foreach (var fostering in activeFosterings)
             {
