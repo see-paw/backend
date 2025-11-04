@@ -224,7 +224,7 @@ public class GetOwnershipRequestsByShelterHandlerTests
 
         var result = await handler.Handle(new GetOwnershipRequestsByShelter.Query(), default);
 
-        Assert.NotNull(result.Value!.First().Animal);
+        Assert.NotNull(result.Value!.Items.First().Animal);
     }
 
     [Fact]
@@ -245,7 +245,7 @@ public class GetOwnershipRequestsByShelterHandlerTests
 
         var result = await handler.Handle(new GetOwnershipRequestsByShelter.Query(), default);
 
-        Assert.NotNull(result.Value!.First().User);
+        Assert.NotNull(result.Value!.Items.First().User);
     }
 
     [Fact]
@@ -269,7 +269,7 @@ public class GetOwnershipRequestsByShelterHandlerTests
             PageSize = 10
         }, default);
 
-        var returnedRequests = result.Value!.ToList();
+        var returnedRequests = result.Value!.Items.ToList();
         Assert.True(returnedRequests[0].RequestedAt >= returnedRequests[1].RequestedAt);
     }
 
@@ -294,7 +294,7 @@ public class GetOwnershipRequestsByShelterHandlerTests
             PageSize = 2
         }, default);
 
-        Assert.Equal(2, result.Value!.Count);
+        Assert.Equal(2, result.Value!.Items.Count);
     }
 
     [Fact]
@@ -409,6 +409,6 @@ public class GetOwnershipRequestsByShelterHandlerTests
 
         var result = await handler.Handle(new GetOwnershipRequestsByShelter.Query(), default);
 
-        Assert.Equal(20, result.Value!.Count); // Default PageSize is 20
+        Assert.Equal(20, result.Value!.Items.Count); // Default PageSize is 20
     }
 }
