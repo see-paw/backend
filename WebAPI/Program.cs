@@ -90,11 +90,24 @@ builder.Services.AddScoped<IUserAccessor, UserAccessor>();
 builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 builder.Services.AddValidatorsFromAssemblyContaining<GetAnimalDetailsValidator>();
 builder.Services.AddTransient<ExceptionMiddleware>();
+
+// This registers ASP.NET Core Identity using *API endpoints* instead of MVC UI.
+// It automatically provides:
+//   POST /api/register
+//   POST /api/login
+//   POST /api/logout
+//
+// It also configures token-based authentication (Bearer tokens), NOT cookies.
 builder.Services.AddIdentityApiEndpoints<User>(opt =>
-    {
-        opt.User.RequireUniqueEmail = true;
-    }).AddRoles<IdentityRole>()
+{
+    // Ensures no two accounts share the same email
+    opt.User.RequireUniqueEmail = true;
+    // Enables support for roles (e.g., "User", "AdminCAA")
+}).AddRoles<IdentityRole>()
+    // Tells Identity to store users and roles in the AppDbContext
     .AddEntityFrameworkStores<AppDbContext>();
+
+//Tell ASP.NET Core that the default auth mechanism is Bearer tokens (not cookies).
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = IdentityConstants.BearerScheme;

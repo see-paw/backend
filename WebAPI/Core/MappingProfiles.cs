@@ -156,6 +156,22 @@ public class MappingProfiles : Profile
             .ForMember(d => d.RequestedAt, o => o.MapFrom(s => s.OwnershipStartDate ?? DateTime.UtcNow))
             .ForMember(d => d.ApprovedAt, o => o.MapFrom(s => s.OwnershipStartDate))
             .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => s.UpdatedAt));
+
+
+        CreateMap<ReqRegisterUserDto, User>()
+            // Set the Identity username to the user's email (login is based on UserName).
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email))
+            // Explicitly map the Email property from the DTO to the User entity.
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+            // Automatically assign the account creation timestamp at registration time.
+            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
+            // Ignore collections and UpdatedAt
+            .ForMember(dest => dest.Shelter, opt => opt.Ignore())
+            .ForMember(dest => dest.Favorites, opt => opt.Ignore())
+            .ForMember(dest => dest.OwnedAnimals, opt => opt.Ignore())
+            .ForMember(dest => dest.Fosterings, opt => opt.Ignore())
+            .ForMember(dest => dest.OwnershipRequests, opt => opt.Ignore())
+            .ForMember(dest => dest.Activities, opt => opt.Ignore());
     }
 
     private static int CalculateAge(DateOnly birthDate)
