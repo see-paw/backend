@@ -41,12 +41,13 @@ namespace Application.Animals.Commands
             /// </summary>
             public required List<IFormFile> Files { get; init; }
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Handler"/> class.
         /// </summary>
         /// <param name="dbContext">The application's database context.</param>
         /// <param name="uploadService">The service used to handle image uploads for animals.</param>
+        /// <param name="notificationService"> The service used to create and manage notifications.</param>
         public class Handler(
             AppDbContext dbContext, 
             IImagesUploader<Animal> uploadService,
