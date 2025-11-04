@@ -16,7 +16,8 @@ public interface INotificationService
         NotificationType type,
         string message,
         string? animalId = null,
-        string? ownershipRequestId = null);
+        string? ownershipRequestId = null,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Creates and sends a broadcast notification to all users with a specific role.

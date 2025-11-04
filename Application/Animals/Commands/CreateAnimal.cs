@@ -1,6 +1,7 @@
 ﻿using Application.Core;
 using Application.Interfaces;
 using Domain;
+using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Persistence;
@@ -46,7 +47,10 @@ namespace Application.Animals.Commands
         /// </summary>
         /// <param name="dbContext">The application's database context.</param>
         /// <param name="uploadService">The service used to handle image uploads for animals.</param>
-        public class Handler(AppDbContext dbContext, IImagesUploader<Animal> uploadService) 
+        public class Handler(
+            AppDbContext dbContext, 
+            IImagesUploader<Animal> uploadService,
+            INotificationService notificationService) 
             : IRequestHandler<Command, Result<string>>
         {
             /// <summary>
@@ -86,7 +90,30 @@ namespace Application.Animals.Commands
                 }
 
                 await transaction.CommitAsync(cancellationToken);
+
+                await NotifyUsers(request.Animal, cancellationToken);
+                    
                 return Result<string>.Success(request.Animal.Id, 201);
+            }
+
+            /// <summary>
+            /// Notifies all users about the new animal added to the catalog.
+            /// </summary>
+            /// <param name="animal">The newly created animal.</param>
+            /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
+            /// <remarks>
+            /// Broadcasts a notification to all users with the "User" role informing them
+            /// that a new animal is available for adoption.
+            /// This is a best-effort operation and does not affect the animal creation if notifications fail.
+            /// </remarks>
+            private async Task NotifyUsers(Animal animal, CancellationToken cancellationToken)
+            {
+                await notificationService.CreateAndSendToRoleAsync(
+                    role: "User",
+                    NotificationType.NEW_ANIMAL_ADDED,
+                    message: $"{animal.Name} é o novo patudo disponível para apadrinhamento e adoção responsável!",
+                    animalId: animal.Id
+                    );
             }
         }
     }

@@ -2,6 +2,7 @@
 using Domain;
 using Domain.Enums;
 using Infrastructure.Hubs;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -13,6 +14,7 @@ namespace Infrastructure.Notifications;
 /// Implementation of notification service using SignalR for real-time delivery.
 /// </summary>
 public class NotificationService(
+    UserManager<User> userManager,
     IHubContext<NotificationHub> hubContext, 
     AppDbContext context,
     ILogger<NotificationService> logger) : INotificationService
@@ -25,7 +27,8 @@ public class NotificationService(
         NotificationType type,
         string message,
         string? animalId = null,
-        string? ownershipRequestId = null)
+        string? ownershipRequestId = null,
+        CancellationToken cancellationToken = default)
     {
         // Create notification in database
         var notification = new Notification
@@ -41,7 +44,7 @@ public class NotificationService(
         };
 
         context.Notifications.Add(notification);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(cancellationToken);
 
         // Send via SignalR (if user is connected)
         await SendToUserAsync(userId, notification);
@@ -58,48 +61,36 @@ public class NotificationService(
         string message,
         string? animalId = null)
     {
-        // [TODO]: refactor when roles are implemented, this was implemented without defined user roles "AdminCAA" / "User"
-        // Get all users with the specified role
-        var users = role == "AdminCAA"
-        ? await context.Users.Where(u => u.ShelterId != null).ToListAsync()
-        : await context.Users.Where(u => u.ShelterId == null).ToListAsync();
+        // Fetch all users with the specified role using Identity
+        var users = await userManager.GetUsersInRoleAsync(role);
 
         var notifications = new List<Notification>();
 
         foreach (var user in users)
         {
-            // Check if user has the specified role
-            var userRoles = await context.UserRoles
-                .Where(ur => ur.UserId == user.Id)
-                .Join(context.Roles,
-                    ur => ur.RoleId,
-                    r => r.Id,
-                    (ur, r) => r.Name)
-                .ToListAsync();
-
-            if (userRoles.Contains(role))
+            var notification = new Notification
             {
-                var notification = new Notification
-                {
-                    UserId = user.Id,
-                    Type = type,
-                    Message = message,
-                    AnimalId = animalId,
-                    IsRead = false,
-                    IsBroadcast = true,
-                    TargetRole = role,
-                    CreatedAt = DateTime.UtcNow
-                };
+                UserId = user.Id,
+                Type = type,
+                Message = message,
+                AnimalId = animalId,
+                IsRead = false,
+                IsBroadcast = true,
+                TargetRole = role,
+                CreatedAt = DateTime.UtcNow
+            };
 
-                context.Notifications.Add(notification);
-                notifications.Add(notification);
-            }
+            context.Notifications.Add(notification);
+            notifications.Add(notification);
         }
 
         await context.SaveChangesAsync();
 
         // Send via SignalR to all users with the role
-        await SendToRoleAsync(role, notifications.First());
+        if (notifications.Count != 0)
+        {
+            await SendToRoleAsync(role, notifications.First());
+        }
 
         return notifications;
     }
@@ -135,13 +126,11 @@ public class NotificationService(
     {
         try
         {
-            // [TODO]: refactor when roles are implemented, this was implemented without defined user roles "AdminCAA"/"User"
             // Filter users by role based on ShelterId
-            var userIds = role == "AdminCAA"
-                ? await context.Users.Where(u => u.ShelterId != null).Select(u => u.Id).ToListAsync()
-                : await context.Users.Where(u => u.ShelterId == null).Select(u => u.Id).ToListAsync();
+            var users = await userManager.GetUsersInRoleAsync(role);
+            var userIds = users.Select(u => u.Id).ToList();
 
-            if (userIds.Any())
+            if (userIds.Count != 0)
             {
                 await hubContext.Clients.Users(userIds).SendAsync("ReceiveNotification", new
                 {

@@ -136,10 +136,10 @@ public class CreateOwnershipRequest
         /// </remarks>
         private async Task NotifyAdmin(OwnershipRequest createdRequest, CancellationToken cancellationToken)
         {
-            var user = createdRequest.User;
+            var userRequestingOwnership = createdRequest.User;
             var animal = createdRequest.Animal;
 
-            if (animal?.Shelter != null && user?.Id != null)
+            if (animal?.Shelter != null && userRequestingOwnership?.Id != null)
             {
                 var adminCAA = await context.Users
                     .FirstOrDefaultAsync(u => u.ShelterId == animal.ShelterId, cancellationToken);
@@ -149,9 +149,10 @@ public class CreateOwnershipRequest
                     await notificationService.CreateAndSendToUserAsync(
                         userId: adminCAA.Id,
                         type: NotificationType.NEW_OWNERSHIP_REQUEST,
-                        message: $"{user.Name} fez um pedido para adotar {animal.Name}",
+                        message: $"{userRequestingOwnership.Name} fez um pedido para adotar {animal.Name}",
                         animalId: animal.Id,
-                        ownershipRequestId: createdRequest.Id
+                        ownershipRequestId: createdRequest.Id,
+                        cancellationToken: cancellationToken
                     );
                 }
             }
