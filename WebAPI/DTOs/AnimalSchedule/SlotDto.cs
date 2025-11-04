@@ -6,13 +6,8 @@ public class SlotDto
 {
     public string Id { get; set; }
     
-    public DateTime StartDateTime { get; set; }
+    public string Start { get; init; } = null!;
     
-    public DateTime EndDateTime { get; set; }
+    public string End { get; init; } = null!;
     
-    public SlotStatus Status { get; set; }
-    
-    public string ReservedBy { get; set; }
-    
-    public bool IsOwnReservation { get; set; }
 }

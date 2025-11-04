@@ -289,6 +289,8 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
             entity.Property(s => s.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .ValueGeneratedOnAddOrUpdate();
+            
+            entity.HasIndex(s => new { s.StartDateTime, s.EndDateTime });
         });
         
         // ========== ACTIVITY SLOT CONFIGURATIONS ==========
@@ -300,6 +302,9 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
                 .WithOne(a => a.Slot)
                 .HasForeignKey<ActivitySlot>(s => s.ActivityId)
                 .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasIndex(s => s.ActivityId)
+                .IsUnique();
         });
         
         // ========== SHELTER UNAVAILABILITY SLOT CONFIGURATION ==========
@@ -309,6 +314,8 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
                 .WithMany(sh => sh.UnavailabilitySlots)
                 .HasForeignKey(s => s.ShelterId)
                 .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasIndex(s => new { s.ShelterId, s.StartDateTime });
         });
     }
     

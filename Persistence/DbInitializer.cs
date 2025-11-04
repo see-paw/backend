@@ -33,7 +33,6 @@ public static class DbInitializer
         ILoggerFactory loggerFactory,
         bool resetDatabase = false)
     {
-        
         const string breed1Id = "1a1a1111-1111-1111-1111-111111111111";
         const string breed2Id = "2b2b2222-2222-2222-2222-222222222222";
         const string breed3Id = "3c3c3333-3333-3333-3333-333333333333";
@@ -531,110 +530,110 @@ public static class DbInitializer
                     Images = new List<Image>()
                 },
 
-            // ======== ANIMALS FOR ELIGIBITY TESTING  ========
+                // ======== ANIMALS FOR ELIGIBITY TESTING  ========
 
-            // 1. Animal Available for Ownership (200 OK)
-            new()
-            {
-                Id = "available-animal-id-123",
-                Name = "TestDog Available",
-                AnimalState = AnimalState.Available,
-                Description = "Animal de teste disponível para adoção",
-                Species = Species.Dog,
-                Size = SizeType.Medium,
-                Sex = SexType.Male,
-                Colour = "Preto",
-                BirthDate = new DateOnly(2022, 1, 15),
-                Sterilized = true,
-                BreedId = breed2Id,
-                Cost = 40,
-                Features = "Animal de teste - Estado: Available",
-                ShelterId = shelter1Id,
-                Images = new List<Image>()
-            },
+                // 1. Animal Available for Ownership (200 OK)
+                new()
+                {
+                    Id = "available-animal-id-123",
+                    Name = "TestDog Available",
+                    AnimalState = AnimalState.Available,
+                    Description = "Animal de teste disponível para adoção",
+                    Species = Species.Dog,
+                    Size = SizeType.Medium,
+                    Sex = SexType.Male,
+                    Colour = "Preto",
+                    BirthDate = new DateOnly(2022, 1, 15),
+                    Sterilized = true,
+                    BreedId = breed2Id,
+                    Cost = 40,
+                    Features = "Animal de teste - Estado: Available",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
 
-            // 2. Animal with owner (400 Bad Request)
-            new()
-            {
-                Id = "animal-with-owner-id",
-                Name = "TestDog HasOwner",
-                AnimalState = AnimalState.HasOwner,
-                Description = "Animal de teste que já tem dono",
-                Species = Species.Dog,
-                Size = SizeType.Small,
-                Sex = SexType.Female,
-                Colour = "Branco",
-                BirthDate = new DateOnly(2021, 5, 10),
-                Sterilized = true,
-                BreedId = breed2Id,
-                Cost = 35,
-                Features = "Animal de teste - Estado: HasOwner",
-                ShelterId = shelter1Id,
-                OwnerId = user3Id, // Carlos
-                OwnershipStartDate = DateTime.UtcNow.AddMonths(-2),
-                Images = new List<Image>()
-            },
+                // 2. Animal with owner (400 Bad Request)
+                new()
+                {
+                    Id = "animal-with-owner-id",
+                    Name = "TestDog HasOwner",
+                    AnimalState = AnimalState.HasOwner,
+                    Description = "Animal de teste que já tem dono",
+                    Species = Species.Dog,
+                    Size = SizeType.Small,
+                    Sex = SexType.Female,
+                    Colour = "Branco",
+                    BirthDate = new DateOnly(2021, 5, 10),
+                    Sterilized = true,
+                    BreedId = breed2Id,
+                    Cost = 35,
+                    Features = "Animal de teste - Estado: HasOwner",
+                    ShelterId = shelter1Id,
+                    OwnerId = user3Id, // Carlos
+                    OwnershipStartDate = DateTime.UtcNow.AddMonths(-2),
+                    Images = new List<Image>()
+                },
 
-            // 3. Animal Inactive (400 Bad Request)
-            new()
-            {
-                Id = "inactive-animal-id",
-                Name = "TestCat Inactive",
-                AnimalState = AnimalState.Inactive,
-                Description = "Animal de teste inativo",
-                Species = Species.Cat,
-                Size = SizeType.Small,
-                Sex = SexType.Male,
-                Colour = "Cinzento",
-                BirthDate = new DateOnly(2020, 8, 20),
-                Sterilized = true,
-                BreedId = breed1Id,
-                Cost = 25,
-                Features = "Animal de teste - Estado: Inactive",
-                ShelterId = shelter1Id,
-                Images = new List<Image>()
-            },
+                // 3. Animal Inactive (400 Bad Request)
+                new()
+                {
+                    Id = "inactive-animal-id",
+                    Name = "TestCat Inactive",
+                    AnimalState = AnimalState.Inactive,
+                    Description = "Animal de teste inativo",
+                    Species = Species.Cat,
+                    Size = SizeType.Small,
+                    Sex = SexType.Male,
+                    Colour = "Cinzento",
+                    BirthDate = new DateOnly(2020, 8, 20),
+                    Sterilized = true,
+                    BreedId = breed1Id,
+                    Cost = 25,
+                    Features = "Animal de teste - Estado: Inactive",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
 
-            // 4. Animal Partially Fostered (400 Bad Request)
-            new()
-            {
-                Id = "partially-fostered-animal-id",
-                Name = "TestDog PartiallyFostered",
-                AnimalState = AnimalState.PartiallyFostered,
-                Description = "Animal de teste parcialmente acolhido",
-                Species = Species.Dog,
-                Size = SizeType.Large,
-                Sex = SexType.Male,
-                Colour = "Castanho",
-                BirthDate = new DateOnly(2021, 3, 5),
-                Sterilized = false,
-                BreedId = breed3Id,
-                Cost = 60,
-                Features = "Animal de teste - Estado: PartiallyFostered",
-                ShelterId = shelter1Id,
-                Images = new List<Image>()
-            },
+                // 4. Animal Partially Fostered (400 Bad Request)
+                new()
+                {
+                    Id = "partially-fostered-animal-id",
+                    Name = "TestDog PartiallyFostered",
+                    AnimalState = AnimalState.PartiallyFostered,
+                    Description = "Animal de teste parcialmente acolhido",
+                    Species = Species.Dog,
+                    Size = SizeType.Large,
+                    Sex = SexType.Male,
+                    Colour = "Castanho",
+                    BirthDate = new DateOnly(2021, 3, 5),
+                    Sterilized = false,
+                    BreedId = breed3Id,
+                    Cost = 60,
+                    Features = "Animal de teste - Estado: PartiallyFostered",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
 
-            // 5. Animal Totally Fostered (400 Bad Request)
-            new()
-            {
-                Id = "totally-fostered-animal-id",
-                Name = "TestCat TotallyFostered",
-                AnimalState = AnimalState.TotallyFostered,
-                Description = "Animal de teste totalmente acolhido",
-                Species = Species.Cat,
-                Size = SizeType.Small,
-                Sex = SexType.Female,
-                Colour = "Laranja",
-                BirthDate = new DateOnly(2022, 7, 12),
-                Sterilized = true,
-                BreedId = breed1Id,
-                Cost = 30,
-                Features = "Animal de teste - Estado: TotallyFostered",
-                ShelterId = shelter1Id,
-                Images = new List<Image>()
-            }
-        };
+                // 5. Animal Totally Fostered (400 Bad Request)
+                new()
+                {
+                    Id = "totally-fostered-animal-id",
+                    Name = "TestCat TotallyFostered",
+                    AnimalState = AnimalState.TotallyFostered,
+                    Description = "Animal de teste totalmente acolhido",
+                    Species = Species.Cat,
+                    Size = SizeType.Small,
+                    Sex = SexType.Female,
+                    Colour = "Laranja",
+                    BirthDate = new DateOnly(2022, 7, 12),
+                    Sterilized = true,
+                    BreedId = breed1Id,
+                    Cost = 30,
+                    Features = "Animal de teste - Estado: TotallyFostered",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                }
+            };
 
             await dbContext.Animals.AddRangeAsync(animals);
             await dbContext.SaveChangesAsync();
@@ -840,11 +839,11 @@ public static class DbInitializer
 
             var fosterings = new List<Fostering>
             {
-                new ()
+                new()
                 {
                     Id = fostering1Id,
                     AnimalId = animal2Id,
-                    UserId = user4Id,   
+                    UserId = user4Id,
                     Amount = 10,
                     Status = FosteringStatus.Active,
                     StartDate = DateTime.UtcNow
@@ -877,5 +876,243 @@ public static class DbInitializer
             await dbContext.SaveChangesAsync();
         }
 
+        // ======== SEED ACTIVITIES & SLOTS (FIXOS/ESTÁTICOS) ========
+
+        const string activityAId = "a0000000-0000-0000-0000-000000000001";
+        const string activityBId = "a0000000-0000-0000-0000-000000000002";
+        const string activityCId = "a0000000-0000-0000-0000-000000000003";
+        const string activityDId = "a0000000-0000-0000-0000-000000000004";
+
+// ---------- SLOTS RESERVADOS (ActivitySlot) ----------
+        const string slotResv1Id = "s0000000-0000-0000-0000-000000000101";
+        const string slotResv2Id = "s0000000-0000-0000-0000-000000000102";
+        const string slotResv3Id = "s0000000-0000-0000-0000-000000000103";
+        const string slotResv4Id = "s0000000-0000-0000-0000-000000000104";
+
+// Slots de Indisponibilidade (ShelterUnavailabilitySlot)
+        const string slotUnav1Id = "s0000000-0000-0000-0000-000000000201"; // 2025-01-15 12:00–14:00
+        const string slotUnav2Id = "s0000000-0000-0000-0000-000000000202"; // 2025-01-16 15:00–16:00
+        const string slotUnav3Id = "s0000000-0000-0000-0000-000000000203"; // 2025-01-16 22:00–2025-01-17 02:00
+
+// ---------- Descrições (fixas) ----------
+        const string descRes11 = "Reserva 11h";
+        const string descRes17 = "Reserva 17h";
+        const string descRes10 = "Reserva 10h";
+        const string descRes1030 = "Reserva 10h30";
+        const string descLunch = "Almoço";
+        const string descMeet = "Reunião de Equipa";
+        const string descNight = "Manutenção Noturna";
+
+// ---------- Função auxiliar para DateTime (UTC) ----------
+        static DateTime Utc(int y, int M, int d, int h, int m) =>
+            DateTime.SpecifyKind(new DateTime(y, M, d, h, m, 0), DateTimeKind.Utc);
+
+// ---------- ATIVIDADES (só cria se faltarem) ----------
+
+        await dbContext.Activities.AddRangeAsync(new List<Activity>
+        {
+            new()
+            {
+                Id = activityAId,
+                AnimalId = animal2Id, // Diana
+                UserId = user4Id,
+                Status = ActivityStatus.Active,
+                Type = ActivityType.Fostering,
+                StartDate = Utc(2025, 1, 1, 1, 0),
+                EndDate = Utc(2025, 12, 31, 23, 59)
+            },
+            new()
+            {
+                Id = activityBId,
+                AnimalId = animal2Id, // Carlos
+                UserId = user3Id,
+                Status = ActivityStatus.Active,
+                Type = ActivityType.Fostering,
+                StartDate = Utc(2025, 1, 1, 0, 0),
+                EndDate = Utc(2025, 12, 31, 23, 59)
+            },
+            new()
+            {
+                Id = activityCId,
+                AnimalId = animal3Id,
+                UserId = user4Id,
+                Status = ActivityStatus.Active,
+                Type = ActivityType.Fostering,
+                StartDate = Utc(2025, 1, 1, 2, 0),
+                EndDate = Utc(2025, 12, 31, 23, 59)
+            },
+            new()
+            {
+                Id = activityDId,
+                AnimalId = animal4Id,
+                UserId = user3Id,
+                Status = ActivityStatus.Active,
+                Type = ActivityType.Fostering,
+                StartDate = Utc(2025, 1, 1, 3, 0),
+                EndDate = Utc(2025, 12, 31, 23, 59)
+            }
+        });
+
+        await dbContext.SaveChangesAsync();
+
+// ---------- SLOTS RESERVADOS (ActivitySlot) ----------
+        var reserved = new List<ActivitySlot>
+        {
+            new()
+            {
+                Id = slotResv1Id,
+                ActivityId = activityAId, // Diana c/ animal2
+                StartDateTime = Utc(2025, 1, 15, 11, 0),
+                EndDateTime = Utc(2025, 1, 15, 11, 30),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity
+            },
+            new()
+            {
+                Id = slotResv2Id,
+                ActivityId = activityBId, // Carlos c/ animal2
+                StartDateTime = Utc(2025, 1, 15, 17, 0),
+                EndDateTime = Utc(2025, 1, 15, 17, 30),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity
+            },
+            new()
+            {
+                Id = slotResv3Id,
+                ActivityId = activityCId, // nova activity
+                StartDateTime = Utc(2025, 1, 16, 10, 0),
+                EndDateTime = Utc(2025, 1, 16, 10, 30),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity
+            },
+            new()
+            {
+                Id = slotResv4Id,
+                ActivityId = activityDId, // nova activity
+                StartDateTime = Utc(2025, 1, 16, 10, 30),
+                EndDateTime = Utc(2025, 1, 16, 11, 0),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity
+            }
+        };
+
+        if (reserved.Count > 0)
+        {
+            await dbContext.Slots.AddRangeAsync(reserved);
+            await dbContext.SaveChangesAsync();
+        }
+
+// ---------- SLOTS DE INDISPONIBILIDADE (ShelterUnavailabilitySlot) ----------
+        var unav = new List<Slot>();
+
+        unav.Add(new ShelterUnavailabilitySlot
+        {
+            Id = slotUnav1Id,
+            ShelterId = shelter1Id,
+            StartDateTime = Utc(2025, 1, 15, 12, 0),
+            EndDateTime = Utc(2025, 1, 15, 14, 0),
+            Status = SlotStatus.Unavailable,
+            Type = SlotType.ShelterUnavailable,
+            Reason = descLunch
+        });
+
+        unav.Add(new ShelterUnavailabilitySlot
+        {
+            Id = slotUnav2Id,
+            ShelterId = shelter1Id,
+            StartDateTime = Utc(2025, 1, 16, 15, 0),
+            EndDateTime = Utc(2025, 1, 16, 16, 0),
+            Status = SlotStatus.Unavailable,
+            Type = SlotType.ShelterUnavailable,
+            Reason = descMeet
+        });
+
+
+        // atravessa a meia-noite (para testar split por dia no read)
+
+        unav.Add(new ShelterUnavailabilitySlot
+        {
+            Id = slotUnav3Id,
+            ShelterId = shelter1Id,
+            StartDateTime = Utc(2025, 1, 16, 22, 0),
+            EndDateTime = Utc(2025, 1, 17, 2, 0),
+            Status = SlotStatus.Unavailable,
+            Type = SlotType.ShelterUnavailable,
+            Reason = descNight
+        });
+
+
+        if (unav.Count > 0)
+        {
+            await dbContext.Slots.AddRangeAsync(unav);
+            await dbContext.SaveChangesAsync();
+        }
+// ---------- EDGE CASES PARA HORÁRIOS DE ABERTURA/FECHO ----------
+// Opening: 09:00 | Closing: 18:00
+// Abertura e fecho serão simulados durante o cálculo em TimeRangeCalculator
+
+        const string activityEId = "a0000000-0000-0000-0000-000000000005";
+        const string activityFId = "a0000000-0000-0000-0000-000000000006";
+        const string slotEdgeStartBeforeOpenId = "s0000000-0000-0000-0000-000000000105";
+        const string slotEdgeEndAfterCloseId = "s0000000-0000-0000-0000-000000000106";
+
+// Criação de 2 novas atividades (para manter a relação 1:1)
+        await dbContext.Activities.AddRangeAsync(new List<Activity>
+        {
+            new()
+            {
+                Id = activityEId,
+                AnimalId = animal2Id,
+                UserId = user4Id,
+                Status = ActivityStatus.Active,
+                Type = ActivityType.Fostering,
+                StartDate = Utc(2025, 1, 17, 0, 0),
+                EndDate = Utc(2025, 12, 31, 23, 59)
+            },
+            new()
+            {
+                Id = activityFId,
+                AnimalId = animal3Id,
+                UserId = user3Id,
+                Status = ActivityStatus.Active,
+                Type = ActivityType.Fostering,
+                StartDate = Utc(2025, 1, 17, 0, 0),
+                EndDate = Utc(2025, 12, 31, 23, 59)
+            }
+        });
+
+        await dbContext.SaveChangesAsync();
+
+// ---------- SLOTS PARA TESTAR OS EDGE CASES ----------
+
+        var edgeCases = new List<ActivitySlot>
+        {
+            // 🕘 Começa antes da abertura (08:30–09:30)
+            // → deverá ser truncado para 09:00–09:30
+            new()
+            {
+                Id = slotEdgeStartBeforeOpenId,
+                ActivityId = activityEId,
+                StartDateTime = Utc(2025, 1, 17, 8, 30),
+                EndDateTime = Utc(2025, 1, 17, 9, 30),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity
+            },
+
+            // 🌙 Termina depois do fecho (17:30–18:30)
+            // → deverá ser truncado para 17:30–18:00
+            new()
+            {
+                Id = slotEdgeEndAfterCloseId,
+                ActivityId = activityFId,
+                StartDateTime = Utc(2025, 1, 17, 17, 30),
+                EndDateTime = Utc(2025, 1, 17, 18, 30),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity
+            }
+        };
+
+        await dbContext.Slots.AddRangeAsync(edgeCases);
+        await dbContext.SaveChangesAsync();
     }
 }

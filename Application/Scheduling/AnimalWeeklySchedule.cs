@@ -4,9 +4,11 @@ namespace Application.Scheduling;
 
 public class AnimalWeeklySchedule
 {
-    public Animal Animal { get; set; }
+    public required Animal Animal { get; set; }
     
-    public Shelter Shelter { get; set; }
+    public required Shelter Shelter { get; set; }
     
-    public Dictionary<DateOnly, List<Slot>> WeeklySchedule { get; set; } = new();
+    public required DateOnly StartDate { get; set; }
+    
+    public List<DailySchedule> WeekSchedule { get; set; } = new();
 }
