@@ -27,6 +27,16 @@ namespace Application.Animals.Queries
             /// The number of records per page. Defaults to 20.
             /// </summary>
             public int PageSize { get; set; } = 20;
+
+            /// <summary>
+            /// parameter to sort the results by. Acceptable values: "name", "age", "created".
+            /// </summary>
+            public string? SortBy { get; set; } = null;
+
+            /// <summary>
+            /// direction of the sorting. Acceptable values: "asc", "desc".
+            /// </summary>
+            public string? Order { get; set; } = null;
         }
 
         /// <summary>
@@ -69,8 +79,27 @@ namespace Application.Animals.Queries
                     .Include(a => a.Images)       // Include associated images
                     .Where(a => a.AnimalState == AnimalState.Available
                              || a.AnimalState == AnimalState.PartiallyFostered)
-                    .OrderBy(a => a.Name)
                     .AsQueryable();
+
+                // Normalize params
+                string sort = request.SortBy?.ToLower() ?? "created";
+                string direction = request.Order?.ToLower() ?? "desc";
+                var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+                // Apply sorting based on parameters
+                query = (sort, direction) switch
+                {
+                    ("name", "asc") => query.OrderBy(a => a.Name),
+                    ("name", "desc") => query.OrderByDescending(a => a.Name),
+
+                    ("age", "asc") => query.OrderBy(a => today.Year - a.BirthDate.Year),
+                    ("age", "desc") => query.OrderByDescending(a => today.Year - a.BirthDate.Year),
+
+                    ("created", "asc") => query.OrderBy(a => a.CreatedAt),
+                    ("created", "desc") => query.OrderByDescending(a => a.CreatedAt),
+
+                    _ => query.OrderByDescending(a => a.CreatedAt)
+                };
 
                 // Apply pagination using the PagedList helper
                 var pagedList = await PagedList<Animal>.CreateAsync(

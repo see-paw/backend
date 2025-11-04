@@ -32,16 +32,23 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// Retrieves a paginated list of animals that are available or partially fostered.
     /// </summary>
     /// <param name="pageNumber">The page number to retrieve. Defaults to 1.</param>
+    /// <param name="sortBy"></param>
+    /// <param name="order"></param>
     /// <returns>
     /// A paginated <see cref="PagedList{T}"/> of <see cref="ResAnimalDto"/> objects representing the animals.
     /// Returns <c>400</c> if the page number is invalid or an appropriate error message on failure.
     /// </returns>
     [HttpGet]
-    public async Task<ActionResult<PagedList<ResAnimalDto>>> GetAnimals([FromQuery] int pageNumber = 1)
+    public async Task<ActionResult<PagedList<ResAnimalDto>>> GetAnimals(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] string? order = null)
     {
         var result = await Mediator.Send(new GetAnimalList.Query
         {
-            PageNumber = pageNumber
+            PageNumber = pageNumber,
+            SortBy = sortBy,
+            Order = order
         });
 
         if (!result.IsSuccess)

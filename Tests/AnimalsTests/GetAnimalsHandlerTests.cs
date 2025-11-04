@@ -109,27 +109,8 @@ namespace Tests.AnimalControllerTest.cs
             Assert.Equal(2, result.Value.Count);
         }
 
-        // Test: Ensure animals are returned in alphabetical order by name.
+        
 
-        [Fact]
-        public async Task AnimalsInAlphabeticalOrder()
-        {
-            var animals = new List<Animal>
-            {
-                CreateAnimal("Zara"),
-                CreateAnimal("Bella")
-            };
-
-            var context = CreateInMemoryContext(animals);
-            var handler = new GetAnimalList.Handler(context);
-            var query = new GetAnimalList.Query { PageNumber = 1 };
-
-            var result = await handler.Handle(query, CancellationToken.None);
-
-            var ordered = result.Value.ToList();
-            Assert.Equal("Bella", ordered[0].Name);
-            Assert.Equal("Zara", ordered[1].Name);
-        }
 
         // Test: Ensure failure is returned when no animals exist.
 
@@ -180,5 +161,129 @@ namespace Tests.AnimalControllerTest.cs
 
             Assert.Equal(2, result.Value.TotalPages);
         }
+
+        //Test: should order by name ascending 
+        [Fact]
+        public async Task ShouldOrderByNameAscending()
+        {
+            var animals = new List<Animal>
+            {
+                CreateAnimal("Zara"),
+                CreateAnimal("Bella")
+            };
+
+            var context = CreateInMemoryContext(animals);
+            var handler = new GetAnimalList.Handler(context);
+
+            var query = new GetAnimalList.Query { SortBy = "name", Order = "asc" };
+
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            var list = result.Value.ToList();
+            Assert.Equal("Bella", list[0].Name);
+            Assert.Equal("Zara", list[1].Name);
+        }
+
+
+        //Test: should order by name descending
+        [Fact]
+        public async Task ShouldOrderByNameDescending()
+        {
+            var animals = new List<Animal>
+            {
+                CreateAnimal("Zara"),
+                CreateAnimal("Bella")
+            };
+
+            var context = CreateInMemoryContext(animals);
+            var handler = new GetAnimalList.Handler(context);
+
+            var query = new GetAnimalList.Query { SortBy = "name", Order = "desc" };
+
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            var list = result.Value.ToList();
+            Assert.Equal("Zara", list[0].Name);
+            Assert.Equal("Bella", list[1].Name);
+        }
+
+        //Test: should order by age ascending 
+        [Fact]
+        public async Task ShouldOrderByAgeAscending()
+        {
+            var animalYoung = CreateAnimal("Puppy");
+            animalYoung.BirthDate = new DateOnly(2023, 1, 1);
+
+            var animalOld = CreateAnimal("Senior");
+            animalOld.BirthDate = new DateOnly(2010, 1, 1);
+
+            var context = CreateInMemoryContext(new List<Animal> { animalOld, animalYoung });
+            var handler = new GetAnimalList.Handler(context);
+
+            var query = new GetAnimalList.Query { SortBy = "age", Order = "asc" };
+
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            Assert.Equal("Puppy", result.Value.First().Name); // younger animal first
+        }
+
+        //Test: should order by age descending
+        [Fact]
+        public async Task ShouldOrderByAgeDescending()
+        {
+            var animalYoung = CreateAnimal("Puppy");
+            animalYoung.BirthDate = new DateOnly(2023, 1, 1);
+
+            var animalOld = CreateAnimal("Senior");
+            animalOld.BirthDate = new DateOnly(2010, 1, 1);
+
+            var context = CreateInMemoryContext(new List<Animal> { animalOld, animalYoung });
+            var handler = new GetAnimalList.Handler(context);
+
+            var query = new GetAnimalList.Query { SortBy = "age", Order = "asc" };
+
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            Assert.Equal("Senior", result.Value.Last().Name); // oldest animal first
+        }
+
+        //Test: should order by created at descending (is also the default case)
+        [Fact]
+        public async Task ShouldOrderByCreatedAtDescendingByDefault()
+        {
+            var animal1 = CreateAnimal("Angelo");
+            animal1.CreatedAt = DateTime.UtcNow.AddHours(-5);
+
+            var animal2 = CreateAnimal("Bina");
+            animal2.CreatedAt = DateTime.UtcNow;
+
+            var context = CreateInMemoryContext(new List<Animal>() { animal1, animal2 });
+            var handler = new GetAnimalList.Handler(context);
+
+            var result = await handler.Handle(new GetAnimalList.Query(), CancellationToken.None);
+
+            Assert.Equal("Bina", result.Value.First().Name); // the most recently created animal first
+        }
+
+        //Test: should order by created at ascending
+        [Fact]
+        public async Task ShouldOrderByCreatedAtAscendingByDefault()
+        {
+            var animal1 = CreateAnimal("Angelo");
+            animal1.CreatedAt = DateTime.UtcNow.AddHours(-5);
+
+            var animal2 = CreateAnimal("Bina");
+            animal2.CreatedAt = DateTime.UtcNow;
+
+            var context = CreateInMemoryContext(new List<Animal>() { animal1, animal2 });
+            var handler = new GetAnimalList.Handler(context);
+
+            var result = await handler.Handle(new GetAnimalList.Query(), CancellationToken.None);
+
+            Assert.Equal("Angelo", result.Value.Last().Name); // the least recently created animal last
+        }
+
+
+
     }
 }
