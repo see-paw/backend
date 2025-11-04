@@ -11,12 +11,12 @@ using Application.Core;
 namespace Tests.UsersControllerTest
 {
     //codacy: ignore[complexity]
-    public class GetUserProfileTest
+    public class GetUserProfileHandlerTest
     {
         private readonly AppDbContext _context;
         private readonly GetUserProfile.Handler _handler;
 
-        public GetUserProfileTest()
+        public GetUserProfileHandlerTest()
         {
             var options = new DbContextOptionsBuilder<AppDbContext>()
                 .UseInMemoryDatabase(databaseName: "GetUserProfileTestDB")

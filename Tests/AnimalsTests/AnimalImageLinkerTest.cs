@@ -4,7 +4,7 @@ using Application.Interfaces;
 using Domain;
 using Domain.Enums;
 
-namespace Tests.Animals;
+namespace Tests.AnimalControllerTest.cs;
 
 /// <summary>
 /// Unit tests for AnimalImageLinker using equivalence partitioning and boundary value analysis.
