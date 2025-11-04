@@ -19,7 +19,7 @@ public class NotificationsController(IMapper mapper) : BaseApiController
     /// </summary>
     /// <param name="unreadOnly">Optional filter to only return unread notifications.</param>
     /// <returns>List of notifications.</returns>
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = "User, AdminCAA")]
     [HttpGet]
     public async Task<ActionResult<List<ResNotificationDto>>> GetNotifications([FromQuery] bool? unreadOnly)
     {
@@ -37,7 +37,7 @@ public class NotificationsController(IMapper mapper) : BaseApiController
     /// Get only unread notifications for the authenticated user.
     /// </summary>
     /// <returns>List of unread notifications.</returns>
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = "User,AdminCAA")]
     [HttpGet("unread")]
     public async Task<ActionResult<List<ResNotificationDto>>> GetUnreadNotifications()
     {
@@ -56,7 +56,7 @@ public class NotificationsController(IMapper mapper) : BaseApiController
     /// </summary>
     /// <param name="id">ID of the notification to mark as read.</param>
     /// <returns>No content on success.</returns>
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = "User,AdminCAA")]
     [HttpPut("{id}/read")]
     public async Task<IActionResult> MarkAsRead(string id)
     {
@@ -68,7 +68,7 @@ public class NotificationsController(IMapper mapper) : BaseApiController
     /// </summary>
     /// <param name="id">ID of the notification to delete.</param>
     /// <returns>No content on success.</returns>
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = "User,AdminCAA")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteNotification(string id)
     {
