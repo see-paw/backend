@@ -56,7 +56,7 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
             return HandleResult(result);
         }
 
-        var dtoList = mapper.Map<List<ResAnimalDto>>(result.Value);
+        var dtoList = mapper.Map<List<ResAnimalDto>>(result.Value.Items);
 
         // Create a new paginated list with the DTOs
         var dtoPagedList = new PagedList<ResAnimalDto>(

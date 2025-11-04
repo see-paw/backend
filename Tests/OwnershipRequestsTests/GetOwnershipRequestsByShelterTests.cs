@@ -214,7 +214,7 @@ public class GetOwnershipRequestsByShelterControllerTests
     public async Task GetOwnershipRequests_ShouldCallMapperWithOwnershipRequests_WhenRequestIsValid()
     {
         var ownershipRequests = CreateOwnershipRequests();
-        var pagedList = new PagedList<OwnershipRequest>(ownershipRequests, 2, 1, 10);
+        var pagedList = new PagedList<OwnershipRequest>(ownershipRequests, ownershipRequests.Count, 1, 10);
         var responseDtos = CreateResponseDtos();
 
         _mockMediator
@@ -222,14 +222,15 @@ public class GetOwnershipRequestsByShelterControllerTests
             .ReturnsAsync(Result<PagedList<OwnershipRequest>>.Success(pagedList, 200));
 
         _mockMapper
-            .Setup(m => m.Map<List<ResOwnershipRequestDto>>(It.IsAny<List<OwnershipRequest>>()))
+            .Setup(m => m.Map<List<ResOwnershipRequestDto>>(It.IsAny<IEnumerable<OwnershipRequest>>()))
             .Returns(responseDtos);
 
         await _controller.GetOwnershipRequests(1);
 
         _mockMapper.Verify(m => m.Map<List<ResOwnershipRequestDto>>(
-            It.IsAny<List<OwnershipRequest>>()), Times.Once);
+            It.IsAny<IEnumerable<OwnershipRequest>>()), Times.Once);
     }
+
 
     [Fact]
     public async Task GetOwnershipRequests_ShouldReturnForbidden_WhenUserIsNotShelterAdministrator()
