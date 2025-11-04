@@ -36,9 +36,9 @@ public class ScheduleAssembler : IScheduleAssembler
             sched.WeekSchedule.Add(new DailySchedule
             {
                 Date = day,
-                AvailableSlots = (dayAvail ?? new()).OrderBy(b => b.Start).ToList(),
-                ReservedSlots = (dayRes ?? new()).OrderBy(s => s.StartDateTime.TimeOfDay).ToList(),
-                UnavailableSlots = (dayUnv ?? new()).OrderBy(s => s.StartDateTime.TimeOfDay).ToList()
+                AvailableSlots = dayAvail ?? new List<TimeBlock>(),        
+                ReservedSlots = dayRes ?? new List<Slot>(),           
+                UnavailableSlots = dayUnv ?? new List<Slot>()  
             });
         }
 

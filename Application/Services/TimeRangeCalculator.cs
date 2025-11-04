@@ -13,18 +13,14 @@ public class TimeRangeCalculator : ITimeRangeCalculator
         TimeSpan closing,
         DateOnly weekStart)
     {
-        if (opening >= closing) throw new ArgumentException("Opening must be before closing");
-        
         var occupied = allSlots
             .Where(s => s.Status != SlotStatus.Available)
-            .OrderBy(s => DateOnly.FromDateTime(s.StartDateTime))          
-            .ThenBy(s => s.StartDateTime.TimeOfDay)
             .Select(s => new TimeBlock
-                {
-                    Date = DateOnly.FromDateTime(s.StartDateTime),
-                    Start = s.StartDateTime.TimeOfDay,
-                    End = s.EndDateTime.TimeOfDay,
-                })
+            {
+                Date = DateOnly.FromDateTime(s.StartDateTime),
+                Start = s.StartDateTime.TimeOfDay,
+                End = s.EndDateTime.TimeOfDay
+            })
             .ToList();
         
         if (occupied.Count == 0)
@@ -35,6 +31,7 @@ public class TimeRangeCalculator : ITimeRangeCalculator
         var occupiedByDate = occupied.GroupBy(o => o.Date).ToDictionary(k => k.Key, v => v.ToList());
 
         var availableBlocks = AssembleAvailableBlocks(opening, closing, occupiedByDate);
+        
         AddFreeDays(opening, closing, weekStart, occupiedByDate, availableBlocks);
         
         return availableBlocks
@@ -67,7 +64,7 @@ public class TimeRangeCalculator : ITimeRangeCalculator
                     });
                 }
 
-                // Avança o cursor de tempo
+                // Avança o tempo
                 current = block.End > current ? block.End : current;
             }
 

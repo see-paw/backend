@@ -63,6 +63,8 @@ builder.Services.AddMediatR(x => {
     x.RegisterServicesFromAssemblyContaining<GetAnimalDetails.Handler>();
     x.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
+
+builder.Services.AddScoped<ISlotNormalizer, SlotNormalizer>();
 builder.Services.AddScoped<IScheduleAssembler, ScheduleAssembler>();
 builder.Services.AddScoped<ITimeRangeCalculator, TimeRangeCalculator>();
 builder.Services.AddScoped<IFosteringService, FosteringService>();
