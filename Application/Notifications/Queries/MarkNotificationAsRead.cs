@@ -4,7 +4,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
-namespace Application.Notifications.Commands;
+namespace Application.Notifications.Queries;
 
 /// <summary>
 /// Handles the operation of marking a notification as read for the authenticated user.

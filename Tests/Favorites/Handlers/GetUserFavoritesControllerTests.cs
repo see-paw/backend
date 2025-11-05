@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WebAPI.Controllers;
 using WebAPI.DTOs;
+using WebAPI.DTOs.Favorites;
 using Xunit;
 
 namespace Tests.Favorites.Handlers;

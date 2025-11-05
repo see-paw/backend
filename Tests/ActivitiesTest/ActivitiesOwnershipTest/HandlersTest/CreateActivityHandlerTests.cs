@@ -5,9 +5,8 @@ using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Persistence;
-using Xunit;
 
-namespace Tests.Activities;
+namespace Tests.ActivitiesTest.ActivitiesOwnershipTest.HandlersTest;
 
 /// <summary>
 /// Unit tests for CreateOwnershipActivity handler.

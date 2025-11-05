@@ -14,21 +14,50 @@ using System.Threading.Tasks;
 
 namespace Application.Activities.Commands;
 
+/// <summary>
+/// Command responsible for creating a new ownership activity between a user and an animal.
+/// </summary>
 public class CreateOwnershipActivity
 {
+    /// <summary>
+    /// Represents the command request used to create an ownership activity.
+    /// </summary>
     public class Command : IRequest<Result<Activity>>
     {
+        /// <summary>
+        /// The unique identifier of the animal for which the activity is being created.
+        /// </summary>
         public string AnimalId { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// The UTC start date and time of the activity.
+        /// </summary>
         public DateTime StartDate { get; set; }
+        
+        /// <summary>
+        /// The UTC end date and time of the activity.
+        /// </summary>
         public DateTime EndDate { get; set; }
     }
 
+    /// <summary>
+    /// Handles the logic for creating a new ownership activity.
+    /// </summary>
     public class Handler(
         AppDbContext context, 
         IUserAccessor userAccessor,
         INotificationService notificationService)
         : IRequestHandler<Command, Result<Activity>>
     {
+        /// <summary>
+        /// Executes the creation of a new ownership activity.
+        /// </summary>
+        /// <param name="request">The command request containing the activity details.</param>
+        /// <param name="cancellationToken">Token used to cancel the asynchronous operation.</param>
+        /// <returns>
+        /// A <see cref="Result{T}"/> containing the newly created <see cref="Activity"/> if successful,  
+        /// or an error result with a message and status code if validation fails.
+        /// </returns>
         public async Task<Result<Activity>> Handle(Command request, CancellationToken cancellationToken)
         {
             var userId = userAccessor.GetUserId();

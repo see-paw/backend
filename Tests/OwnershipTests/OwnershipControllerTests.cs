@@ -1,5 +1,5 @@
 using Application.Core;
-using Application.Interfaces;
+using Application.OwnershipRequests.Queries;
 using Application.Ownerships.Queries;
 using AutoMapper;
 using Domain;
@@ -9,9 +9,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WebAPI.Controllers;
-using WebAPI.DTOs;
+using WebAPI.DTOs.Ownership;
 
-namespace Tests.OwnershipControllerTest;
+namespace Tests.OwnershipTests;
 
 /// <summary>
 /// Unit tests for <see cref="OwnershipsController"/>.

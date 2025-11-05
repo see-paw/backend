@@ -1,13 +1,17 @@
-﻿using Application.Notifications.DTOs;
 using AutoMapper;
+ using Application.Scheduling;
 using Domain;
 using WebAPI.DTOs;
 using WebAPI.DTOs.Activities;
 using WebAPI.DTOs.Animals;
+using WebAPI.DTOs.AnimalSchedule;
 using WebAPI.DTOs.Breeds;
+using WebAPI.DTOs.Favorites;
 using WebAPI.DTOs.Fostering;
 using WebAPI.DTOs.Images;
+using WebAPI.DTOs.Notifications;
 using WebAPI.DTOs.Ownership;
+using WebAPI.DTOs.Shelter;
 using WebAPI.DTOs.User;
 
 namespace WebAPI.Core;
@@ -107,8 +111,7 @@ public class MappingProfiles : Profile
             .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount))
             .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))
             .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate));
-
-
+        
         CreateMap<User, ResUserProfileDto>();
 
         // OwnershipRequest mappings
@@ -161,6 +164,45 @@ public class MappingProfiles : Profile
         // Notifications
         CreateMap<Notification, ResNotificationDto>()
             .ForMember(d => d.Type, o => o.MapFrom(s => s.Type.ToString()));
+        
+        // Mapeia o agendamento semanal completo
+        CreateMap<AnimalWeeklySchedule, AnimalWeeklyScheduleDto>()
+            .ForMember(dest => dest.Animal, opt => opt.MapFrom(src => src.Animal))
+            .ForMember(dest => dest.Shelter, opt => opt.MapFrom(src => src.Shelter))
+            .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))
+            .ForMember(d => d.Days, opt => opt.MapFrom(src => src.WeekSchedule));
+
+        // Mapeia cada dia
+        CreateMap<DailySchedule, DailyScheduleDto>()
+            .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Date.ToString("yyyy-MM-dd")))
+            .ForMember(dest => dest.AvailableSlots, opt => opt.MapFrom(src => src.AvailableSlots))
+            .ForMember(dest => dest.ReservedSlots, opt => opt.MapFrom(src => src.ReservedSlots))
+            .ForMember(dest => dest.UnavailableSlots, opt => opt.MapFrom(src => src.UnavailableSlots));
+
+        // Blocos disponíveis
+        CreateMap<TimeBlock, SlotDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.Start, opt => opt.MapFrom(src => src.Start.ToString(@"hh\:mm")))
+            .ForMember(dest => dest.End,   opt => opt.MapFrom(src => src.End.ToString(@"hh\:mm")));
+
+        CreateMap<Slot, SlotDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.Start, opt => opt.MapFrom(src => src.StartDateTime.ToString("HH:mm")))
+            .ForMember(dest => dest.End, opt => opt.MapFrom(src => src.EndDateTime.ToString("HH:mm")));
+            
+        // Slots de atividade (reservas)
+        CreateMap<ActivitySlot, ActivitySlotDto>()
+            .IncludeBase<Slot, SlotDto>() 
+            .ForMember(dest => dest.ReservedBy,
+                opt => opt.MapFrom(src => src.Activity.User.UserName))
+            .ForMember(dest => dest.IsOwnReservation, opt => opt.Ignore());
+
+        // Slots de indisponibilidade do abrigo
+        CreateMap<ShelterUnavailabilitySlot, ShelterUnavailabilitySlotDto>()
+            .IncludeBase<Slot, SlotDto>() 
+            .ForMember(d => d.Reason, o => o.MapFrom(s => s.Reason));
+        
+        CreateMap<Shelter, ResShelterDto>();
     }
 
     private static int CalculateAge(DateOnly birthDate)

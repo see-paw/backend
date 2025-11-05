@@ -5,6 +5,7 @@ using WebAPI.Core;
 using WebAPI.DTOs;
 using WebAPI.DTOs.Animals;
 using WebAPI.DTOs.Images;
+using WebAPI.DTOs.Ownership;
 using Xunit;
 
 namespace Tests

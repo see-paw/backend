@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using Persistence;
 
-namespace Tests.Notifications;
+namespace Tests.NotificationsTest.Handlers;
 
 public class GetUserNotificationsHandlerTests
 {

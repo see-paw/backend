@@ -14,14 +14,32 @@ namespace Application.Favorites.Commands
     /// </summary>
     public class AddFavorite
     {
+        /// <summary>
+        /// Represents the request to add or reactivate a favorite animal.
+        /// </summary>
         public class Command : IRequest<Result<Animal>>
         {
+            /// <summary>
+            /// The unique identifier of the animal to be favorited.
+            /// </summary>
             public required string AnimalId { get; set; }
         }
 
+        /// <summary>
+        /// Handles the logic for adding or reactivating a favorite animal for the current user.
+        /// </summary>
         public class Handler(AppDbContext dbContext, IUserAccessor userAccessor, IMapper mapper)
             : IRequestHandler<Command, Result<Animal>>
         {
+            /// <summary>
+            /// Executes the process of adding or reactivating a favorite record for a user.
+            /// </summary>
+            /// <param name="request">The command containing the target <see cref="Animal"/> ID.</param>
+            /// <param name="ct">The cancellation token used to cancel the asynchronous operation.</param>
+            /// <returns>
+            /// A <see cref="Result{T}"/> containing the favorited <see cref="Animal"/> if successful,  
+            /// or an error result with the appropriate message and HTTP status code if any validation fails.
+            /// </returns>
             public async Task<Result<Animal>> Handle(Command request, CancellationToken ct)
             {
                 var user = await userAccessor.GetUserAsync();

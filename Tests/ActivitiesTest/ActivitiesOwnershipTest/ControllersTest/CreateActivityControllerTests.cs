@@ -9,9 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WebAPI.Controllers;
 using WebAPI.DTOs.Activities;
-using Xunit;
 
-namespace Tests.Activities;
+namespace Tests.ActivitiesTest.ActivitiesOwnershipTest.ControllersTest;
 
 /// <summary>
 /// Unit tests for CreateOwnershipActivity endpoint in ActivitiesController.

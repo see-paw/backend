@@ -1,7 +1,7 @@
 ﻿using Application.Notifications.Commands;
 using WebAPI.Validators.Notifications;
 
-namespace Tests.Notifications;
+namespace Tests.NotificationsTest.Validators;
 
 public class DeleteNotificationValidatorTests
 {

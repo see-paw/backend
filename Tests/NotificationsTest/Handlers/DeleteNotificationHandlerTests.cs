@@ -5,9 +5,8 @@ using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Persistence;
-using Xunit;
 
-namespace Tests.Notifications;
+namespace Tests.NotificationsTest.Handlers;
 
 public class DeleteNotificationHandlerTests
 {

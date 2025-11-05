@@ -1,4 +1,10 @@
 ﻿using Application.Animals.Queries;
+using WebAPI.Validators;
+using FluentValidation;
+using Persistence;
+using System.Text.Json.Serialization;
+using Application;
+using Application.Animals;
 using Application.Core;
 using Application.Fosterings;
 using Application.Interfaces;
@@ -77,6 +83,9 @@ builder.Services.AddMediatR(x => {
     x.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 
+builder.Services.AddScoped<ISlotNormalizer, SlotNormalizer>();
+builder.Services.AddScoped<IScheduleAssembler, ScheduleAssembler>();
+builder.Services.AddScoped<ITimeRangeCalculator, TimeRangeCalculator>();
 builder.Services.AddScoped<IFosteringService, FosteringService>();
 builder.Services.AddScoped<FosteringDomainService>();
 builder.Services.AddScoped(typeof(IImagesUploader<>), typeof(ImagesUploader<>));
@@ -107,6 +116,7 @@ builder.Services.Configure<CloudinarySettings>(
 builder.Services.Configure<FosteringSettings>(
     builder.Configuration.GetSection("Fostering")
 );
+
 // Notification Services
 builder.Services.AddSignalR();
 builder.Services.AddScoped<INotificationService, NotificationService>();

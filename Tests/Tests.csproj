@@ -44,8 +44,4 @@
     <EditorConfigFiles Remove=".editorconfig" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Assets\bcRBCk4Z\" />
-  </ItemGroup>
-
 </Project>

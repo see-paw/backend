@@ -223,7 +223,7 @@ public class ApproveOwnershipRequest
         /// </summary>
         /// <param name="ownershipRequest">The approved ownership request with loaded navigation properties.</param>
         /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
-        /// <param name="activeFosterings">List of active fosterings before the cancellation of active fosterings
+        /// <param name="activeFosterings">List of active fosterings before the cancellation of active fosterings</param>
         /// <remarks>
         /// Sends two types of notifications:
         /// - Notifies the requesting user that their adoption request was approved

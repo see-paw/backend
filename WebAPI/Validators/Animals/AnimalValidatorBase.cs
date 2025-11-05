@@ -1,7 +1,7 @@
 ﻿using Domain;
 using FluentValidation;
 
-namespace Application.Animals.Commands.Validators;
+namespace WebAPI.Validators.Animals;
 
 /// <summary>
 /// Defines the base validation rules that apply to any <see cref="Animal"/> entity.
@@ -10,6 +10,9 @@ namespace Application.Animals.Commands.Validators;
 /// </summary>
 public class AnimalValidatorBase : AbstractValidator<Animal>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AnimalValidatorBase"/> class.
+    /// </summary>
     public AnimalValidatorBase()
     {
         RuleFor(a => a.Name)
