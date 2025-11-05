@@ -5,14 +5,14 @@ using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Persistence;
-using Xunit;
 
-namespace Tests.OwnershipRequests;
+namespace Tests.OwnershipRequestsTest.HandlersTest;
 
 public class GetOwnershipRequestsByShelterHandlerTests
 {
     private readonly AppDbContext _context;
     private readonly Mock<IUserAccessor> _mockUserAccessor;
+    private readonly Mock<INotificationService> _mockNotificationService;
 
     public GetOwnershipRequestsByShelterHandlerTests()
     {
@@ -22,6 +22,7 @@ public class GetOwnershipRequestsByShelterHandlerTests
 
         _context = new AppDbContext(options);
         _mockUserAccessor = new Mock<IUserAccessor>();
+        _mockNotificationService = new Mock<INotificationService>();
     }
 
     private async Task<(Shelter shelter, List<OwnershipRequest> requests)> SeedMultipleOwnershipRequestsAsync(

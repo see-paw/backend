@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs;
 using WebAPI.DTOs.Animals;
+using WebAPI.DTOs.Favorites;
 
 namespace WebAPI.Controllers;
 

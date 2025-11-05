@@ -9,18 +9,50 @@ using Persistence;
 
 namespace Application.Activities.Commands;
 
+/// <summary>
+/// Command responsible for creating a new ownership activity between a user and an animal.
+/// </summary>
 public class CreateOwnershipActivity
 {
+    /// <summary>
+    /// Represents the command request used to create an ownership activity.
+    /// </summary>
     public class Command : IRequest<Result<Activity>>
     {
+        /// <summary>
+        /// The unique identifier of the animal for which the activity is being created.
+        /// </summary>
         public string AnimalId { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// The UTC start date and time of the activity.
+        /// </summary>
         public DateTime StartDate { get; set; }
+        
+        /// <summary>
+        /// The UTC end date and time of the activity.
+        /// </summary>
         public DateTime EndDate { get; set; }
     }
 
-    public class Handler(AppDbContext context, IUserAccessor userAccessor)
+    /// <summary>
+    /// Handles the logic for creating a new ownership activity.
+    /// </summary>
+    public class Handler(
+        AppDbContext context, 
+        IUserAccessor userAccessor,
+        INotificationService notificationService)
         : IRequestHandler<Command, Result<Activity>>
     {
+        /// <summary>
+        /// Executes the creation of a new ownership activity.
+        /// </summary>
+        /// <param name="request">The command request containing the activity details.</param>
+        /// <param name="cancellationToken">Token used to cancel the asynchronous operation.</param>
+        /// <returns>
+        /// A <see cref="Result{T}"/> containing the newly created <see cref="Activity"/> if successful,  
+        /// or an error result with a message and status code if validation fails.
+        /// </returns>
         public async Task<Result<Activity>> Handle(Command request, CancellationToken cancellationToken)
         {
             var userId = userAccessor.GetUserId();
@@ -55,6 +87,8 @@ public class CreateOwnershipActivity
                 .Include(a => a.Animal)
                 .Include(a => a.User)
                 .FirstOrDefaultAsync(a => a.Id == activity.Id, cancellationToken);
+
+            await NotifyAdmin(createdActivity!, cancellationToken);
 
             return Result<Activity>.Success(createdActivity!, 201);
         }
@@ -206,6 +240,45 @@ public class CreateOwnershipActivity
                 StartDate = request.StartDate,
                 EndDate = request.EndDate
             };
+        }
+
+        /// <summary>
+        /// Notifies the shelter administrator about a new ownership activity scheduling.
+        /// </summary>
+        /// <param name="activity">The newly created activity with loaded navigation properties.</param>
+        /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
+        /// <remarks>
+        /// This is a best-effort notification. If the notification fails, it does not affect
+        /// the activity creation which has already been persisted to the database.
+        /// </remarks>
+        private async Task NotifyAdmin(Activity activity, CancellationToken cancellationToken)
+        {
+            var animal = activity.Animal;
+            var owner = activity.User;
+            
+            var ownershipRequest = animal.OwnershipRequests
+                .FirstOrDefault(or => or.UserId == owner.Id && or.Status == OwnershipStatus.Approved);
+
+            if (animal?.Shelter != null && owner?.Name != null && ownershipRequest != null)
+            {
+                var adminCAA = await context.Users
+                    .FirstOrDefaultAsync(u => u.ShelterId == animal.ShelterId, cancellationToken);
+
+                if (adminCAA != null)
+                {
+                    var startDate = activity.StartDate.ToString("dd/MM/yyyy HH:mm");
+                    var endDate = activity.EndDate.ToString("dd/MM/yyyy HH:mm");
+
+                    await notificationService.CreateAndSendToUserAsync(
+                        userId: adminCAA.Id,
+                        type: NotificationType.NEW_OWNERSHIP_ACTIVITY,
+                        message: $"{owner.Name} propôs uma convivência com {animal.Name} de {startDate} a {endDate}",
+                        animalId: animal.Id,
+                        ownershipRequestId: ownershipRequest.Id,
+                        cancellationToken: cancellationToken
+                    );
+                }
+            }
         }
     }
 

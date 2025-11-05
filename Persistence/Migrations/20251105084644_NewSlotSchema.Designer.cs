@@ -12,8 +12,13 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
+<<<<<<<< HEAD:Persistence/Migrations/20251105025034_InitialCreate.Designer.cs
     [Migration("20251105025034_InitialCreate")]
     partial class InitialCreate
+========
+    [Migration("20251105084644_NewSlotSchema")]
+    partial class NewSlotSchema
+>>>>>>>> origin/develop:Persistence/Migrations/20251105084644_NewSlotSchema.Designer.cs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -299,6 +304,60 @@ namespace Persistence.Migrations
                         .HasFilter("\"IsPrincipal\" = true");
 
                     b.ToTable("Images");
+                });
+
+            modelBuilder.Entity("Domain.Notification", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
+                    b.Property<string>("AnimalId")
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("IsBroadcast")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("OwnershipRequestId")
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("TargetRole")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AnimalId");
+
+                    b.HasIndex("OwnershipRequestId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("Domain.OwnershipRequest", b =>
@@ -811,6 +870,30 @@ namespace Persistence.Migrations
                     b.Navigation("Animal");
 
                     b.Navigation("Shelter");
+                });
+
+            modelBuilder.Entity("Domain.Notification", b =>
+                {
+                    b.HasOne("Domain.Animal", "Animal")
+                        .WithMany()
+                        .HasForeignKey("AnimalId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Domain.OwnershipRequest", "OwnershipRequest")
+                        .WithMany()
+                        .HasForeignKey("OwnershipRequestId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Domain.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Animal");
+
+                    b.Navigation("OwnershipRequest");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Domain.OwnershipRequest", b =>

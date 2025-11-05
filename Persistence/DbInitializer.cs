@@ -38,6 +38,7 @@ public static class DbInitializer
         const string breed3Id = "3c3c3333-3333-3333-3333-333333333333";
         const string shelter1Id = "11111111-1111-1111-1111-111111111111";
         const string shelter2Id = "22222222-2222-2222-2222-222222222222";
+        const string shelter3Id = "33333333-3333-3333-3333-333333333333"; // Notifications testing
         const string animal1Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd1b";
         const string animal2Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd2b";
         const string animal3Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd3b";
@@ -49,6 +50,7 @@ public static class DbInitializer
         const string animal9Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd9b";
         const string animal10Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd0c";
         const string animal11Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd1c";
+        const string animal15Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd5d"; // Notifications testing
         const string platformAdmin = "PlatformAdmin";
         const string adminCaa = "AdminCAA";
         const string userRole = "User";
@@ -58,6 +60,8 @@ public static class DbInitializer
         const string user4Id = "dddddddd-dddd-dddd-dddd-dddddddddddd"; // Diana
         const string user5Id = "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"; // Eduardo
         const string user6Id = "66666666-6666-6666-6666-666666666666"; // Filipe
+        const string user8Id = "88888888-8888-8888-8888-888888888888"; // Alice Notifications (Notifications testing)
+        const string user9Id = "99999999-9999-9999-9999-999999999999"; // Carlos Notifications (Notifications testing)
         const string imageShelterUrl1_1 =
             "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761835433/shelter_qnix0r.jpg";
         const string imageShelterUrl1_2 =
@@ -144,6 +148,8 @@ public static class DbInitializer
         const string imageAnimal6Img2Id = "00000000-0000-0000-0000-000000006102";
         const string imageAnimal7Img1Id = "00000000-0000-0000-0000-000000007101";
         const string imageAnimal7Img2Id = "00000000-0000-0000-0000-000000007102";
+        const string imageAnimal15Img1Id = "00000000-0000-0000-0000-000000015101"; // Notifications testing
+        const string imageAnimal15Img2Id = "00000000-0000-0000-0000-000000015102"; // Notifications testing
 
         // Favorites test
         const string user7Id = "77777777-7777-7777-7777-777777777777"; // Gustavo (user with favorites)
@@ -196,6 +202,19 @@ public static class DbInitializer
                     PostalCode = "4000-125",
                     Phone = "224589631",
                     NIF = "999999999",
+                    OpeningTime = new TimeOnly(9, 0, 0),
+                    ClosingTime = new TimeOnly(18, 0, 0),
+                    CreatedAt = DateTime.UtcNow
+                },
+                new() // Notifications testing
+                {
+                    Id = shelter3Id,
+                    Name = "Notifications Test Shelter",
+                    Street = "Rua dos Testes 999",
+                    City = "Porto",
+                    PostalCode = "4100-999",
+                    Phone = "910000000",
+                    NIF = "888888888",
                     OpeningTime = new TimeOnly(9, 0, 0),
                     ClosingTime = new TimeOnly(18, 0, 0),
                     CreatedAt = DateTime.UtcNow
@@ -315,6 +334,33 @@ public static class DbInitializer
                     BirthDate = new DateTime(1993, 8, 20),
                     PhoneNumber = "918888777",
                     CreatedAt = DateTime.UtcNow
+                },
+                new() // Notifications testing - AdminCAA
+                {
+                    Id = user8Id,
+                    Name = "Alice Notifications Admin",
+                    UserName = "alice.notif@test.com",
+                    Email = "alice.notif@test.com",
+                    City = "Porto",
+                    Street = "Rua dos Testes 100",
+                    PostalCode = "4100-100",
+                    BirthDate = new DateTime(1990, 1, 1),
+                    PhoneNumber = "910000001",
+                    CreatedAt = DateTime.UtcNow,
+                    ShelterId = shelter3Id
+                },
+                new() // Notifications testing - User
+                {
+                    Id = user9Id,
+                    Name = "Carlos Notifications User",
+                    UserName = "carlos.notif@test.com",
+                    Email = "carlos.notif@test.com",
+                    City = "Porto",
+                    Street = "Rua dos Testes 200",
+                    PostalCode = "4100-200",
+                    BirthDate = new DateTime(1992, 6, 8),
+                    PhoneNumber = "910000002",
+                    CreatedAt = DateTime.UtcNow
                 }
             };
 
@@ -329,6 +375,7 @@ public static class DbInitializer
                         "bob@test.com" => platformAdmin,
                         "alice@test.com" => adminCaa,
                         "filipe@test.com" => adminCaa,
+                        "alice.notif@test.com" => adminCaa, // Notifications testing
                         _ => userRole
                     };
 
@@ -719,6 +766,24 @@ public static class DbInitializer
                 Features = "Muito brincalhão e ativo",
                 ShelterId = shelter1Id,
                 Images = new List<Image>()
+            },
+            new() // Notifications testing
+            {
+                Id = animal15Id,
+                Name = "NotifTestDog",
+                AnimalState = AnimalState.Available,
+                Description = "Animal exclusivo para testes de notificações",
+                Species = Species.Dog,
+                Size = SizeType.Medium,
+                Sex = SexType.Male,
+                Colour = "Preto e Branco",
+                BirthDate = new DateOnly(2020, 1, 1),
+                Sterilized = true,
+                BreedId = breed2Id,
+                Cost = 50,
+                Features = "Animal de teste isolado - Notifications",
+                ShelterId = shelter3Id,
+                Images = new List<Image>()
             }
         };
 
@@ -973,6 +1038,26 @@ public static class DbInitializer
                 Description = "Simba a dormir",
                 IsPrincipal = false,
                 PublicId = publicIdAnimal1Img2
+            },
+
+            // === ANIMAL 15 (NotifTestDog) - Notifications testing ===
+            new()
+            {
+                Id = imageAnimal15Img1Id,
+                AnimalId = animal15Id,
+                Url = imageUrl1_1,
+                Description = "NotifTestDog principal",
+                IsPrincipal = true,
+                PublicId = publicIdAnimal1Img1
+            },
+            new()
+            {
+                Id = imageAnimal15Img2Id,
+                AnimalId = animal15Id,
+                Url = imageUrl1_2,
+                Description = "NotifTestDog secundário",
+                IsPrincipal = false,
+                PublicId = publicIdAnimal1Img2
             }
             };
 
@@ -989,11 +1074,11 @@ public static class DbInitializer
 
             var fosterings = new List<Fostering>
             {
-                new ()
+                new()
                 {
                     Id = fostering1Id,
                     AnimalId = animal2Id,
-                    UserId = user4Id,   
+                    UserId = user4Id,
                     Amount = 10,
                     Status = FosteringStatus.Active,
                     StartDate = DateTime.UtcNow
@@ -1025,8 +1110,6 @@ public static class DbInitializer
             await dbContext.Fosterings.AddRangeAsync(fosterings);
             await dbContext.SaveChangesAsync();
         }
-
-
 
 //======== SEED FOR OWNERSHIPS CONTROLLER ========
         // Create Users
@@ -1493,7 +1576,7 @@ public static class DbInitializer
                     Id = favorite4Id,
                     UserId = user7Id,  // Gustavo
                     AnimalId = "f055cc31-fdeb-4c65-bb73-4f558f67dd1b",  // Bolinhas
-                    IsActive = false,  // ⚠️ INATIVO
+                    IsActive = false,  // INATIVO
                     CreatedAt = DateTime.UtcNow.AddDays(-4)
                 }
             };
@@ -1501,6 +1584,486 @@ public static class DbInitializer
             await dbContext.Favorites.AddRangeAsync(favorites);
             await dbContext.SaveChangesAsync();
         }
+
+// ======== ACTIVITIES & SLOTS ========
+        var baseDate = new DateTime(2025, 11, 3, 0, 0, 0, DateTimeKind.Utc);
+
+        const string activityAId = "activity-seed-a";
+        const string activityBId = "activity-seed-b";
+        const string activityCId = "activity-seed-c";
+        const string activityDId = "activity-seed-d";
+        const string activityEId = "activity-seed-e";
+        const string activityFId = "activity-seed-f";
+        const string activityGId = "activity-seed-g";
+        const string activityHId = "activity-seed-h";
+        const string activityIId = "activity-seed-i";
+        const string activityJId = "activity-seed-j";
+        const string activityKId = "activity-seed-k";
+
+        const string slotNormal1 = "slot-normal-1";
+        const string slotNormal2 = "slot-normal-2";
+        const string slotNormal3 = "slot-normal-3";
+        const string slotNormal4 = "slot-normal-4";
+        const string slotNormal5 = "slot-normal-5";
+
+        const string slotEdgeStartBefore = "slot-edge-start-before";
+        const string slotEdgeEndAfter = "slot-edge-end-after";
+        const string slotEdgeExactOpen = "slot-edge-exact-open";
+        const string slotEdgeExactClose = "slot-edge-exact-close";
+
+        const string slotMultiDay1 = "slot-multiday-1";
+        const string slotMultiDay2 = "slot-multiday-2";
+
+        const string slotShort1 = "slot-short-1";
+        const string slotShort2 = "slot-short-2";
+
+        const string slotOverlap1 = "slot-overlap-1";
+        const string slotOverlap2 = "slot-overlap-2";
+
+        const string slotSameDay1 = "slot-same-day-1";
+        const string slotSameDay2 = "slot-same-day-2";
+        const string slotSameDay3 = "slot-same-day-3";
+
+        const string unavShort = "unav-short";
+        const string unavHalfDay = "unav-half-day";
+        const string unavFullDay = "unav-full-day";
+        const string unavWeek = "unav-week";
+        const string unavMultiDay = "unav-multi-day";
+        const string unavBeforeOpen = "unav-before-open";
+        const string unavAfterClose = "unav-after-close";
+        const string unavExactHours = "unav-exact-hours";
+        const string unavMidnight = "unav-midnight";
+
+        var activities = new List<Activity>
+        {
+            new Activity
+            {
+                Id = activityAId,
+                AnimalId = animal3Id,
+                UserId = user1Id,
+                Type = ActivityType.Fostering,
+                Status = ActivityStatus.Active,
+                StartDate = baseDate,
+                EndDate = baseDate.AddMonths(3),
+                CreatedAt = DateTime.UtcNow
+            },
+            new Activity
+            {
+                Id = activityBId,
+                AnimalId = animal4Id,
+                UserId = user2Id,
+                Type = ActivityType.Fostering,
+                Status = ActivityStatus.Active,
+                StartDate = baseDate,
+                EndDate = baseDate.AddMonths(3),
+                CreatedAt = DateTime.UtcNow
+            },
+            new Activity
+            {
+                Id = activityCId,
+                AnimalId = animal3Id,
+                UserId = user3Id,
+                Type = ActivityType.Fostering,
+                Status = ActivityStatus.Active,
+                StartDate = baseDate.AddDays(1),
+                EndDate = baseDate.AddMonths(3),
+                CreatedAt = DateTime.UtcNow
+            },
+            new Activity
+            {
+                Id = activityDId,
+                AnimalId = animal4Id,
+                UserId = user4Id,
+                Type = ActivityType.Fostering,
+                Status = ActivityStatus.Active,
+                StartDate = baseDate.AddDays(1),
+                EndDate = baseDate.AddMonths(4),
+                CreatedAt = DateTime.UtcNow
+            },
+            new Activity
+            {
+                Id = activityEId,
+                AnimalId = animal5Id,
+                UserId = user5Id,
+                Type = ActivityType.Fostering,
+                Status = ActivityStatus.Active,
+                StartDate = baseDate,
+                EndDate = baseDate.AddMonths(3),
+                CreatedAt = DateTime.UtcNow
+            },
+            new Activity
+            {
+                Id = activityFId,
+                AnimalId = animal3Id,
+                UserId = user2Id,
+                Type = ActivityType.Fostering,
+                Status = ActivityStatus.Active,
+                StartDate = baseDate.AddDays(2),
+                EndDate = baseDate.AddMonths(3),
+                CreatedAt = DateTime.UtcNow
+            },
+            new Activity
+            {
+                Id = activityGId,
+                AnimalId = animal4Id,
+                UserId = user3Id,
+                Type = ActivityType.Fostering,
+                Status = ActivityStatus.Active,
+                StartDate = baseDate.AddDays(2),
+                EndDate = baseDate.AddMonths(3),
+                CreatedAt = DateTime.UtcNow
+            },
+            new Activity
+            {
+                Id = activityHId,
+                AnimalId = animal6Id,
+                UserId = user1Id,
+                Type = ActivityType.Fostering,
+                Status = ActivityStatus.Active,
+                StartDate = baseDate.AddDays(1),
+                EndDate = baseDate.AddMonths(3),
+                CreatedAt = DateTime.UtcNow
+            },
+            new Activity
+            {
+                Id = activityIId,
+                AnimalId = animal7Id,
+                UserId = user4Id,
+                Type = ActivityType.Fostering,
+                Status = ActivityStatus.Active,
+                StartDate = baseDate.AddDays(1),
+                EndDate = baseDate.AddMonths(3),
+                CreatedAt = DateTime.UtcNow
+            },
+            new Activity
+            {
+                Id = activityJId,
+                AnimalId = animal8Id,
+                UserId = user5Id,
+                Type = ActivityType.Fostering,
+                Status = ActivityStatus.Active,
+                StartDate = baseDate.AddDays(1),
+                EndDate = baseDate.AddMonths(3),
+                CreatedAt = DateTime.UtcNow
+            },
+            new Activity
+            {
+                Id = activityKId,
+                AnimalId = animal5Id,
+                UserId = user6Id,
+                Type = ActivityType.Fostering,
+                Status = ActivityStatus.Active,
+                StartDate = baseDate.AddDays(1),
+                EndDate = baseDate.AddMonths(3),
+                CreatedAt = DateTime.UtcNow
+            }
+        };
+
+        await dbContext.Activities.AddRangeAsync(activities);
+
+        var activitySlots = new List<ActivitySlot>
+        {
+            new ActivitySlot
+            {
+                Id = slotNormal1,
+                ActivityId = activityAId,
+                StartDateTime = baseDate.AddDays(1).AddHours(10),
+                EndDateTime = baseDate.AddDays(1).AddHours(12),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = DateTime.UtcNow
+            },
+            new ActivitySlot
+            {
+                Id = slotNormal2,
+                ActivityId = activityBId,
+                StartDateTime = baseDate.AddDays(1).AddHours(14),
+                EndDateTime = baseDate.AddDays(1).AddHours(16),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = DateTime.UtcNow
+            },
+            new ActivitySlot
+            {
+                Id = slotNormal3,
+                ActivityId = activityCId,
+                StartDateTime = baseDate.AddDays(2).AddHours(9).AddMinutes(30),
+                EndDateTime = baseDate.AddDays(2).AddHours(11).AddMinutes(30),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = DateTime.UtcNow
+            },
+            new ActivitySlot
+            {
+                Id = slotNormal4,
+                ActivityId = activityDId,
+                StartDateTime = baseDate.AddDays(3).AddHours(13),
+                EndDateTime = baseDate.AddDays(3).AddHours(15),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = DateTime.UtcNow
+            },
+            new ActivitySlot
+            {
+                Id = slotNormal5,
+                ActivityId = activityEId,
+                StartDateTime = baseDate.AddDays(4).AddHours(10),
+                EndDateTime = baseDate.AddDays(4).AddHours(12),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = DateTime.UtcNow
+            },
+
+            // Edge cases
+            new ActivitySlot
+            {
+                Id = slotEdgeStartBefore,
+                ActivityId = activityFId,
+                StartDateTime = baseDate.AddDays(5).AddHours(7), // antes de abrir
+                EndDateTime = baseDate.AddDays(5).AddHours(10),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = DateTime.UtcNow
+            },
+            new ActivitySlot
+            {
+                Id = slotEdgeEndAfter,
+                ActivityId = activityGId,
+                StartDateTime = baseDate.AddDays(5).AddHours(17),
+                EndDateTime = baseDate.AddDays(5).AddHours(20), // depois de fechar
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = DateTime.UtcNow
+            },
+            new ActivitySlot
+            {
+                Id = slotEdgeExactOpen,
+                ActivityId = activityHId,
+                StartDateTime = baseDate.AddDays(6).AddHours(9), // exatamente na abertura
+                EndDateTime = baseDate.AddDays(6).AddHours(11),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = DateTime.UtcNow
+            },
+            new ActivitySlot
+            {
+                Id = slotEdgeExactClose,
+                ActivityId = activityIId,
+                StartDateTime = baseDate.AddDays(6).AddHours(16),
+                EndDateTime = baseDate.AddDays(6).AddHours(18), // exatamente no fecho
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = DateTime.UtcNow
+            },
+
+            // Slots multi-dia
+            new ActivitySlot
+            {
+                Id = slotMultiDay1,
+                ActivityId = activityJId,
+                StartDateTime = baseDate.AddDays(7).AddHours(15),
+                EndDateTime = baseDate.AddDays(8).AddHours(11),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = DateTime.UtcNow
+            },
+            new ActivitySlot
+            {
+                Id = slotMultiDay2,
+                ActivityId = activityKId,
+                StartDateTime = baseDate.AddDays(9).AddHours(16),
+                EndDateTime = baseDate.AddDays(10).AddHours(10),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = DateTime.UtcNow
+            },
+
+            // Slots curtos (15min)
+            new ActivitySlot
+            {
+                Id = slotShort1,
+                ActivityId = activityAId,
+                StartDateTime = baseDate.AddDays(11).AddHours(11),
+                EndDateTime = baseDate.AddDays(11).AddHours(11).AddMinutes(15),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = DateTime.UtcNow
+            },
+            new ActivitySlot
+            {
+                Id = slotShort2,
+                ActivityId = activityBId,
+                StartDateTime = baseDate.AddDays(11).AddHours(14).AddMinutes(30),
+                EndDateTime = baseDate.AddDays(11).AddHours(14).AddMinutes(45),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = DateTime.UtcNow
+            },
+
+            // Overlaps
+            new ActivitySlot
+            {
+                Id = slotOverlap1,
+                ActivityId = activityCId,
+                StartDateTime = baseDate.AddDays(12).AddHours(10),
+                EndDateTime = baseDate.AddDays(12).AddHours(12),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = DateTime.UtcNow
+            },
+            new ActivitySlot
+            {
+                Id = slotOverlap2,
+                ActivityId = activityCId,
+                StartDateTime = baseDate.AddDays(12).AddHours(11), // sobrepõe com o anterior
+                EndDateTime = baseDate.AddDays(12).AddHours(13),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = DateTime.UtcNow
+            },
+
+            // Vários no mesmo dia
+            new ActivitySlot
+            {
+                Id = slotSameDay1,
+                ActivityId = activityDId,
+                StartDateTime = baseDate.AddDays(13).AddHours(9),
+                EndDateTime = baseDate.AddDays(13).AddHours(10),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = DateTime.UtcNow
+            },
+            new ActivitySlot
+            {
+                Id = slotSameDay2,
+                ActivityId = activityDId,
+                StartDateTime = baseDate.AddDays(13).AddHours(11),
+                EndDateTime = baseDate.AddDays(13).AddHours(12),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = DateTime.UtcNow
+            },
+            new ActivitySlot
+            {
+                Id = slotSameDay3,
+                ActivityId = activityDId,
+                StartDateTime = baseDate.AddDays(13).AddHours(15),
+                EndDateTime = baseDate.AddDays(13).AddHours(16),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = DateTime.UtcNow
+            }
+        };
+
+        await dbContext.Set<ActivitySlot>().AddRangeAsync(activitySlots);
+
+        // ====== SHELTER UNAVAILABILITY SLOTS (usar shelters existentes) ======
+        var shelterUnavailabilitySlots = new List<ShelterUnavailabilitySlot>
+        {
+            new ShelterUnavailabilitySlot
+            {
+                Id = unavShort,
+                ShelterId = shelter1Id,
+                StartDateTime = baseDate.AddDays(1).AddHours(12),
+                EndDateTime = baseDate.AddDays(1).AddHours(13),
+                Reason = "Pausa de almoço",
+                Status = SlotStatus.Unavailable,
+                Type = SlotType.ShelterUnavailable,
+                CreatedAt = DateTime.UtcNow
+            },
+            new ShelterUnavailabilitySlot
+            {
+                Id = unavHalfDay,
+                ShelterId = shelter1Id,
+                StartDateTime = baseDate.AddDays(2).AddHours(9),
+                EndDateTime = baseDate.AddDays(2).AddHours(14),
+                Reason = "Formação de manhã",
+                Status = SlotStatus.Unavailable,
+                Type = SlotType.ShelterUnavailable,
+                CreatedAt = DateTime.UtcNow
+            },
+            new ShelterUnavailabilitySlot
+            {
+                Id = unavFullDay,
+                ShelterId = shelter1Id,
+                StartDateTime = baseDate.AddDays(3).AddHours(9),
+                EndDateTime = baseDate.AddDays(3).AddHours(18),
+                Reason = "Evento de dia inteiro",
+                Status = SlotStatus.Unavailable,
+                Type = SlotType.ShelterUnavailable,
+                CreatedAt = DateTime.UtcNow
+            },
+            new ShelterUnavailabilitySlot
+            {
+                Id = unavWeek,
+                ShelterId = shelter2Id,
+                StartDateTime = baseDate.AddDays(21),
+                EndDateTime = baseDate.AddDays(28),
+                Reason = "Semana de férias",
+                Status = SlotStatus.Unavailable,
+                Type = SlotType.ShelterUnavailable,
+                CreatedAt = DateTime.UtcNow
+            },
+            new ShelterUnavailabilitySlot
+            {
+                Id = unavMultiDay,
+                ShelterId = shelter1Id,
+                StartDateTime = baseDate.AddDays(14),
+                EndDateTime = baseDate.AddDays(17),
+                Reason = "Manutenção alargada",
+                Status = SlotStatus.Unavailable,
+                Type = SlotType.ShelterUnavailable,
+                CreatedAt = DateTime.UtcNow
+            },
+            new ShelterUnavailabilitySlot
+            {
+                Id = unavBeforeOpen,
+                ShelterId = shelter1Id,
+                StartDateTime = baseDate.AddDays(7).AddHours(7),
+                EndDateTime = baseDate.AddDays(7).AddHours(10),
+                Reason = "Preparação cedo",
+                Status = SlotStatus.Unavailable,
+                Type = SlotType.ShelterUnavailable,
+                CreatedAt = DateTime.UtcNow
+            },
+            new ShelterUnavailabilitySlot
+            {
+                Id = unavAfterClose,
+                ShelterId = shelter2Id,
+                StartDateTime = baseDate.AddDays(8).AddHours(16),
+                EndDateTime = baseDate.AddDays(8).AddHours(20),
+                Reason = "Evento ao final do dia",
+                Status = SlotStatus.Unavailable,
+                Type = SlotType.ShelterUnavailable,
+                CreatedAt = DateTime.UtcNow
+            },
+            new ShelterUnavailabilitySlot
+            {
+                Id = unavExactHours,
+                ShelterId = shelter1Id,
+                StartDateTime = baseDate.AddDays(9).AddHours(9),
+                EndDateTime = baseDate.AddDays(9).AddHours(18),
+                Reason = "Encerramento total no horário",
+                Status = SlotStatus.Unavailable,
+                Type = SlotType.ShelterUnavailable,
+                CreatedAt = DateTime.UtcNow
+            },
+            new ShelterUnavailabilitySlot
+            {
+                Id = unavMidnight,
+                ShelterId = shelter1Id,
+                StartDateTime = baseDate.AddDays(10).AddHours(22),
+                EndDateTime = baseDate.AddDays(11).AddHours(3),
+                Reason = "Manutenção noturna",
+                Status = SlotStatus.Unavailable,
+                Type = SlotType.ShelterUnavailable,
+                CreatedAt = DateTime.UtcNow
+            }
+        };
+
+        await dbContext.Set<ShelterUnavailabilitySlot>().AddRangeAsync(shelterUnavailabilitySlots);
+
+        await dbContext.SaveChangesAsync();
         
         // ============================================
         // DATA FOR TESTING FOSTERING ACTIVITIES

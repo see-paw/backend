@@ -1,4 +1,5 @@
 using Application.Interfaces;
+using Application.OwnershipRequests.Queries;
 using Application.Ownerships.Queries;
 using Domain;
 using Domain.Enums;
@@ -6,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using Persistence;
 
-namespace Tests.OwnershipRequestsTest;
+namespace Tests.OwnershipRequestsTest.ControllersTest;
 
 /// <summary>
 /// Unit tests for <see cref="GetOwnershipRequestsByUser.Handler"/>.

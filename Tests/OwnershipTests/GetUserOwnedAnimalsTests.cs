@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using Persistence;
 
-namespace Tests.OwnershipControllerTest;
+namespace Tests.OwnershipTests;
 
 /// <summary>
 /// Unit tests for <see cref="GetUserOwnedAnimals.Handler"/>.
