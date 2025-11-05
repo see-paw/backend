@@ -13,8 +13,12 @@ public class TimeRangeCalculator : ITimeRangeCalculator
         TimeSpan closing,
         DateOnly weekStart)
     {
+        var weekEnd = weekStart.AddDays(7);
+
         var occupied = allSlots
-            .Where(s => s.Status != SlotStatus.Available)
+            .Where(s => s.Status != SlotStatus.Available
+                        && DateOnly.FromDateTime(s.StartDateTime) >= weekStart
+                        && DateOnly.FromDateTime(s.StartDateTime) < weekEnd)
             .Select(s => new TimeBlock
             {
                 Date = DateOnly.FromDateTime(s.StartDateTime),

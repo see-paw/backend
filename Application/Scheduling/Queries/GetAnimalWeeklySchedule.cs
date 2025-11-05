@@ -13,15 +13,14 @@ public class GetAnimalWeeklySchedule
 {
     public class Query : IRequest<Result<AnimalWeeklySchedule>>
     {
-        public string AnimalId { get; set; }
+        public string AnimalId { get; init; }
 
-        public DateOnly StartDate { get; set; }
+        public DateOnly StartDate { get; init; }
     }
 
     public class Handler(
         AppDbContext dbContext,
         IUserAccessor userAccessor,
-        FosteringDomainService fosteringDomainService,
         ITimeRangeCalculator timeRangeCalculator,
         IScheduleAssembler scheduleAssembler,
         ISlotNormalizer slotNormalizer

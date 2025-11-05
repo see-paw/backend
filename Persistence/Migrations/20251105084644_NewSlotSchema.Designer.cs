@@ -12,8 +12,8 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251104104214_AddNotifications")]
-    partial class AddNotifications
+    [Migration("20251105084644_NewSlotSchema")]
+    partial class NewSlotSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -457,6 +457,47 @@ namespace Persistence.Migrations
                     b.ToTable("Shelters");
                 });
 
+            modelBuilder.Entity("Domain.Slot", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateTime>("EndDateTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime>("StartDateTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StartDateTime", "EndDateTime");
+
+                    b.ToTable("Slots");
+
+                    b.HasDiscriminator<string>("Type");
+
+                    b.UseTphMappingStrategy();
+                });
+
             modelBuilder.Entity("Domain.User", b =>
                 {
                     b.Property<string>("Id")
@@ -693,6 +734,39 @@ namespace Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.ActivitySlot", b =>
+                {
+                    b.HasBaseType("Domain.Slot");
+
+                    b.Property<string>("ActivityId")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
+                    b.HasIndex("ActivityId")
+                        .IsUnique();
+
+                    b.HasDiscriminator().HasValue("Activity");
+                });
+
+            modelBuilder.Entity("Domain.ShelterUnavailabilitySlot", b =>
+                {
+                    b.HasBaseType("Domain.Slot");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("ShelterId")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
+                    b.HasIndex("ShelterId", "StartDateTime");
+
+                    b.HasDiscriminator().HasValue("ShelterUnavailable");
+                });
+
             modelBuilder.Entity("Domain.Activity", b =>
                 {
                     b.HasOne("Domain.Animal", "Animal")
@@ -897,6 +971,33 @@ namespace Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Domain.ActivitySlot", b =>
+                {
+                    b.HasOne("Domain.Activity", "Activity")
+                        .WithOne("Slot")
+                        .HasForeignKey("Domain.ActivitySlot", "ActivityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Activity");
+                });
+
+            modelBuilder.Entity("Domain.ShelterUnavailabilitySlot", b =>
+                {
+                    b.HasOne("Domain.Shelter", "Shelter")
+                        .WithMany("UnavailabilitySlots")
+                        .HasForeignKey("ShelterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Shelter");
+                });
+
+            modelBuilder.Entity("Domain.Activity", b =>
+                {
+                    b.Navigation("Slot");
+                });
+
             modelBuilder.Entity("Domain.Animal", b =>
                 {
                     b.Navigation("Activities");
@@ -920,6 +1021,8 @@ namespace Persistence.Migrations
                     b.Navigation("Animals");
 
                     b.Navigation("Images");
+
+                    b.Navigation("UnavailabilitySlots");
                 });
 
             modelBuilder.Entity("Domain.User", b =>
