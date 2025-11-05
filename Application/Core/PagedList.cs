@@ -11,7 +11,7 @@ namespace Application.Core
         /// <summary>
         /// The items contained in the current page.
         /// </summary>
-        public List<T> Items { get; private set; } = new();
+        public List<T> Items { get; private set; }
 
         /// <summary>
         /// The current page number.
@@ -33,6 +33,13 @@ namespace Application.Core
         /// </summary>
         public int TotalCount { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PagedList{T}"/> class using the provided items and pagination metadata.
+        /// </summary>
+        /// <param name="items">The list of items contained in the current page.</param>
+        /// <param name="count">The total number of items across all pages.</param>
+        /// <param name="pageNumber">The current page number (1-based index).</param>
+        /// <param name="pageSize">The number of items displayed per page.</param>
         public PagedList(List<T> items, int count, int pageNumber, int pageSize)
         {
             Items = items ?? new List<T>();

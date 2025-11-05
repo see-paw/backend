@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.Animals.Commands;
-using Application.Animals.Commands.Validators;
 using Domain;
 using Domain.Enums;
 using FluentValidation.TestHelper;
+using WebAPI.Validators.Animals;
 
 namespace Tests.AnimalsTests.Validators
 {

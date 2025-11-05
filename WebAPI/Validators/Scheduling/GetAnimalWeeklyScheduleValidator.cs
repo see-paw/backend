@@ -3,8 +3,14 @@ using FluentValidation;
 
 namespace WebAPI.Validators.Scheduling;
 
+/// <summary>
+/// Provides validation rules for the <see cref="GetAnimalWeeklySchedule.Query"/> request.
+/// </summary>
 public class GetAnimalWeeklyScheduleValidator : AbstractValidator<GetAnimalWeeklySchedule.Query>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GetAnimalWeeklyScheduleValidator"/> class.
+    /// </summary>
     public GetAnimalWeeklyScheduleValidator()
     {
         RuleFor(x => x.AnimalId)

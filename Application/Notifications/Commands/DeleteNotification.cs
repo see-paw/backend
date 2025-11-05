@@ -47,6 +47,33 @@ public class DeleteNotification
         AppDbContext context,
         IUserAccessor userAccessor) : IRequestHandler<Command, Result<Unit>>
     {
+        /// <summary>
+        /// Executes the deletion of a notification belonging to the authenticated user.
+        /// </summary>
+        /// <param name="request">
+        /// The <see cref="Command"/> containing the <see cref="Command.NotificationId"/> of the notification to delete.
+        /// </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
+        /// <returns>
+        /// A <see cref="Result{T}"/> wrapping a <see cref="Unit"/> result if the deletion succeeds,  
+        /// or an error result with an appropriate message and HTTP status code if it fails.
+        /// </returns>
+        /// <remarks>
+        /// This method performs the following sequence:
+        /// <list type="number">
+        /// <item>Retrieves the current user’s ID via <see cref="IUserAccessor"/>.</item>
+        /// <item>Searches for the notification that matches both the provided ID and the user’s ID.</item>
+        /// <item>If no notification is found, returns a <c>404</c> failure result.</item>
+        /// <item>Removes the notification from the database context and commits the change.</item>
+        /// <item>Returns a success result with status <c>200</c> if the deletion is completed successfully.</item>
+        /// </list>
+        /// Possible return codes:
+        /// <list type="bullet">
+        /// <item><b>200</b> – Notification successfully deleted.</item>
+        /// <item><b>404</b> – Notification not found for the authenticated user.</item>
+        /// <item><b>500</b> – Database update failed during deletion.</item>
+        /// </list>
+        /// </remarks>
         public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
         {
             var userId = userAccessor.GetUserId();

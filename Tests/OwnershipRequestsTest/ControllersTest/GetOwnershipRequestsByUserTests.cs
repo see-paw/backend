@@ -1,4 +1,5 @@
 using Application.Interfaces;
+using Application.OwnershipRequests.Queries;
 using Application.Ownerships.Queries;
 using Domain;
 using Domain.Enums;

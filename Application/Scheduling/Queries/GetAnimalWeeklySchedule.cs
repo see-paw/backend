@@ -9,15 +9,31 @@ using Persistence;
 
 namespace Application.Scheduling.Queries;
 
+
+/// <summary>
+/// Retrieves the complete weekly schedule for a fostered animal associated with the current user.
+/// </summary>
 public class GetAnimalWeeklySchedule
 {
+    /// <summary>
+    /// Represents the request parameters for retrieving an animal’s weekly schedule.
+    /// </summary>
     public class Query : IRequest<Result<AnimalWeeklySchedule>>
     {
-        public string AnimalId { get; init; }
+        /// <summary>
+        /// The unique identifier of the animal for which the schedule is being requested.
+        /// </summary>
+        public required string AnimalId { get; init; }
 
+        /// <summary>
+        /// The starting date of the week to retrieve the schedule for.
+        /// </summary>
         public DateOnly StartDate { get; init; }
     }
 
+    /// <summary>
+    /// Handles the logic for generating a complete weekly schedule for a fostered animal.
+    /// </summary>
     public class Handler(
         AppDbContext dbContext,
         IUserAccessor userAccessor,
@@ -26,6 +42,33 @@ public class GetAnimalWeeklySchedule
         ISlotNormalizer slotNormalizer
     ) : IRequestHandler<Query, Result<AnimalWeeklySchedule>>
     {
+        /// <summary>
+        /// Executes the retrieval and assembly of an animal’s weekly schedule.
+        /// </summary>
+        /// <param name="request">The <see cref="Query"/> containing the animal ID and start date.</param>
+        /// <param name="ct">A cancellation token used to cancel the asynchronous operation.</param>
+        /// <returns>
+        /// A <see cref="Result{T}"/> containing the <see cref="AnimalWeeklySchedule"/> if successful,  
+        /// or an error result with a message and status code if validation or data retrieval fails.
+        /// </returns>
+        /// <remarks>
+        /// The method performs the following steps:
+        /// <list type="number">
+        /// <item>Retrieves the current authenticated user.</item>
+        /// <item>Loads the specified animal and validates that it exists.</item>
+        /// <item>Verifies that the animal is fostered by the requesting user.</item>
+        /// <item>Retrieves all relevant activity and unavailability slots for the week.</item>
+        /// <item>Normalizes the slots to align with the shelter’s opening and closing hours.</item>
+        /// <item>Calculates available time ranges using <see cref="ITimeRangeCalculator"/>.</item>
+        /// <item>Assembles the final weekly schedule using <see cref="IScheduleAssembler"/>.</item>
+        /// </list>
+        /// Returns:
+        /// <list type="bullet">
+        /// <item><b>200</b> – Schedule successfully generated.</item>
+        /// <item><b>404</b> – Animal not found.</item>
+        /// <item><b>409</b> – Animal not fostered by the user.</item>
+        /// </list>
+        /// </remarks>
         public async Task<Result<AnimalWeeklySchedule>> Handle(Query request, CancellationToken ct)
         {
             var user = await userAccessor.GetUserAsync();

@@ -1,4 +1,3 @@
-using Application.Notifications.DTOs;
 using AutoMapper;
  using Application.Scheduling;
 using Domain;
@@ -7,8 +6,10 @@ using WebAPI.DTOs.Activities;
 using WebAPI.DTOs.Animals;
 using WebAPI.DTOs.AnimalSchedule;
 using WebAPI.DTOs.Breeds;
+using WebAPI.DTOs.Favorites;
 using WebAPI.DTOs.Fostering;
 using WebAPI.DTOs.Images;
+using WebAPI.DTOs.Notifications;
 using WebAPI.DTOs.Ownership;
 using WebAPI.DTOs.Shelter;
 using WebAPI.DTOs.User;

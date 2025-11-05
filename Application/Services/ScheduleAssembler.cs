@@ -4,8 +4,29 @@ using Domain;
 
 namespace Application.Services;
 
+/// <summary>
+/// Provides functionality to assemble a complete weekly schedule for a specific animal.
+/// </summary>
+/// <remarks>
+/// Combines reserved activity slots, shelter unavailability slots, and available time blocks 
+/// to generate a structured <see cref="AnimalWeeklySchedule"/>.  
+/// This class implements <see cref="IScheduleAssembler"/> and is used to build the final schedule view 
+/// consumed by higher-level services or controllers.
+/// </remarks>
 public class ScheduleAssembler : IScheduleAssembler
 {
+    /// <summary>
+    /// Builds a complete weekly schedule for the specified animal.
+    /// </summary>
+    /// <param name="reservedSlots">A list of reserved activity slots for the given week.</param>
+    /// <param name="unavailableSlots">A list of shelter unavailability slots for the same period.</param>
+    /// <param name="availableSlots">A list of available time blocks calculated for the week.</param>
+    /// <param name="animal">The <see cref="Animal"/> whose schedule is being assembled.</param>
+    /// <param name="startDate">The starting date (typically the beginning of the week).</param>
+    /// <returns>
+    /// An <see cref="AnimalWeeklySchedule"/> object containing daily breakdowns of available, 
+    /// reserved, and unavailable slots.
+    /// </returns>
     public AnimalWeeklySchedule AssembleWeekSchedule(
         IReadOnlyList<ActivitySlot> reservedSlots, 
         IReadOnlyList<ShelterUnavailabilitySlot> unavailableSlots, 

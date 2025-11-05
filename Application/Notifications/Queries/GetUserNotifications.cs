@@ -18,6 +18,9 @@ namespace Application.Notifications.Queries;
 /// </remarks>
 public class GetUserNotifications
 {
+    /// <summary>
+    /// Represents the parameters for retrieving notifications of the authenticated user.
+    /// </summary>
     public class Query : IRequest<Result<List<Notification>>> 
     {
         /// <summary>

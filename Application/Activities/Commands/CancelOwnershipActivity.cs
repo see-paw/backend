@@ -34,6 +34,19 @@ public class CancelOwnershipActivity
     public class Handler(AppDbContext context, IUserAccessor userAccessor)
         : IRequestHandler<Command, Result<Activity>>
     {
+        /// <summary>
+        /// Executes the cancellation of an active ownership activity.
+        /// </summary>
+        /// <param name="request">
+        /// The command request containing the <see cref="Activity.Id"/> of the activity to cancel.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// Token that signals if the asynchronous operation should be cancelled.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Result{T}"/> containing the updated <see cref="Activity"/> if the cancellation succeeds,
+        /// or an error result if validation fails or the operation could not be completed.
+        /// </returns>
         public async Task<Result<Activity>> Handle(Command request, CancellationToken cancellationToken)
         {
             var userId = userAccessor.GetUserId();

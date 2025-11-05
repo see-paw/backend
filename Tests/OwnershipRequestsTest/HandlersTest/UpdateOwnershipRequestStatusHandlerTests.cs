@@ -5,9 +5,8 @@ using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Persistence;
-using Xunit;
 
-namespace Tests.OwnershipRequests;
+namespace Tests.OwnershipRequestsTest.HandlersTest;
 
 public class UpdateOwnershipRequestStatusHandlerTests
 {

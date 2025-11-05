@@ -1,4 +1,4 @@
-﻿namespace Application.Notifications.DTOs;
+﻿namespace WebAPI.DTOs.Notifications;
 
 /// <summary>
 /// Response DTO for notification data sent to clients.

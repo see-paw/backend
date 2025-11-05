@@ -4,7 +4,7 @@ namespace WebAPI.DTOs.AnimalSchedule;
 
 public class SlotDto
 {
-    public string Id { get; set; }
+    public required string Id { get; set; }
     
     public string Start { get; init; } = null!;
     

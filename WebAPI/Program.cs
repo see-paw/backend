@@ -116,8 +116,7 @@ builder.Services.Configure<CloudinarySettings>(
 builder.Services.Configure<FosteringSettings>(
     builder.Configuration.GetSection("Fostering")
 );
-builder.Services.Configure<SchedulingSettings>(
-    builder.Configuration.GetSection("SchedulingSettings"));
+
 // Notification Services
 builder.Services.AddSignalR();
 builder.Services.AddScoped<INotificationService, NotificationService>();

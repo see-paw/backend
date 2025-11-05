@@ -77,12 +77,21 @@ public class Notification
     [MaxLength(50)]
     public string? TargetRole { get; set; }
 
+    /// <summary>
+    /// The <see cref="User"/> entity associated with this notification.
+    /// </summary>
     [JsonIgnore]
     public User? User { get; set; }
 
+    /// <summary>
+    /// The <see cref="Animal"/> entity associated with this notification.
+    /// </summary>
     [JsonIgnore]
     public Animal? Animal { get; set; }
 
+    /// <summary>
+    /// The <see cref="OwnershipRequest"/> entity related to this notification.
+    /// </summary>
     [JsonIgnore]
     public OwnershipRequest? OwnershipRequest { get; set; }
 }

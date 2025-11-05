@@ -1,13 +1,12 @@
 ﻿using Application.Interfaces;
-using Application.Notifications.Commands;
+using Application.Notifications.Queries;
 using Domain;
 using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Persistence;
-using Xunit;
 
-namespace Tests.Notifications;
+namespace Tests.NotificationsTest.Handlers;
 
 public class MarkNotificationAsReadHandlerTests
 {

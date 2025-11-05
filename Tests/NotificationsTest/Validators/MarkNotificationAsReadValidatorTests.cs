@@ -1,7 +1,7 @@
-﻿using Application.Notifications.Commands;
+﻿using Application.Notifications.Queries;
 using WebAPI.Validators.Notifications;
 
-namespace Tests.Notifications;
+namespace Tests.NotificationsTest.Validators;
 
 public class MarkNotificationAsReadValidatorTests
 {
