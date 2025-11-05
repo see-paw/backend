@@ -33,5 +33,10 @@ public enum NotificationType
     /// <summary>
     /// Notification sent to fostering users when their fostered animal is adopted.
     /// </summary>
-    FOSTERED_ANIMAL_ADOPTED
+    FOSTERED_ANIMAL_ADOPTED,
+
+    /// <summary>
+    /// Notification sent to shelter admin when a new ownership activity is proposed by the animal's owner.
+    /// </summary>
+    NEW_OWNERSHIP_ACTIVITY
 }

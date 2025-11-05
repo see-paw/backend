@@ -119,7 +119,7 @@ app.UseCors(c => c
     .AllowAnyHeader()
     .AllowAnyMethod()
     .AllowCredentials()
-    .WithOrigins("http://localhost:3000", "https://localhost:3000"));
+    .WithOrigins("http://localhost:3000", "https://localhost:3000", "http://localhost:8080")); // 8080 for tests with Python HTTP server (SignalR test)
 
 app.UseMiddleware<IdentityResponseMiddleware>();
 app.UseMiddleware<ExceptionMiddleware>();
