@@ -30,16 +30,22 @@ public class AnimalSpecBuilder(AnimalDomainService animalDomainService)
         if (!string.IsNullOrWhiteSpace(filter.Name))
             specs.Add(new NameSpec { Name = filter.Name });
 
-        if (!string.IsNullOrWhiteSpace(filter.Sex) && Enum.TryParse<SexType>(filter.Sex, true, out var sex))
+        if (!string.IsNullOrWhiteSpace(filter.Sex) 
+            && Enum.TryParse<SexType>(filter.Sex, true, out var sex)
+            && Enum.IsDefined(typeof(SexType), sex))
             specs.Add(new SexSpec { Sex = sex });
 
         if (!string.IsNullOrWhiteSpace(filter.ShelterName))
             specs.Add(new ShelterNameSpec { ShelterName = filter.ShelterName });
 
-        if (!string.IsNullOrWhiteSpace(filter.Size) && Enum.TryParse<SizeType>(filter.Size, true, out var size))
+        if (!string.IsNullOrWhiteSpace(filter.Size) 
+            && Enum.TryParse<SizeType>(filter.Size, true, out var size)
+            && Enum.IsDefined(typeof(SizeType), size))
             specs.Add(new SizeSpec { Size = size });
 
-        if (!string.IsNullOrWhiteSpace(filter.Species) && Enum.TryParse<Species>(filter.Species, true, out var species))
+        if (!string.IsNullOrWhiteSpace(filter.Species) 
+            && Enum.TryParse<Species>(filter.Species, true, out var species)
+            && Enum.IsDefined(typeof(Species), species))
             specs.Add(new SpeciesSpec { Species = species });
 
         return specs;

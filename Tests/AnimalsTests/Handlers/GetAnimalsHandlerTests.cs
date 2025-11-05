@@ -296,7 +296,95 @@ namespace Tests.AnimalsTests.Handlers
             Assert.Equal("Angelo", result.Value.Items.Last().Name); // the least recently created animal last
         }
 
+         [Fact]
+    public async Task Handle_WithAgeFilter_FiltersCorrectly()
+    {
+        var age5 = CreateAnimal("Age5");
+        age5.BirthDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-5));
+        var age10 = CreateAnimal("Age10");
+        age10.BirthDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-10));
 
+        var animals = new List<Animal> { age5, age10 };
+        var context = CreateInMemoryContext(animals);
+        var handler = new GetAnimalList.Handler(context, new AnimalSpecBuilder(new AnimalDomainService()));
+
+        var result = await handler.Handle(
+            new GetAnimalList.Query { Filters = new AnimalFilterModel { Age = 5 } },
+            CancellationToken.None);
+
+        Assert.Single(result.Value.Items);
+        Assert.Equal("Age5", result.Value.Items.First().Name);
+    }
+
+    [Fact]
+    public async Task Handle_WithMultipleFilters_AppliesAllFilters()
+    {
+        var match = CreateAnimal("Match");
+        match.Size = SizeType.Large;
+        match.Sex = SexType.Female;
+        match.Species = Species.Cat;
+
+        var noMatch1 = CreateAnimal("NoMatch1");
+        noMatch1.Size = SizeType.Small;
+        noMatch1.Sex = SexType.Female;
+        noMatch1.Species = Species.Cat;
+
+        var noMatch2 = CreateAnimal("NoMatch2");
+        noMatch2.Size = SizeType.Large;
+        noMatch2.Sex = SexType.Male;
+        noMatch2.Species = Species.Cat;
+
+        var animals = new List<Animal> { match, noMatch1, noMatch2 };
+        var context = CreateInMemoryContext(animals);
+        var handler = new GetAnimalList.Handler(context, new AnimalSpecBuilder(new AnimalDomainService()));
+
+        var result = await handler.Handle(
+            new GetAnimalList.Query
+            {
+                Filters = new AnimalFilterModel
+                {
+                    Size = "Large",
+                    Sex = "Female",
+                    Species = "Cat"
+                }
+            },
+            CancellationToken.None);
+
+        Assert.Single(result.Value.Items);
+        Assert.Equal("Match", result.Value.Items.First().Name);
+    }
+
+    [Fact]
+    public async Task Handle_FiltersResultInNoMatches_ReturnsFailure()
+    {
+        var animals = new List<Animal> { CreateAnimal("Test") };
+        var context = CreateInMemoryContext(animals);
+        var handler = new GetAnimalList.Handler(context, new AnimalSpecBuilder(new AnimalDomainService()));
+
+        var result = await handler.Handle(
+            new GetAnimalList.Query { Filters = new AnimalFilterModel { Name = "NonExistent" } },
+            CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("No animals found", result.Error);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public async Task Handle_EmptyFilters_ReturnsAllAnimals(string? filterValue)
+    {
+        var animals = new List<Animal> { CreateAnimal("Test1"), CreateAnimal("Test2") };
+        var context = CreateInMemoryContext(animals);
+        var handler = new GetAnimalList.Handler(context, new AnimalSpecBuilder(new AnimalDomainService()));
+
+        var result = await handler.Handle(
+            new GetAnimalList.Query { Filters = new AnimalFilterModel { Name = filterValue } },
+            CancellationToken.None);
+
+        Assert.Equal(2, result.Value.Items.Count);
+    }
 
     }
 }
