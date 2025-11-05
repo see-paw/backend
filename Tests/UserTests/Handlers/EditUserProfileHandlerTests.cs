@@ -24,7 +24,7 @@ public class EditUserProfileHandlerTests
         return new User
         {
             Id = id,
-            Name = "Original Name",
+            Name = "Original ShelterName",
             BirthDate = new DateTime(1995, 5, 20),
             Street = "Old Street 123",
             City = "Lisbon",
@@ -38,7 +38,7 @@ public class EditUserProfileHandlerTests
     {
         return new User
         {
-            Name = "Updated Name",
+            Name = "Updated ShelterName",
             BirthDate = new DateTime(2000, 1, 1),
             Street = "New Street 45",
             City = "Porto",

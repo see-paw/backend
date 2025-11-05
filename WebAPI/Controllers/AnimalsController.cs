@@ -1,4 +1,5 @@
 ﻿using Application.Animals.Commands;
+using Application.Animals.Filters;
 using Application.Animals.Queries;
 using Application.Core;
 using Application.Fosterings.Commands;
@@ -31,24 +32,30 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// <summary>
     /// Retrieves a paginated list of animals that are available or partially fostered.
     /// </summary>
+    /// <param name="animalFilters">Filter criteria for searching animals</param>
+    /// <param name="sortBy">Field to sort by: "name", "age", or "created"</param>
+    /// <param name="order">Sort direction: "asc" or "desc"</param>
     /// <param name="pageNumber">The page number to retrieve. Defaults to 1.</param>
-    /// <param name="sortBy"></param>
-    /// <param name="order"></param>
     /// <returns>
     /// A paginated <see cref="PagedList{T}"/> of <see cref="ResAnimalDto"/> objects representing the animals.
     /// Returns <c>400</c> if the page number is invalid or an appropriate error message on failure.
     /// </returns>
     [HttpGet]
     public async Task<ActionResult<PagedList<ResAnimalDto>>> GetAnimals(
-        [FromQuery] int pageNumber = 1,
+        [FromQuery] AnimalFilterDto animalFilters,
         [FromQuery] string? sortBy = null,
-        [FromQuery] string? order = null)
+        [FromQuery] string? order = null, 
+        [FromQuery] int pageNumber = 1)
     {
+        
+        var filterModel = mapper.Map<AnimalFilterModel>(animalFilters);
+        
         var result = await Mediator.Send(new GetAnimalList.Query
         {
             PageNumber = pageNumber,
             SortBy = sortBy,
-            Order = order
+            Order = order,
+            Filters = filterModel
         });
 
         if (!result.IsSuccess)

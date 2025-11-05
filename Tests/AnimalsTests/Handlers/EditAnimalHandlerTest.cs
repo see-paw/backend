@@ -112,7 +112,7 @@ public class EditAnimalTests : IDisposable
         await _dbContext.SaveChangesAsync();
 
         var updatedAnimal = CreateValidAnimal(id: animal.Id, shelterId: shelter.Id, breedId: breed.Id);
-        updatedAnimal.Name = "Updated Name";
+        updatedAnimal.Name = "Updated ShelterName";
         updatedAnimal.Description = "Updated description";
         updatedAnimal.Cost = 75.50m;
 
@@ -121,7 +121,7 @@ public class EditAnimalTests : IDisposable
 
         Assert.True(result.IsSuccess, result.Error);
         Assert.Equal(200, result.Code);
-        Assert.Equal("Updated Name", result.Value!.Name);
+        Assert.Equal("Updated ShelterName", result.Value!.Name);
         Assert.Equal("Updated description", result.Value.Description);
         Assert.Equal(75.50m, result.Value.Cost);
     }

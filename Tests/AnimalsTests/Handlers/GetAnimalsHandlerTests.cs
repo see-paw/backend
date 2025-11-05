@@ -1,15 +1,16 @@
-﻿using Application.Animals.Queries;
+﻿using Application.Animals.Filters;
+using Application.Animals.Queries;
 using Application.Core;
 using Application.Shelters.Queries;
 using Domain;
 using Domain.Enums;
+using Domain.Services;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using Persistence;
 
 namespace Tests.AnimalsTests.Handlers
 {
-
-
     //codacy: ignore[complexity]
     public class GetAnimalListTests
     {
@@ -79,7 +80,9 @@ namespace Tests.AnimalsTests.Handlers
                 CreateAnimal("Buddy")
             };
             var context = CreateInMemoryContext(animals);
-            var handler = new GetAnimalList.Handler(context);
+            
+            var specBuilder = new AnimalSpecBuilder(new AnimalDomainService());
+            var handler = new GetAnimalList.Handler(context, specBuilder);
 
             var query = new GetAnimalList.Query { PageNumber = 1 };
 
@@ -100,7 +103,8 @@ namespace Tests.AnimalsTests.Handlers
             };
 
             var context = CreateInMemoryContext(animals);
-            var handler = new GetAnimalList.Handler(context);
+            var specBuilder = new AnimalSpecBuilder(new AnimalDomainService());
+            var handler = new GetAnimalList.Handler(context, specBuilder);
             var query = new GetAnimalList.Query { PageNumber = 1 }; //valid page number
 
             var result = await handler.Handle(query, CancellationToken.None);
@@ -118,7 +122,8 @@ namespace Tests.AnimalsTests.Handlers
         public async Task NoAnimalsExist()
         {
             var context = CreateInMemoryContext(new List<Animal>());
-            var handler = new GetAnimalList.Handler(context);
+            var specBuilder = new AnimalSpecBuilder(new AnimalDomainService());
+            var handler = new GetAnimalList.Handler(context, specBuilder);
             var query = new GetAnimalList.Query { PageNumber = 1 };
 
             var result = await handler.Handle(query, CancellationToken.None);
@@ -135,7 +140,8 @@ namespace Tests.AnimalsTests.Handlers
                 .ToList();
 
             var context = CreateInMemoryContext(animals);
-            var handler = new GetAnimalList.Handler(context);
+            var specBuilder = new AnimalSpecBuilder(new AnimalDomainService());
+            var handler = new GetAnimalList.Handler(context, specBuilder);
 
             var query = new GetAnimalList.Query { PageNumber = 2 };
 
@@ -153,7 +159,8 @@ namespace Tests.AnimalsTests.Handlers
                 .ToList();
 
             var context = CreateInMemoryContext(animals);
-            var handler = new GetAnimalList.Handler(context);
+            var specBuilder = new AnimalSpecBuilder(new AnimalDomainService());
+            var handler = new GetAnimalList.Handler(context, specBuilder);
 
             var query = new GetAnimalList.Query { PageNumber = 1 };
 
@@ -173,7 +180,8 @@ namespace Tests.AnimalsTests.Handlers
             };
 
             var context = CreateInMemoryContext(animals);
-            var handler = new GetAnimalList.Handler(context);
+            var specBuilder = new AnimalSpecBuilder(new AnimalDomainService());
+            var handler = new GetAnimalList.Handler(context, specBuilder);
 
             var query = new GetAnimalList.Query { SortBy = "name", Order = "asc" };
 
@@ -196,7 +204,8 @@ namespace Tests.AnimalsTests.Handlers
             };
 
             var context = CreateInMemoryContext(animals);
-            var handler = new GetAnimalList.Handler(context);
+            var specBuilder = new AnimalSpecBuilder(new AnimalDomainService());
+            var handler = new GetAnimalList.Handler(context, specBuilder);
 
             var query = new GetAnimalList.Query { SortBy = "name", Order = "desc" };
 
@@ -218,7 +227,8 @@ namespace Tests.AnimalsTests.Handlers
             animalOld.BirthDate = new DateOnly(2010, 1, 1);
 
             var context = CreateInMemoryContext(new List<Animal> { animalOld, animalYoung });
-            var handler = new GetAnimalList.Handler(context);
+            var specBuilder = new AnimalSpecBuilder(new AnimalDomainService());
+            var handler = new GetAnimalList.Handler(context, specBuilder);
 
             var query = new GetAnimalList.Query { SortBy = "age", Order = "asc" };
 
@@ -238,7 +248,8 @@ namespace Tests.AnimalsTests.Handlers
             animalOld.BirthDate = new DateOnly(2010, 1, 1);
 
             var context = CreateInMemoryContext(new List<Animal> { animalOld, animalYoung });
-            var handler = new GetAnimalList.Handler(context);
+            var specBuilder = new AnimalSpecBuilder(new AnimalDomainService());
+            var handler = new GetAnimalList.Handler(context, specBuilder);
 
             var query = new GetAnimalList.Query { SortBy = "age", Order = "asc" };
 
@@ -258,7 +269,8 @@ namespace Tests.AnimalsTests.Handlers
             animal2.CreatedAt = DateTime.UtcNow;
 
             var context = CreateInMemoryContext(new List<Animal>() { animal1, animal2 });
-            var handler = new GetAnimalList.Handler(context);
+            var specBuilder = new AnimalSpecBuilder(new AnimalDomainService());
+            var handler = new GetAnimalList.Handler(context, specBuilder);
 
             var result = await handler.Handle(new GetAnimalList.Query(), CancellationToken.None);
 
@@ -276,7 +288,8 @@ namespace Tests.AnimalsTests.Handlers
             animal2.CreatedAt = DateTime.UtcNow;
 
             var context = CreateInMemoryContext(new List<Animal>() { animal1, animal2 });
-            var handler = new GetAnimalList.Handler(context);
+            var specBuilder = new AnimalSpecBuilder(new AnimalDomainService());
+            var handler = new GetAnimalList.Handler(context, specBuilder);
 
             var result = await handler.Handle(new GetAnimalList.Query(), CancellationToken.None);
 

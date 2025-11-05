@@ -1,3 +1,5 @@
+using Application.Animals.Filters;
+using Application.Interfaces;
 using AutoMapper;
  using Application.Scheduling;
 using Domain;
@@ -203,6 +205,9 @@ public class MappingProfiles : Profile
             .ForMember(d => d.Reason, o => o.MapFrom(s => s.Reason));
         
         CreateMap<Shelter, ResShelterDto>();
+        
+        CreateMap<AnimalFilterDto, AnimalFilterModel>()
+            .ConvertUsing<AnimalFilterDtoConverter>();
     }
 
     private static int CalculateAge(DateOnly birthDate)

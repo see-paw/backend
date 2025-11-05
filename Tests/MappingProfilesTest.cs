@@ -120,7 +120,7 @@ namespace Tests
         }
 
         /// <summary>
-        /// Tests that BreedName is mapped from Breed.Name.
+        /// Tests that BreedName is mapped from Breed.ShelterName.
         /// </summary>
         [Fact]
         public void Map_AnimalToResAnimalDto_MapsBreedName()

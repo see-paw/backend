@@ -16,8 +16,8 @@ public class AnimalValidatorBase : AbstractValidator<Animal>
     public AnimalValidatorBase()
     {
         RuleFor(a => a.Name)
-            .NotEmpty().WithMessage("Name is required.")
-            .Length(2, 100).WithMessage("Name must be between 2 and 100 characters.");
+            .NotEmpty().WithMessage("ShelterName is required.")
+            .Length(2, 100).WithMessage("ShelterName must be between 2 and 100 characters.");
 
         RuleFor(a => a.Colour)
             .NotEmpty().WithMessage("Colour is required.")
