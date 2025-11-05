@@ -57,6 +57,7 @@ public class Register
                 await dbContext.SaveChangesAsync(ct);
 
                 request.User.ShelterId = shelter.Id;
+                request.User.Shelter = shelter;
             }
 
             // Create user with password hashing
@@ -65,9 +66,11 @@ public class Register
                 return Result<User>.Failure(createResult.Errors.First().Description, 400);
 
             // Add role
-            await userManager.AddToRoleAsync(request.User, request.SelectedRole);
+            var roleResult = await userManager.AddToRoleAsync(request.User, request.SelectedRole);
+            if (!roleResult.Succeeded)
+                return Result<User>.Failure(roleResult.Errors.First().Description, 400);
 
-           
+
             return Result<User>.Success(request.User, 201);
 
            

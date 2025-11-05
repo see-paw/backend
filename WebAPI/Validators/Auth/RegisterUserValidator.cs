@@ -12,7 +12,7 @@ public class ReqRegisterUserValidator : AbstractValidator<ReqRegisterUserDto>
         RuleFor(x => x.BirthDate)
             .NotEmpty().WithMessage("BirthDate is required.")
             .LessThan(DateTime.UtcNow).WithMessage("BirthDate cannot be in the future.")
-            .GreaterThan(DateTime.UtcNow.AddYears(-100)).WithMessage("BirthDate is unrealistic."); // sanity limit
+            .GreaterThan(DateTime.UtcNow.AddYears(-100)).WithMessage("BirthDate is unrealistic."); 
 
         RuleFor(x => x.Street)
             .NotEmpty().WithMessage("Street is required.")
@@ -74,11 +74,11 @@ public class ReqRegisterUserValidator : AbstractValidator<ReqRegisterUserDto>
                 .WithMessage("NIF must contain exactly 9 digits.");
 
             RuleFor(x => x.ShelterOpeningTime)
-                .NotNull()
+                .NotEmpty()
                 .WithMessage("Opening time is required.");
 
             RuleFor(x => x.ShelterClosingTime)
-                .NotNull()
+                .NotEmpty()
                 .WithMessage("Closing time is required.");
 
         });
