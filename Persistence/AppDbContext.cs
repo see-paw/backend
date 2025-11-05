@@ -1,4 +1,5 @@
 ﻿using Domain;
+using Domain.Enums;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -57,6 +58,16 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
     /// The collection of animal breeds available in the system.
     /// </summary>
     public DbSet<Breed> Breeds { get; set; }
+    
+    /// <summary>
+    /// The collection of time slots available for scheduling activities.
+    /// </summary>
+    public DbSet<Slot> Slots { get; set; }
+
+    /// <summary>
+    /// The collection of notifications sent to users.
+    /// </summary>
+    public DbSet<Notification> Notifications { get; set; }
 
     /// <summary>
     /// Configures the model schema and entity mappings for the database context.
@@ -256,5 +267,88 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
             .WithMany(u => u.Favorites)
             .HasForeignKey(f => f.UserId)
             .OnDelete(DeleteBehavior.Cascade);  // If user is deleted, deletes user's favorite animals
+
+        // ========== NOTIFICATION CONFIGURATIONS ==========
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.Property(n => n.Type).HasConversion<string>(); // Conversion from Enum to string (ex.: 0 to "NEW_OWNERSHIP_REQUEST")
+        });
+
+        modelBuilder.Entity<Notification>()
+            .HasOne(n => n.User)
+            .WithMany() // 1:N : User has many notifications, it is empty because user does not have a ICollection<Notification> property
+            .HasForeignKey(n => n.UserId)
+            .IsRequired(false) // If this is a broadcast notification userId is null
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Notification>()
+            .HasOne(n => n.Animal)
+            .WithMany()
+            .HasForeignKey(n => n.AnimalId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull); // If animal is deleted, notification history persists
+
+        modelBuilder.Entity<Notification>()
+            .HasOne(n => n.OwnershipRequest)
+            .WithMany()
+            .HasForeignKey(n => n.OwnershipRequestId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull); // If ownership request is deleted, notification history persists
+        
+        // ========== SLOT CONFIGURATIONS ==========
+
+        modelBuilder.Entity<Slot>(entity =>
+        {
+            // Primary key
+            entity.HasKey(s => s.Id);
+            
+            entity.HasDiscriminator<SlotType>("Type")
+                .HasValue<ActivitySlot>(SlotType.Activity)
+                .HasValue<ShelterUnavailabilitySlot>(SlotType.ShelterUnavailable);
+            
+            entity.Property(s => s.Status)
+                .HasConversion<string>()
+                .IsRequired();
+            
+            entity.Property(s => s.Type)
+                .HasConversion<string>()
+                .IsRequired();
+            
+            entity.Property(s => s.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .ValueGeneratedOnAdd();
+
+            entity.Property(s => s.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .ValueGeneratedOnAddOrUpdate();
+            
+            entity.HasIndex(s => new { s.StartDateTime, s.EndDateTime });
+        });
+        
+        // ========== ACTIVITY SLOT CONFIGURATIONS ==========
+
+        modelBuilder.Entity<ActivitySlot>(entity =>
+        {
+            
+            entity.HasOne(s => s.Activity)
+                .WithOne(a => a.Slot)
+                .HasForeignKey<ActivitySlot>(s => s.ActivityId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasIndex(s => s.ActivityId)
+                .IsUnique();
+        });
+        
+        // ========== SHELTER UNAVAILABILITY SLOT CONFIGURATION ==========
+        modelBuilder.Entity<ShelterUnavailabilitySlot>(entity =>
+        {
+            entity.HasOne(s => s.Shelter)
+                .WithMany(sh => sh.UnavailabilitySlots)
+                .HasForeignKey(s => s.ShelterId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasIndex(s => new { s.ShelterId, s.StartDateTime });
+        });
     }
 }

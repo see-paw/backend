@@ -1,7 +1,7 @@
 ﻿using Application.Activities.Commands;
 using FluentValidation;
 
-namespace WebAPI.Validators;
+namespace WebAPI.Validators.Activities.Ownership;
 
 /// <summary>
 /// Validator for cancelling ownership activities.
@@ -11,6 +11,9 @@ namespace WebAPI.Validators;
 /// </remarks>
 public class CancelOwnershipActivityValidator : AbstractValidator<CancelOwnershipActivity.Command>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CancelOwnershipActivityValidator"/> class.
+    /// </summary>
     public CancelOwnershipActivityValidator()
     {
         RuleFor(x => x.ActivityId)

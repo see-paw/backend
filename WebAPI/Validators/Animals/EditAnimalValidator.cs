@@ -1,6 +1,7 @@
-﻿using FluentValidation;
+﻿using Application.Animals.Commands;
+using FluentValidation;
 
-namespace Application.Animals.Commands.Validators;
+namespace WebAPI.Validators.Animals;
 
 /// <summary>
 /// Defines validation rules for the <see cref="EditAnimal.Command"/>.
@@ -9,6 +10,9 @@ namespace Application.Animals.Commands.Validators;
 /// </summary>
 public class EditAnimalValidator : AbstractValidator<EditAnimal.Command>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EditAnimalValidator"/> class.
+    /// </summary>
     public EditAnimalValidator()
     {
         RuleFor(x => x.Animal)

@@ -1,9 +1,8 @@
 ﻿using FluentValidation.TestHelper;
 using WebAPI.DTOs.Ownership;
 using WebAPI.Validators.Ownership;
-using Xunit;
 
-namespace Tests.Validators;
+namespace Tests.OwnershipRequestsTest.ValidatorsTest;
 
 public class UpdateOwnershipStatusValidatorTests
 {
