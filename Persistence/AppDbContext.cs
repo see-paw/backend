@@ -65,6 +65,11 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
     public DbSet<Slot> Slots { get; set; }
 
     /// <summary>
+    /// The collection of notifications sent to users.
+    /// </summary>
+    public DbSet<Notification> Notifications { get; set; }
+
+    /// <summary>
     /// Configures the model schema and entity mappings for the database context.
     /// </summary>
     /// <param name="modelBuilder">
@@ -262,6 +267,34 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
             .WithMany(u => u.Favorites)
             .HasForeignKey(f => f.UserId)
             .OnDelete(DeleteBehavior.Cascade);  // If user is deleted, deletes user's favorite animals
+
+        // ========== NOTIFICATION CONFIGURATIONS ==========
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.Property(n => n.Type).HasConversion<string>(); // Conversion from Enum to string (ex.: 0 to "NEW_OWNERSHIP_REQUEST")
+        });
+
+        modelBuilder.Entity<Notification>()
+            .HasOne(n => n.User)
+            .WithMany() // 1:N : User has many notifications, it is empty because user does not have a ICollection<Notification> property
+            .HasForeignKey(n => n.UserId)
+            .IsRequired(false) // If this is a broadcast notification userId is null
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Notification>()
+            .HasOne(n => n.Animal)
+            .WithMany()
+            .HasForeignKey(n => n.AnimalId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull); // If animal is deleted, notification history persists
+
+        modelBuilder.Entity<Notification>()
+            .HasOne(n => n.OwnershipRequest)
+            .WithMany()
+            .HasForeignKey(n => n.OwnershipRequestId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull); // If ownership request is deleted, notification history persists
         
         // ========== SLOT CONFIGURATIONS ==========
 
@@ -318,5 +351,4 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
             entity.HasIndex(s => new { s.ShelterId, s.StartDateTime });
         });
     }
-    
 }

@@ -56,6 +56,20 @@ namespace Tests.AnimalsTests.Handlers
             return new List<IFormFile> { file.Object };
         }
 
+        private Mock<INotificationService> CreateNotificationServiceMock()
+        {
+            var mock = new Mock<INotificationService>();
+
+            mock.Setup(n => n.CreateAndSendToRoleAsync(
+                It.IsAny<string>(),
+                It.IsAny<Domain.Enums.NotificationType>(),
+                It.IsAny<string>(),
+                It.IsAny<string>())
+            ).ReturnsAsync(new List<Domain.Notification>());
+
+            return mock;
+        }
+
         [Fact]
         public async Task CreateAnimal_Success_Returns201AndPersists()
         {
@@ -69,7 +83,8 @@ namespace Tests.AnimalsTests.Handlers
                 It.IsAny<CancellationToken>())
             ).ReturnsAsync(Result<Unit>.Success(Unit.Value, 201));
 
-            var handler = new CreateAnimal.Handler(ctx, uploader.Object);
+            var notificationService = CreateNotificationServiceMock();
+            var handler = new CreateAnimal.Handler(ctx, uploader.Object, notificationService.Object);
 
             var cmd = new CreateAnimal.Command
             {
@@ -97,7 +112,8 @@ namespace Tests.AnimalsTests.Handlers
                 It.IsAny<CancellationToken>())
             ).ReturnsAsync(Result<Unit>.Failure("upload error", 400));
 
-            var handler = new CreateAnimal.Handler(ctx, uploader.Object);
+            var notificationService = CreateNotificationServiceMock();
+            var handler = new CreateAnimal.Handler(ctx, uploader.Object, notificationService.Object);
 
             var cmd = new CreateAnimal.Command
             {
@@ -130,7 +146,8 @@ namespace Tests.AnimalsTests.Handlers
                 It.IsAny<CancellationToken>())
             ).ReturnsAsync(Result<Unit>.Success(Unit.Value, 200));
 
-            var handler = new CreateAnimal.Handler(ctx, uploader.Object);
+            var notificationService = CreateNotificationServiceMock();
+            var handler = new CreateAnimal.Handler(ctx, uploader.Object, notificationService.Object);
 
             var cmd = new CreateAnimal.Command
             {
