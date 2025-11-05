@@ -185,7 +185,13 @@ public class MappingProfiles : Profile
             .ForMember(dest => dest.OpeningTime, opt => opt.MapFrom(src => src.OpeningTime))
             .ForMember(dest => dest.ClosingTime, opt => opt.MapFrom(src => src.ClosingTime));
         
+        
+        // Mapping para Cancel Foster Activity
+        CreateMap<CancelFosteringActivity.CancelFosteringActivityResult, ResCancelActivityFosteringDto>()
+            .ForMember(dest => dest.ActivityId, opt => opt.MapFrom(src => src.ActivityId))
+            .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Message));
     }
+    
 
     private static int CalculateAge(DateOnly birthDate)
         {

@@ -132,7 +132,7 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<ResActivityFosteringDto>> ScheduleVisit(
+    public async Task<ActionResult<ResActivityFosteringDto>> ScheduleActivityFostering(
         [FromBody] ReqCreateActivityFosteringDto dto)
     {
         var command = new CreateFosteringActivity.Command
@@ -152,4 +152,27 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
         return HandleResult(Result<ResActivityFosteringDto>.Success(responseDto, 201));
     }
     
+    [Authorize(Roles = "User")]
+    [HttpPatch("foster-activity/{id}/cancel")]
+    [ProducesResponseType(typeof(ResCancelActivityFosteringDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ResCancelActivityFosteringDto>> CancelActivityFostering(
+        [FromBody] ReqCancelActivityFosteringDto dto)
+    {
+        var command = new CancelFosteringActivity.Command
+        {
+            ActivityId = dto.ActivityId
+        };
+
+        var result = await Mediator.Send(command);
+
+        if (!result.IsSuccess)
+            return HandleResult(result);
+
+        var responseDto = mapper.Map<ResCancelActivityFosteringDto>(result.Value);
+
+        return HandleResult(Result<ResCancelActivityFosteringDto>.Success(responseDto, 200));
+    }
 }

@@ -149,7 +149,7 @@ public class CreateActivityControllerTests
             .Returns(responseDto);
 
         // Act
-        var result = await _controller.ScheduleVisit(dto);
+        var result = await _controller.ScheduleActivityFostering(dto);
 
         // Assert
         var actionResult = Assert.IsType<ActionResult<ResActivityFosteringDto>>(result);
@@ -179,7 +179,7 @@ public class CreateActivityControllerTests
                 .Failure("Animal not found", 404));
 
         // Act
-        var result = await _controller.ScheduleVisit(dto);
+        var result = await _controller.ScheduleActivityFostering(dto);
 
         // Assert
         var actionResult = Assert.IsType<ActionResult<ResActivityFosteringDto>>(result);
@@ -204,7 +204,7 @@ public class CreateActivityControllerTests
                 .Failure("You are not currently fostering this animal", 404));
 
         // Act
-        var result = await _controller.ScheduleVisit(dto);
+        var result = await _controller.ScheduleActivityFostering(dto);
 
         // Assert
         var actionResult = Assert.IsType<ActionResult<ResActivityFosteringDto>>(result);
@@ -229,7 +229,7 @@ public class CreateActivityControllerTests
                 .Failure("Animal cannot be visited", 400));
 
         // Act
-        var result = await _controller.ScheduleVisit(dto);
+        var result = await _controller.ScheduleActivityFostering(dto);
 
         // Assert
         var actionResult = Assert.IsType<ActionResult<ResActivityFosteringDto>>(result);
@@ -254,7 +254,7 @@ public class CreateActivityControllerTests
                 .Failure("Visit cannot start before shelter opening time (09:00:00)", 422));
 
         // Act
-        var result = await _controller.ScheduleVisit(dto);
+        var result = await _controller.ScheduleActivityFostering(dto);
 
         // Assert
         var actionResult = Assert.IsType<ActionResult<ResActivityFosteringDto>>(result);
@@ -279,7 +279,7 @@ public class CreateActivityControllerTests
                 .Failure("Visit cannot end after shelter closing time (18:00:00)", 422));
 
         // Act
-        var result = await _controller.ScheduleVisit(dto);
+        var result = await _controller.ScheduleActivityFostering(dto);
 
         // Assert
         var actionResult = Assert.IsType<ActionResult<ResActivityFosteringDto>>(result);
@@ -304,7 +304,7 @@ public class CreateActivityControllerTests
                 .Failure("Shelter is unavailable during the requested time", 409));
 
         // Act
-        var result = await _controller.ScheduleVisit(dto);
+        var result = await _controller.ScheduleActivityFostering(dto);
 
         // Assert
         var actionResult = Assert.IsType<ActionResult<ResActivityFosteringDto>>(result);
@@ -329,7 +329,7 @@ public class CreateActivityControllerTests
                 .Failure("The animal has another visit scheduled during this time", 409));
 
         // Act
-        var result = await _controller.ScheduleVisit(dto);
+        var result = await _controller.ScheduleActivityFostering(dto);
 
         // Assert
         var actionResult = Assert.IsType<ActionResult<ResActivityFosteringDto>>(result);
@@ -354,7 +354,7 @@ public class CreateActivityControllerTests
                 .Failure("The animal has another activity scheduled during this time", 409));
 
         // Act
-        var result = await _controller.ScheduleVisit(dto);
+        var result = await _controller.ScheduleActivityFostering(dto);
 
         // Assert
         var actionResult = Assert.IsType<ActionResult<ResActivityFosteringDto>>(result);
@@ -449,7 +449,7 @@ public class CreateActivityControllerTests
             });
 
         // Act
-        await _controller.ScheduleVisit(dto);
+        await _controller.ScheduleActivityFostering(dto);
 
         // Assert
         _mediatorMock.Verify(m => m.Send(It.Is<CreateFosteringActivity.Command>(c =>
@@ -541,7 +541,7 @@ public class CreateActivityControllerTests
             });
 
         // Act
-        await _controller.ScheduleVisit(dto);
+        await _controller.ScheduleActivityFostering(dto);
 
         // Assert
         _mapperMock.Verify(m => m.Map<ResActivityFosteringDto>(commandResult), Times.Once);

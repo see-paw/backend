@@ -88,7 +88,16 @@ public class CreateFosteringActivity
             var endUtc = request.EndDateTime.Kind == DateTimeKind.Utc 
                 ? request.EndDateTime 
                 : request.EndDateTime.ToUniversalTime();
-            
+
+            if (startUtc < DateTime.UtcNow.AddHours(1) || endUtc < DateTime.UtcNow.AddDays(1))
+            {
+                return Result<CreateFosteringActivityResult>.Failure($"Cannot schedule an activity before {DateTime.UtcNow.AddDays(1)}  ", 400);
+            }
+
+            if ( endUtc < startUtc )
+            {
+                return Result<CreateFosteringActivityResult>.Failure(" The date and time to start the activity cannot be before the date and time tat activity ends", 400);
+            }
             // Get animal with all necessary relations
             var animal = await GetAnimalWithRelations(request.AnimalId, cancellationToken);
             if (animal == null)
