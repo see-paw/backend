@@ -6,38 +6,59 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs.Auth;
 
-namespace WebAPI.Controllers;
-
-public class AccountController : BaseApiController
+namespace WebAPI.Controllers
 {
-    private readonly IMapper _mapper;
-
-    public AccountController(IMapper mapper)
-    {
-        _mapper = mapper;
-    }
-
     /// <summary>
-    /// Registers a new user or AdminCAA account.
+    /// Handles user account-related operations such as registration and authentication.
     /// </summary>
-    [HttpPost("register")]
-    [AllowAnonymous]
-    public async Task<IActionResult> Register([FromBody] ReqRegisterUserDto reqRegisterUserDto)
+    public class AccountController : BaseApiController
     {
-        var command = _mapper.Map<Register.Command>(reqRegisterUserDto);
+        private readonly IMapper _mapper;
 
-        var result = await Mediator.Send(command);
+        public AccountController(IMapper mapper)
+        {
+            _mapper = mapper;
+        }
 
-        if (!result.IsSuccess)
-            return HandleResult(result);
+        /// <summary>
+        /// Registers a new user account. 
+        /// Supports both standard users and AdminCAA accounts.
+        /// </summary>
+        /// <param name="reqRegisterUserDto">
+        /// Registration request payload containing user information and desired role.
+        /// </param>
+        /// <returns>
+        /// Returns a <see cref="ResRegisterUserDto"/> containing the created user information.
+        /// If the role is <c>AdminCAA</c>, shelter information will also be included.
+        /// </returns>
+        /// <remarks>
+        /// Accessible without authentication.
+        /// </remarks>
+        /// <response code="201">User successfully registered.</response>
+        /// <response code="400">Validation error or registration failed.</response>
+        [HttpPost("register")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Register([FromBody] ReqRegisterUserDto reqRegisterUserDto)
+        {
+            // Map incoming DTO to the registration command
+            var command = _mapper.Map<Register.Command>(reqRegisterUserDto);
 
-        var responseDto = _mapper.Map<ResRegisterUserDto>(result.Value);
-        responseDto.Role = reqRegisterUserDto.SelectedRole; // manual assignment because it's not mapped automatically since it's not part of User entity
+            var result = await Mediator.Send(command);
 
-        //only map Shelter info if the role is AdminCAA
-        if (responseDto.Role == "AdminCAA" && result.Value.Shelter != null)
-            responseDto.Shelter = _mapper.Map<ResRegisterShelterDto>(result.Value.Shelter);
+            if (!result.IsSuccess)
+                return HandleResult(result);
 
-        return HandleResult(Result<ResRegisterUserDto>.Success(responseDto, 201));
+            // Map the domain result to the response DTO
+            var responseDto = _mapper.Map<ResRegisterUserDto>(result.Value);
+
+            // Manually assign the role because it's not stored directly in the User entity
+            responseDto.Role = reqRegisterUserDto.SelectedRole;
+
+            // Only map shelter info when the registered user corresponds to an AdminCAA
+            if (responseDto.Role == "AdminCAA" && result.Value.Shelter != null)
+                responseDto.Shelter = _mapper.Map<ResRegisterShelterDto>(result.Value.Shelter);
+
+            return HandleResult(Result<ResRegisterUserDto>.Success(responseDto, 201));
+        }
     }
 }

@@ -16,6 +16,20 @@ using Moq;
 namespace Tests.AuthTests.Handlers
 {
     //codacy: ignore[complexity]
+    /// <summary>
+    /// Unit tests for <see cref="Register.Handler"/>.
+    /// 
+    /// These tests verify:
+    /// - Successful registration of a standard User account.
+    /// - Successful registration of an AdminCAA account including automatic Shelter creation.
+    /// - Rejection when an invalid role is supplied.
+    /// - Handling of failure during UserManager.CreateAsync.
+    /// - Handling of failure during UserManager.AddToRoleAsync.
+    /// 
+    /// AppDbContext is created using an InMemory provider to allow repository verification
+    /// such as checking shelter persistence.
+    /// UserManager is mocked to isolate identity operations.
+    /// </summary>
     public class RegisterUserHandlerTests
     {
         private readonly AppDbContext _dbContext;
@@ -24,18 +38,22 @@ namespace Tests.AuthTests.Handlers
 
         public RegisterUserHandlerTests()
         {
+            // Use an in-memory database for isolation and repeatability
             var options = new DbContextOptionsBuilder<AppDbContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options;
 
             _dbContext = new AppDbContext(options);
 
-            // Mock UserManager
+            // Mock UserManager behavior
             _userManager = CreateMockedUserManager();
 
             _handler = new Register.Handler(_dbContext, _userManager);
         }
 
+        /// <summary>
+        /// Creates a valid base User entity used in multiple test cases.
+        /// </summary>
         private User CreateUser()
         {
             return new User()
@@ -50,7 +68,9 @@ namespace Tests.AuthTests.Handlers
             };
         }
 
-        // Successfully registers a normal user
+        /// <summary>
+        /// Ensures that when registering a standard User, the result succeeds.
+        /// </summary>
         [Fact]
         public async Task RegisterNormalUser_Success()
         {
@@ -65,7 +85,9 @@ namespace Tests.AuthTests.Handlers
             Assert.True(result.IsSuccess);
         }
 
-        // Successfully registers an AdminCAA user with shelter creation
+        /// <summary>
+        /// Verifies that AdminCAA registration successfully creates an associated Shelter entity.
+        /// </summary>
         [Fact]
         public async Task RegisterAdminCAAUser_Success()
         {
@@ -91,7 +113,9 @@ namespace Tests.AuthTests.Handlers
             Assert.Equal("Test Shelter", createdShelter!.Name);
         }
 
-        // Fails to register with an invalid role
+        /// <summary>
+        /// Ensures that registration fails when an unknown/unsupported role is provided.
+        /// </summary>
         [Fact]
         public async Task InvalidRoleShouldFail()
         {
@@ -106,6 +130,9 @@ namespace Tests.AuthTests.Handlers
             Assert.False(result.IsSuccess);
         }
 
+        /// <summary>
+        /// Ensures failure when UserManager.CreateAsync returns an error.
+        /// </summary>
         [Fact]
         public async Task ShouldFail_WhenUserManagerCreateFails()
         {
@@ -126,6 +153,9 @@ namespace Tests.AuthTests.Handlers
             Assert.False(result.IsSuccess);
         }
 
+        /// <summary>
+        /// Ensures failure when UserManager.AddToRoleAsync returns an error.
+        /// </summary>
         [Fact]
         public async Task ShouldFail_WhenAddToRoleFails()
         {
@@ -143,6 +173,8 @@ namespace Tests.AuthTests.Handlers
             var result = await handler.Handle(command, CancellationToken.None);
             Assert.False(result.IsSuccess);
         }
+
+        // ---- Test Support Methods ----
 
         private static UserManager<User> CreateMockedUserManagerFailureOnRoleAssign()
         {

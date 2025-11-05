@@ -175,6 +175,17 @@ try
     await context.Database.MigrateAsync();
     logger.LogInformation("Migrations applied successfully.");
 
+    // Ensure Roles Exist
+    var roles = new[] { "User", "AdminCAA" };
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+        {
+            await roleManager.CreateAsync(new IdentityRole(role));
+            logger.LogInformation($"Role '{role}' created.");
+        }
+    }
+
     // How the DB is seeded dependending on the environment type
     if (app.Environment.IsProduction())
     {
