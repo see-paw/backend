@@ -12,35 +12,25 @@ using WebAPI.DTOs.Activities;
 
 namespace Tests.ActivitiesTest.ActivitiesFosteringTest.ControllersTest;
 
-
-
 /// <summary>
 /// Unit tests for Activities Controller - ScheduleVisit endpoint with >70% coverage.
 /// </summary>
 public class CreateActivityControllerTests
 {
-    private readonly Mock<IMediator> _mockMediator;
-    private readonly Mock<IMapper> _mockMapper;
+    private readonly Mock<IMediator> _mediatorMock;
+    private readonly Mock<IMapper> _mapperMock;
     private readonly ActivitiesController _controller;
-
-    // Test constants
-    private const string TestAnimalId = "12345678-1234-1234-1234-123456789abc";
-    private const string TestUserId = "test-user-123";
-    private const string TestActivityId = "test-activity-123";
-    private const string TestSlotId = "test-slot-123";
-    private const string TestShelterId = "test-shelter-123";
-    private const string TestBreedId = "test-breed-123";
 
     public CreateActivityControllerTests()
     {
-        _mockMediator = new Mock<IMediator>();
-        _mockMapper = new Mock<IMapper>();
-        _controller = new ActivitiesController(_mockMapper.Object);
+        _mediatorMock = new Mock<IMediator>();
+        _mapperMock = new Mock<IMapper>();
+        _controller = new ActivitiesController(_mapperMock.Object);
 
         var serviceProviderMock = new Mock<IServiceProvider>();
         serviceProviderMock
             .Setup(sp => sp.GetService(typeof(IMediator)))
-            .Returns(_mockMediator.Object);
+            .Returns(_mediatorMock.Object);
 
         _controller.ControllerContext = new ControllerContext
         {
@@ -51,712 +41,509 @@ public class CreateActivityControllerTests
         };
     }
 
-    #region Helper Methods
 
-    private ReqCreateActivityFosteringDto CreateValidRequest()
+    [Fact]
+    public async Task ScheduleVisit_WithValidRequest_ReturnsCreatedResult()
     {
-        return new ReqCreateActivityFosteringDto
+        // Arrange
+        var startTime = DateTime.UtcNow.AddDays(2).AddHours(10);
+        var endTime = DateTime.UtcNow.AddDays(2).AddHours(12);
+
+        var dto = new ReqCreateActivityFosteringDto
         {
-            AnimalId = TestAnimalId,
-            StartDateTime = DateTime.UtcNow.AddDays(1).AddHours(10),
-            EndDateTime = DateTime.UtcNow.AddDays(1).AddHours(12)
+            AnimalId = "e5f6a7b8-c9d0-4e9f-2a3b-4c5d6e7f8a9b",
+            StartDateTime = startTime,
+            EndDateTime = endTime
         };
-    }
 
-    private ResActivityFosteringDto CreateValidResponse()
-    {
-        return new ResActivityFosteringDto
+        var commandResult = new CreateFosteringActivity.CreateFosteringActivityResult
         {
-            ActivityId = TestActivityId,
-            ActivitySlotId = TestSlotId,
-            StartDateTime = DateTime.UtcNow.AddDays(1).AddHours(10),
-            EndDateTime = DateTime.UtcNow.AddDays(1).AddHours(12),
+            Activity = new Activity
+            {
+                Id = "activity-001",
+                AnimalId = dto.AnimalId,
+                UserId = "user-001",
+                Type = ActivityType.Fostering,
+                Status = ActivityStatus.Active,
+                StartDate = startTime,
+                EndDate = endTime
+            },
+            ActivitySlot = new ActivitySlot
+            {
+                Id = "slot-001",
+                ActivityId = "activity-001",
+                StartDateTime = startTime,
+                EndDateTime = endTime,
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity
+            },
+            Animal = new Animal
+            {
+                Id = dto.AnimalId,
+                Name = "Rex",
+                AnimalState = AnimalState.PartiallyFostered,
+                Species = Species.Dog,
+                Size = SizeType.Medium,
+                Sex = SexType.Male,
+                Colour = "Brown",
+                BirthDate = new DateOnly(2020, 3, 15),
+                Sterilized = true,
+                Cost = 50.00m,
+                ShelterId = "shelter-001",
+                BreedId = "breed-001",
+                Images = new List<Image>
+                {
+                    new Image
+                    {
+                        Id = "image-001",
+                        PublicId = "test/rex",
+                        Url = "https://example.com/rex.jpg",
+                        Description = "Rex image",
+                        IsPrincipal = true,
+                        AnimalId = dto.AnimalId
+                    }
+                }
+            },
+            Shelter = new Shelter
+            {
+                Id = "shelter-001",
+                Name = "Test Shelter",
+                Street = "Test Street 123",
+                City = "Porto",
+                PostalCode = "4000-001",
+                Phone = "223456789",
+                NIF = "123456789",
+                OpeningTime = new TimeOnly(9, 0),
+                ClosingTime = new TimeOnly(18, 0)
+            }
+        };
+
+        var responseDto = new ResActivityFosteringDto
+        {
+            ActivitySlotId = "slot-001",
+            ActivityId = "activity-001",
+            StartDateTime = startTime,
+            EndDateTime = endTime,
             Animal = new AnimalVisitInfoDto
             {
-                Id = TestAnimalId,
-                Name = "Test Animal",
-                PrincipalImageUrl = "https://example.com/image.jpg"
+                Id = dto.AnimalId,
+                Name = "Rex",
+                PrincipalImageUrl = "https://example.com/rex.jpg"
             },
             Shelter = new ShelterVisitInfoDto
             {
                 Name = "Test Shelter",
-                Address = "Test Street, Test City, 1234-567",
+                Address = "Test Street 123, Porto, 4000-001",
                 OpeningTime = new TimeOnly(9, 0),
                 ClosingTime = new TimeOnly(18, 0)
             },
-            Message = "Visit successfully scheduled"
-        };
-    }
-
-    /// <summary>
-    /// Creates the anonymous object that the Handler returns
-    /// This simulates what CreateFosteringActivity.Handler.Handle returns
-    /// </summary>
-    private object CreateHandlerSuccessResult()
-    {
-        var activity = new Activity
-        {
-            Id = TestActivityId,
-            AnimalId = TestAnimalId,
-            UserId = TestUserId,
-            Type = ActivityType.Fostering,
-            Status = ActivityStatus.Active,
-            StartDate = DateTime.UtcNow.AddDays(1).AddHours(10),
-            EndDate = DateTime.UtcNow.AddDays(1).AddHours(12)
+            Message = "Visit scheduled successfully"
         };
 
-        var activitySlot = new ActivitySlot
+        _mediatorMock
+            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), default))
+            .ReturnsAsync(Result<CreateFosteringActivity.CreateFosteringActivityResult>.Success(commandResult, 201));
+
+        _mapperMock
+            .Setup(m => m.Map<ResActivityFosteringDto>(commandResult))
+            .Returns(responseDto);
+
+        // Act
+        var result = await _controller.ScheduleVisit(dto);
+
+        // Assert
+        var actionResult = Assert.IsType<ActionResult<ResActivityFosteringDto>>(result);
+        var okResult = Assert.IsType<ObjectResult>(actionResult.Result);
+        Assert.Equal(201, okResult.StatusCode);
+        var returnValue = Assert.IsType<ResActivityFosteringDto>(okResult.Value);
+        Assert.Equal("slot-001", returnValue.ActivitySlotId);
+        Assert.Equal("activity-001", returnValue.ActivityId);
+        Assert.Equal("Rex", returnValue.Animal.Name);
+        Assert.Equal("Test Shelter", returnValue.Shelter.Name);
+    }
+
+    [Fact]
+    public async Task ScheduleVisit_WithAnimalNotFound_ReturnsNotFound()
+    {
+        // Arrange
+        var dto = new ReqCreateActivityFosteringDto
         {
-            Id = TestSlotId,
-            ActivityId = TestActivityId,
-            StartDateTime = DateTime.UtcNow.AddDays(1).AddHours(10),
-            EndDateTime = DateTime.UtcNow.AddDays(1).AddHours(12),
-            Status = SlotStatus.Reserved,
-            Type = SlotType.Activity
-        };
-
-        var animal = new Animal
-        {
-            Id = TestAnimalId,
-            Name = "Test Animal",
-            AnimalState = AnimalState.PartiallyFostered,
-            Species = Species.Dog,
-            Size = SizeType.Medium,
-            Sex = SexType.Male,
-            Colour = "Brown",
-            BirthDate = new DateOnly(2020, 1, 1),
-            Sterilized = true,
-            Cost = 50,
-            ShelterId = TestShelterId,
-            BreedId = TestBreedId
-        };
-
-        // Add principal image
-        animal.Images.Add(new Image
-        {
-            Id = "image-123",
-            PublicId = "public-123",
-            Url = "https://example.com/image.jpg",
-            IsPrincipal = true,
-            AnimalId = TestAnimalId
-        });
-
-        var shelter = new Shelter
-        {
-            Id = TestShelterId,
-            Name = "Test Shelter",
-            Street = "Test Street",
-            City = "Test City",
-            PostalCode = "1234-567",
-            Phone = "912345678",
-            NIF = "123456789",
-            OpeningTime = new TimeOnly(9, 0),
-            ClosingTime = new TimeOnly(18, 0)
-        };
-
-        // This is the exact structure returned by the Handler
-        return new
-        {
-            Activity = activity,
-            ActivitySlot = activitySlot,
-            Animal = animal,
-            Shelter = shelter
-        };
-    }
-
-    #endregion
-
-    #region Success Cases
-
-    [Fact]
-    public async Task ScheduleVisit_ValidRequest_ReturnsCreated()
-    {
-        // Arrange
-        var request = CreateValidRequest();
-        var handlerResult = CreateHandlerSuccessResult();
-        var expectedResponse = CreateValidResponse();
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<object>.Success(handlerResult, 201));
-
-        _mockMapper
-            .Setup(m => m.Map<ResActivityFosteringDto>(It.IsAny<object>()))
-            .Returns(expectedResponse);
-
-        // Act
-        var result = await _controller.ScheduleVisit(request);
-
-        // Assert
-        var createdResult = Assert.IsType<ObjectResult>(result.Result);
-        Assert.Equal(201, createdResult.StatusCode);
-        
-        var response = Assert.IsType<ResActivityFosteringDto>(createdResult.Value);
-        Assert.Equal(TestActivityId, response.ActivityId);
-        Assert.Equal(TestSlotId, response.ActivitySlotId);
-        Assert.NotNull(response.Animal);
-        Assert.Equal("Test Animal", response.Animal.Name);
-        Assert.NotNull(response.Shelter);
-        Assert.Equal("Test Shelter", response.Shelter.Name);
-
-        _mockMediator.Verify(
-            m => m.Send(It.Is<CreateFosteringActivity.Command>(
-                c => c.AnimalId == request.AnimalId 
-                     && c.StartDateTime == request.StartDateTime
-                     && c.EndDateTime == request.EndDateTime), 
-                It.IsAny<CancellationToken>()), 
-            Times.Once);
-
-        _mockMapper.Verify(
-            m => m.Map<ResActivityFosteringDto>(It.Is<object>(o => o == handlerResult)), 
-            Times.Once);
-    }
-
-    [Fact]
-    public async Task ScheduleVisit_ValidRequest_MapsCommandCorrectly()
-    {
-        // Arrange
-        var request = CreateValidRequest();
-        var handlerResult = CreateHandlerSuccessResult();
-        var expectedResponse = CreateValidResponse();
-
-        CreateFosteringActivity.Command capturedCommand = null;
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), It.IsAny<CancellationToken>()))
-            .Callback<IRequest<Result<object>>, CancellationToken>((cmd, ct) => 
-            {
-                capturedCommand = cmd as CreateFosteringActivity.Command;
-            })
-            .ReturnsAsync(Result<object>.Success(handlerResult, 201));
-
-        _mockMapper
-            .Setup(m => m.Map<ResActivityFosteringDto>(It.IsAny<object>()))
-            .Returns(expectedResponse);
-
-        // Act
-        var result = await _controller.ScheduleVisit(request);
-
-        // Assert
-        Assert.NotNull(capturedCommand);
-        Assert.Equal(request.AnimalId, capturedCommand.AnimalId);
-        Assert.Equal(request.StartDateTime, capturedCommand.StartDateTime);
-        Assert.Equal(request.EndDateTime, capturedCommand.EndDateTime);
-    }
-
-    [Fact]
-    public async Task ScheduleVisit_Success_MapperReceivesAnonymousObject()
-    {
-        // Arrange
-        var request = CreateValidRequest();
-        var handlerResult = CreateHandlerSuccessResult();
-        var expectedResponse = CreateValidResponse();
-
-        object capturedMapperInput = null;
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<object>.Success(handlerResult, 201));
-
-        _mockMapper
-            .Setup(m => m.Map<ResActivityFosteringDto>(It.IsAny<object>()))
-            .Callback<object>(input => capturedMapperInput = input)
-            .Returns(expectedResponse);
-
-        // Act
-        var result = await _controller.ScheduleVisit(request);
-
-        // Assert
-        Assert.NotNull(capturedMapperInput);
-        Assert.Equal(handlerResult, capturedMapperInput);
-
-        // Verify the anonymous object has the expected properties
-        var inputType = capturedMapperInput.GetType();
-        Assert.NotNull(inputType.GetProperty("Activity"));
-        Assert.NotNull(inputType.GetProperty("ActivitySlot"));
-        Assert.NotNull(inputType.GetProperty("Animal"));
-        Assert.NotNull(inputType.GetProperty("Shelter"));
-    }
-
-    #endregion
-
-    #region Failure Cases - Bad Request (400)
-
-    [Fact]
-    public async Task ScheduleVisit_InvalidAnimalState_ReturnsBadRequest()
-    {
-        // Arrange
-        var request = CreateValidRequest();
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<object>.Failure("Animal cannot be visited", 400));
-
-        // Act
-        var result = await _controller.ScheduleVisit(request);
-
-        // Assert
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        Assert.Equal(400, badRequestResult.StatusCode);
-        
-        // Mapper should NOT be called on failure
-        _mockMapper.Verify(
-            m => m.Map<ResActivityFosteringDto>(It.IsAny<object>()), 
-            Times.Never);
-    }
-
-    [Fact]
-    public async Task ScheduleVisit_ValidationFailure_ReturnsBadRequest()
-    {
-        // Arrange
-        var request = CreateValidRequest();
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<object>.Failure("Invalid request data", 400));
-
-        // Act
-        var result = await _controller.ScheduleVisit(request);
-
-        // Assert
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        Assert.Equal(400, badRequestResult.StatusCode);
-        
-        _mockMapper.Verify(
-            m => m.Map<ResActivityFosteringDto>(It.IsAny<object>()), 
-            Times.Never);
-    }
-
-    #endregion
-
-    #region Failure Cases - Not Found (404)
-
-    [Fact]
-    public async Task ScheduleVisit_AnimalNotFound_ReturnsNotFound()
-    {
-        // Arrange
-        var request = CreateValidRequest();
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<object>.Failure("Animal not found", 404));
-
-        // Act
-        var result = await _controller.ScheduleVisit(request);
-
-        // Assert
-        var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
-        Assert.Equal(404, notFoundResult.StatusCode);
-        
-        _mockMapper.Verify(
-            m => m.Map<ResActivityFosteringDto>(It.IsAny<object>()), 
-            Times.Never);
-    }
-
-    [Fact]
-    public async Task ScheduleVisit_UserNotFostering_ReturnsNotFound()
-    {
-        // Arrange
-        var request = CreateValidRequest();
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<object>.Failure("You are not currently fostering this animal", 404));
-
-        // Act
-        var result = await _controller.ScheduleVisit(request);
-
-        // Assert
-        var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
-        Assert.Equal(404, notFoundResult.StatusCode);
-        
-        _mockMapper.Verify(
-            m => m.Map<ResActivityFosteringDto>(It.IsAny<object>()), 
-            Times.Never);
-    }
-
-    #endregion
-
-    #region Failure Cases - Conflict (409)
-
-    [Fact]
-    public async Task ScheduleVisit_TimeSlotConflict_ReturnsConflict()
-    {
-        // Arrange
-        var request = CreateValidRequest();
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<object>.Failure("The animal has another visit scheduled during this time", 409));
-
-        // Act
-        var result = await _controller.ScheduleVisit(request);
-
-        // Assert
-        var conflictResult = Assert.IsType<ConflictObjectResult>(result.Result);
-        Assert.Equal(409, conflictResult.StatusCode);
-        
-        _mockMapper.Verify(
-            m => m.Map<ResActivityFosteringDto>(It.IsAny<object>()), 
-            Times.Never);
-    }
-
-    [Fact]
-    public async Task ScheduleVisit_ShelterUnavailable_ReturnsConflict()
-    {
-        // Arrange
-        var request = CreateValidRequest();
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<object>.Failure("Shelter is unavailable during the requested time", 409));
-
-        // Act
-        var result = await _controller.ScheduleVisit(request);
-
-        // Assert
-        var conflictResult = Assert.IsType<ConflictObjectResult>(result.Result);
-        Assert.Equal(409, conflictResult.StatusCode);
-        
-        _mockMapper.Verify(
-            m => m.Map<ResActivityFosteringDto>(It.IsAny<object>()), 
-            Times.Never);
-    }
-
-    [Fact]
-    public async Task ScheduleVisit_ActivityConflict_ReturnsConflict()
-    {
-        // Arrange
-        var request = CreateValidRequest();
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<object>.Failure("The animal has another activity scheduled during this time", 409));
-
-        // Act
-        var result = await _controller.ScheduleVisit(request);
-
-        // Assert
-        var conflictResult = Assert.IsType<ConflictObjectResult>(result.Result);
-        Assert.Equal(409, conflictResult.StatusCode);
-        
-        _mockMapper.Verify(
-            m => m.Map<ResActivityFosteringDto>(It.IsAny<object>()), 
-            Times.Never);
-    }
-
-    #endregion
-
-    #region Failure Cases - Unprocessable Entity (422)
-
-    [Fact]
-    public async Task ScheduleVisit_OutsideOperatingHours_ReturnsUnprocessableEntity()
-    {
-        // Arrange
-        var request = CreateValidRequest();
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<object>.Failure("Visit cannot start before shelter opening time (09:00:00)", 422));
-
-        // Act
-        var result = await _controller.ScheduleVisit(request);
-
-        // Assert
-        var unprocessableResult = Assert.IsType<ObjectResult>(result.Result);
-        Assert.Equal(422, unprocessableResult.StatusCode);
-        
-        _mockMapper.Verify(
-            m => m.Map<ResActivityFosteringDto>(It.IsAny<object>()), 
-            Times.Never);
-    }
-
-    #endregion
-
-    #region Failure Cases - Internal Server Error (500)
-
-    [Fact]
-    public async Task ScheduleVisit_DatabaseFailure_ReturnsInternalServerError()
-    {
-        // Arrange
-        var request = CreateValidRequest();
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<object>.Failure("Failed to create fostering activity", 500));
-
-        // Act
-        var result = await _controller.ScheduleVisit(request);
-
-        // Assert
-        var errorResult = Assert.IsType<ObjectResult>(result.Result);
-        Assert.Equal(500, errorResult.StatusCode);
-        
-        _mockMapper.Verify(
-            m => m.Map<ResActivityFosteringDto>(It.IsAny<object>()), 
-            Times.Never);
-    }
-
-    #endregion
-
-    #region Edge Cases
-
-    [Fact]
-    public async Task ScheduleVisit_NullRequest_ThrowsException()
-    {
-        // Act & Assert
-        await Assert.ThrowsAsync<NullReferenceException>(async () =>
-        {
-            await _controller.ScheduleVisit(null);
-        });
-        
-        // Mediator and Mapper should not be called
-        _mockMediator.Verify(
-            m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), It.IsAny<CancellationToken>()), 
-            Times.Never);
-        _mockMapper.Verify(
-            m => m.Map<ResActivityFosteringDto>(It.IsAny<object>()), 
-            Times.Never);
-    }
-
-    [Fact]
-    public async Task ScheduleVisit_MediatorThrowsException_PropagatesException()
-    {
-        // Arrange
-        var request = CreateValidRequest();
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new Exception("Mediator error"));
-
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<Exception>(async () =>
-        {
-            await _controller.ScheduleVisit(request);
-        });
-        
-        Assert.Equal("Mediator error", exception.Message);
-        
-        // Mapper should not be called
-        _mockMapper.Verify(
-            m => m.Map<ResActivityFosteringDto>(It.IsAny<object>()), 
-            Times.Never);
-    }
-
-    [Fact]
-    public async Task ScheduleVisit_MapperThrowsException_PropagatesException()
-    {
-        // Arrange
-        var request = CreateValidRequest();
-        var handlerResult = CreateHandlerSuccessResult();
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<object>.Success(handlerResult, 201));
-
-        _mockMapper
-            .Setup(m => m.Map<ResActivityFosteringDto>(It.IsAny<object>()))
-            .Throws(new Exception("Mapping error"));
-
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<Exception>(async () =>
-        {
-            await _controller.ScheduleVisit(request);
-        });
-        
-        Assert.Equal("Mapping error", exception.Message);
-    }
-
-    #endregion
-
-    #region DTO Validation Tests
-
-    [Theory]
-    [InlineData("")]
-    [InlineData("invalid-guid")]
-    public async Task ScheduleVisit_InvalidAnimalId_HandledByValidation(string animalId)
-    {
-        // Arrange
-        var request = new ReqCreateActivityFosteringDto
-        {
-            AnimalId = animalId,
-            StartDateTime = DateTime.UtcNow.AddDays(1),
-            EndDateTime = DateTime.UtcNow.AddDays(1).AddHours(2)
-        };
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<object>.Failure("Animal not found", 404));
-
-        // Act
-        var result = await _controller.ScheduleVisit(request);
-
-        // Assert
-        var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
-        Assert.Equal(404, notFoundResult.StatusCode);
-        
-        _mockMapper.Verify(
-            m => m.Map<ResActivityFosteringDto>(It.IsAny<object>()), 
-            Times.Never);
-    }
-
-    [Fact]
-    public async Task ScheduleVisit_PastStartDate_HandledByBusinessLogic()
-    {
-        // Arrange
-        var request = new ReqCreateActivityFosteringDto
-        {
-            AnimalId = TestAnimalId,
-            StartDateTime = DateTime.UtcNow.AddDays(-1), // Past date
-            EndDateTime = DateTime.UtcNow.AddDays(-1).AddHours(2)
-        };
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<object>.Failure("Visit must be scheduled at least 24 hours in advance", 400));
-
-        // Act
-        var result = await _controller.ScheduleVisit(request);
-
-        // Assert
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        Assert.Equal(400, badRequestResult.StatusCode);
-        
-        _mockMapper.Verify(
-            m => m.Map<ResActivityFosteringDto>(It.IsAny<object>()), 
-            Times.Never);
-    }
-
-    [Fact]
-    public async Task ScheduleVisit_EndBeforeStart_HandledByBusinessLogic()
-    {
-        // Arrange
-        var request = new ReqCreateActivityFosteringDto
-        {
-            AnimalId = TestAnimalId,
-            StartDateTime = DateTime.UtcNow.AddDays(1).AddHours(12),
-            EndDateTime = DateTime.UtcNow.AddDays(1).AddHours(10) // Before start
-        };
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<object>.Failure("End time must be after start time", 400));
-
-        // Act
-        var result = await _controller.ScheduleVisit(request);
-
-        // Assert
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-        Assert.Equal(400, badRequestResult.StatusCode);
-        
-        _mockMapper.Verify(
-            m => m.Map<ResActivityFosteringDto>(It.IsAny<object>()), 
-            Times.Never);
-    }
-
-    #endregion
-
-    #region Multiple Requests Tests
-
-    [Fact]
-    public async Task ScheduleVisit_MultipleSuccessfulRequests_AllSucceed()
-    {
-        // Arrange
-        var request1 = CreateValidRequest();
-        var request2 = new ReqCreateActivityFosteringDto
-        {
-            AnimalId = "87654321-4321-4321-4321-cba987654321",
+            AnimalId = "00000000-0000-0000-0000-000000000000",
             StartDateTime = DateTime.UtcNow.AddDays(2).AddHours(10),
             EndDateTime = DateTime.UtcNow.AddDays(2).AddHours(12)
         };
 
-        var handlerResult = CreateHandlerSuccessResult();
-        var expectedResponse = CreateValidResponse();
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<object>.Success(handlerResult, 201));
-
-        _mockMapper
-            .Setup(m => m.Map<ResActivityFosteringDto>(It.IsAny<object>()))
-            .Returns(expectedResponse);
+        _mediatorMock
+            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), default))
+            .ReturnsAsync(Result<CreateFosteringActivity.CreateFosteringActivityResult>
+                .Failure("Animal not found", 404));
 
         // Act
-        var result1 = await _controller.ScheduleVisit(request1);
-        var result2 = await _controller.ScheduleVisit(request2);
+        var result = await _controller.ScheduleVisit(dto);
 
         // Assert
-        var createdResult1 = Assert.IsType<ObjectResult>(result1.Result);
-        var createdResult2 = Assert.IsType<ObjectResult>(result2.Result);
-        
-        Assert.Equal(201, createdResult1.StatusCode);
-        Assert.Equal(201, createdResult2.StatusCode);
-
-        _mockMediator.Verify(
-            m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), It.IsAny<CancellationToken>()), 
-            Times.Exactly(2));
-        
-        _mockMapper.Verify(
-            m => m.Map<ResActivityFosteringDto>(It.IsAny<object>()), 
-            Times.Exactly(2));
+        var actionResult = Assert.IsType<ActionResult<ResActivityFosteringDto>>(result);
+        var notFoundResult = Assert.IsType<NotFoundObjectResult>(actionResult.Result);
+        Assert.Equal(404, notFoundResult.StatusCode);
     }
 
-    #endregion
-
-    #region Handler Result Validation
-
     [Fact]
-    public async Task ScheduleVisit_Success_HandlerReturnsCorrectAnonymousObjectStructure()
+    public async Task ScheduleVisit_WithUserNotFostering_ReturnsNotFound()
     {
         // Arrange
-        var request = CreateValidRequest();
-        var handlerResult = CreateHandlerSuccessResult();
-        var expectedResponse = CreateValidResponse();
+        var dto = new ReqCreateActivityFosteringDto
+        {
+            AnimalId = "e5f6a7b8-c9d0-4e9f-2a3b-4c5d6e7f8a9b",
+            StartDateTime = DateTime.UtcNow.AddDays(2).AddHours(10),
+            EndDateTime = DateTime.UtcNow.AddDays(2).AddHours(12)
+        };
 
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<object>.Success(handlerResult, 201));
+        _mediatorMock
+            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), default))
+            .ReturnsAsync(Result<CreateFosteringActivity.CreateFosteringActivityResult>
+                .Failure("You are not currently fostering this animal", 404));
 
-        _mockMapper
-            .Setup(m => m.Map<ResActivityFosteringDto>(It.IsAny<object>()))
-            .Returns((object input) =>
+        // Act
+        var result = await _controller.ScheduleVisit(dto);
+
+        // Assert
+        var actionResult = Assert.IsType<ActionResult<ResActivityFosteringDto>>(result);
+        var notFoundResult = Assert.IsType<NotFoundObjectResult>(actionResult.Result);
+        Assert.Equal(404, notFoundResult.StatusCode);
+    }
+
+    [Fact]
+    public async Task ScheduleVisit_WithInactiveAnimal_ReturnsBadRequest()
+    {
+        // Arrange
+        var dto = new ReqCreateActivityFosteringDto
+        {
+            AnimalId = "a7b8c9d0-e1f2-4a1b-4c5d-6e7f8a9b0c1d",
+            StartDateTime = DateTime.UtcNow.AddDays(2).AddHours(10),
+            EndDateTime = DateTime.UtcNow.AddDays(2).AddHours(12)
+        };
+
+        _mediatorMock
+            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), default))
+            .ReturnsAsync(Result<CreateFosteringActivity.CreateFosteringActivityResult>
+                .Failure("Animal cannot be visited", 400));
+
+        // Act
+        var result = await _controller.ScheduleVisit(dto);
+
+        // Assert
+        var actionResult = Assert.IsType<ActionResult<ResActivityFosteringDto>>(result);
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(actionResult.Result);
+        Assert.Equal(400, badRequestResult.StatusCode);
+    }
+
+    [Fact]
+    public async Task ScheduleVisit_WithStartBeforeOpeningTime_ReturnsUnprocessableEntity()
+    {
+        // Arrange
+        var dto = new ReqCreateActivityFosteringDto
+        {
+            AnimalId = "e5f6a7b8-c9d0-4e9f-2a3b-4c5d6e7f8a9b",
+            StartDateTime = DateTime.UtcNow.AddDays(2).AddHours(8),
+            EndDateTime = DateTime.UtcNow.AddDays(2).AddHours(10)
+        };
+
+        _mediatorMock
+            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), default))
+            .ReturnsAsync(Result<CreateFosteringActivity.CreateFosteringActivityResult>
+                .Failure("Visit cannot start before shelter opening time (09:00:00)", 422));
+
+        // Act
+        var result = await _controller.ScheduleVisit(dto);
+
+        // Assert
+        var actionResult = Assert.IsType<ActionResult<ResActivityFosteringDto>>(result);
+        var unprocessableResult = Assert.IsType<ObjectResult>(actionResult.Result);
+        Assert.Equal(422, unprocessableResult.StatusCode);
+    }
+
+    [Fact]
+    public async Task ScheduleVisit_WithEndAfterClosingTime_ReturnsUnprocessableEntity()
+    {
+        // Arrange
+        var dto = new ReqCreateActivityFosteringDto
+        {
+            AnimalId = "e5f6a7b8-c9d0-4e9f-2a3b-4c5d6e7f8a9b",
+            StartDateTime = DateTime.UtcNow.AddDays(2).AddHours(16),
+            EndDateTime = DateTime.UtcNow.AddDays(2).AddHours(19)
+        };
+
+        _mediatorMock
+            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), default))
+            .ReturnsAsync(Result<CreateFosteringActivity.CreateFosteringActivityResult>
+                .Failure("Visit cannot end after shelter closing time (18:00:00)", 422));
+
+        // Act
+        var result = await _controller.ScheduleVisit(dto);
+
+        // Assert
+        var actionResult = Assert.IsType<ActionResult<ResActivityFosteringDto>>(result);
+        var unprocessableResult = Assert.IsType<ObjectResult>(actionResult.Result);
+        Assert.Equal(422, unprocessableResult.StatusCode);
+    }
+
+    [Fact]
+    public async Task ScheduleVisit_WithShelterUnavailable_ReturnsConflict()
+    {
+        // Arrange
+        var dto = new ReqCreateActivityFosteringDto
+        {
+            AnimalId = "e5f6a7b8-c9d0-4e9f-2a3b-4c5d6e7f8a9b",
+            StartDateTime = DateTime.UtcNow.AddDays(2).AddHours(14).AddMinutes(30),
+            EndDateTime = DateTime.UtcNow.AddDays(2).AddHours(15).AddMinutes(30)
+        };
+
+        _mediatorMock
+            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), default))
+            .ReturnsAsync(Result<CreateFosteringActivity.CreateFosteringActivityResult>
+                .Failure("Shelter is unavailable during the requested time", 409));
+
+        // Act
+        var result = await _controller.ScheduleVisit(dto);
+
+        // Assert
+        var actionResult = Assert.IsType<ActionResult<ResActivityFosteringDto>>(result);
+        var conflictResult = Assert.IsType<ConflictObjectResult>(actionResult.Result);
+        Assert.Equal(409, conflictResult.StatusCode);
+    }
+
+    [Fact]
+    public async Task ScheduleVisit_WithActivitySlotOverlap_ReturnsConflict()
+    {
+        // Arrange
+        var dto = new ReqCreateActivityFosteringDto
+        {
+            AnimalId = "c9d0e1f2-a3b4-4c3d-6e7f-8a9b0c1d2e3f",
+            StartDateTime = DateTime.UtcNow.AddDays(2).AddHours(10).AddMinutes(30),
+            EndDateTime = DateTime.UtcNow.AddDays(2).AddHours(11).AddMinutes(30)
+        };
+
+        _mediatorMock
+            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), default))
+            .ReturnsAsync(Result<CreateFosteringActivity.CreateFosteringActivityResult>
+                .Failure("The animal has another visit scheduled during this time", 409));
+
+        // Act
+        var result = await _controller.ScheduleVisit(dto);
+
+        // Assert
+        var actionResult = Assert.IsType<ActionResult<ResActivityFosteringDto>>(result);
+        var conflictResult = Assert.IsType<ConflictObjectResult>(actionResult.Result);
+        Assert.Equal(409, conflictResult.StatusCode);
+    }
+
+    [Fact]
+    public async Task ScheduleVisit_WithActivityOverlap_ReturnsConflict()
+    {
+        // Arrange
+        var dto = new ReqCreateActivityFosteringDto
+        {
+            AnimalId = "d0e1f2a3-b4c5-4d4e-7f8a-9b0c1d2e3f4a",
+            StartDateTime = DateTime.UtcNow.AddDays(2).AddHours(11),
+            EndDateTime = DateTime.UtcNow.AddDays(2).AddHours(13)
+        };
+
+        _mediatorMock
+            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), default))
+            .ReturnsAsync(Result<CreateFosteringActivity.CreateFosteringActivityResult>
+                .Failure("The animal has another activity scheduled during this time", 409));
+
+        // Act
+        var result = await _controller.ScheduleVisit(dto);
+
+        // Assert
+        var actionResult = Assert.IsType<ActionResult<ResActivityFosteringDto>>(result);
+        var conflictResult = Assert.IsType<ConflictObjectResult>(actionResult.Result);
+        Assert.Equal(409, conflictResult.StatusCode);
+    }
+
+    [Fact]
+    public async Task ScheduleVisit_SendsCorrectCommandToMediator()
+    {
+        // Arrange
+        var startTime = DateTime.UtcNow.AddDays(2).AddHours(10);
+        var endTime = DateTime.UtcNow.AddDays(2).AddHours(12);
+
+        var dto = new ReqCreateActivityFosteringDto
+        {
+            AnimalId = "e5f6a7b8-c9d0-4e9f-2a3b-4c5d6e7f8a9b",
+            StartDateTime = startTime,
+            EndDateTime = endTime
+        };
+
+        var commandResult = new CreateFosteringActivity.CreateFosteringActivityResult
+        {
+            Activity = new Activity
             {
-                // Validate the structure of the anonymous object
-                var type = input.GetType();
-                var activityProp = type.GetProperty("Activity");
-                var slotProp = type.GetProperty("ActivitySlot");
-                var animalProp = type.GetProperty("Animal");
-                var shelterProp = type.GetProperty("Shelter");
+                Id = "activity-001",
+                AnimalId = dto.AnimalId,
+                UserId = "user-001",
+                Type = ActivityType.Fostering,
+                Status = ActivityStatus.Active,
+                StartDate = startTime,
+                EndDate = endTime
+            },
+            ActivitySlot = new ActivitySlot
+            {
+                Id = "slot-001",
+                ActivityId = "activity-001",
+                StartDateTime = startTime,
+                EndDateTime = endTime,
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity
+            },
+            Animal = new Animal
+            {
+                Id = dto.AnimalId,
+                Name = "Rex",
+                AnimalState = AnimalState.PartiallyFostered,
+                Species = Species.Dog,
+                Size = SizeType.Medium,
+                Sex = SexType.Male,
+                Colour = "Brown",
+                BirthDate = new DateOnly(2020, 3, 15),
+                Sterilized = true,
+                Cost = 50.00m,
+                ShelterId = "shelter-001",
+                BreedId = "breed-001",
+                Images = new List<Image>()
+            },
+            Shelter = new Shelter
+            {
+                Id = "shelter-001",
+                Name = "Test Shelter",
+                Street = "Test Street 123",
+                City = "Porto",
+                PostalCode = "4000-001",
+                Phone = "223456789",
+                NIF = "123456789",
+                OpeningTime = new TimeOnly(9, 0),
+                ClosingTime = new TimeOnly(18, 0)
+            }
+        };
 
-                Assert.NotNull(activityProp);
-                Assert.NotNull(slotProp);
-                Assert.NotNull(animalProp);
-                Assert.NotNull(shelterProp);
+        _mediatorMock
+            .Setup(m => m.Send(It.Is<CreateFosteringActivity.Command>(c =>
+                c.AnimalId == dto.AnimalId &&
+                c.StartDateTime == dto.StartDateTime &&
+                c.EndDateTime == dto.EndDateTime), default))
+            .ReturnsAsync(Result<CreateFosteringActivity.CreateFosteringActivityResult>.Success(commandResult, 201));
 
-                var activity = activityProp.GetValue(input) as Activity;
-                var slot = slotProp.GetValue(input) as ActivitySlot;
-                var animal = animalProp.GetValue(input) as Animal;
-                var shelter = shelterProp.GetValue(input) as Shelter;
-
-                Assert.NotNull(activity);
-                Assert.NotNull(slot);
-                Assert.NotNull(animal);
-                Assert.NotNull(shelter);
-
-                Assert.Equal(TestActivityId, activity.Id);
-                Assert.Equal(TestSlotId, slot.Id);
-                Assert.Equal(TestAnimalId, animal.Id);
-                Assert.Equal(TestShelterId, shelter.Id);
-
-                return expectedResponse;
+        _mapperMock
+            .Setup(m => m.Map<ResActivityFosteringDto>(
+                It.IsAny<CreateFosteringActivity.CreateFosteringActivityResult>()))
+            .Returns(new ResActivityFosteringDto
+            {
+                ActivitySlotId = "slot-001",
+                ActivityId = "activity-001",
+                StartDateTime = startTime,
+                EndDateTime = endTime,
+                Animal = new AnimalVisitInfoDto(),
+                Shelter = new ShelterVisitInfoDto(),
+                Message = "Visit scheduled successfully"
             });
 
         // Act
-        var result = await _controller.ScheduleVisit(request);
+        await _controller.ScheduleVisit(dto);
 
         // Assert
-        Assert.IsType<ObjectResult>(result.Result);
+        _mediatorMock.Verify(m => m.Send(It.Is<CreateFosteringActivity.Command>(c =>
+            c.AnimalId == dto.AnimalId &&
+            c.StartDateTime == dto.StartDateTime &&
+            c.EndDateTime == dto.EndDateTime), default), Times.Once);
     }
 
-    #endregion
+    [Fact]
+    public async Task ScheduleVisit_CallsMapperWithCorrectData()
+    {
+        // Arrange
+        var startTime = DateTime.UtcNow.AddDays(2).AddHours(10);
+        var endTime = DateTime.UtcNow.AddDays(2).AddHours(12);
+
+        var dto = new ReqCreateActivityFosteringDto
+        {
+            AnimalId = "e5f6a7b8-c9d0-4e9f-2a3b-4c5d6e7f8a9b",
+            StartDateTime = startTime,
+            EndDateTime = endTime
+        };
+
+        var commandResult = new CreateFosteringActivity.CreateFosteringActivityResult
+        {
+            Activity = new Activity
+            {
+                Id = "activity-001",
+                AnimalId = dto.AnimalId,
+                UserId = "user-001",
+                Type = ActivityType.Fostering,
+                Status = ActivityStatus.Active,
+                StartDate = startTime,
+                EndDate = endTime
+            },
+            ActivitySlot = new ActivitySlot
+            {
+                Id = "slot-001",
+                ActivityId = "activity-001",
+                StartDateTime = startTime,
+                EndDateTime = endTime,
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity
+            },
+            Animal = new Animal
+            {
+                Id = dto.AnimalId,
+                Name = "Rex",
+                AnimalState = AnimalState.PartiallyFostered,
+                Species = Species.Dog,
+                Size = SizeType.Medium,
+                Sex = SexType.Male,
+                Colour = "Brown",
+                BirthDate = new DateOnly(2020, 3, 15),
+                Sterilized = true,
+                Cost = 50.00m,
+                ShelterId = "shelter-001",
+                BreedId = "breed-001",
+                Images = new List<Image>()
+            },
+            Shelter = new Shelter
+            {
+                Id = "shelter-001",
+                Name = "Test Shelter",
+                Street = "Test Street 123",
+                City = "Porto",
+                PostalCode = "4000-001",
+                Phone = "223456789",
+                NIF = "123456789",
+                OpeningTime = new TimeOnly(9, 0),
+                ClosingTime = new TimeOnly(18, 0)
+            }
+        };
+
+        _mediatorMock
+            .Setup(m => m.Send(It.IsAny<CreateFosteringActivity.Command>(), default))
+            .ReturnsAsync(Result<CreateFosteringActivity.CreateFosteringActivityResult>.Success(commandResult, 201));
+
+        _mapperMock
+            .Setup(m => m.Map<ResActivityFosteringDto>(commandResult))
+            .Returns(new ResActivityFosteringDto
+            {
+                ActivitySlotId = "slot-001",
+                ActivityId = "activity-001",
+                StartDateTime = startTime,
+                EndDateTime = endTime,
+                Animal = new AnimalVisitInfoDto(),
+                Shelter = new ShelterVisitInfoDto(),
+                Message = "Visit scheduled successfully"
+            });
+
+        // Act
+        await _controller.ScheduleVisit(dto);
+
+        // Assert
+        _mapperMock.Verify(m => m.Map<ResActivityFosteringDto>(commandResult), Times.Once);
+    }
 }

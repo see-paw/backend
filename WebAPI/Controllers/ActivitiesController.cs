@@ -126,6 +126,7 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
     /// <response code="400">Invalid request data or business rule violation</response>
     /// <response code="404">Animal not found or user is not fostering the animal</response>
     /// <response code="409">Time slot conflict or shelter unavailable</response>
+    [Authorize(Roles = "User")]
     [HttpPost("foster-activity")]
     [ProducesResponseType(typeof(ResActivityFosteringDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

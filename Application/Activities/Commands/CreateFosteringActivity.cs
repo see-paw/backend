@@ -2,7 +2,6 @@ using Application.Core;
 using Application.Interfaces;
 using Domain;
 using Domain.Enums;
-using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
@@ -14,10 +13,19 @@ namespace Application.Activities.Commands;
 /// </summary>
 public class CreateFosteringActivity
 {
+    
+    public class CreateFosteringActivityResult
+    {
+        public Activity Activity { get; set; } = null!;
+        public ActivitySlot ActivitySlot { get; set; } = null!;
+        public Animal Animal { get; set; } = null!;
+        public Shelter Shelter { get; set; } = null!;
+    }
+    
     /// <summary>
     /// Command to create a fostering activity and corresponding slot for a visit.
     /// </summary>
-    public class Command : IRequest<Result<object>>
+    public class Command : IRequest<Result<CreateFosteringActivityResult>>
     {
         /// <summary>
         /// The unique identifier of the animal to visit.
@@ -35,13 +43,13 @@ public class CreateFosteringActivity
         public DateTime EndDateTime { get; set; }
     }
     
-    // <summary>
+    /// <summary>
     /// Handles the creation of a fostering activity slot with comprehensive validation.
     /// 
     /// This handler orchestrates the complete visit scheduling workflow, including validating
     /// fostering relationships, temporal constraints, slot availability, and shelter operating hours.
     /// </summary>
-    public class Handler(AppDbContext context, IUserAccessor userAccessor) : IRequestHandler<Command, Result<object>>
+    public class Handler(AppDbContext context, IUserAccessor userAccessor) : IRequestHandler<Command, Result<CreateFosteringActivityResult>>
     {
 
         /// <summary>
@@ -66,7 +74,7 @@ public class CreateFosteringActivity
         /// A result containing an anonymous object with Activity, ActivitySlot, Animal, and Shelter
         /// if successful, or an error message with appropriate status code if validation fails.
         /// </returns>
-        public async Task<Result<object>> Handle(Command request, CancellationToken cancellationToken)
+        public async Task<Result<CreateFosteringActivityResult>> Handle(Command request, CancellationToken cancellationToken)
         {
 
             // Get current user
@@ -84,17 +92,19 @@ public class CreateFosteringActivity
             // Get animal with all necessary relations
             var animal = await GetAnimalWithRelations(request.AnimalId, cancellationToken);
             if (animal == null)
-                return Result<object>.Failure("Animal not found", 404);
+                return Result<CreateFosteringActivityResult>.Failure("Animal not found", 404);
 
+            // Validate animal state
+            if (animal.AnimalState == AnimalState.Inactive || animal.AnimalState == AnimalState.Available || animal.AnimalState == AnimalState.HasOwner )
+                return Result<CreateFosteringActivityResult>.Failure("Animal cannot be visited", 400);
+
+            
             // Validate user is foster of this animal
             var fosteringValidation = ValidateFosteringRelationship(animal, currentUser.Id);
             if (fosteringValidation != null)
                 return fosteringValidation;
 
-            // Validate animal state
-            if (animal.AnimalState == AnimalState.Inactive || animal.AnimalState == AnimalState.Available || animal.AnimalState == AnimalState.HasOwner )
-                return Result<object>.Failure("Animal cannot be visited", 400);
-            
+           
             // Validate shelter operating hours
             var shelterValidation = ValidateShelterOperatingHours(animal.Shelter, startUtc, endUtc);
             if (shelterValidation != null)
@@ -147,10 +157,10 @@ public class CreateFosteringActivity
             // Save changes
             var success = await context.SaveChangesAsync(cancellationToken) > 0;
             if (!success)
-                return Result<object>.Failure("Failed to create fostering activity", 500);
+                return Result<CreateFosteringActivityResult>.Failure("Failed to create fostering activity", 500);
 
             // Return entities for mapping in controller
-            var result = new
+            var result = new CreateFosteringActivityResult
             {
                 Activity = activity,
                 ActivitySlot = activitySlot,
@@ -158,7 +168,7 @@ public class CreateFosteringActivity
                 Shelter = animal.Shelter
             };
 
-            return Result<object>.Success(result, 201);
+            return Result<CreateFosteringActivityResult>.Success(result, 201);
         }
         
         /// <summary>
@@ -189,14 +199,14 @@ public class CreateFosteringActivity
         /// <returns>
         /// A failure result if the user is not fostering the animal, or null if validation passes.
         /// </returns>
-        private static Result<object>? ValidateFosteringRelationship(Animal animal, string userId)
+        private static Result<CreateFosteringActivityResult>? ValidateFosteringRelationship(Animal animal, string userId)
         {
             var activeFostering = animal.Fosterings
                 .FirstOrDefault(f => f.UserId == userId && f.Status == FosteringStatus.Active);
 
             if (activeFostering == null)
             {
-                return Result<object>.Failure(
+                return Result<CreateFosteringActivityResult>.Failure(
                     "You are not currently fostering this animal", 404);
             }
 
@@ -212,7 +222,7 @@ public class CreateFosteringActivity
         /// <returns>
         /// A failure result if the visit is outside operating hours, or null if validation passes.
         /// </returns>
-        private static Result<object>? ValidateShelterOperatingHours(
+        private static Result<CreateFosteringActivityResult>? ValidateShelterOperatingHours(
             Shelter shelter, 
             DateTime startUtc, 
             DateTime endUtc)
@@ -222,13 +232,13 @@ public class CreateFosteringActivity
 
             if (startTime < shelter.OpeningTime)
             {
-                return Result<object>.Failure(
+                return Result<CreateFosteringActivityResult>.Failure(
                     $"Visit cannot start before shelter opening time ({shelter.OpeningTime})", 422);
             }
 
             if (endTime > shelter.ClosingTime)
             {
-                return Result<object>.Failure(
+                return Result<CreateFosteringActivityResult>.Failure(
                     $"Visit cannot end after shelter closing time ({shelter.ClosingTime})", 422);
             }
 
@@ -245,7 +255,7 @@ public class CreateFosteringActivity
         /// <returns>
         /// A failure result if the shelter is unavailable, or null if validation passes.
         /// </returns>
-        private async Task<Result<object>?> CheckShelterUnavailability(
+        private async Task<Result<CreateFosteringActivityResult>?> CheckShelterUnavailability(
             string shelterId,
             DateTime startUtc,
             DateTime endUtc,
@@ -259,7 +269,7 @@ public class CreateFosteringActivity
 
             if (hasUnavailability)
             {
-                return Result<object>.Failure(
+                return Result<CreateFosteringActivityResult>.Failure(
                     "Shelter is unavailable during the requested time", 409);
             }
 
@@ -280,7 +290,7 @@ public class CreateFosteringActivity
         /// Checks for overlap using the formula: (NewStart &lt; ExistingEnd) AND (NewEnd &gt; ExistingStart)
         /// Only considers slots with Reserved status to avoid conflicts with available slots.
         /// </remarks>
-        private async Task<Result<object>?> CheckActivitySlotOverlap(
+        private async Task<Result<CreateFosteringActivityResult>?> CheckActivitySlotOverlap(
             string animalId,
             DateTime startUtc,
             DateTime endUtc,
@@ -296,7 +306,7 @@ public class CreateFosteringActivity
 
             if (hasOverlap)
             {
-                return Result<object>.Failure(
+                return Result<CreateFosteringActivityResult>.Failure(
                     "The animal has another visit scheduled during this time", 409);
             }
 
@@ -317,7 +327,7 @@ public class CreateFosteringActivity
         /// Only considers active activities to ensure the animal is not engaged in other activities
         /// during the requested time period.
         /// </remarks>
-        private async Task<Result<object>?> CheckActivityOverlap(
+        private async Task<Result<CreateFosteringActivityResult>?> CheckActivityOverlap(
             string animalId,
             DateTime startUtc,
             DateTime endUtc,
@@ -332,7 +342,7 @@ public class CreateFosteringActivity
 
             if (hasOverlap)
             {
-                return Result<object>.Failure(
+                return Result<CreateFosteringActivityResult>.Failure(
                     "The animal has another activity scheduled during this time", 409);
             }
 
