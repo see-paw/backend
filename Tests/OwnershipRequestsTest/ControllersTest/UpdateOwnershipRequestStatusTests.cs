@@ -11,7 +11,7 @@ using WebAPI.Controllers;
 using WebAPI.DTOs.Ownership;
 using Xunit;
 
-namespace Tests.OwnershipRequests;
+namespace Tests.OwnershipRequestsTest.ControllersTest;
 
 /// <summary>
 /// Unit tests for UpdateStatus endpoint in OwnershipRequestsController.

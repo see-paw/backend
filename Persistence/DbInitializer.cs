@@ -38,6 +38,7 @@ public static class DbInitializer
         const string breed3Id = "3c3c3333-3333-3333-3333-333333333333";
         const string shelter1Id = "11111111-1111-1111-1111-111111111111";
         const string shelter2Id = "22222222-2222-2222-2222-222222222222";
+        const string shelter3Id = "33333333-3333-3333-3333-333333333333"; // Notifications testing
         const string animal1Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd1b";
         const string animal2Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd2b";
         const string animal3Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd3b";
@@ -49,6 +50,7 @@ public static class DbInitializer
         const string animal9Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd9b";
         const string animal10Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd0c";
         const string animal11Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd1c";
+        const string animal15Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd5d"; // Notifications testing
         const string platformAdmin = "PlatformAdmin";
         const string adminCaa = "AdminCAA";
         const string userRole = "User";
@@ -58,6 +60,8 @@ public static class DbInitializer
         const string user4Id = "dddddddd-dddd-dddd-dddd-dddddddddddd"; // Diana
         const string user5Id = "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"; // Eduardo
         const string user6Id = "66666666-6666-6666-6666-666666666666"; // Filipe
+        const string user8Id = "88888888-8888-8888-8888-888888888888"; // Alice Notifications (Notifications testing)
+        const string user9Id = "99999999-9999-9999-9999-999999999999"; // Carlos Notifications (Notifications testing)
         const string imageShelterUrl1_1 =
             "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761835433/shelter_qnix0r.jpg";
         const string imageShelterUrl1_2 =
@@ -144,6 +148,8 @@ public static class DbInitializer
         const string imageAnimal6Img2Id = "00000000-0000-0000-0000-000000006102";
         const string imageAnimal7Img1Id = "00000000-0000-0000-0000-000000007101";
         const string imageAnimal7Img2Id = "00000000-0000-0000-0000-000000007102";
+        const string imageAnimal15Img1Id = "00000000-0000-0000-0000-000000015101"; // Notifications testing
+        const string imageAnimal15Img2Id = "00000000-0000-0000-0000-000000015102"; // Notifications testing
 
         // Favorites test
         const string user7Id = "77777777-7777-7777-7777-777777777777"; // Gustavo (user with favorites)
@@ -196,6 +202,19 @@ public static class DbInitializer
                     PostalCode = "4000-125",
                     Phone = "224589631",
                     NIF = "999999999",
+                    OpeningTime = new TimeOnly(9, 0, 0),
+                    ClosingTime = new TimeOnly(18, 0, 0),
+                    CreatedAt = DateTime.UtcNow
+                },
+                new() // Notifications testing
+                {
+                    Id = shelter3Id,
+                    Name = "Notifications Test Shelter",
+                    Street = "Rua dos Testes 999",
+                    City = "Porto",
+                    PostalCode = "4100-999",
+                    Phone = "910000000",
+                    NIF = "888888888",
                     OpeningTime = new TimeOnly(9, 0, 0),
                     ClosingTime = new TimeOnly(18, 0, 0),
                     CreatedAt = DateTime.UtcNow
@@ -315,6 +334,33 @@ public static class DbInitializer
                     BirthDate = new DateTime(1993, 8, 20),
                     PhoneNumber = "918888777",
                     CreatedAt = DateTime.UtcNow
+                },
+                new() // Notifications testing - AdminCAA
+                {
+                    Id = user8Id,
+                    Name = "Alice Notifications Admin",
+                    UserName = "alice.notif@test.com",
+                    Email = "alice.notif@test.com",
+                    City = "Porto",
+                    Street = "Rua dos Testes 100",
+                    PostalCode = "4100-100",
+                    BirthDate = new DateTime(1990, 1, 1),
+                    PhoneNumber = "910000001",
+                    CreatedAt = DateTime.UtcNow,
+                    ShelterId = shelter3Id
+                },
+                new() // Notifications testing - User
+                {
+                    Id = user9Id,
+                    Name = "Carlos Notifications User",
+                    UserName = "carlos.notif@test.com",
+                    Email = "carlos.notif@test.com",
+                    City = "Porto",
+                    Street = "Rua dos Testes 200",
+                    PostalCode = "4100-200",
+                    BirthDate = new DateTime(1992, 6, 8),
+                    PhoneNumber = "910000002",
+                    CreatedAt = DateTime.UtcNow
                 }
             };
 
@@ -329,6 +375,7 @@ public static class DbInitializer
                         "bob@test.com" => platformAdmin,
                         "alice@test.com" => adminCaa,
                         "filipe@test.com" => adminCaa,
+                        "alice.notif@test.com" => adminCaa, // Notifications testing
                         _ => userRole
                     };
 
@@ -719,6 +766,24 @@ public static class DbInitializer
                 Features = "Muito brincalhão e ativo",
                 ShelterId = shelter1Id,
                 Images = new List<Image>()
+            },
+            new() // Notifications testing
+            {
+                Id = animal15Id,
+                Name = "NotifTestDog",
+                AnimalState = AnimalState.Available,
+                Description = "Animal exclusivo para testes de notificações",
+                Species = Species.Dog,
+                Size = SizeType.Medium,
+                Sex = SexType.Male,
+                Colour = "Preto e Branco",
+                BirthDate = new DateOnly(2020, 1, 1),
+                Sterilized = true,
+                BreedId = breed2Id,
+                Cost = 50,
+                Features = "Animal de teste isolado - Notifications",
+                ShelterId = shelter3Id,
+                Images = new List<Image>()
             }
         };
 
@@ -973,6 +1038,26 @@ public static class DbInitializer
                 Description = "Simba a dormir",
                 IsPrincipal = false,
                 PublicId = publicIdAnimal1Img2
+            },
+
+            // === ANIMAL 15 (NotifTestDog) - Notifications testing ===
+            new()
+            {
+                Id = imageAnimal15Img1Id,
+                AnimalId = animal15Id,
+                Url = imageUrl1_1,
+                Description = "NotifTestDog principal",
+                IsPrincipal = true,
+                PublicId = publicIdAnimal1Img1
+            },
+            new()
+            {
+                Id = imageAnimal15Img2Id,
+                AnimalId = animal15Id,
+                Url = imageUrl1_2,
+                Description = "NotifTestDog secundário",
+                IsPrincipal = false,
+                PublicId = publicIdAnimal1Img2
             }
             };
 
@@ -993,7 +1078,7 @@ public static class DbInitializer
                 {
                     Id = fostering1Id,
                     AnimalId = animal2Id,
-                    UserId = user4Id,   
+                    UserId = user4Id,
                     Amount = 10,
                     Status = FosteringStatus.Active,
                     StartDate = DateTime.UtcNow
@@ -1028,7 +1113,7 @@ public static class DbInitializer
 
 
 
-//======== SEED FOR OWNERSHIPS CONTROLLER ========
+        //======== SEED FOR OWNERSHIPS CONTROLLER ========
         // Create Users
         var user1 = new User
         {
@@ -1493,7 +1578,7 @@ public static class DbInitializer
                     Id = favorite4Id,
                     UserId = user7Id,  // Gustavo
                     AnimalId = "f055cc31-fdeb-4c65-bb73-4f558f67dd1b",  // Bolinhas
-                    IsActive = false,  // ⚠️ INATIVO
+                    IsActive = false,  // INATIVO
                     CreatedAt = DateTime.UtcNow.AddDays(-4)
                 }
             };

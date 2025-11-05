@@ -13,6 +13,7 @@ public class CreateOwnershipRequestHandlerTests
 {
     private readonly AppDbContext _context;
     private readonly Mock<IUserAccessor> _mockUserAccessor;
+    private readonly Mock<INotificationService> _mockNotificationService;
 
     public CreateOwnershipRequestHandlerTests()
     {
@@ -22,6 +23,7 @@ public class CreateOwnershipRequestHandlerTests
 
         _context = new AppDbContext(options);
         _mockUserAccessor = new Mock<IUserAccessor>();
+        _mockNotificationService = new Mock<INotificationService>();
     }
 
     private async Task<(Animal animal, User user, Shelter shelter)> SeedAnimalAsync(
@@ -103,7 +105,7 @@ public class CreateOwnershipRequestHandlerTests
         var userId = Guid.NewGuid().ToString();
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(userId);
 
-        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new CreateOwnershipRequest.Command
         {
@@ -120,7 +122,7 @@ public class CreateOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(user.Id);
 
-        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new CreateOwnershipRequest.Command
         {
@@ -137,7 +139,7 @@ public class CreateOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(user.Id);
 
-        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new CreateOwnershipRequest.Command
         {
@@ -158,7 +160,7 @@ public class CreateOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(userId);
 
-        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new CreateOwnershipRequest.Command
         {
@@ -175,7 +177,7 @@ public class CreateOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(user.Id);
 
-        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new CreateOwnershipRequest.Command
         {
@@ -192,7 +194,7 @@ public class CreateOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(user.Id);
 
-        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new CreateOwnershipRequest.Command
         {
@@ -209,7 +211,7 @@ public class CreateOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(user.Id);
 
-        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new CreateOwnershipRequest.Command
         {
@@ -226,7 +228,7 @@ public class CreateOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(user.Id);
 
-        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new CreateOwnershipRequest.Command
         {
@@ -243,7 +245,7 @@ public class CreateOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(user.Id);
 
-        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new CreateOwnershipRequest.Command
         {
@@ -260,7 +262,7 @@ public class CreateOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(user.Id);
 
-        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new CreateOwnershipRequest.Command
         {
@@ -278,7 +280,7 @@ public class CreateOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(user.Id);
 
-        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new CreateOwnershipRequest.Command
         {
@@ -295,7 +297,7 @@ public class CreateOwnershipRequestHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(user.Id);
 
-        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object);
+        var handler = new CreateOwnershipRequest.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new CreateOwnershipRequest.Command
         {
@@ -303,5 +305,50 @@ public class CreateOwnershipRequestHandlerTests
         }, default);
 
         Assert.NotNull(result.Value!.User);
+    }
+
+    [Fact]
+    public async Task CreateOwnershipRequest_ShouldNotifyAdminCAA_WhenRequestIsCreated()
+    {
+        var (animal, user, shelter) = await SeedAnimalAsync(AnimalState.Available);
+
+        var adminUser = new User
+        {
+            Id = Guid.NewGuid().ToString(),
+            ShelterId = shelter.Id,
+            Name = "Admin User",
+            Email = "admin@test.com",
+            BirthDate = DateTime.UtcNow.AddYears(-30),
+            Street = "Admin Street",
+            City = "Admin City",
+            PostalCode = "1234-567"
+        };
+
+        _context.Users.Add(adminUser);
+        await _context.SaveChangesAsync();
+
+        _mockUserAccessor.Setup(x => x.GetUserId()).Returns(user.Id);
+
+        var handler = new CreateOwnershipRequest.Handler(
+            _context,
+            _mockUserAccessor.Object,
+            _mockNotificationService.Object);
+
+        await handler.Handle(new CreateOwnershipRequest.Command
+        {
+            AnimalID = animal.Id
+        }, default);
+
+        _mockNotificationService.Verify(
+            x => x.CreateAndSendToUserAsync(
+                adminUser.Id,
+                NotificationType.NEW_OWNERSHIP_REQUEST,
+                It.IsAny<string>(),
+                animal.Id,
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()
+            ),
+            Times.Once
+        );
     }
 }

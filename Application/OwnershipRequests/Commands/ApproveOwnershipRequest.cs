@@ -31,7 +31,10 @@ public class ApproveOwnershipRequest
     /// <summary>
     /// Handles the approval of an ownership request with comprehensive validation and side effects.
     /// </summary>
-    public class Handler(AppDbContext context, IUserAccessor userAccessor) : IRequestHandler<Command, Result<OwnershipRequest>>
+    public class Handler(
+        AppDbContext context, 
+        IUserAccessor userAccessor,
+        INotificationService notificationService) : IRequestHandler<Command, Result<OwnershipRequest>>
     {
         /// <summary>
         /// Processes the approval of an ownership request.
@@ -73,6 +76,10 @@ public class ApproveOwnershipRequest
             if (!validationResult.IsSuccess)
                 return validationResult;
 
+            var activeFosterings = ownershipRequest.Animal.Fosterings
+                .Where(f => f.Status == FosteringStatus.Active)
+                .ToList();
+
             ApproveRequest(ownershipRequest);
             UpdateAnimalToOwned(ownershipRequest);
             CancelActiveFosterings(ownershipRequest.Animal);
@@ -81,6 +88,8 @@ public class ApproveOwnershipRequest
             var success = await context.SaveChangesAsync(cancellationToken) > 0;
             if (!success)
                 return Result<OwnershipRequest>.Failure("Failed to approve ownership request", 500);
+
+            await NotifyUser(ownershipRequest, activeFosterings, cancellationToken);
 
             return Result<OwnershipRequest>.Success(ownershipRequest, 200);
         }
@@ -206,6 +215,43 @@ public class ApproveOwnershipRequest
                 otherRequest.Status = OwnershipStatus.Rejected;
                 otherRequest.UpdatedAt = DateTime.UtcNow;
                 otherRequest.RequestInfo = "Automatically rejected - another ownership request was approved";
+            }
+        }
+
+        /// <summary>
+        /// Notifies the user who made the ownership request and any fostering sponsors about the approval.
+        /// </summary>
+        /// <param name="ownershipRequest">The approved ownership request with loaded navigation properties.</param>
+        /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
+        /// <param name="activeFosterings">List of active fosterings before the cancellation of active fosterings
+        /// <remarks>
+        /// Sends two types of notifications:
+        /// - Notifies the requesting user that their adoption request was approved
+        /// - Notifies all active fostering sponsors that the animal they sponsor has been adopted
+        /// This is a best-effort operation and does not affect the approval if notifications fail.
+        /// </remarks>
+        private async Task NotifyUser(OwnershipRequest ownershipRequest, ICollection<Fostering> activeFosterings, CancellationToken cancellationToken)
+        {
+            // Notify the user that made the owernship request
+            await notificationService.CreateAndSendToUserAsync(
+                userId: ownershipRequest.UserId,
+                type: NotificationType.OWNERSHIP_REQUEST_APPROVED,
+                message: $"O teu pedido para adotar {ownershipRequest.Animal.Name} foi aprovado!",
+                animalId: ownershipRequest.AnimalId,
+                ownershipRequestId: ownershipRequest.Id,
+                cancellationToken: cancellationToken
+             );
+
+            foreach (var fostering in activeFosterings)
+            {
+                await notificationService.CreateAndSendToUserAsync(
+                    userId: fostering.UserId,
+                    type: NotificationType.FOSTERED_ANIMAL_ADOPTED,
+                    message: $"O animal {ownershipRequest.Animal.Name} que apadrinhas foi adotado!",
+                    animalId: ownershipRequest.AnimalId,
+                    ownershipRequestId: ownershipRequest.Id,
+                    cancellationToken: cancellationToken
+                    );
             }
         }
     }

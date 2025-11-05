@@ -1,22 +1,21 @@
 ﻿using Application.Animals.Queries;
-using WebAPI.Validators;
-using FluentValidation;
-using Persistence;
-using System.Text.Json.Serialization;
-using Application.Animals;
 using Application.Core;
 using Application.Fosterings;
-using Application.Images;
 using Application.Interfaces;
 using Application.Services;
 using Domain;
 using Domain.Services;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Infrastructure.Hubs;
+using Infrastructure.Images;
+using Infrastructure.Notifications;
+using Infrastructure.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using FluentValidation.AspNetCore;
-using Infrastructure.Images;
-using Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
+using Persistence;
+using System.Text.Json.Serialization;
 using WebAPI.Core;
 using WebAPI.Middleware;
 using WebAPI.Validators.Animals;
@@ -108,6 +107,10 @@ builder.Services.Configure<CloudinarySettings>(
 builder.Services.Configure<FosteringSettings>(
     builder.Configuration.GetSection("Fostering")
 );
+// Notification Services
+builder.Services.AddSignalR();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
 
 var app = builder.Build();
 
@@ -115,7 +118,8 @@ var app = builder.Build();
 app.UseCors(c => c
     .AllowAnyHeader()
     .AllowAnyMethod()
-    .WithOrigins("http://localhost:3000", "https://localhost:3000"));
+    .AllowCredentials()
+    .WithOrigins("http://localhost:3000", "https://localhost:3000", "http://localhost:8080")); // 8080 for tests with Python HTTP server (SignalR test)
 
 app.UseMiddleware<IdentityResponseMiddleware>();
 app.UseMiddleware<ExceptionMiddleware>();
@@ -124,6 +128,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<NotificationHub>("/notificationHub");
 app.MapGroup("api").MapIdentityApi<User>();
 
 using var scope = app.Services.CreateScope();
