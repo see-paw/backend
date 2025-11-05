@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using Persistence;
 
-namespace Tests.OwnershipRequestsTest;
+namespace Tests.OwnershipRequestsTest.ControllersTest;
 
 /// <summary>
 /// Unit tests for <see cref="GetOwnershipRequestsByUser.Handler"/>.
