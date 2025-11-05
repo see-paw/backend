@@ -1,4 +1,5 @@
 ﻿using Domain;
+using Domain.Enums;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -57,7 +58,21 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
     /// The collection of animal breeds available in the system.
     /// </summary>
     public DbSet<Breed> Breeds { get; set; }
+    
+    public DbSet<ActivitySlot> ActivitySlots { get; set; }
+    
+    public DbSet<ShelterUnavailabilitySlot> ShelterUnavailabilitySlots { get; set; }
 
+    
+    /// <summary>
+    /// Gets or sets the collection of slots in the database.
+    /// </summary>
+    /// <remarks>
+    /// Base collection for all slot types. Slots are abstract and can be either
+    /// activity slots or shelter unavailability slots. Use specific DbSets for querying concrete types.
+    /// </remarks>
+    public DbSet<Slot> Slots { get; set; }
+    
     /// <summary>
     /// Configures the model schema and entity mappings for the database context.
     /// </summary>
@@ -256,5 +271,62 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
             .WithMany(u => u.Favorites)
             .HasForeignKey(f => f.UserId)
             .OnDelete(DeleteBehavior.Cascade);  // If user is deleted, deletes user's favorite animals
+        
+        
+        // ========== SLOT CONFIGURATIONS ==========
+
+        modelBuilder.Entity<Slot>(entity =>
+        {
+            // Primary key
+            entity.HasKey(s => s.Id);
+            
+            entity.HasDiscriminator<SlotType>("Type")
+                .HasValue<ActivitySlot>(SlotType.Activity)
+                .HasValue<ShelterUnavailabilitySlot>(SlotType.ShelterUnavailable);
+            
+            entity.Property(s => s.Status)
+                .HasConversion<string>()
+                .IsRequired();
+            
+            entity.Property(s => s.Type)
+                .HasConversion<string>()
+                .IsRequired();
+            
+            entity.Property(s => s.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .ValueGeneratedOnAdd();
+
+            entity.Property(s => s.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .ValueGeneratedOnAddOrUpdate();
+            
+            entity.HasIndex(s => new { s.StartDateTime, s.EndDateTime });
+        });
+        
+        // ========== ACTIVITY SLOT CONFIGURATIONS ==========
+
+        modelBuilder.Entity<ActivitySlot>(entity =>
+        {
+            
+            entity.HasOne(s => s.Activity)
+                .WithOne(a => a.Slot)
+                .HasForeignKey<ActivitySlot>(s => s.ActivityId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasIndex(s => s.ActivityId)
+                .IsUnique();
+        });
+        
+        // ========== SHELTER UNAVAILABILITY SLOT CONFIGURATION ==========
+        modelBuilder.Entity<ShelterUnavailabilitySlot>(entity =>
+        {
+            entity.HasOne(s => s.Shelter)
+                .WithMany(sh => sh.UnavailabilitySlots)
+                .HasForeignKey(s => s.ShelterId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasIndex(s => new { s.ShelterId, s.StartDateTime });
+        });
     }
+    
 }

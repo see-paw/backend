@@ -258,7 +258,7 @@ namespace Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
-                    AnimalId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
+                    AnimalId = table.Column<string>(type: "character varying(36)", nullable: false),
                     UserId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
                     Type = table.Column<string>(type: "text", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false),
@@ -402,6 +402,38 @@ namespace Persistence.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Slots",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
+                    StartDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    EndDateTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    Type = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    ActivityId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: true),
+                    ShelterId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: true),
+                    Reason = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Slots", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Slots_Activities_ActivityId",
+                        column: x => x.ActivityId,
+                        principalTable: "Activities",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Slots_Shelters_ShelterId",
+                        column: x => x.ShelterId,
+                        principalTable: "Shelters",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Activities_AnimalId_StartDate",
                 table: "Activities",
@@ -533,14 +565,27 @@ namespace Persistence.Migrations
                 table: "Shelters",
                 column: "NIF",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Slots_ActivityId",
+                table: "Slots",
+                column: "ActivityId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Slots_ShelterId_StartDateTime",
+                table: "Slots",
+                columns: new[] { "ShelterId", "StartDateTime" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Slots_StartDateTime_EndDateTime",
+                table: "Slots",
+                columns: new[] { "StartDateTime", "EndDateTime" });
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "Activities");
-
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
@@ -569,7 +614,13 @@ namespace Persistence.Migrations
                 name: "OwnershipRequests");
 
             migrationBuilder.DropTable(
+                name: "Slots");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Activities");
 
             migrationBuilder.DropTable(
                 name: "Animals");

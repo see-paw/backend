@@ -109,4 +109,46 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
 
         return HandleResult(Result<ResActivityDto>.Success(responseDto, 200));
     }
+    
+    /// <summary>
+    /// Schedules a visit slot for a fostered animal.
+    /// </summary>
+    /// <param name="dto">The request containing animal ID and visit time details.</param>
+    /// <returns>
+    /// A response containing the created activity and slot details, along with animal and shelter information.
+    /// </returns>
+    /// <remarks>
+    /// This endpoint allows a foster user to schedule a visit with an animal they are fostering.
+    /// The visit must be scheduled at least 24 hours in advance, last between 1-3 hours,
+    /// and occur within the shelter's operating hours without conflicting with existing activities.
+    /// </remarks>
+    /// <response code="201">Visit successfully scheduled</response>
+    /// <response code="400">Invalid request data or business rule violation</response>
+    /// <response code="404">Animal not found or user is not fostering the animal</response>
+    /// <response code="409">Time slot conflict or shelter unavailable</response>
+    [HttpPost("foster-activity")]
+    [ProducesResponseType(typeof(ResActivityFosteringDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<ResActivityFosteringDto>> ScheduleVisit(
+        [FromBody] ReqCreateActivityFosteringDto dto)
+    {
+        var command = new CreateFosteringActivity.Command
+        {
+            AnimalId = dto.AnimalId,
+            StartDateTime = dto.StartDateTime,
+            EndDateTime = dto.EndDateTime
+        };
+
+        var result = await Mediator.Send(command);
+
+        if (!result.IsSuccess)
+            return HandleResult(result);
+
+        var responseDto = mapper.Map<ResActivityFosteringDto>(result.Value);
+
+        return HandleResult(Result<ResActivityFosteringDto>.Success(responseDto, 201));
+    }
+    
 }
