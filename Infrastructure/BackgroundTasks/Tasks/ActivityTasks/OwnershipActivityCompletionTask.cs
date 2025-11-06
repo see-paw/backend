@@ -22,9 +22,7 @@ namespace Infrastructure.BackgroundTasks.Tasks.ActivityTasks
             using var scope = services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            // Convert to Portugal's current DST (UTC = winter time, UTC + 1 = summer time)
-            var lisbonTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Lisbon");
-            var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, lisbonTimeZone);
+            var now = DateTime.UtcNow;
 
             // Select all active ownership activities whose EndDate has passed
             var activitiesToComplete = await context.Activities

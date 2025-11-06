@@ -68,9 +68,7 @@ namespace Infrastructure.BackgroundTasks.Tasks.ActivityTasks
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
-            // Convert to Portugal's current DST (UTC = winter time, UTC + 1 = summer time)
-            var lisbonTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Lisbon");
-            var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, lisbonTimeZone);
+            var now = DateTime.UtcNow;
 
             // Define time window where activities are scanned
             // Any activity starting in this time window is a trigger for this task

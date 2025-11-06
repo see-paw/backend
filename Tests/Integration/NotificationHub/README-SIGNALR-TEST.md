@@ -19,7 +19,7 @@ Simple HTML page to test SignalR real-time notifications.
 
 2. **Start the HTTP Server**
    
-   Open a new terminal in the project root:
+   Open a new terminal in the same dir as `signalr-test.html`:
 ```bash
    cd C:\LDS Project
    python -m http.server 8080

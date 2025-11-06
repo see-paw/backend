@@ -106,7 +106,7 @@ public class NotificationService(
             await hubContext.Clients.User(userId).SendAsync("ReceiveNotification", new
             {
                 notification.Id,
-                notification.Type,
+                Type = notification.Type.ToString(),
                 notification.Message,
                 notification.AnimalId,
                 notification.OwnershipRequestId,
@@ -136,7 +136,7 @@ public class NotificationService(
                 await hubContext.Clients.Users(userIds).SendAsync("ReceiveNotification", new
                 {
                     notification.Id,
-                    notification.Type,
+                    Type = notification.Type.ToString(),
                     notification.Message,
                     notification.AnimalId,
                     notification.OwnershipRequestId,
