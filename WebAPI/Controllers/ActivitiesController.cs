@@ -109,4 +109,88 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
 
         return HandleResult(Result<ResActivityDto>.Success(responseDto, 200));
     }
+
+    /// <summary>
+    /// Schedules a visit slot for a fostered animal.
+    /// </summary>
+    /// <param name="dto">The request containing animal ID and visit time details.</param>
+    /// <returns>
+    /// A response containing the created activity and slot details, along with animal and shelter information.
+    /// </returns>
+    /// <remarks>
+    /// This endpoint allows a foster user to schedule a visit with an animal they are fostering.
+    /// The visit must be scheduled at least 24 hours in advance, last between 1-3 hours,
+    /// and occur within the shelter's operating hours without conflicting with existing activities.
+    /// </remarks>
+    /// <response code="201">Visit successfully scheduled</response>
+    /// <response code="400">Invalid request data or business rule violation</response>
+    /// <response code="404">Animal not found or user is not fostering the animal</response>
+    /// <response code="409">Time slot conflict or shelter unavailable</response>
+    [Authorize(Roles = "User")]
+    [HttpPost("foster-activity")]
+    [ProducesResponseType(typeof(ResActivityFosteringDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<ResActivityFosteringDto>> ScheduleActivityFostering(
+        [FromBody] ReqCreateActivityFosteringDto dto)
+    {
+        var command = new CreateFosteringActivity.Command
+        {
+            AnimalId = dto.AnimalId,
+            StartDateTime = dto.StartDateTime,
+            EndDateTime = dto.EndDateTime
+        };
+
+        var result = await Mediator.Send(command);
+
+        if (!result.IsSuccess)
+            return HandleResult(result);
+
+        var responseDto = mapper.Map<ResActivityFosteringDto>(result.Value);
+
+        return HandleResult(Result<ResActivityFosteringDto>.Success(responseDto, 201));
+    }
+
+    /// <summary>
+    /// Cancels a scheduled fostering activity for the authenticated user.
+    /// </summary>
+    /// <remarks>
+    /// Available only to users with the <c>User</c> role.  
+    /// The activity must exist, belong to the user, be of type <c>Fostering</c>, 
+    /// and have status <c>Active</c>.  
+    /// On success, the activity is marked as <c>Cancelled</c> and the related slot becomes <c>Available</c>.
+    /// </remarks>
+    /// <param name="dto">Request body containing the activity ID to cancel.</param>
+    /// <returns>
+    /// <see cref="ResCancelActivityFosteringDto"/> if successful;  
+    /// appropriate error code otherwise.
+    /// </returns>
+    /// <response code="200">Activity cancelled successfully.</response>
+    /// <response code="400">Invalid cancellation (e.g., already started or inactive).</response>
+    /// <response code="403">User not authorized to cancel this activity.</response>
+    /// <response code="404">Activity or slot not found.</response>
+    [Authorize(Roles = "User")]
+    [HttpPatch("foster-activity/{id}/cancel")]
+    [ProducesResponseType(typeof(ResCancelActivityFosteringDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ResCancelActivityFosteringDto>> CancelActivityFostering(
+        [FromBody] ReqCancelActivityFosteringDto dto)
+    {
+        var command = new CancelFosteringActivity.Command
+        {
+            ActivityId = dto.ActivityId
+        };
+
+        var result = await Mediator.Send(command);
+
+        if (!result.IsSuccess)
+            return HandleResult(result);
+
+        var responseDto = mapper.Map<ResCancelActivityFosteringDto>(result.Value);
+
+        return HandleResult(Result<ResCancelActivityFosteringDto>.Success(responseDto, 200));
+    }
 }
