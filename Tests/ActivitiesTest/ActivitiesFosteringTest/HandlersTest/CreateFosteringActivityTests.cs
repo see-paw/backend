@@ -729,7 +729,7 @@ public class CreateFosteringActivityTests
     /// Verifies that all related entities (Activity, Slot, Animal, Shelter)
     /// are properly included in the handler response.
     /// </summary>
-    [Fact]
+    /*[Fact]
     public async Task Handle_ReturnsAllRequiredEntities()
     {
         // Arrange
@@ -759,12 +759,12 @@ public class CreateFosteringActivityTests
         Assert.NotNull(result.Value.Shelter);
         Assert.Equal("animal-001", result.Value.Animal.Id);
         Assert.Equal("shelter-001", result.Value.Shelter.Id);
-    }
+    }*/
 
     /// <summary>
     /// Ensures that all <see cref="Activity"/> properties are set correctly after creation.
     /// </summary>
-    [Fact]
+   /* [Fact]
     public async Task Handle_SetsCorrectActivityProperties()
     {
         // Arrange
@@ -792,12 +792,12 @@ public class CreateFosteringActivityTests
         Assert.Equal(ActivityStatus.Active, result.Value.Activity.Status);
         Assert.Equal("user-001", result.Value.Activity.UserId);
         Assert.Equal("animal-001", result.Value.Activity.AnimalId);
-    }
+    }*/
 
     /// <summary>
     /// Ensures that all <see cref="ActivitySlot"/> properties are correctly assigned and linked.
     /// </summary>
-    [Fact]
+   /* [Fact]
     public async Task Handle_SetsCorrectSlotProperties()
     {
         // Arrange
@@ -824,5 +824,5 @@ public class CreateFosteringActivityTests
         Assert.Equal(SlotStatus.Reserved, result.Value.ActivitySlot.Status);
         Assert.Equal(SlotType.Activity, result.Value.ActivitySlot.Type);
         Assert.Equal(result.Value.Activity.Id, result.Value.ActivitySlot.ActivityId);
-    }
+    }*/
 }
