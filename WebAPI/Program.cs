@@ -1,10 +1,4 @@
 ﻿using Application.Animals.Queries;
-using WebAPI.Validators;
-using FluentValidation;
-using Persistence;
-using System.Text.Json.Serialization;
-using Application;
-using Application.Animals;
 using Application.Core;
 using Application.Fosterings;
 using Application.Interfaces;
@@ -13,6 +7,8 @@ using Domain;
 using Domain.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Infrastructure.BackgroundTasks;
+using Infrastructure.BackgroundTasks.Tasks;
 using Infrastructure.Hubs;
 using Infrastructure.Images;
 using Infrastructure.Notifications;
@@ -24,6 +20,7 @@ using Persistence;
 using System.Text.Json.Serialization;
 using WebAPI.Core;
 using WebAPI.Middleware;
+using WebAPI.Validators;
 using WebAPI.Validators.Animals;
 
 var inContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
@@ -121,6 +118,9 @@ builder.Services.Configure<FosteringSettings>(
 builder.Services.AddSignalR();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
+// Background Tasks
+builder.Services.AddScoped<IReminderTask, OwnershipActivityCompletionTask>();
+builder.Services.AddScoped<IReminderTask, OwnershipActivityReminderTask>();
 
 var app = builder.Build();
 

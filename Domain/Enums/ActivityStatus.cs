@@ -9,7 +9,7 @@
 public enum ActivityStatus
 {
     /// <summary>
-    /// The activity is currently ongoing and active.
+    /// The activity has been scheduled.
     /// </summary>
     Active,
 

@@ -4,7 +4,6 @@ using Domain.Enums;
 using Infrastructure.Hubs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Persistence;
 
@@ -28,6 +27,7 @@ public class NotificationService(
         string message,
         string? animalId = null,
         string? ownershipRequestId = null,
+        string? activityId = null,
         CancellationToken cancellationToken = default)
     {
         // Create notification in database
@@ -38,6 +38,7 @@ public class NotificationService(
             Message = message,
             AnimalId = animalId,
             OwnershipRequestId = ownershipRequestId,
+            ActivityId = activityId,
             IsRead = false,
             IsBroadcast = false,
             CreatedAt = DateTime.UtcNow

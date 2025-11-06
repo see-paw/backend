@@ -295,7 +295,14 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
             .HasForeignKey(n => n.OwnershipRequestId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull); // If ownership request is deleted, notification history persists
-        
+
+        modelBuilder.Entity<Notification>()
+            .HasOne(n => n.Activity)
+            .WithMany()
+            .HasForeignKey(n => n.ActivityId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull); // If activity is deleted, keep notification history
+
         // ========== SLOT CONFIGURATIONS ==========
 
         modelBuilder.Entity<Slot>(entity =>
