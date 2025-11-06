@@ -299,6 +299,60 @@ namespace Persistence.Migrations
                     b.ToTable("Images");
                 });
 
+            modelBuilder.Entity("Domain.Notification", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
+                    b.Property<string>("AnimalId")
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("IsBroadcast")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("OwnershipRequestId")
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("TargetRole")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AnimalId");
+
+                    b.HasIndex("OwnershipRequestId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("Domain.OwnershipRequest", b =>
                 {
                     b.Property<string>("Id")
@@ -399,6 +453,47 @@ namespace Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Shelters");
+                });
+
+            modelBuilder.Entity("Domain.Slot", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateTime>("EndDateTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime>("StartDateTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StartDateTime", "EndDateTime");
+
+                    b.ToTable("Slots");
+
+                    b.HasDiscriminator<string>("Type");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Domain.User", b =>
@@ -637,6 +732,39 @@ namespace Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.ActivitySlot", b =>
+                {
+                    b.HasBaseType("Domain.Slot");
+
+                    b.Property<string>("ActivityId")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
+                    b.HasIndex("ActivityId")
+                        .IsUnique();
+
+                    b.HasDiscriminator().HasValue("Activity");
+                });
+
+            modelBuilder.Entity("Domain.ShelterUnavailabilitySlot", b =>
+                {
+                    b.HasBaseType("Domain.Slot");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("ShelterId")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
+                    b.HasIndex("ShelterId", "StartDateTime");
+
+                    b.HasDiscriminator().HasValue("ShelterUnavailable");
+                });
+
             modelBuilder.Entity("Domain.Activity", b =>
                 {
                     b.HasOne("Domain.Animal", "Animal")
@@ -737,6 +865,30 @@ namespace Persistence.Migrations
                     b.Navigation("Shelter");
                 });
 
+            modelBuilder.Entity("Domain.Notification", b =>
+                {
+                    b.HasOne("Domain.Animal", "Animal")
+                        .WithMany()
+                        .HasForeignKey("AnimalId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Domain.OwnershipRequest", "OwnershipRequest")
+                        .WithMany()
+                        .HasForeignKey("OwnershipRequestId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Domain.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Animal");
+
+                    b.Navigation("OwnershipRequest");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Domain.OwnershipRequest", b =>
                 {
                     b.HasOne("Domain.Animal", "Animal")
@@ -817,6 +969,33 @@ namespace Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Domain.ActivitySlot", b =>
+                {
+                    b.HasOne("Domain.Activity", "Activity")
+                        .WithOne("Slot")
+                        .HasForeignKey("Domain.ActivitySlot", "ActivityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Activity");
+                });
+
+            modelBuilder.Entity("Domain.ShelterUnavailabilitySlot", b =>
+                {
+                    b.HasOne("Domain.Shelter", "Shelter")
+                        .WithMany("UnavailabilitySlots")
+                        .HasForeignKey("ShelterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Shelter");
+                });
+
+            modelBuilder.Entity("Domain.Activity", b =>
+                {
+                    b.Navigation("Slot");
+                });
+
             modelBuilder.Entity("Domain.Animal", b =>
                 {
                     b.Navigation("Activities");
@@ -840,6 +1019,8 @@ namespace Persistence.Migrations
                     b.Navigation("Animals");
 
                     b.Navigation("Images");
+
+                    b.Navigation("UnavailabilitySlots");
                 });
 
             modelBuilder.Entity("Domain.User", b =>

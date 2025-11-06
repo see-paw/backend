@@ -1,10 +1,12 @@
 using Application.Core;
 using Application.Interfaces;
+using Application.OwnershipRequests.Queries;
 using Application.Ownerships.Queries;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs;
+using WebAPI.DTOs.Ownership;
 
 namespace WebAPI.Controllers;
 

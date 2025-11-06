@@ -1,39 +1,25 @@
-﻿using FluentValidation;
-using WebAPI.DTOs;
-using WebAPI.DTOs.Animals;
-using WebAPI.Validators.Animals.CreateAnimal;
+﻿using Application.Animals.Commands;
+using FluentValidation;
 
-namespace WebAPI.Validators.Animals
+namespace WebAPI.Validators.Animals;
+
+/// <summary>
+/// Defines validation rules for the <see cref="EditAnimal.Command"/>.
+/// Extends <see cref="AnimalValidatorBase"/> and adds edit-specific constraints,
+/// such as validating the <see cref="Domain.Enums.AnimalState"/> field.
+/// </summary>
+public class EditAnimalValidator : AbstractValidator<EditAnimal.Command>
 {
     /// <summary>
-    /// Provides validation rules for the <see cref="ReqEditAnimalDto"/> object.
+    /// Initializes a new instance of the <see cref="EditAnimalValidator"/> class.
     /// </summary>
-    /// <remarks>
-    /// This validator extends the <see cref="CreateAnimalValidator"/> by including all 
-    /// creation rules and adding specific validation logic for editable fields.
-    /// <para>
-    /// It ensures that:
-    /// <list type="bullet">
-    ///   <item><description>All creation constraints are respected (via <c>Include()</c>).</description></item>
-    ///   <item><description>The <see cref="ReqEditAnimalDto.AnimalState"/> property contains a valid enumeration value.</description></item>
-    /// </list>
-    /// </para>
-    /// </remarks>
-    public class EditAnimalValidator : AbstractValidator<ReqEditAnimalDto>
+    public EditAnimalValidator()
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EditAnimalValidator"/> class.
-        /// </summary>
-        /// <remarks>
-        /// The validator includes the base rules from <see cref="CreateAnimalValidator"/> 
-        /// and adds an additional validation for <see cref="ReqEditAnimalDto.AnimalState"/>.
-        /// </remarks>
-        public EditAnimalValidator()
-        {
-            // Additional rule specific to editing
-            RuleFor(x => x.AnimalState)
-                .IsInEnum()
-                .WithMessage("Invalid animal state.");
-        }
+        RuleFor(x => x.Animal)
+            .SetValidator(new AnimalValidatorBase());
+
+        RuleFor(x => x.Animal.AnimalState)
+            .IsInEnum()
+            .WithMessage("Invalid animal state value.");
     }
 }

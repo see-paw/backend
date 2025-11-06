@@ -6,7 +6,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
-namespace Application.Ownerships.Queries;
+namespace Application.OwnershipRequests.Queries;
 
 /// <summary>
 /// Retrieves all ownership requests submitted by the currently authenticated user.

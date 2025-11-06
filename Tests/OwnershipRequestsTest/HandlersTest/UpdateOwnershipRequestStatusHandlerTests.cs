@@ -5,15 +5,14 @@ using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Persistence;
-using Xunit;
 
-namespace Tests.OwnershipRequests;
+namespace Tests.OwnershipRequestsTest.HandlersTest;
 
 public class UpdateOwnershipRequestStatusHandlerTests
 {
     private readonly AppDbContext _context;
     private readonly Mock<IUserAccessor> _mockUserAccessor;
-
+    private readonly Mock<INotificationService> _mockNotificationService;
     public UpdateOwnershipRequestStatusHandlerTests()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -22,6 +21,7 @@ public class UpdateOwnershipRequestStatusHandlerTests
 
         _context = new AppDbContext(options);
         _mockUserAccessor = new Mock<IUserAccessor>();
+        _mockNotificationService = new Mock<INotificationService>();
     }
 
     private async Task<(Animal animal, OwnershipRequest request, User user, Shelter shelter)> SeedOwnershipRequestAsync(
@@ -110,7 +110,7 @@ public class UpdateOwnershipRequestStatusHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(nonAdminUser);
 
-        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object);
+        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new UpdateOwnershipRequestStatus.Command
         {
@@ -132,7 +132,7 @@ public class UpdateOwnershipRequestStatusHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object);
+        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new UpdateOwnershipRequestStatus.Command
         {
@@ -161,7 +161,7 @@ public class UpdateOwnershipRequestStatusHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object);
+        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new UpdateOwnershipRequestStatus.Command
         {
@@ -189,7 +189,7 @@ public class UpdateOwnershipRequestStatusHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object);
+        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new UpdateOwnershipRequestStatus.Command
         {
@@ -217,7 +217,7 @@ public class UpdateOwnershipRequestStatusHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object);
+        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new UpdateOwnershipRequestStatus.Command
         {
@@ -245,7 +245,7 @@ public class UpdateOwnershipRequestStatusHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object);
+        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new UpdateOwnershipRequestStatus.Command
         {
@@ -273,7 +273,7 @@ public class UpdateOwnershipRequestStatusHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object);
+        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new UpdateOwnershipRequestStatus.Command
         {
@@ -301,7 +301,7 @@ public class UpdateOwnershipRequestStatusHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object);
+        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new UpdateOwnershipRequestStatus.Command
         {
@@ -329,7 +329,7 @@ public class UpdateOwnershipRequestStatusHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object);
+        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new UpdateOwnershipRequestStatus.Command
         {
@@ -357,7 +357,7 @@ public class UpdateOwnershipRequestStatusHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object);
+        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         await handler.Handle(new UpdateOwnershipRequestStatus.Command
         {
@@ -386,7 +386,7 @@ public class UpdateOwnershipRequestStatusHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object);
+        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         await handler.Handle(new UpdateOwnershipRequestStatus.Command
         {
@@ -415,7 +415,7 @@ public class UpdateOwnershipRequestStatusHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object);
+        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var requestInfo = "Request is under review";
 
@@ -447,7 +447,7 @@ public class UpdateOwnershipRequestStatusHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object);
+        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         await handler.Handle(new UpdateOwnershipRequestStatus.Command
         {
@@ -477,7 +477,7 @@ public class UpdateOwnershipRequestStatusHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object);
+        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new UpdateOwnershipRequestStatus.Command
         {
@@ -505,7 +505,7 @@ public class UpdateOwnershipRequestStatusHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
 
-        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object);
+        var handler = new UpdateOwnershipRequestStatus.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
 
         var result = await handler.Handle(new UpdateOwnershipRequestStatus.Command
         {
@@ -513,5 +513,45 @@ public class UpdateOwnershipRequestStatusHandlerTests
         }, default);
 
         Assert.NotNull(result.Value!.User);
+    }
+
+    [Fact]
+    public async Task UpdateOwnershipRequestStatus_ShouldNotifyUser_WhenStatusChangedToAnalysing()
+    {
+        var shelterId = Guid.NewGuid().ToString();
+        var (animal, request, user, shelter) = await SeedOwnershipRequestAsync(
+            OwnershipStatus.Pending,
+            AnimalState.Available,
+            shelterId);
+
+        var adminUser = new User
+        {
+            Id = Guid.NewGuid().ToString(),
+            ShelterId = shelterId
+        };
+
+        _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(adminUser);
+
+        var handler = new UpdateOwnershipRequestStatus.Handler(
+            _context,
+            _mockUserAccessor.Object,
+            _mockNotificationService.Object);
+
+        await handler.Handle(new UpdateOwnershipRequestStatus.Command
+        {
+            OwnershipRequestId = request.Id
+        }, default);
+
+        _mockNotificationService.Verify(
+            x => x.CreateAndSendToUserAsync(
+                request.UserId,
+                NotificationType.OWNERSHIP_REQUEST_ANALYZING,
+                It.IsAny<string>(),
+                request.AnimalId,
+                request.Id,
+                It.IsAny<CancellationToken>()
+            ),
+            Times.Once
+        );
     }
 }
