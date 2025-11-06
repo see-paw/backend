@@ -1,3 +1,5 @@
+using Application.Animals.Filters;
+using Application.Interfaces;
 using Application.Auth.Commands;
 using Application.Activities.Commands;
 using AutoMapper;
@@ -186,7 +188,7 @@ public class MappingProfiles : Profile
         CreateMap<TimeBlock, SlotDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.Start, opt => opt.MapFrom(src => src.Start.ToString(@"hh\:mm")))
-            .ForMember(dest => dest.End, opt => opt.MapFrom(src => src.End.ToString(@"hh\:mm")));
+            .ForMember(dest => dest.End,   opt => opt.MapFrom(src => src.End.ToString(@"hh\:mm")));
 
         CreateMap<Slot, SlotDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
@@ -195,16 +197,16 @@ public class MappingProfiles : Profile
 
         // Slots de atividade (reservas)
         CreateMap<ActivitySlot, ActivitySlotDto>()
-            .IncludeBase<Slot, SlotDto>()
+            .IncludeBase<Slot, SlotDto>() 
             .ForMember(dest => dest.ReservedBy,
                 opt => opt.MapFrom(src => src.Activity.User.UserName))
             .ForMember(dest => dest.IsOwnReservation, opt => opt.Ignore());
 
         // Slots de indisponibilidade do abrigo
         CreateMap<ShelterUnavailabilitySlot, ShelterUnavailabilitySlotDto>()
-            .IncludeBase<Slot, SlotDto>()
+            .IncludeBase<Slot, SlotDto>() 
             .ForMember(d => d.Reason, o => o.MapFrom(s => s.Reason));
-
+        
         CreateMap<Shelter, ResShelterDto>();
 
         // User Registration mapping
@@ -276,6 +278,9 @@ public class MappingProfiles : Profile
         CreateMap<CancelFosteringActivity.CancelFosteringActivityResult, ResCancelActivityFosteringDto>()
             .ForMember(dest => dest.ActivityId, opt => opt.MapFrom(src => src.ActivityId))
             .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Message));
+        
+        CreateMap<AnimalFilterDto, AnimalFilterModel>()
+            .ConvertUsing<AnimalFilterDtoConverter>();
     }
 
     private static int CalculateAge(DateOnly birthDate)

@@ -1,9 +1,11 @@
-﻿using Domain;
+﻿using Application.Animals.Filters;
+using Domain;
 using Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 using Application.Core;
+using Application.Interfaces;
 
 namespace Application.Animals.Queries
 {
@@ -37,25 +39,20 @@ namespace Application.Animals.Queries
             /// direction of the sorting. Acceptable values: "asc", "desc".
             /// </summary>
             public string? Order { get; set; } = null;
+            
+            /// <summary>
+            /// Filter criteria for querying animals.
+            /// </summary>
+            public AnimalFilterModel? Filters { get; set; } = null;
         }
 
         /// <summary>
         /// Handles the execution of the query to fetch a paginated list of animals.
         /// Includes related entities (Breed, Shelter, Images) and filters by animal availability.
         /// </summary>
-        public class Handler : IRequestHandler<Query, Result<PagedList<Animal>>>
+        public class Handler(AppDbContext _context, 
+            AnimalSpecBuilder specBuilder) : IRequestHandler<Query, Result<PagedList<Animal>>>
         {
-            private readonly AppDbContext _context;
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="Handler"/> class using the provided database context.
-            /// </summary>
-            /// <param name="context">Entity Framework Core database context.</param>
-            public Handler(AppDbContext context)
-            {
-                _context = context;
-            }
-
             /// <summary>
             /// Executes the query by retrieving a paginated list of animals that are either available
             /// or partially fostered. The results include related data for breed, shelter, and images.
@@ -68,7 +65,6 @@ namespace Application.Animals.Queries
             /// </returns>
             public async Task<Result<PagedList<Animal>>> Handle(Query request, CancellationToken cancellationToken)
             {
-
                 if (request.PageNumber < 1)
                     return Result<PagedList<Animal>>.Failure("Page number must be 1 or greater", 404);
 
@@ -80,6 +76,21 @@ namespace Application.Animals.Queries
                     .Where(a => a.AnimalState == AnimalState.Available
                              || a.AnimalState == AnimalState.PartiallyFostered)
                     .AsQueryable();
+
+                if (request.Filters != null)
+                {
+                    var specs = specBuilder.Build(request.Filters);
+                    
+                    foreach (var spec in specs)
+                    {
+                        var expression = spec.ToExpression();
+                        
+                        if (expression != null)
+                        {
+                            query = query.Where(expression);
+                        }
+                    }
+                }
 
                 // Normalize params
                 string sort = request.SortBy?.ToLower() ?? "created";

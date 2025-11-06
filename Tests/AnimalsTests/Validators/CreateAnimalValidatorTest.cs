@@ -40,7 +40,7 @@ public class CreateAnimalTests : IDisposable
         _dbContext.Dispose();
     }
 
-    #region BVA - Animal.Name [StringLength(100, MinimumLength = 2)] [Required]
+    #region BVA - Animal.ShelterName [StringLength(100, MinimumLength = 2)] [Required]
 
     [Theory]
     [InlineData("")]

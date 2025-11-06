@@ -89,7 +89,7 @@ namespace Tests.Middleware
 
             var validationFailures = new List<ValidationFailure>
             {
-                new ValidationFailure("Name", "Name is required."),
+                new ValidationFailure("ShelterName", "ShelterName is required."),
                 new ValidationFailure("Email", "Email must be valid.")
             };
             var validationException = new ValidationException(validationFailures);
@@ -103,8 +103,8 @@ namespace Tests.Middleware
             context.Response.Body.Seek(0, SeekOrigin.Begin);
             var responseBody = await new StreamReader(context.Response.Body).ReadToEndAsync();
 
-            Assert.Contains("Name", responseBody);
-            Assert.Contains("Name is required.", responseBody);
+            Assert.Contains("ShelterName", responseBody);
+            Assert.Contains("ShelterName is required.", responseBody);
             Assert.Contains("Email", responseBody);
             Assert.Contains("Email must be valid.", responseBody);
             Assert.Contains("Validation error", responseBody);

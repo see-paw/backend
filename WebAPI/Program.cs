@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 using System.Text.Json.Serialization;
+using Application.Animals.Filters;
 using WebAPI.Core;
 using WebAPI.Middleware;
 using WebAPI.Validators.Animals;
@@ -124,11 +125,13 @@ builder.Services.AddMediatR(x => {
     x.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 
+builder.Services.AddScoped<AnimalSpecBuilder>();
 builder.Services.AddScoped<ISlotNormalizer, SlotNormalizer>();
 builder.Services.AddScoped<IScheduleAssembler, ScheduleAssembler>();
 builder.Services.AddScoped<ITimeRangeCalculator, TimeRangeCalculator>();
 
 builder.Services.AddScoped<IFosteringService, FosteringService>();
+builder.Services.AddScoped<AnimalDomainService>();
 builder.Services.AddScoped<FosteringDomainService>();
 builder.Services.AddScoped(typeof(IImagesUploader<>), typeof(ImagesUploader<>));
 builder.Services.AddScoped(typeof(IImageOwnerLoader<>), typeof(ImageOwnerLoader<>));

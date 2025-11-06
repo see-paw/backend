@@ -2,6 +2,10 @@
 
 namespace WebAPI.DTOs.Animals;
 
+/// <summary>
+/// Base data transfer object used for animal creation and update requests.
+/// Contains common properties shared between derived animal DTOs.
+/// </summary>
 public class BaseReqAnimalDto
 {
     /// <summary>

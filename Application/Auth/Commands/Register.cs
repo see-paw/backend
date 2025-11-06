@@ -38,11 +38,34 @@ namespace Application.Auth.Commands
 
             // ----- SHELTER FIELDS (Only required when SelectedRole == "AdminCAA") -----
 
+            /// <summary>
+            /// Shelter name used when creating a new AdminCAA account.
+            /// </summary>
             public string? ShelterName { get; set; }
+            
+            /// <summary>
+            /// Street of the shelter (AdminCAA only).
+            /// </summary>
             public string? ShelterStreet { get; set; }
+            
+            /// <summary>
+            /// City where the shelter is located (AdminCAA only).
+            /// </summary>
             public string? ShelterCity { get; set; }
+            
+            /// <summary>
+            /// Postal code of the shelter (AdminCAA only).
+            /// </summary>
             public string? ShelterPostalCode { get; set; }
+            
+            /// <summary>
+            /// Contact phone number of the shelter (AdminCAA only).
+            /// </summary>
             public string? ShelterPhone { get; set; }
+            
+            /// <summary>
+            /// Tax identification number (NIF) of the shelter (AdminCAA only).
+            /// </summary>
             public string? ShelterNIF { get; set; }
 
             /// <summary>
@@ -65,12 +88,24 @@ namespace Application.Auth.Commands
             private readonly AppDbContext _dbContext;
             private readonly UserManager<User> _userManager;
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Handler"/> class.
+            /// </summary>
+            /// <param name="dbContext">Database context used to persist shelters.</param>
+            /// <param name="userManager">ASP.NET Identity user manager used to create users and assign roles.</param>
             public Handler(AppDbContext dbContext, UserManager<User> userManager)
             {
                 _dbContext = dbContext;
                 _userManager = userManager;
             }
 
+            /// <summary>
+            /// Executes the user registration process.
+            /// Validates role, creates user, creates shelter if applicable, and assigns the proper role.
+            /// </summary>
+            /// <param name="request">Registration command containing user and optional shelter data.</param>
+            /// <param name="ct">Cancellation token for async operation control.</param>
+            /// <returns>A <see cref="Result{User}"/> indicating success or failure.</returns>
             public async Task<Result<User>> Handle(Command request, CancellationToken ct)
             {
                 // Allowed roles to avoid privilege escalation
