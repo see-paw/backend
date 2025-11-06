@@ -58,7 +58,12 @@ public class FosteringService(FosteringDomainService fosteringDomainService) : I
     /// </exception>
     public void UpdateFosteringState(Animal animal)
     {
-        if (animal.Fosterings.Count == 0)
+
+        var activeFosterings = animal.Fosterings
+            .Where(f => f.Status == FosteringStatus.Active)
+            .ToList();
+
+        if (activeFosterings.Count == 0)
         {
             animal.AnimalState = AnimalState.Available;
             return;
