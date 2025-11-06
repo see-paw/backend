@@ -8,7 +8,7 @@ using Domain.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Infrastructure.BackgroundTasks;
-using Infrastructure.BackgroundTasks.Tasks;
+using Infrastructure.BackgroundTasks.Tasks.ActivityTasks;
 using Infrastructure.Hubs;
 using Infrastructure.Images;
 using Infrastructure.Notifications;
@@ -118,10 +118,11 @@ builder.Services.Configure<FosteringSettings>(
 builder.Services.AddSignalR();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
-// Background Tasks
+// Background Tasks Services
 builder.Services.AddHostedService<ReminderService>();
 builder.Services.AddScoped<IReminderTask, OwnershipActivityCompletionTask>();
 builder.Services.AddScoped<IReminderTask, OwnershipActivityReminderTask>();
+builder.Services.AddScoped<IReminderTask, FosteringActivityReminderTask>();
 
 var app = builder.Build();
 

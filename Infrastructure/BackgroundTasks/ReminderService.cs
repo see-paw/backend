@@ -10,8 +10,7 @@ namespace Infrastructure.BackgroundTasks
     /// </summary>
     public class ReminderService(
         IServiceScopeFactory scopeFactory,
-        ILogger<ReminderService> logger,
-        IEnumerable<IReminderTask> tasks) : BackgroundService
+        ILogger<ReminderService> logger) : BackgroundService
     {
         private static readonly int DEFAULT_CYCLE_INTERVAL = 5; // Minutes
 
@@ -27,6 +26,7 @@ namespace Infrastructure.BackgroundTasks
             while (!stoppingToken.IsCancellationRequested)
             {
                 using var scope = scopeFactory.CreateScope();
+                var tasks = scope.ServiceProvider.GetRequiredService<IEnumerable<IReminderTask>>();
 
                 foreach (var task in tasks)
                 {

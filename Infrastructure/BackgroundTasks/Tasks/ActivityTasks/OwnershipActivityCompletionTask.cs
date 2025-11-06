@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Persistence;
 
-namespace Infrastructure.BackgroundTasks.Tasks
+namespace Infrastructure.BackgroundTasks.Tasks.ActivityTasks
 {
     /// <summary>
     /// Task responsible for automatically marking ownership activities as Completed
@@ -15,6 +15,7 @@ namespace Infrastructure.BackgroundTasks.Tasks
         /// <summary>
         /// Executes the task by updating all active ownership activities whose end date has passed.
         /// </summary>
+        /// <param name="services">Scoped service provider for resolving dependencies.</param>
         public async Task ExecuteAsync(IServiceProvider services)
         {
             // Task is scoped and needs to create scoped services to avoid concurrency problems
@@ -38,6 +39,7 @@ namespace Infrastructure.BackgroundTasks.Tasks
                 return;
             }
 
+            // Mark each activity as completed
             foreach (var activity in activitiesToComplete)
             {
                 activity.Status = ActivityStatus.Completed;
