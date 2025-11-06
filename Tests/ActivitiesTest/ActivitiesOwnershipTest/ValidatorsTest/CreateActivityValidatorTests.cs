@@ -1,8 +1,9 @@
 ﻿using FluentValidation.TestHelper;
 using WebAPI.DTOs.Activities;
 using WebAPI.Validators.Activities.Ownership;
+using Xunit;
 
-namespace Tests.ActivitiesTest.ActivitiesOwnershipTest.ValidatorsTest;
+namespace Tests.Validators;
 
 /// <summary>
 /// Unit tests for CreateActivityValidator.

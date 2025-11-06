@@ -5,8 +5,9 @@ using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Persistence;
+using Xunit;
 
-namespace Tests.ActivitiesTest.ActivitiesOwnershipTest.HandlersTest;
+namespace Tests.Activities;
 
 /// <summary>
 /// Unit tests for GetOwnershipActivitiesByUser handler.
@@ -273,7 +274,7 @@ public class GetOwnershipActivitiesByUserHandlerTests
             Status = "Active"
         }, default);
 
-        Assert.All(result.Value!.Items, a => Assert.Equal(ActivityStatus.Active, a.Status));
+        Assert.All(result.Value!, a => Assert.Equal(ActivityStatus.Active, a.Status));
     }
 
     [Fact]
@@ -313,7 +314,7 @@ public class GetOwnershipActivitiesByUserHandlerTests
             Status = "Completed"
         }, default);
 
-        Assert.All(result.Value!.Items, a => Assert.Equal(ActivityStatus.Completed, a.Status));
+        Assert.All(result.Value!, a => Assert.Equal(ActivityStatus.Completed, a.Status));
     }
 
     [Fact]
@@ -353,7 +354,7 @@ public class GetOwnershipActivitiesByUserHandlerTests
             Status = "Cancelled"
         }, default);
 
-        Assert.All(result.Value!.Items, a => Assert.Equal(ActivityStatus.Cancelled, a.Status));
+        Assert.All(result.Value!, a => Assert.Equal(ActivityStatus.Cancelled, a.Status));
     }
 
     [Fact]
@@ -387,7 +388,7 @@ public class GetOwnershipActivitiesByUserHandlerTests
 
         var result = await handler.Handle(new GetOwnershipActivitiesByUser.Query(), default);
 
-        var activities = result.Value!.Items.ToList();
+        var activities = result.Value!.ToList();
         for (int i = 0; i < activities.Count - 1; i++)
         {
             Assert.True(activities[i].StartDate <= activities[i + 1].StartDate);
@@ -427,7 +428,7 @@ public class GetOwnershipActivitiesByUserHandlerTests
 
         var result = await handler.Handle(new GetOwnershipActivitiesByUser.Query(), default);
 
-        Assert.All(result.Value!.Items, a => Assert.Equal(ActivityType.Ownership, a.Type));
+        Assert.All(result.Value!, a => Assert.Equal(ActivityType.Ownership, a.Type));
     }
 
     [Fact]
@@ -455,7 +456,7 @@ public class GetOwnershipActivitiesByUserHandlerTests
 
         var result = await handler.Handle(new GetOwnershipActivitiesByUser.Query(), default);
 
-        Assert.All(result.Value!.Items, a => Assert.Equal(owner.Id, a.UserId));
+        Assert.All(result.Value!, a => Assert.Equal(owner.Id, a.UserId));
     }
 
     [Fact]
@@ -506,7 +507,7 @@ public class GetOwnershipActivitiesByUserHandlerTests
 
         var result = await handler.Handle(new GetOwnershipActivitiesByUser.Query(), default);
 
-        Assert.Empty(result.Value!.Items);
+        Assert.Empty(result.Value!);
     }
 
     [Fact]
@@ -548,7 +549,7 @@ public class GetOwnershipActivitiesByUserHandlerTests
             PageSize = 10
         }, default);
 
-        Assert.Equal(10, result.Value!.Items.Count);
+        Assert.Equal(10, result.Value!.Count);
     }
 
     [Fact]
@@ -632,7 +633,7 @@ public class GetOwnershipActivitiesByUserHandlerTests
             PageSize = 10
         }, default);
 
-        Assert.Equal(10, result.Value!.Items.Count);
+        Assert.Equal(10, result.Value!.Count);
     }
 
     [Fact]
@@ -667,7 +668,7 @@ public class GetOwnershipActivitiesByUserHandlerTests
 
         var result = await handler.Handle(new GetOwnershipActivitiesByUser.Query(), default);
 
-        Assert.All(result.Value!.Items, a => Assert.NotNull(a.Animal));
+        Assert.All(result.Value!, a => Assert.NotNull(a.Animal));
     }
 
     [Fact]
@@ -681,7 +682,7 @@ public class GetOwnershipActivitiesByUserHandlerTests
 
         var result = await handler.Handle(new GetOwnershipActivitiesByUser.Query(), default);
 
-        Assert.All(result.Value!.Items, a => Assert.NotNull(a.User));
+        Assert.All(result.Value!, a => Assert.NotNull(a.User));
     }
 
     [Fact]

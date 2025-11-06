@@ -103,10 +103,4 @@ public class Shelter: IHasImages
     [JsonIgnore]
     [MinLength(1, ErrorMessage = "Shelter must have at least one image.")]
     public ICollection<Image> Images { get; set; } = new List<Image>();
-    
-    /// <summary>
-    /// The list of time slots during which the shelter is unavailable.
-    /// </summary>
-    [JsonIgnore]
-    public ICollection<ShelterUnavailabilitySlot> UnavailabilitySlots { get; set; } = new List<ShelterUnavailabilitySlot>();
 }

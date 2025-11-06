@@ -3,26 +3,20 @@ using WebAPI.Validators;
 using FluentValidation;
 using Persistence;
 using System.Text.Json.Serialization;
-using Application;
 using Application.Animals;
 using Application.Core;
 using Application.Fosterings;
+using Application.Images;
 using Application.Interfaces;
 using Application.Services;
 using Domain;
 using Domain.Services;
-using FluentValidation;
-using FluentValidation.AspNetCore;
-using Infrastructure.Hubs;
-using Infrastructure.Images;
-using Infrastructure.Notifications;
-using Infrastructure.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using FluentValidation.AspNetCore;
+using Infrastructure.Images;
+using Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
-using Persistence;
-using System.Text.Json.Serialization;
-using Application.Animals.Filters;
 using WebAPI.Core;
 using WebAPI.Middleware;
 using WebAPI.Validators.Animals;
@@ -75,47 +69,6 @@ builder.Services.AddControllers().AddJsonOptions(o =>
     o.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
 });
 
-//swagger
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new() { Title = "SeePaw API", Version = "v1" });
-
-    // JWT bearer auth support to test endpoints that need auth
-    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "Insert your JWT token (without 'Bearer ')"
-    });
-
-    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-    {
-        {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-            {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
-                {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
-
-   c.DocInclusionPredicate((docName, apiDescription) =>
-    {
-        // only show the controllers we create, not the ones given by identity
-        return apiDescription.ActionDescriptor?.RouteValues?["controller"] != null
-               && apiDescription.ActionDescriptor.DisplayName!.Contains("WebAPI.Controllers");
-    });
-});
-
-
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
 
@@ -125,13 +78,7 @@ builder.Services.AddMediatR(x => {
     x.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 
-builder.Services.AddScoped<AnimalSpecBuilder>();
-builder.Services.AddScoped<ISlotNormalizer, SlotNormalizer>();
-builder.Services.AddScoped<IScheduleAssembler, ScheduleAssembler>();
-builder.Services.AddScoped<ITimeRangeCalculator, TimeRangeCalculator>();
-
 builder.Services.AddScoped<IFosteringService, FosteringService>();
-builder.Services.AddScoped<AnimalDomainService>();
 builder.Services.AddScoped<FosteringDomainService>();
 builder.Services.AddScoped(typeof(IImagesUploader<>), typeof(ImagesUploader<>));
 builder.Services.AddScoped(typeof(IImageOwnerLoader<>), typeof(ImageOwnerLoader<>));
@@ -143,24 +90,11 @@ builder.Services.AddScoped<IUserAccessor, UserAccessor>();
 builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 builder.Services.AddValidatorsFromAssemblyContaining<GetAnimalDetailsValidator>();
 builder.Services.AddTransient<ExceptionMiddleware>();
-
-// This registers ASP.NET Core Identity using *API endpoints* instead of MVC UI.
-// It automatically provides:
-//   POST /api/register
-//   POST /api/login
-//   POST /api/logout
-//
-// It also configures token-based authentication (Bearer tokens), NOT cookies.
 builder.Services.AddIdentityApiEndpoints<User>(opt =>
-{
-    // Ensures no two accounts share the same email
-    opt.User.RequireUniqueEmail = true;
-    // Enables support for roles (e.g., "User", "AdminCAA")
-}).AddRoles<IdentityRole>()
-    // Tells Identity to store users and roles in the AppDbContext
+    {
+        opt.User.RequireUniqueEmail = true;
+    }).AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>();
-
-//Tell ASP.NET Core that the default auth mechanism is Bearer tokens (not cookies).
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = IdentityConstants.BearerScheme;
@@ -175,23 +109,13 @@ builder.Services.Configure<FosteringSettings>(
     builder.Configuration.GetSection("Fostering")
 );
 
-// Notification Services
-builder.Services.AddSignalR();
-builder.Services.AddScoped<INotificationService, NotificationService>();
-
-
 var app = builder.Build();
-
-app.UseSwagger();
-
-
 
 // Pipeline
 app.UseCors(c => c
     .AllowAnyHeader()
     .AllowAnyMethod()
-    .AllowCredentials()
-    .WithOrigins("http://localhost:3000", "https://localhost:3000", "http://localhost:8080")); // 8080 for tests with Python HTTP server (SignalR test)
+    .WithOrigins("http://localhost:3000", "https://localhost:3000"));
 
 app.UseMiddleware<IdentityResponseMiddleware>();
 app.UseMiddleware<ExceptionMiddleware>();
@@ -199,10 +123,8 @@ app.UseMiddleware<ExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
-
 app.MapControllers();
-app.MapHub<NotificationHub>("/notificationHub");
-app.MapGroup("api").MapIdentityApi<User>().WithTags("Auth").WithOpenApi();
+app.MapGroup("api").MapIdentityApi<User>();
 
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
@@ -223,17 +145,6 @@ try
     // Apply migrations
     await context.Database.MigrateAsync();
     logger.LogInformation("Migrations applied successfully.");
-
-    // Ensure Roles Exist
-    var roles = new[] { "User", "AdminCAA" };
-    foreach (var role in roles)
-    {
-        if (!await roleManager.RoleExistsAsync(role))
-        {
-            await roleManager.CreateAsync(new IdentityRole(role));
-            logger.LogInformation($"Role '{role}' created.");
-        }
-    }
 
     // How the DB is seeded dependending on the environment type
     if (app.Environment.IsProduction())

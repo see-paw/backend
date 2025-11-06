@@ -72,7 +72,7 @@ namespace Tests
         }
 
         /// <summary>
-        /// Tests that SeedData creates 12 users with correct data.
+        /// Tests that SeedData creates 10 users with correct data.
         /// </summary>
         [Fact]
         public async Task SeedData_EmptyDatabase_Creates9Users()
@@ -82,7 +82,7 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(16, userManager.Users.Count());
+            Assert.Equal(10, userManager.Users.Count());
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace Tests
         }
 
         /// <summary>
-        /// Tests that Alice, Filipe and Alice.notif are assigned AdminCAA role and have ShelterId.
+        /// Tests that Alice and Filipe are assigned AdminCAA role and have ShelterId.
         /// </summary>
         [Fact]
         public async Task SeedData_EmptyDatabase_AssignsAdminCAARole()
@@ -121,21 +121,15 @@ namespace Tests
             Assert.NotNull(filipe);
             Assert.True(await userManager.IsInRoleAsync(filipe, "AdminCAA"));
             Assert.NotNull(filipe.ShelterId);
-
-            var aliceNotif = await userManager.FindByEmailAsync("alice.notif@test.com");
-            Assert.NotNull(aliceNotif);
-            Assert.True(await userManager.IsInRoleAsync(aliceNotif, "AdminCAA"));
-            Assert.NotNull(aliceNotif.ShelterId);
         }
 
         /// <summary>
-        /// Tests that regular users (Carlos, Diana, Eduardo, Carlos.notif) are assigned User role.
+        /// Tests that regular users (Carlos, Diana, Eduardo) are assigned User role.
         /// </summary>
         [Theory]
         [InlineData("carlos@test.com")]
         [InlineData("diana@test.com")]
         [InlineData("eduardo@test.com")]
-        [InlineData("carlos.notif@test.com")]
         public async Task SeedData_EmptyDatabase_AssignsUserRole(string email)
         {
             await using var context = new AppDbContext(_options);
@@ -193,7 +187,7 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(8, userManager.Users.Count());
+            Assert.Equal(4, userManager.Users.Count());
             Assert.Equal("Existing User", userManager.Users.First().Name);
         }
 
@@ -228,7 +222,7 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(7, await context.Shelters.CountAsync());
+            Assert.Equal(4, await context.Shelters.CountAsync());
         }
 
         /// <summary>
@@ -258,7 +252,7 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(5, await context.Shelters.CountAsync());
+            Assert.Equal(3, await context.Shelters.CountAsync());
             Assert.Equal("Existing Shelter", (await context.Shelters.FirstAsync()).Name);
         }
 
@@ -277,7 +271,7 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(9, await context.Breeds.CountAsync());
+            Assert.Equal(7, await context.Breeds.CountAsync());
         }
 
         #endregion
@@ -285,7 +279,7 @@ namespace Tests
         #region Animal Tests
 
         /// <summary>
-        /// Tests that SeedData creates 28 animals when database is empty.
+        /// Tests that SeedData creates 27 animals when database is empty.
         /// </summary>
         [Fact]
         public async Task SeedData_EmptyDatabase_Creates24Animals()
@@ -295,18 +289,18 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(45, await context.Animals.CountAsync());
+            Assert.Equal(27, await context.Animals.CountAsync());
         }
 
         /// <summary>
         /// Tests that SeedData creates animals with different states.
         /// </summary>
         [Theory]
-        [InlineData(AnimalState.Available, 18)]
-        [InlineData(AnimalState.Inactive, 3)]
-        [InlineData(AnimalState.HasOwner, 6)]
-        [InlineData(AnimalState.TotallyFostered, 5)]
-        [InlineData(AnimalState.PartiallyFostered, 13)]
+        [InlineData(AnimalState.Available, 16)]
+        [InlineData(AnimalState.Inactive, 2)]
+        [InlineData(AnimalState.HasOwner, 5)]
+        [InlineData(AnimalState.TotallyFostered, 2)]
+        [InlineData(AnimalState.PartiallyFostered, 2)]
         public async Task SeedData_EmptyDatabase_CreatesAnimalsWithDifferentStates(AnimalState state, int expectedCount)
         {
             await using var context = new AppDbContext(_options);
@@ -322,8 +316,8 @@ namespace Tests
         /// Tests that seeded animals have correct species distribution.
         /// </summary>
         [Theory]
-        [InlineData(Species.Dog, 35)]
-        [InlineData(Species.Cat, 10)]
+        [InlineData(Species.Dog, 19)]
+        [InlineData(Species.Cat, 8)]
         public async Task SeedData_EmptyDatabase_CreatesAnimalsWithCorrectSpecies(Species species, int expectedCount)
         {
             await using var context = new AppDbContext(_options);
@@ -365,7 +359,7 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(26, await context.Animals.CountAsync());
+            Assert.Equal(9, await context.Animals.CountAsync());
             Assert.Equal("Existing Animal", (await context.Animals.FirstAsync()).Name);
         }
 
@@ -374,8 +368,8 @@ namespace Tests
         #region Image Tests
 
         /// <summary>
-        /// Tests that SeedData creates 37 images when database is empty.
-        /// 6 shelter images (2 per shelter ï¿½ 2 shelters with images) + 31 animal images = 37 total.
+        /// Tests that SeedData creates 35 images when database is empty.
+        /// 6 shelter images (2 per shelter × 3) + 29 animal images = 35 total.
         /// </summary>
         [Fact]
         public async Task SeedData_EmptyDatabase_CreatesImages()
@@ -385,12 +379,12 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(38, await context.Images.CountAsync());
+            Assert.Equal(35, await context.Images.CountAsync());
         }
 
         /// <summary>
         /// Tests that SeedData creates images for shelters and animals with correct distribution.
-        /// 6 shelter images and 31 animal images.
+        /// 6 shelter images and 29 animal images.
         /// </summary>
         [Fact]
         public async Task SeedData_EmptyDatabase_CreatesImagesForSheltersAndAnimals()
@@ -404,12 +398,12 @@ namespace Tests
             var animalImages = await context.Images.CountAsync(i => i.AnimalId != null);
 
             Assert.Equal(6, shelterImages);
-            Assert.Equal(32, animalImages);
+            Assert.Equal(29, animalImages);
         }
 
         /// <summary>
         /// Tests that principal images are correctly marked.
-        /// 2 shelter principal images (1 per shelter ï¿½ 2 shelters with images) + 19 animal principal images + 1 NotifTestDog = 23 total.
+        /// 3 shelter principal images (1 per shelter × 3) + 19 animal principal images = 22 total.
         /// </summary>
         [Fact]
         public async Task SeedData_EmptyDatabase_CreatesPrincipalImages()
@@ -420,12 +414,11 @@ namespace Tests
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
             var principalImages = await context.Images.CountAsync(i => i.IsPrincipal);
-            Assert.Equal(24, principalImages);
+            Assert.Equal(22, principalImages);
         }
 
         /// <summary>
-        /// Tests that each shelter with images has exactly one principal image.
-        /// Note: Shelter3 (Notifications Test Shelter) does not have images.
+        /// Tests that each shelter has exactly one principal image.
         /// </summary>
         [Fact]
         public async Task SeedData_EmptyDatabase_EachShelterHasOnePrincipalImage()
@@ -435,12 +428,9 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            var sheltersWithImages = await context.Shelters
-                .Include(s => s.Images)
-                .Where(s => s.Images.Any())
-                .ToListAsync();
+            var shelters = await context.Shelters.Include(s => s.Images).ToListAsync();
 
-            foreach (var shelter in sheltersWithImages)
+            foreach (var shelter in shelters)
             {
                 var principalCount = shelter.Images.Count(i => i.IsPrincipal);
                 Assert.Equal(1, principalCount);
@@ -463,7 +453,7 @@ namespace Tests
                 .Where(a => a.Images.Any())
                 .ToListAsync();
 
-            Assert.Equal(20, animalsWithImages.Count);
+            Assert.Equal(18, animalsWithImages.Count);
 
             foreach (var animal in animalsWithImages)
             {
@@ -496,7 +486,7 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(13, await context.Images.CountAsync());
+            Assert.Equal(12, await context.Images.CountAsync());
             Assert.Equal("https://example.com/existing.jpg", (await context.Images.FirstAsync()).Url);
         }
 
@@ -515,7 +505,22 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(17, await context.Fosterings.CountAsync());
+            Assert.Equal(3, await context.Fosterings.CountAsync());
+        }
+
+        /// <summary>
+        /// Tests that all created fosterings have Active status.
+        /// </summary>
+        [Fact]
+        public async Task SeedData_EmptyDatabase_CreatesFosteringsWithActiveStatus()
+        {
+            await using var context = new AppDbContext(_options);
+            var (userManager, roleManager) = await CreateUserAndRoleManagers(context);
+
+            await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
+
+            var fosterings = await context.Fosterings.ToListAsync();
+            Assert.All(fosterings, f => Assert.Equal(FosteringStatus.Active, f.Status));
         }
 
         #endregion

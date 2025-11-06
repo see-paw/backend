@@ -5,8 +5,9 @@ using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Persistence;
+using Xunit;
 
-namespace Tests.ActivitiesTest.ActivitiesOwnershipTest.HandlersTest;
+namespace Tests.Activities;
 
 /// <summary>
 /// Unit tests for CreateOwnershipActivity handler.
@@ -16,7 +17,6 @@ public class CreateActivityHandlerTests
 {
     private readonly AppDbContext _context;
     private readonly Mock<IUserAccessor> _mockUserAccessor;
-    private readonly Mock<INotificationService> _mockNotificationService;
 
     public CreateActivityHandlerTests()
     {
@@ -26,7 +26,6 @@ public class CreateActivityHandlerTests
 
         _context = new AppDbContext(options);
         _mockUserAccessor = new Mock<IUserAccessor>();
-        _mockNotificationService = new Mock<INotificationService>();
     }
 
     private async Task<(Animal animal, User owner, User otherUser, Shelter shelter)> SeedDataAsync(
@@ -149,7 +148,7 @@ public class CreateActivityHandlerTests
         var userId = Guid.NewGuid().ToString();
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(userId);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         var result = await handler.Handle(new CreateOwnershipActivity.Command
         {
@@ -168,7 +167,7 @@ public class CreateActivityHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(otherUser.Id);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object); 
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         var result = await handler.Handle(new CreateOwnershipActivity.Command
         {
@@ -190,7 +189,7 @@ public class CreateActivityHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(owner.Id);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         var result = await handler.Handle(new CreateOwnershipActivity.Command
         {
@@ -210,7 +209,7 @@ public class CreateActivityHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(owner.Id);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         var result = await handler.Handle(new CreateOwnershipActivity.Command
         {
@@ -229,7 +228,7 @@ public class CreateActivityHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(owner.Id);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         var result = await handler.Handle(new CreateOwnershipActivity.Command
         {
@@ -248,7 +247,7 @@ public class CreateActivityHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(owner.Id);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         var result = await handler.Handle(new CreateOwnershipActivity.Command
         {
@@ -267,7 +266,7 @@ public class CreateActivityHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(owner.Id);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         var startDate = new DateTime(2025, 12, 5, 10, 0, 0, DateTimeKind.Utc);
         var endDate = new DateTime(2025, 12, 4, 14, 0, 0, DateTimeKind.Utc);
@@ -289,7 +288,7 @@ public class CreateActivityHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(owner.Id);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         // Shelter opens at 09:00, trying to start at 08:00
         var startDate = DateTime.UtcNow.AddDays(2).Date.AddHours(8);
@@ -312,7 +311,7 @@ public class CreateActivityHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(owner.Id);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         // Shelter closes at 18:00, trying to end at 19:00
         var startDate = DateTime.UtcNow.AddDays(2).Date.AddHours(17);
@@ -338,7 +337,7 @@ public class CreateActivityHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(owner.Id);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         // Trying to start before the completed activity ended
         var result = await handler.Handle(new CreateOwnershipActivity.Command
@@ -358,7 +357,7 @@ public class CreateActivityHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(owner.Id);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         var startDate = DateTime.UtcNow.AddDays(2).Date.AddHours(10);
         var endDate = startDate.AddHours(3);
@@ -380,7 +379,7 @@ public class CreateActivityHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(owner.Id);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         var startDate = DateTime.UtcNow.AddDays(2).Date.AddHours(10);
         var endDate = startDate.AddHours(3);
@@ -402,7 +401,7 @@ public class CreateActivityHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(owner.Id);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         var startDate = DateTime.UtcNow.AddDays(2).Date.AddHours(10);
         var endDate = startDate.AddHours(3);
@@ -424,7 +423,7 @@ public class CreateActivityHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(owner.Id);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         var startDate = DateTime.UtcNow.AddDays(2).Date.AddHours(10);
         var endDate = startDate.AddHours(3);
@@ -446,7 +445,7 @@ public class CreateActivityHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(owner.Id);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         var startDate = DateTime.UtcNow.AddDays(2).Date.AddHours(10);
         var endDate = startDate.AddHours(3);
@@ -468,7 +467,7 @@ public class CreateActivityHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(owner.Id);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         var startDate = DateTime.UtcNow.AddDays(2).Date.AddHours(10);
         var endDate = startDate.AddHours(3);
@@ -490,7 +489,7 @@ public class CreateActivityHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(owner.Id);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         var startDate = DateTime.UtcNow.AddDays(2).Date.AddHours(10);
         var endDate = startDate.AddHours(3);
@@ -512,7 +511,7 @@ public class CreateActivityHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(owner.Id);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         var startDate = DateTime.UtcNow.AddDays(2).Date.AddHours(10);
         var endDate = startDate.AddHours(3);
@@ -535,7 +534,7 @@ public class CreateActivityHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(owner.Id);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         var startDate = DateTime.UtcNow.AddDays(2).Date.AddHours(10);
         var endDate = startDate.AddHours(3);
@@ -557,7 +556,7 @@ public class CreateActivityHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(owner.Id);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         var startDate = DateTime.UtcNow.AddDays(2).Date.AddHours(10);
         var endDate = startDate.AddHours(3);
@@ -579,7 +578,7 @@ public class CreateActivityHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(owner.Id);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         var startDate = DateTime.UtcNow.AddDays(2).Date.AddHours(10);
         var endDate = startDate.AddHours(3);
@@ -604,7 +603,7 @@ public class CreateActivityHandlerTests
 
         _mockUserAccessor.Setup(x => x.GetUserId()).Returns(owner.Id);
 
-        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object, _mockNotificationService.Object);
+        var handler = new CreateOwnershipActivity.Handler(_context, _mockUserAccessor.Object);
 
         // Start AFTER the completed activity ended (14:00 > 12:00)
         var startDate = completedEndDate.AddDays(1).Date.AddHours(14);

@@ -1,12 +1,9 @@
 ﻿using Application.Core;
-using Application.Favorites.Commands;
 using Application.Favorites.Queries;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs;
-using WebAPI.DTOs.Animals;
-using WebAPI.DTOs.Favorites;
 
 namespace WebAPI.Controllers;
 
@@ -65,39 +62,5 @@ public class FavoritesController(IMapper mapper) : BaseApiController
 
         // Return the successful paginated result
         return HandleResult(Result<PagedList<ResFavoriteAnimalDto>>.Success(dtoPagedList, 200));
-    }
-
-    /// <summary>
-    /// Adds an animal to the authenticated user's favorites list.
-    /// </summary>
-    /// <param name="animalId">The unique identifier of the animal to favorite.</param>
-    [Authorize(Roles = "User")]
-    [HttpPost("{animalId}")]
-    public async Task<ActionResult<ResAnimalDto>> AddFavorite(string animalId)
-    {
-        var result = await Mediator.Send(new AddFavorite.Command { AnimalId = animalId });
-
-        if (!result.IsSuccess)
-            return HandleResult(result);
-
-        var dto = mapper.Map<ResFavoriteAnimalDto>(result.Value);
-        return HandleResult(Result<ResFavoriteAnimalDto>.Success(dto, 201));
-    }
-
-    /// <summary>
-    /// Deactivates an existing animal from the authenticated user's favorites list.
-    /// </summary>
-    /// <param name="animalId">The unique identifier of the animal to remove from favorites.</param>
-    [Authorize(Roles = "User")]
-    [HttpPatch("{animalId}/deactivate")]
-    public async Task<ActionResult<ResAnimalDto>> DeactivateFavorite(string animalId)
-    {
-        var result = await Mediator.Send(new DeactivateFavorite.Command { AnimalId = animalId });
-
-        if (!result.IsSuccess)
-            return HandleResult(result);
-
-        var dto = mapper.Map<ResFavoriteAnimalDto>(result.Value);
-        return HandleResult(Result<ResFavoriteAnimalDto>.Success(dto, 200));
     }
 }

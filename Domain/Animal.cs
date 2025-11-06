@@ -95,7 +95,7 @@ public class Animal : IHasImages
     /// The UTC timestamp when the record was created.
     /// </summary>
     [Required]
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 
     /// <summary>
     /// The UTC timestamp when the record was last updated.

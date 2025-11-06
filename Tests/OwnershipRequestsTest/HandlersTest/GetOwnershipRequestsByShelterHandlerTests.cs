@@ -5,14 +5,14 @@ using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Persistence;
+using Xunit;
 
-namespace Tests.OwnershipRequestsTest.HandlersTest;
+namespace Tests.OwnershipRequests;
 
 public class GetOwnershipRequestsByShelterHandlerTests
 {
     private readonly AppDbContext _context;
     private readonly Mock<IUserAccessor> _mockUserAccessor;
-    private readonly Mock<INotificationService> _mockNotificationService;
 
     public GetOwnershipRequestsByShelterHandlerTests()
     {
@@ -22,7 +22,6 @@ public class GetOwnershipRequestsByShelterHandlerTests
 
         _context = new AppDbContext(options);
         _mockUserAccessor = new Mock<IUserAccessor>();
-        _mockNotificationService = new Mock<INotificationService>();
     }
 
     private async Task<(Shelter shelter, List<OwnershipRequest> requests)> SeedMultipleOwnershipRequestsAsync(
@@ -225,7 +224,7 @@ public class GetOwnershipRequestsByShelterHandlerTests
 
         var result = await handler.Handle(new GetOwnershipRequestsByShelter.Query(), default);
 
-        Assert.NotNull(result.Value!.Items.First().Animal);
+        Assert.NotNull(result.Value!.First().Animal);
     }
 
     [Fact]
@@ -246,7 +245,7 @@ public class GetOwnershipRequestsByShelterHandlerTests
 
         var result = await handler.Handle(new GetOwnershipRequestsByShelter.Query(), default);
 
-        Assert.NotNull(result.Value!.Items.First().User);
+        Assert.NotNull(result.Value!.First().User);
     }
 
     [Fact]
@@ -270,7 +269,7 @@ public class GetOwnershipRequestsByShelterHandlerTests
             PageSize = 10
         }, default);
 
-        var returnedRequests = result.Value!.Items.ToList();
+        var returnedRequests = result.Value!.ToList();
         Assert.True(returnedRequests[0].RequestedAt >= returnedRequests[1].RequestedAt);
     }
 
@@ -295,7 +294,7 @@ public class GetOwnershipRequestsByShelterHandlerTests
             PageSize = 2
         }, default);
 
-        Assert.Equal(2, result.Value!.Items.Count);
+        Assert.Equal(2, result.Value!.Count);
     }
 
     [Fact]
@@ -410,6 +409,6 @@ public class GetOwnershipRequestsByShelterHandlerTests
 
         var result = await handler.Handle(new GetOwnershipRequestsByShelter.Query(), default);
 
-        Assert.Equal(20, result.Value!.Items.Count); // Default PageSize is 20
+        Assert.Equal(20, result.Value!.Count); // Default PageSize is 20
     }
 }

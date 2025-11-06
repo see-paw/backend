@@ -1,5 +1,4 @@
 ﻿using Application.Animals.Commands;
-using Application.Animals.Filters;
 using Application.Animals.Queries;
 using Application.Core;
 using Application.Fosterings.Commands;
@@ -32,30 +31,17 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// <summary>
     /// Retrieves a paginated list of animals that are available or partially fostered.
     /// </summary>
-    /// <param name="animalFilters">Filter criteria for searching animals</param>
-    /// <param name="sortBy">Field to sort by: "name", "age", or "created"</param>
-    /// <param name="order">Sort direction: "asc" or "desc"</param>
     /// <param name="pageNumber">The page number to retrieve. Defaults to 1.</param>
     /// <returns>
     /// A paginated <see cref="PagedList{T}"/> of <see cref="ResAnimalDto"/> objects representing the animals.
     /// Returns <c>400</c> if the page number is invalid or an appropriate error message on failure.
     /// </returns>
     [HttpGet]
-    public async Task<ActionResult<PagedList<ResAnimalDto>>> GetAnimals(
-        [FromQuery] AnimalFilterDto animalFilters,
-        [FromQuery] string? sortBy = null,
-        [FromQuery] string? order = null, 
-        [FromQuery] int pageNumber = 1)
+    public async Task<ActionResult<PagedList<ResAnimalDto>>> GetAnimals([FromQuery] int pageNumber = 1)
     {
-        
-        var filterModel = mapper.Map<AnimalFilterModel>(animalFilters);
-        
         var result = await Mediator.Send(new GetAnimalList.Query
         {
-            PageNumber = pageNumber,
-            SortBy = sortBy,
-            Order = order,
-            Filters = filterModel
+            PageNumber = pageNumber
         });
 
         if (!result.IsSuccess)
@@ -63,7 +49,7 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
             return HandleResult(result);
         }
 
-        var dtoList = mapper.Map<List<ResAnimalDto>>(result.Value.Items);
+        var dtoList = mapper.Map<List<ResAnimalDto>>(result.Value);
 
         // Create a new paginated list with the DTOs
         var dtoPagedList = new PagedList<ResAnimalDto>(

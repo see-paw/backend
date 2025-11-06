@@ -1,4 +1,4 @@
-﻿namespace WebAPI.DTOs.Favorites;
+﻿namespace WebAPI.DTOs;
 
 /// <summary>
 /// Response DTO containing essential information about a favorite animal.

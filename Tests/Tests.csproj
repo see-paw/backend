@@ -17,7 +17,6 @@
     <PackageReference Include="FluentAssertions" Version="8.7.1" />
     <PackageReference Include="JetBrains.Annotations" Version="2025.2.2" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.11" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.21" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.11" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
@@ -27,13 +26,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-	<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0" />
-	<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.0" />
   </ItemGroup>
   
 	<ItemGroup>
 		<ProjectReference Include="..\Application\Application.csproj" />
-		<ProjectReference Include="..\Domain\Domain.csproj" />
 		<ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
 		<ProjectReference Include="..\WebAPI\WebAPI.csproj" />
 	</ItemGroup>
@@ -44,6 +40,11 @@
 
   <ItemGroup>
     <EditorConfigFiles Remove=".editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Assets\bcRBCk4Z\" />
+    <Folder Include="FavoritesTest\Validators\" />
   </ItemGroup>
 
 </Project>

@@ -5,7 +5,6 @@ using WebAPI.Core;
 using WebAPI.DTOs;
 using WebAPI.DTOs.Animals;
 using WebAPI.DTOs.Images;
-using WebAPI.DTOs.Ownership;
 using Xunit;
 
 namespace Tests
@@ -120,7 +119,7 @@ namespace Tests
         }
 
         /// <summary>
-        /// Tests that BreedName is mapped from Breed.ShelterName.
+        /// Tests that BreedName is mapped from Breed.Name.
         /// </summary>
         [Fact]
         public void Map_AnimalToResAnimalDto_MapsBreedName()

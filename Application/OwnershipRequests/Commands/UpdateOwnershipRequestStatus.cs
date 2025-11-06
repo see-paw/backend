@@ -41,10 +41,7 @@ public class UpdateOwnershipRequestStatus
     /// <summary>
     /// Handles the status update of ownership requests with comprehensive validation.
     /// </summary>
-    public class Handler(
-        AppDbContext context, 
-        IUserAccessor userAccessor,
-        INotificationService notificationService) : IRequestHandler<Command, Result<OwnershipRequest>>
+    public class Handler(AppDbContext context, IUserAccessor userAccessor) : IRequestHandler<Command, Result<OwnershipRequest>>
     {
 
         /// <summary>
@@ -102,8 +99,6 @@ public class UpdateOwnershipRequestStatus
             var success = await context.SaveChangesAsync(cancellationToken) > 0;
             if (!success)
                 return Result<OwnershipRequest>.Failure("Failed to update ownership request status", 500);
-
-            await NotifyUser(ownershipRequest, cancellationToken);
 
             return Result<OwnershipRequest>.Success(ownershipRequest, 200);
         }
@@ -215,25 +210,6 @@ public class UpdateOwnershipRequestStatus
 
             if (!string.IsNullOrEmpty(requestInfo))
                 ownershipRequest.RequestInfo = requestInfo;
-        }
-
-        /// <summary>
-        /// Notifies the user who made the ownership request about it being analyzed by the shelter.
-        /// </summary>
-        /// <param name="ownershipRequest">The ownership request with loaded navigation properties.</param>
-        /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
-        /// <remarks>
-        /// Informs the user that their adoption request is being analyzed.
-        /// </remarks>
-        private async Task NotifyUser(OwnershipRequest ownershipRequest, CancellationToken cancellationToken)
-        {
-            await notificationService.CreateAndSendToUserAsync(
-                ownershipRequest.UserId,
-                type: NotificationType.OWNERSHIP_REQUEST_ANALYZING,
-                message: $"O pedido de adoção responsável do {ownershipRequest.Animal.Name} está a ser analizado pelo abrigo!",
-                animalId: ownershipRequest.AnimalId,
-                ownershipRequestId: ownershipRequest.Id,
-                cancellationToken: cancellationToken);
         }
     }
 }

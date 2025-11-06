@@ -5,8 +5,9 @@ using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Persistence;
+using Xunit;
 
-namespace Tests.ActivitiesTest.ActivitiesOwnershipTest.HandlersTest;
+namespace Tests.Activities;
 
 public class CancelOwnershipActivityHandlerTests
 {

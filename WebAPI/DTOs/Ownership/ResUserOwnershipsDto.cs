@@ -1,7 +1,7 @@
 using Domain.Enums;
 using WebAPI.DTOs.Images;
 
-namespace WebAPI.DTOs.Ownership;
+namespace WebAPI.DTOs;
 
 public class ResUserOwnershipsDto
 {

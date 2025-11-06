@@ -17,10 +17,10 @@ namespace WebAPI.Validators.User
         public UserProfileValidator()
         {
             RuleFor(x => x.Name)
-                .NotEmpty().WithMessage("ShelterName is required.")
-                .MaximumLength(255).WithMessage("ShelterName cannot exceed 255 characters.")
+                .NotEmpty().WithMessage("Name is required.")
+                .MaximumLength(255).WithMessage("Name cannot exceed 255 characters.")
                 .Matches(@"^[A-Za-zÀ-ÖØ-öø-ÿ\s'\-’]+$")
-                .WithMessage("ShelterName can only contain letters, spaces, hyphens, and apostrophes.");
+                .WithMessage("Name can only contain letters, spaces, hyphens, and apostrophes.");
 
             RuleFor(x => x.BirthDate)
                 .NotEmpty().WithMessage("Birth date is required.")

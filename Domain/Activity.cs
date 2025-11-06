@@ -25,7 +25,6 @@ public class Activity
     /// The foreign key referencing the animal associated with this activity.
     /// </summary>
     [Required]
-    [MaxLength(36)]
     public string AnimalId { get; set; } = string.Empty;
 
     /// <summary>
@@ -74,9 +73,4 @@ public class Activity
     /// The user entity participating in this activity.
     /// </summary>
     public User User { get; set; } = null!;
-    
-    /// <summary>
-    /// The time slot assigned to this activity.
-    /// </summary>
-    public ActivitySlot? Slot { get; set; }
 }

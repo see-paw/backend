@@ -52,10 +52,8 @@ public class User : IdentityUser
     /// The postal code of the user�s address.
     /// </summary>
     [Required]
-    [StringLength(8, MinimumLength = 8)]
-    [RegularExpression(@"^\d{4}-\d{3}$", ErrorMessage = "Postal Code must be in the format 0000-000.")]
+    [MaxLength(255)]
     public string PostalCode { get; set; } = string.Empty;
-
 
     /// <summary>
     /// The UTC timestamp when the user account was created.

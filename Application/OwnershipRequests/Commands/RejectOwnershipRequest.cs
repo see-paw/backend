@@ -3,7 +3,6 @@ using Application.Interfaces;
 using Domain;
 using Domain.Enums;
 using MediatR;
-using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
@@ -38,10 +37,8 @@ public class RejectOwnershipRequest
     /// <summary>
     /// Handles the rejection of ownership requests with validation and reason tracking.
     /// </summary>
-    public class Handler(
-        AppDbContext context, 
-        IUserAccessor userAccessor,
-        INotificationService notificationService) : IRequestHandler<Command, Result<OwnershipRequest>>
+    public class Handler(AppDbContext context, IUserAccessor userAccessor) 
+        : IRequestHandler<Command, Result<OwnershipRequest>>
     {
         /// <summary>
         /// Rejects an ownership request with an optional reason.
@@ -105,30 +102,7 @@ public class RejectOwnershipRequest
             if (!success)
                 return Result<OwnershipRequest>.Failure("Failed to reject ownership request", 500);
 
-            await NotifyUser(ownershipRequest, cancellationToken);
-
             return Result<OwnershipRequest>.Success(ownershipRequest, 200);
-        }
-
-        /// <summary>
-        /// Notifies the user who made the ownership request about the rejection.
-        /// </summary>
-        /// <param name="ownershipRequest">The rejected ownership request with loaded navigation properties.</param>
-        /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
-        /// <remarks>
-        /// Informs the user that their adoption request was rejected. The rejection reason
-        /// (if provided) is available in the ownership request details.
-        /// </remarks>
-        private async Task NotifyUser(OwnershipRequest ownershipRequest, CancellationToken cancellationToken)
-        {
-            await notificationService.CreateAndSendToUserAsync(
-                ownershipRequest.UserId,
-                type: NotificationType.OWNERSHIP_REQUEST_REJECTED,
-                message: $"O teu pedido para adotar o/a {ownershipRequest.Animal.Name} infelizmente foi recusado.",
-                animalId: ownershipRequest.AnimalId,
-                ownershipRequestId: ownershipRequest.Id,
-                cancellationToken: cancellationToken
-                );
         }
     }
 }

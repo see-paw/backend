@@ -12,7 +12,7 @@ namespace Application.Ownerships.Queries;
 /// </summary>
 /// <remarks>
 /// This query fetches the list of animals that are officially registered as owned by the current user.
-/// It includes related entities such as <see cref="Breed"/>, <see cref="Shelter"/> and <see cref="Image"/> 
+/// It includes related entities such as <see cref="Breed"/>, <see cref="Shelter"/> and <see cref="AnimalImage"/> 
 /// to provide a complete view of the owned animals.
 /// </remarks>
 public class GetUserOwnedAnimals
