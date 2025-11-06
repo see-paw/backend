@@ -119,6 +119,7 @@ builder.Services.AddSignalR();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
 // Background Tasks
+builder.Services.AddHostedService<ReminderService>();
 builder.Services.AddScoped<IReminderTask, OwnershipActivityCompletionTask>();
 builder.Services.AddScoped<IReminderTask, OwnershipActivityReminderTask>();
 
