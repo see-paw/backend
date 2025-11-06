@@ -27,7 +27,6 @@ public class AgeSpec(AnimalDomainService animalDomainService) : ISpecification<A
     /// </summary>
     public Expression<Func<Animal, bool>>? ToExpression()
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        return animal => (today.Year - animal.BirthDate.Year) == Age;
+        return animalDomainService.GetAgeEqualsExpression(Age);
     }
 }

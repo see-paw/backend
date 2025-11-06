@@ -12,8 +12,8 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251105232633_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251106094537_NewSlotSchema")]
+    partial class NewSlotSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

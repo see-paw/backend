@@ -455,7 +455,7 @@ public static class DbInitializer
                     Size = SizeType.Small,
                     Sex = SexType.Male,
                     Colour = "Verde com azul",
-                    BirthDate = new DateOnly(2020, 2, 10),
+                    BirthDate = new DateOnly(2025, 2, 10),
                     Sterilized = false,
                     BreedId = breed2Id,
                     Cost = 80,
@@ -473,7 +473,7 @@ public static class DbInitializer
                     Size = SizeType.Small,
                     Sex = SexType.Female,
                     Colour = "Preto",
-                    BirthDate = new DateOnly(2020, 8, 22),
+                    BirthDate = new DateOnly(2025, 8, 22),
                     Sterilized = true,
                     BreedId = breed2Id,
                     Cost = 25,
@@ -491,7 +491,7 @@ public static class DbInitializer
                     Size = SizeType.Large,
                     Sex = SexType.Male,
                     Colour = "Preto e castanho",
-                    BirthDate = new DateOnly(2019, 6, 30),
+                    BirthDate = new DateOnly(2025, 6, 30),
                     Sterilized = false,
                     BreedId = breed2Id,
                     Cost = 100,
@@ -3044,10 +3044,5 @@ public static class DbInitializer
     dbContext.ActivitySlots.Add(slot8);
 
     await dbContext.SaveChangesAsync();
-
-    Console.WriteLine("✅ Cancel Foster Activity test seed data created successfully!");
-
-        
-
     }
 }
