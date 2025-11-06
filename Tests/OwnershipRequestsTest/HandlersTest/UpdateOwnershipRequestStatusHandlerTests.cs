@@ -549,6 +549,7 @@ public class UpdateOwnershipRequestStatusHandlerTests
                 It.IsAny<string>(),
                 request.AnimalId,
                 request.Id,
+                It.IsAny<string?>(),
                 It.IsAny<CancellationToken>()
             ),
             Times.Once
