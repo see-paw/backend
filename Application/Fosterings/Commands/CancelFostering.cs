@@ -1,4 +1,6 @@
 ﻿using Application.Core;
+using Application.Interfaces;
+using Application.Services;
 using Domain;
 using Domain.Enums;
 using MediatR;
@@ -31,15 +33,9 @@ namespace Application.Fosterings.Commands
         /// <summary>
         /// Command handler responsible for validating and updating the fostering record.
         /// </summary>
-        public class Handler : IRequestHandler<Command, Result<Fostering>>
+        public class Handler(AppDbContext context, IFosteringService fosteringService) : IRequestHandler<Command, Result<Fostering>>
         {
-            private readonly AppDbContext _context;
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="Handler"/> class.
-            /// </summary>
-            /// <param name="context">The database context.</param>
-            public Handler(AppDbContext context) => _context = context;
+            
 
             /// <summary>
             /// Cancels an active fostering record if it belongs to the authenticated user.
@@ -54,8 +50,9 @@ namespace Application.Fosterings.Commands
             public async Task<Result<Fostering>> Handle(Command request, CancellationToken ct)
             {
                 // Retrieve the fostering record for the authenticated user
-                var fostering = await _context.Fosterings
+                var fostering = await context.Fosterings
                     .Include(f => f.Animal)
+                    .ThenInclude(a => a.Fosterings.Where(f => f.Status == FosteringStatus.Active))
                     .FirstOrDefaultAsync(f =>
                         f.Id == request.FosteringId &&
                         f.UserId == request.UserId, ct);
@@ -74,7 +71,9 @@ namespace Application.Fosterings.Commands
                 fostering.EndDate = DateTime.UtcNow;
                 fostering.UpdatedAt = DateTime.UtcNow;
 
-                var success = await _context.SaveChangesAsync(ct) > 0;
+                fosteringService.UpdateFosteringState(fostering.Animal);
+
+                var success = await context.SaveChangesAsync(ct) > 0;
                 if (!success)
                     return Result<Fostering>.Failure(
                         "An error occurred while cancelling the fostering record.",

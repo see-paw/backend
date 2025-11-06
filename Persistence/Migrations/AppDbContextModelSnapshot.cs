@@ -30,6 +30,7 @@ namespace Persistence.Migrations
 
                     b.Property<string>("AnimalId")
                         .IsRequired()
+                        .HasMaxLength(36)
                         .HasColumnType("character varying(36)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -304,6 +305,10 @@ namespace Persistence.Migrations
                         .HasMaxLength(36)
                         .HasColumnType("character varying(36)");
 
+                    b.Property<string>("ActivityId")
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
                     b.Property<string>("AnimalId")
                         .HasMaxLength(36)
                         .HasColumnType("character varying(36)");
@@ -342,6 +347,8 @@ namespace Persistence.Migrations
                         .HasColumnType("character varying(36)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ActivityId");
 
                     b.HasIndex("AnimalId");
 
@@ -555,8 +562,8 @@ namespace Persistence.Migrations
 
                     b.Property<string>("PostalCode")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
@@ -866,6 +873,11 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Domain.Notification", b =>
                 {
+                    b.HasOne("Domain.Activity", "Activity")
+                        .WithMany()
+                        .HasForeignKey("ActivityId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Domain.Animal", "Animal")
                         .WithMany()
                         .HasForeignKey("AnimalId")
@@ -880,6 +892,8 @@ namespace Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Activity");
 
                     b.Navigation("Animal");
 

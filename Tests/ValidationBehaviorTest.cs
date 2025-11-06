@@ -149,7 +149,7 @@ namespace Tests
             {
                 new ValidationFailure("Value", "Value is required."),
                 new ValidationFailure("Value", "Value must be at least 3 characters."),
-                new ValidationFailure("Name", "Name is required.")
+                new ValidationFailure("ShelterName", "ShelterName is required.")
             };
             var validationResult = new ValidationResult(validationFailures);
 

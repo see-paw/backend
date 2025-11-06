@@ -1,7 +1,9 @@
 ﻿using Application.Fosterings.Commands;
+using Application.Interfaces;
 using Domain;
 using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using Persistence;
 using Xunit;
 
@@ -11,6 +13,7 @@ namespace Tests.FosteringsTests.Handlers
     public class CancelFosteringHandlerTests
     {
         private readonly AppDbContext _context;
+        private readonly Mock<IFosteringService> _fosteringService; 
 
         public CancelFosteringHandlerTests()
         {
@@ -19,6 +22,7 @@ namespace Tests.FosteringsTests.Handlers
                 .Options;
 
             _context = new AppDbContext(options);
+            _fosteringService = new Mock<IFosteringService>(); 
         }
 
         private async Task<Fostering> SeedFosteringAsync(FosteringStatus status, string userId)
@@ -36,19 +40,23 @@ namespace Tests.FosteringsTests.Handlers
                 Sterilized = true,
                 BreedId = Guid.NewGuid().ToString(),
                 ShelterId = Guid.NewGuid().ToString(),
-                AnimalState = AnimalState.Available
+                AnimalState = AnimalState.Available,
+                Fosterings = new List<Fostering>() 
             };
 
             var fostering = new Fostering
             {
                 Id = Guid.NewGuid().ToString(),
                 AnimalId = animal.Id,
+                Animal = animal,              
                 UserId = userId,
                 Status = status,
                 StartDate = DateTime.UtcNow.AddDays(-10),
                 EndDate = null,
                 Amount = 20.0M
             };
+
+            animal.Fosterings.Add(fostering); 
 
             _context.Animals.Add(animal);
             _context.Fosterings.Add(fostering);
@@ -59,7 +67,7 @@ namespace Tests.FosteringsTests.Handlers
         [Fact]
         public async Task CancelFostering_ShouldFail_WhenRecordDoesNotExist()
         {
-            var handler = new CancelFostering.Handler(_context);
+            var handler = new CancelFostering.Handler(_context, _fosteringService.Object); 
 
             var result = await handler.Handle(new CancelFostering.Command
             {
@@ -78,7 +86,7 @@ namespace Tests.FosteringsTests.Handlers
 
             var fostering = await SeedFosteringAsync(FosteringStatus.Active, userId);
 
-            var handler = new CancelFostering.Handler(_context);
+            var handler = new CancelFostering.Handler(_context, _fosteringService.Object); 
             var result = await handler.Handle(new CancelFostering.Command
             {
                 FosteringId = fostering.Id,
@@ -94,7 +102,7 @@ namespace Tests.FosteringsTests.Handlers
             var userId = "user-1";
             var fostering = await SeedFosteringAsync(FosteringStatus.Cancelled, userId);
 
-            var handler = new CancelFostering.Handler(_context);
+            var handler = new CancelFostering.Handler(_context, _fosteringService.Object); 
             var result = await handler.Handle(new CancelFostering.Command
             {
                 FosteringId = fostering.Id,
@@ -110,7 +118,7 @@ namespace Tests.FosteringsTests.Handlers
             var userId = "user-1";
             var fostering = await SeedFosteringAsync(FosteringStatus.Terminated, userId);
 
-            var handler = new CancelFostering.Handler(_context);
+            var handler = new CancelFostering.Handler(_context, _fosteringService.Object); 
             var result = await handler.Handle(new CancelFostering.Command
             {
                 FosteringId = fostering.Id,
@@ -126,7 +134,7 @@ namespace Tests.FosteringsTests.Handlers
             var userId = "user-1";
             var fostering = await SeedFosteringAsync(FosteringStatus.Active, userId);
 
-            var handler = new CancelFostering.Handler(_context);
+            var handler = new CancelFostering.Handler(_context, _fosteringService.Object); 
             var result = await handler.Handle(new CancelFostering.Command
             {
                 FosteringId = fostering.Id,
@@ -134,6 +142,9 @@ namespace Tests.FosteringsTests.Handlers
             }, default);
 
             Assert.True(result.IsSuccess);
+
+            //to make sure the service was called
+            _fosteringService.Verify(s => s.UpdateFosteringState(It.IsAny<Animal>()), Times.Once);
         }
     }
 }

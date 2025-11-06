@@ -1,4 +1,4 @@
-﻿namespace Domain.Enums;
+namespace Domain.Enums;
 
 /// <summary>
 /// Defines the type or purpose of a <see cref="Slot"/> within the scheduling system.
