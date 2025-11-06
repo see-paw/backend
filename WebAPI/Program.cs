@@ -74,6 +74,47 @@ builder.Services.AddControllers().AddJsonOptions(o =>
     o.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
 });
 
+//swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "SeePaw API", Version = "v1" });
+
+    // JWT bearer auth support to test endpoints that need auth
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Insert your JWT token (without 'Bearer ')"
+    });
+
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+
+   c.DocInclusionPredicate((docName, apiDescription) =>
+    {
+        // only show the controllers we create, not the ones given by identity
+        return apiDescription.ActionDescriptor?.RouteValues?["controller"] != null
+               && apiDescription.ActionDescriptor.DisplayName!.Contains("WebAPI.Controllers");
+    });
+});
+
+
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
 
@@ -138,6 +179,10 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 
 var app = builder.Build();
 
+app.UseSwagger();
+
+
+
 // Pipeline
 app.UseCors(c => c
     .AllowAnyHeader()
@@ -151,9 +196,10 @@ app.UseMiddleware<ExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
+
 app.MapControllers();
 app.MapHub<NotificationHub>("/notificationHub");
-app.MapGroup("api").MapIdentityApi<User>();
+app.MapGroup("api").MapIdentityApi<User>().WithTags("Auth").WithOpenApi();
 
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
