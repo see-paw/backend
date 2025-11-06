@@ -7,6 +7,6 @@ public class AnimalWeeklyScheduleDto
 {
     public ResAnimalDto Animal { get; set; } = null!;
     public ResShelterDto Shelter { get; set; } = null!;
-    public string StartDate { get; set; } = null!;                
-    public List<DailyScheduleDto> Days { get; set; } = new();          
+    public string StartDate { get; set; } = null!;
+    public List<DailyScheduleDto> Days { get; set; } = new();
 }
