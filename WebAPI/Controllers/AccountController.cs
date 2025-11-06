@@ -15,6 +15,13 @@ namespace WebAPI.Controllers
     {
         private readonly IMapper _mapper;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AccountController"/> class.
+        /// </summary>
+        /// <param name="mapper">
+        /// Instance of <see cref="IMapper"/> used for mapping between domain entities,
+        /// commands, and DTOs within account-related operations.
+        /// </param>
         public AccountController(IMapper mapper)
         {
             _mapper = mapper;

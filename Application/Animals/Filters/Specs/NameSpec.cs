@@ -9,6 +9,9 @@ namespace Application.Animals.Filters.Specs;
 /// </summary>
 public class NameSpec : ISpecification<Animal>
 {
+    /// <summary>
+    /// Name or part of the name used for filtering animals.
+    /// </summary>
     public string Name { get; init; } = string.Empty;
 
     /// <summary>

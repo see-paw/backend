@@ -10,6 +10,9 @@ namespace WebAPI.Validators.Animals;
 /// </summary>
 public class AnimalFilterDtoValidator : AbstractValidator<AnimalFilterDto>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AnimalFilterDtoValidator"/> class.
+    /// </summary>
     public AnimalFilterDtoValidator()
     {
         RuleFor(x => x.Species)

@@ -13,6 +13,9 @@ namespace WebAPI.Validators.Auth
     /// </summary>
     public class RegisterUserValidator : AbstractValidator<ReqRegisterUserDto>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegisterUserValidator"/> class.
+        /// </summary>
         public RegisterUserValidator()
         {
             // ----- USER VALIDATION (ALWAYS REQUIRED) -----

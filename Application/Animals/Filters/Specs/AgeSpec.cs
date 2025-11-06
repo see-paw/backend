@@ -10,6 +10,9 @@ namespace Application.Animals.Filters.Specs;
 /// </summary>
 public class AgeSpec(AnimalDomainService animalDomainService) : ISpecification<Animal>
 {
+    /// <summary>
+    /// Age value used to filter animals.
+    /// </summary>
     public int Age { get; init; }
 
     /// <summary>

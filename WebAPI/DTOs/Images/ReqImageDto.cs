@@ -6,6 +6,9 @@ namespace WebAPI.DTOs.Images
     /// </summary>
     public class ReqImageDto
     {
+        /// <summary>
+        /// Image file to be uploaded and associated with the animal.
+        /// </summary>
         public required IFormFile File { get; set; }
 
         /// <summary>
