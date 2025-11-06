@@ -12,13 +12,8 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-<<<<<<<< HEAD:Persistence/Migrations/20251105025034_InitialCreate.Designer.cs
-    [Migration("20251105025034_InitialCreate")]
+    [Migration("20251105232633_InitialCreate")]
     partial class InitialCreate
-========
-    [Migration("20251105084644_NewSlotSchema")]
-    partial class NewSlotSchema
->>>>>>>> origin/develop:Persistence/Migrations/20251105084644_NewSlotSchema.Designer.cs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,6 +33,7 @@ namespace Persistence.Migrations
 
                     b.Property<string>("AnimalId")
                         .IsRequired()
+                        .HasMaxLength(36)
                         .HasColumnType("character varying(36)");
 
                     b.Property<DateTime>("CreatedAt")

@@ -10,12 +10,29 @@ using WebAPI.DTOs.Activities;
 
 namespace Tests.ActivitiesTest.ActivitiesFosteringTest.ControllersTest;
 
+/// <summary>
+/// Unit test suite for the <see cref="ActivitiesController"/> endpoint responsible for cancelling fostering activities.
+/// </summary>
+/// <remarks>
+/// These tests validate that the <see cref="ActivitiesController.CancelActivityFostering"/> action:
+/// <list type="bullet">
+/// <item><description>Sends the correct <see cref="CancelFosteringActivity.Command"/> to MediatR</description></item>
+/// <item><description>Handles success and error responses appropriately</description></item>
+/// <item><description>Returns correct HTTP status codes based on validation outcomes</description></item>
+/// <item><description>Properly maps command results to response DTOs via AutoMapper</description></item>
+/// </list>
+/// The tests use <see cref="Moq"/> to isolate controller behavior from MediatR and AutoMapper dependencies.
+/// </remarks>
 public class CancelFosteringActivityControllerTests
 {
     private readonly Mock<IMediator> _mediatorMock;
     private readonly Mock<IMapper> _mapperMock;
     private readonly ActivitiesController _controller;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CancelFosteringActivityControllerTests"/> class,
+    /// setting up mocked dependencies and the controller context.
+    /// </summary>
     public CancelFosteringActivityControllerTests()
     {
         _mediatorMock = new Mock<IMediator>();
@@ -35,7 +52,11 @@ public class CancelFosteringActivityControllerTests
             }
         };
     }
-    
+
+    /// <summary>
+    /// Verifies that a valid fostering cancellation request returns <c>200 OK</c>
+    /// and that the mapped response matches the expected success message.
+    /// </summary>
     [Fact]
     public async Task CancelActivityFostering_WithValidRequest_ReturnsOkResult()
     {
@@ -77,6 +98,9 @@ public class CancelFosteringActivityControllerTests
         Assert.Equal("Visit cancelled successfully", returnValue.Message);
     }
 
+    /// <summary>
+    /// Ensures that if the activity does not exist, the controller returns a <c>404 Not Found</c> response.
+    /// </summary>
     [Fact]
     public async Task CancelActivityFostering_WithNonExistentActivity_ReturnsNotFound()
     {
@@ -100,6 +124,9 @@ public class CancelFosteringActivityControllerTests
         Assert.Equal(404, notFoundResult.StatusCode);
     }
 
+    /// <summary>
+    /// Ensures that a user cannot cancel an activity they do not own, returning <c>403 Forbidden</c>.
+    /// </summary>
     [Fact]
     public async Task CancelActivityFostering_WithActivityNotBelongingToUser_ReturnsForbidden()
     {
@@ -123,6 +150,9 @@ public class CancelFosteringActivityControllerTests
         Assert.Equal(403, forbiddenResult.StatusCode);
     }
 
+    /// <summary>
+    /// Ensures that a user cannot cancel an activity they do not own, returning <c>403 Forbidden</c>.
+    /// </summary>
     [Fact]
     public async Task CancelActivityFostering_WithNonFosteringActivity_ReturnsBadRequest()
     {
@@ -146,6 +176,9 @@ public class CancelFosteringActivityControllerTests
         Assert.Equal(400, badRequestResult.StatusCode);
     }
 
+    /// <summary>
+    /// Ensures that cancelling an already cancelled activity returns <c>400 Bad Request</c>.
+    /// </summary>
     [Fact]
     public async Task CancelActivityFostering_WithCancelledActivity_ReturnsBadRequest()
     {
@@ -158,7 +191,8 @@ public class CancelFosteringActivityControllerTests
         _mediatorMock
             .Setup(m => m.Send(It.IsAny<CancelFosteringActivity.Command>(), default))
             .ReturnsAsync(Result<CancelFosteringActivity.CancelFosteringActivityResult>
-                .Failure("Cannot cancel an activity with status 'Cancelled'. Only active activities can be cancelled.", 400));
+                .Failure("Cannot cancel an activity with status 'Cancelled'. Only active activities can be cancelled.",
+                    400));
 
         // Act
         var result = await _controller.CancelActivityFostering(dto);
@@ -169,6 +203,9 @@ public class CancelFosteringActivityControllerTests
         Assert.Equal(400, badRequestResult.StatusCode);
     }
 
+    /// <summary>
+    /// Ensures that cancelling an activity that has already been completed returns <c>400 Bad Request</c>.
+    /// </summary>
     [Fact]
     public async Task CancelActivityFostering_WithCompletedActivity_ReturnsBadRequest()
     {
@@ -181,7 +218,8 @@ public class CancelFosteringActivityControllerTests
         _mediatorMock
             .Setup(m => m.Send(It.IsAny<CancelFosteringActivity.Command>(), default))
             .ReturnsAsync(Result<CancelFosteringActivity.CancelFosteringActivityResult>
-                .Failure("Cannot cancel an activity with status 'Completed'. Only active activities can be cancelled.", 400));
+                .Failure("Cannot cancel an activity with status 'Completed'. Only active activities can be cancelled.",
+                    400));
 
         // Act
         var result = await _controller.CancelActivityFostering(dto);
@@ -192,6 +230,9 @@ public class CancelFosteringActivityControllerTests
         Assert.Equal(400, badRequestResult.StatusCode);
     }
 
+    /// <summary>
+    /// Verifies that users without an active fostering relationship cannot cancel an activity, returning <c>403 Forbidden</c>.
+    /// </summary>
     [Fact]
     public async Task CancelActivityFostering_WithoutActiveFostering_ReturnsForbidden()
     {
@@ -215,6 +256,9 @@ public class CancelFosteringActivityControllerTests
         Assert.Equal(403, forbiddenResult.StatusCode);
     }
 
+    /// <summary>
+    /// Ensures that if an activity slot is missing, the controller returns <c>404 Not Found</c>.
+    /// </summary>
     [Fact]
     public async Task CancelActivityFostering_WithMissingSlot_ReturnsNotFound()
     {
@@ -238,6 +282,9 @@ public class CancelFosteringActivityControllerTests
         Assert.Equal(404, notFoundResult.StatusCode);
     }
 
+    /// <summary>
+    /// Ensures that cancelling an activity with an already available slot returns <c>400 Bad Request</c>.
+    /// </summary>
     [Fact]
     public async Task CancelActivityFostering_WithAvailableSlot_ReturnsBadRequest()
     {
@@ -261,6 +308,9 @@ public class CancelFosteringActivityControllerTests
         Assert.Equal(400, badRequestResult.StatusCode);
     }
 
+    /// <summary>
+    /// Ensures that cancelling an activity scheduled in the past returns <c>400 Bad Request</c>.
+    /// </summary>
     [Fact]
     public async Task CancelActivityFostering_WithPastActivity_ReturnsBadRequest()
     {
@@ -284,6 +334,9 @@ public class CancelFosteringActivityControllerTests
         Assert.Equal(400, badRequestResult.StatusCode);
     }
 
+    /// <summary>
+    /// Verifies that the controller sends the correct command to MediatR when invoked.
+    /// </summary>
     [Fact]
     public async Task CancelActivityFostering_SendsCorrectCommandToMediator()
     {
@@ -305,7 +358,8 @@ public class CancelFosteringActivityControllerTests
             .ReturnsAsync(Result<CancelFosteringActivity.CancelFosteringActivityResult>.Success(commandResult, 200));
 
         _mapperMock
-            .Setup(m => m.Map<ResCancelActivityFosteringDto>(It.IsAny<CancelFosteringActivity.CancelFosteringActivityResult>()))
+            .Setup(m => m.Map<ResCancelActivityFosteringDto>(
+                It.IsAny<CancelFosteringActivity.CancelFosteringActivityResult>()))
             .Returns(new ResCancelActivityFosteringDto
             {
                 ActivityId = dto.ActivityId,
@@ -320,6 +374,9 @@ public class CancelFosteringActivityControllerTests
             c.ActivityId == dto.ActivityId), default), Times.Once);
     }
 
+    /// <summary>
+    /// Ensures that AutoMapper is invoked correctly to map command results to response DTOs.
+    /// </summary>
     [Fact]
     public async Task CancelActivityFostering_CallsMapperWithCorrectData()
     {
@@ -354,6 +411,9 @@ public class CancelFosteringActivityControllerTests
         _mapperMock.Verify(m => m.Map<ResCancelActivityFosteringDto>(commandResult), Times.Once);
     }
 
+    /// <summary>
+    /// Documents expected behavior for invalid GUIDs — validation occurs at the model binding level before the controller.
+    /// </summary>
     [Fact]
     public async Task CancelActivityFostering_WithInvalidGuidFormat_ValidatorShouldCatch()
     {
@@ -369,6 +429,9 @@ public class CancelFosteringActivityControllerTests
         Assert.NotNull(dto.ActivityId);
     }
 
+    /// <summary>
+    /// Ensures that response DTOs are correctly mapped and returned with the expected data.
+    /// </summary>
     [Fact]
     public async Task CancelActivityFostering_MapsResultCorrectly()
     {
@@ -405,7 +468,7 @@ public class CancelFosteringActivityControllerTests
         var actionResult = Assert.IsType<ActionResult<ResCancelActivityFosteringDto>>(result);
         var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
         var returnValue = Assert.IsType<ResCancelActivityFosteringDto>(okResult.Value);
-        
+
         Assert.Equal(commandResult.ActivityId, returnValue.ActivityId);
         Assert.Equal(commandResult.Message, returnValue.Message);
     }

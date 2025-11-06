@@ -11,7 +11,7 @@ namespace WebAPI.DTOs.Activities;
 /// </remarks>
 public class ReqCreateActivityFosteringDto
 {
-    // <summary>
+    /// <summary>
     /// The unique identifier of the animal to visit.
     /// </summary>
     [Required(ErrorMessage = "AnimalId is required.")]

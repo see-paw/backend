@@ -109,7 +109,7 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
 
         return HandleResult(Result<ResActivityDto>.Success(responseDto, 200));
     }
-    
+
     /// <summary>
     /// Schedules a visit slot for a fostered animal.
     /// </summary>
@@ -151,7 +151,25 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
 
         return HandleResult(Result<ResActivityFosteringDto>.Success(responseDto, 201));
     }
-    
+
+    /// <summary>
+    /// Cancels a scheduled fostering activity for the authenticated user.
+    /// </summary>
+    /// <remarks>
+    /// Available only to users with the <c>User</c> role.  
+    /// The activity must exist, belong to the user, be of type <c>Fostering</c>, 
+    /// and have status <c>Active</c>.  
+    /// On success, the activity is marked as <c>Cancelled</c> and the related slot becomes <c>Available</c>.
+    /// </remarks>
+    /// <param name="dto">Request body containing the activity ID to cancel.</param>
+    /// <returns>
+    /// <see cref="ResCancelActivityFosteringDto"/> if successful;  
+    /// appropriate error code otherwise.
+    /// </returns>
+    /// <response code="200">Activity cancelled successfully.</response>
+    /// <response code="400">Invalid cancellation (e.g., already started or inactive).</response>
+    /// <response code="403">User not authorized to cancel this activity.</response>
+    /// <response code="404">Activity or slot not found.</response>
     [Authorize(Roles = "User")]
     [HttpPatch("foster-activity/{id}/cancel")]
     [ProducesResponseType(typeof(ResCancelActivityFosteringDto), StatusCodes.Status200OK)]

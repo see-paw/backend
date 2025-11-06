@@ -16,6 +16,9 @@ public class ReqCreateActivityFostValidator : AbstractValidator<ReqCreateActivit
     private const int MaximumDurationHours = 3;
     private const int MinimumAdvanceHours = 24;
 
+    /// <summary>
+    /// Initializes validation rules for fostering visit scheduling.
+    /// </summary>
     public ReqCreateActivityFostValidator()
     {
         // AnimalId validation

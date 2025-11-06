@@ -9,56 +9,81 @@ namespace Application.Activities.Commands;
 
 /// <summary>
 /// Handles the cancellation of fostering activity visits.
+/// 
+/// This command allows a user who currently has an active fostering relationship
+/// with an animal to cancel a scheduled fostering activity visit, provided that
+/// the visit has not yet started and meets all business rule validations.
 /// </summary>
 public class CancelFosteringActivity
 {
     /// <summary>
-    /// Result returned after successfully cancelling an activity.
+    /// Represents the result returned after successfully cancelling
+    /// a fostering activity.
     /// </summary>
     public class CancelFosteringActivityResult
     {
+        /// <summary>
+        /// The unique identifier of the cancelled activity.
+        /// </summary>
         public string ActivityId { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// A human-readable confirmation message indicating success.
+        /// </summary>
         public string Message { get; set; } = string.Empty;
     }
 
     /// <summary>
-    /// Command to cancel a fostering activity visit.
+    /// Command used to request the cancellation of a fostering activity.
     /// </summary>
     public class Command : IRequest<Result<CancelFosteringActivityResult>>
     {
         /// <summary>
-        /// The unique identifier of the activity to cancel.
+        /// The unique identifier of the activity that should be cancelled.
         /// </summary>
         public string ActivityId { get; set; } = string.Empty;
     }
+
     /// <summary>
-    /// Handler for cancelling fostering activities with comprehensive validation.
+    /// Handles the logic for cancelling a fostering activity.
     /// 
-    /// This handler performs the following validations:
-    /// - Verifies the activity exists
-    /// - Validates the activity belongs to the current user
-    /// - Validates the activity is of type Fostering
-    /// - Validates the activity is in Active status (not already cancelled/completed)
-    /// - Verifies the user has an active fostering relationship with the animal
-    /// - Validates the associated slot exists
-    /// - Ensures the activity hasn't already started
-    /// - Updates the Activity status to Cancelled
-    /// - Updates the ActivitySlot status to Available
+    /// This handler performs multiple validation steps to ensure data integrity
+    /// and compliance with business rules before cancelling an activity:
+    /// <list type="bullet">
+    /// <item><description>Verifies that the activity exists in the database</description></item>
+    /// <item><description>Checks that the current user owns the activity</description></item>
+    /// <item><description>Ensures the activity type is <see cref="ActivityType.Fostering"/></description></item>
+    /// <item><description>Validates that the activity is currently active (not cancelled or completed)</description></item>
+    /// <item><description>Confirms the user still has an active fostering relationship with the animal</description></item>
+    /// <item><description>Ensures the associated slot exists and is reserved</description></item>
+    /// <item><description>Prevents cancellation if the activity start time has already passed</description></item>
+    /// <item><description>Updates the activity status to <see cref="ActivityStatus.Cancelled"/></description></item>
+    /// <item><description>Sets the associated slot status back to <see cref="SlotStatus.Available"/></description></item>
+    /// </list>
     /// </summary>
-    public class Handler(AppDbContext context, IUserAccessor userAccessor) 
+    public class Handler(AppDbContext context, IUserAccessor userAccessor)
         : IRequestHandler<Command, Result<CancelFosteringActivityResult>>
     {
+        /// <summary>
+        /// Executes the command to cancel a fostering activity visit.
+        /// </summary>
+        /// <param name="request">The command containing the activity ID to cancel.</param>
+        /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
+        /// <returns>
+        /// A <see cref="Result{T}"/> containing either a success response with activity details
+        /// or an appropriate failure message with HTTP status code.
+        /// </returns>
         public async Task<Result<CancelFosteringActivityResult>> Handle(
-            Command request, 
+            Command request,
             CancellationToken cancellationToken)
         {
-            // Get current user
+            // Retrieve the current authenticated user
             var currentUser = await userAccessor.GetUserAsync();
 
-            // Get activity with all necessary relations
+            // Retrieve the activity including its related animal and slot
             var activity = await context.Activities
                 .Include(a => a.Animal)
-                    .ThenInclude(animal => animal.Fosterings)
+                .ThenInclude(animal => animal.Fosterings)
                 .Include(a => a.Slot)
                 .FirstOrDefaultAsync(a => a.Id == request.ActivityId, cancellationToken);
 
@@ -78,7 +103,8 @@ public class CancelFosteringActivity
             // Validate activity is currently active
             if (activity.Status != ActivityStatus.Active)
                 return Result<CancelFosteringActivityResult>.Failure(
-                    $"Cannot cancel an activity with status '{activity.Status}'. Only active activities can be cancelled.", 400);
+                    $"Cannot cancel an activity with status '{activity.Status}'. Only active activities can be cancelled.",
+                    400);
 
             // Validate user still has active fostering relationship with the animal
             var activeFostering = activity.Animal.Fosterings
@@ -96,7 +122,8 @@ public class CancelFosteringActivity
             // Validate the slot is currently reserved
             if (activity.Slot.Status != SlotStatus.Reserved)
                 return Result<CancelFosteringActivityResult>.Failure(
-                    $"Cannot cancel a slot with status '{activity.Slot.Status}'. Only reserved slots can be cancelled.", 400);
+                    $"Cannot cancel a slot with status '{activity.Slot.Status}'. Only reserved slots can be cancelled.",
+                    400);
 
             // Validate the activity hasn't already started
             var nowUtc = DateTime.UtcNow;

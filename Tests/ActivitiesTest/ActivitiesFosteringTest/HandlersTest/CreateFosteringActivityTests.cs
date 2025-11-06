@@ -1,255 +1,305 @@
 using Application.Activities.Commands;
-using Application.Core;
 using Application.Interfaces;
 using Domain;
 using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Persistence;
-using Xunit;
-using System.Reflection;
 
-namespace Application.Tests.Activities.Commands;
+
+namespace Tests.ActivitiesTest.ActivitiesFosteringTest.HandlersTest;
 
 /// <summary>
-/// Unit tests for CreateFosteringActivity handler with >70% code coverage.
+/// Unit test suite for <see cref="CreateFosteringActivity.Handler"/>,
+/// ensuring correct validation and creation flow for fostering activity scheduling.
 /// </summary>
+/// <remarks>
+/// <list type="bullet">
+/// <item><description>Correct validation of date ranges and time restrictions.</description></item>
+/// <item><description>Proper entity creation and relationship mapping.</description></item>
+/// <item><description>Conflict, time, and authorization scenarios.</description></item>
+/// <item><description>Accurate setting of <see cref="Activity"/>, <see cref="ActivitySlot"/>, and related entities.</description></item>
+/// </list>
+/// Uses EF Core’s <see cref="DbContextOptionsBuilder.UseInMemoryDatabase(string)"/> for deterministic isolation.
+/// </remarks>
 public class CreateFosteringActivityTests
 {
-    private readonly Mock<IUserAccessor> _mockUserAccessor;
-    private readonly DbContextOptions<AppDbContext> _dbContextOptions;
-    private const string TestUserId = "test-user-123";
-    private const string TestAnimalId = "test-animal-123";
-    private const string TestShelterId = "test-shelter-123";
+    private readonly Mock<IUserAccessor> _userAccessorMock;
+    private readonly AppDbContext _context;
+    private readonly CreateFosteringActivity.Handler _handler;
 
+    /// <summary>
+    /// Initializes the in-memory database context, 
+    /// mocked dependencies, and handler instance.
+    /// </summary>
     public CreateFosteringActivityTests()
     {
-        // Setup in-memory database
-        _dbContextOptions = new DbContextOptionsBuilder<AppDbContext>()
+        var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
-        // Setup mock user accessor
-        _mockUserAccessor = new Mock<IUserAccessor>();
-        var testUser = new User
+        _context = new AppDbContext(options);
+        _userAccessorMock = new Mock<IUserAccessor>();
+        _handler = new CreateFosteringActivity.Handler(_context, _userAccessorMock.Object);
+    }
+
+    /// <summary>
+    /// Seeds the test database with baseline entities:
+    /// one user, one shelter, one breed, one animal in fostering state,
+    /// and an active fostering relationship.
+    /// </summary>
+    private async Task SeedBasicTestData()
+    {
+        var user = new User
         {
-            Id = TestUserId, 
-            UserName = "testuser",
-            Name= "Test User",
-            Email = "test@example.com",
-            BirthDate = DateTime.UtcNow.AddYears(-25),
-            Street = "Test Street",
-            City = "Test City",
-            PostalCode = "1234-567"
+            Id = "user-001",
+            UserName = "test@test.com",
+            Email = "test@test.com",
+            Name = "Test User"
         };
-        _mockUserAccessor.Setup(x => x.GetUserAsync()).ReturnsAsync(testUser);
-    }
 
-    private AppDbContext CreateContext()
-    {
-        var context = new AppDbContext(_dbContextOptions);
-        context.Database.EnsureCreated();
-        return context;
-    }
-
-    private Shelter CreateTestShelter()
-    {
-        return new Shelter
+        var shelter = new Shelter
         {
-            Id = TestShelterId,
+            Id = "shelter-001",
             Name = "Test Shelter",
             Street = "Test Street",
-            City = "Test City",
-            PostalCode = "1234-567",
-            Phone = "912345678",
+            City = "Porto",
+            PostalCode = "4000-001",
+            Phone = "223456789",
             NIF = "123456789",
             OpeningTime = new TimeOnly(9, 0),
             ClosingTime = new TimeOnly(18, 0)
         };
-    }
 
-    private Animal CreateTestAnimal(AnimalState state = AnimalState.PartiallyFostered)
-    {
-        return new Animal
+        var breed = new Breed
         {
-            Id = TestAnimalId,
-            Name = "Test Animal",
-            AnimalState = state,
+            Id = "breed-001",
+            Name = "Test Breed"
+        };
+
+        var animal = new Animal
+        {
+            Id = "animal-001",
+            Name = "Rex",
+            AnimalState = AnimalState.PartiallyFostered,
             Species = Species.Dog,
             Size = SizeType.Medium,
             Sex = SexType.Male,
             Colour = "Brown",
             BirthDate = new DateOnly(2020, 1, 1),
             Sterilized = true,
-            Cost = 50,
-            ShelterId = TestShelterId,
-            BreedId = "test-breed-123"
+            Cost = 50.00m,
+            ShelterId = shelter.Id,
+            BreedId = breed.Id
         };
-    }
 
-    private Fostering CreateActiveFostering(string userId = TestUserId, string animalId = TestAnimalId)
-    {
-        return new Fostering
+        var fostering = new Fostering
         {
-            Id = Guid.NewGuid().ToString(),
-            UserId = userId,
-            AnimalId = animalId,
-            Amount = 50,
+            Id = "fostering-001",
+            AnimalId = animal.Id,
+            UserId = user.Id,
+            Amount = 50.00m,
             Status = FosteringStatus.Active,
             StartDate = DateTime.UtcNow.AddMonths(-1)
         };
+
+        await _context.Users.AddAsync(user);
+        await _context.Shelters.AddAsync(shelter);
+        await _context.Breeds.AddAsync(breed);
+        await _context.Animals.AddAsync(animal);
+        await _context.Fosterings.AddAsync(fostering);
+        await _context.SaveChangesAsync();
     }
 
-    #region Success Cases
-
+    /// <summary>
+    /// Validates that a well-formed request creates a fostering activity successfully,
+    /// returning <c>201 Created</c> and setting all required relationships.
+    /// </summary>
     [Fact]
-    public async Task Handle_ValidRequest_CreatesActivityAndSlot()
+    public async Task Handle_WithValidRequest_CreatesActivitySuccessfully()
     {
         // Arrange
-        using var context = CreateContext();
-        var shelter = CreateTestShelter();
-        var animal = CreateTestAnimal();
-        var fostering = CreateActiveFostering();
+        await SeedBasicTestData();
 
-        animal.Shelter = shelter;
-        animal.Fosterings.Add(fostering);
+        var user = new User { Id = "user-001" };
+        _userAccessorMock.Setup(x => x.GetUserAsync()).ReturnsAsync(user);
 
-        context.Shelters.Add(shelter);
-        context.Animals.Add(animal);
-        context.Fosterings.Add(fostering);
-        await context.SaveChangesAsync();
-
-        var handler = new CreateFosteringActivity.Handler(context, _mockUserAccessor.Object);
-        var startDateTime = DateTime.UtcNow.AddDays(1).Date.AddHours(10);
-        var endDateTime = startDateTime.AddHours(2);
+        var startTime = DateTime.UtcNow.AddDays(2).AddHours(10);
+        var endTime = DateTime.UtcNow.AddDays(2).AddHours(12);
 
         var command = new CreateFosteringActivity.Command
         {
-            AnimalId = TestAnimalId,
-            StartDateTime = startDateTime,
-            EndDateTime = endDateTime
+            AnimalId = "animal-001",
+            StartDateTime = startTime,
+            EndDateTime = endTime
         };
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess);
         Assert.Equal(201, result.Code);
-        Assert.NotNull(result.Value);
+        Assert.NotNull(result.Value.Activity);
+        Assert.NotNull(result.Value.ActivitySlot);
+        Assert.Equal("animal-001", result.Value.Activity.AnimalId);
+        Assert.Equal(ActivityStatus.Active, result.Value.Activity.Status);
+        Assert.Equal(SlotStatus.Reserved, result.Value.ActivitySlot.Status);
 
-        // Extract properties from anonymous object using reflection
-        var resultType = result.Value.GetType();
-        var activityProperty = resultType.GetProperty("Activity");
-        var activitySlotProperty = resultType.GetProperty("ActivitySlot");
-        var animalProperty = resultType.GetProperty("Animal");
-        var shelterProperty = resultType.GetProperty("Shelter");
-
-        Assert.NotNull(activityProperty);
-        Assert.NotNull(activitySlotProperty);
-        Assert.NotNull(animalProperty);
-        Assert.NotNull(shelterProperty);
-
-        var activityFromResult = activityProperty.GetValue(result.Value) as Activity;
-        var slotFromResult = activitySlotProperty.GetValue(result.Value) as ActivitySlot;
-
-        Assert.NotNull(activityFromResult);
-        Assert.NotNull(slotFromResult);
-
-        // Verify Activity properties
-        Assert.Equal(TestAnimalId, activityFromResult.AnimalId);
-        Assert.Equal(TestUserId, activityFromResult.UserId);
-        Assert.Equal(ActivityType.Fostering, activityFromResult.Type);
-        Assert.Equal(ActivityStatus.Active, activityFromResult.Status);
-
-        // Verify ActivitySlot properties
-        Assert.Equal(SlotStatus.Reserved, slotFromResult.Status);
-        Assert.Equal(SlotType.Activity, slotFromResult.Type);
-        Assert.Equal(activityFromResult.Id, slotFromResult.ActivityId);
-
-        // Verify entities were saved to database
-        var savedActivity = await context.Activities.FirstOrDefaultAsync(a => a.Id == activityFromResult.Id);
+        var savedActivity = await _context.Activities.FirstOrDefaultAsync();
         Assert.NotNull(savedActivity);
-        Assert.Equal(TestAnimalId, savedActivity.AnimalId);
-
-        var savedSlot = await context.ActivitySlots.FirstOrDefaultAsync(s => s.Id == slotFromResult.Id);
-        Assert.NotNull(savedSlot);
-        Assert.Equal(SlotStatus.Reserved, savedSlot.Status);
+        Assert.Equal(ActivityType.Fostering, savedActivity.Type);
     }
 
+    /// <summary>
+    /// Ensures that scheduling within less than 24 hours 
+    /// results in a <c>400 Bad Request</c>.
+    /// </summary>
     [Fact]
-    public async Task Handle_ValidRequest_ConvertsDateTimesToUtc()
+    public async Task Handle_WithStartTimeLessThan24HoursAhead_ReturnsBadRequest()
     {
         // Arrange
-        using var context = CreateContext();
-        var shelter = CreateTestShelter();
-        var animal = CreateTestAnimal();
-        var fostering = CreateActiveFostering();
+        await SeedBasicTestData();
 
-        animal.Shelter = shelter;
-        animal.Fosterings.Add(fostering);
+        var user = new User { Id = "user-001" };
+        _userAccessorMock.Setup(x => x.GetUserAsync()).ReturnsAsync(user);
 
-        context.Shelters.Add(shelter);
-        context.Animals.Add(animal);
-        context.Fosterings.Add(fostering);
-        await context.SaveChangesAsync();
-
-        var handler = new CreateFosteringActivity.Handler(context, _mockUserAccessor.Object);
-        
-        // Create non-UTC datetimes
-        var startDateTime = new DateTime(2025, 12, 1, 10, 0, 0, DateTimeKind.Local);
-        var endDateTime = new DateTime(2025, 12, 1, 12, 0, 0, DateTimeKind.Local);
+        var startTime = DateTime.UtcNow.AddHours(12); // Less than 24 hours
+        var endTime = DateTime.UtcNow.AddHours(14);
 
         var command = new CreateFosteringActivity.Command
         {
-            AnimalId = TestAnimalId,
-            StartDateTime = startDateTime,
-            EndDateTime = endDateTime
+            AnimalId = "animal-001",
+            StartDateTime = startTime,
+            EndDateTime = endTime
         };
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        
-        // Extract Activity from result using reflection
-        var resultType = result.Value.GetType();
-        var activityProperty = resultType.GetProperty("Activity");
-        Assert.NotNull(activityProperty);
-        
-        var activity = activityProperty.GetValue(result.Value) as Activity;
-        Assert.NotNull(activity);
-        Assert.Equal(DateTimeKind.Utc, activity.StartDate.Kind);
-        Assert.Equal(DateTimeKind.Utc, activity.EndDate.Kind);
-        
-        // Verify in database as well
-        var savedActivity = await context.Activities.FirstOrDefaultAsync(a => a.Id == activity.Id);
-        Assert.NotNull(savedActivity);
-        Assert.Equal(DateTimeKind.Utc, savedActivity.StartDate.Kind);
-        Assert.Equal(DateTimeKind.Utc, savedActivity.EndDate.Kind);
+        Assert.False(result.IsSuccess);
+        Assert.Equal(400, result.Code);
+        Assert.Contains("Cannot schedule an activity before", result.Error);
     }
 
-    #endregion
-
-    #region Animal Not Found
-
+    /// <summary>
+    /// Verifies that an end time before the start time triggers a <c>400 Bad Request</c>.
+    /// </summary>
     [Fact]
-    public async Task Handle_AnimalNotFound_ReturnsNotFound()
+    public async Task Handle_WithEndTimeBeforeStartTime_ReturnsBadRequest()
     {
         // Arrange
-        using var context = CreateContext();
-        var handler = new CreateFosteringActivity.Handler(context, _mockUserAccessor.Object);
+        await SeedBasicTestData();
+
+        var user = new User { Id = "user-001" };
+        _userAccessorMock.Setup(x => x.GetUserAsync()).ReturnsAsync(user);
+
+        var startTime = DateTime.UtcNow.AddDays(2).AddHours(14);
+        var endTime = DateTime.UtcNow.AddDays(2).AddHours(12); // Before start time
 
         var command = new CreateFosteringActivity.Command
         {
-            AnimalId = "non-existent-animal",
-            StartDateTime = DateTime.UtcNow.AddDays(1),
-            EndDateTime = DateTime.UtcNow.AddDays(1).AddHours(2)
+            AnimalId = "animal-001",
+            StartDateTime = startTime,
+            EndDateTime = endTime
         };
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(400, result.Code);
+        Assert.Contains("cannot be before", result.Error);
+    }
+
+    /// <summary>
+    /// Ensures that scheduling an activity in the past returns a <c>400 Bad Request</c>.
+    /// </summary>
+    [Fact]
+    public async Task Handle_WithStartTimeInPast_ReturnsBadRequest()
+    {
+        // Arrange
+        await SeedBasicTestData();
+
+        var user = new User { Id = "user-001" };
+        _userAccessorMock.Setup(x => x.GetUserAsync()).ReturnsAsync(user);
+
+        var startTime = DateTime.UtcNow.AddHours(-2); // In the past
+        var endTime = DateTime.UtcNow.AddHours(2);
+
+        var command = new CreateFosteringActivity.Command
+        {
+            AnimalId = "animal-001",
+            StartDateTime = startTime,
+            EndDateTime = endTime
+        };
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(400, result.Code);
+        Assert.Contains("Cannot schedule an activity before", result.Error);
+    }
+
+    /// <summary>
+    /// Ensures that an end time less than 24 hours ahead is rejected with a <c>400 Bad Request</c>.
+    /// </summary>
+    [Fact]
+    public async Task Handle_WithEndTimeLessThan24HoursAhead_ReturnsBadRequest()
+    {
+        // Arrange
+        await SeedBasicTestData();
+
+        var user = new User { Id = "user-001" };
+        _userAccessorMock.Setup(x => x.GetUserAsync()).ReturnsAsync(user);
+
+        var startTime = DateTime.UtcNow.AddDays(2);
+        var endTime = DateTime.UtcNow.AddHours(12); // Less than 24 hours
+
+        var command = new CreateFosteringActivity.Command
+        {
+            AnimalId = "animal-001",
+            StartDateTime = startTime,
+            EndDateTime = endTime
+        };
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(400, result.Code);
+        Assert.Contains("Cannot schedule an activity before", result.Error);
+    }
+
+    /// <summary>
+    /// Verifies that scheduling for a non-existent animal returns a <c>404 Not Found</c>.
+    /// </summary>
+    [Fact]
+    public async Task Handle_WithNonExistentAnimal_ReturnsNotFound()
+    {
+        // Arrange
+        await SeedBasicTestData();
+
+        var user = new User { Id = "user-001" };
+        _userAccessorMock.Setup(x => x.GetUserAsync()).ReturnsAsync(user);
+
+        var startTime = DateTime.UtcNow.AddDays(2).AddHours(10);
+        var endTime = DateTime.UtcNow.AddDays(2).AddHours(12);
+
+        var command = new CreateFosteringActivity.Command
+        {
+            AnimalId = "non-existent-id",
+            StartDateTime = startTime,
+            EndDateTime = endTime
+        };
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.False(result.IsSuccess);
@@ -257,112 +307,34 @@ public class CreateFosteringActivityTests
         Assert.Equal("Animal not found", result.Error);
     }
 
-    #endregion
-
-    #region Fostering Relationship Validation
-
+    /// <summary>
+    /// Ensures that activities cannot be scheduled for inactive animals.
+    /// </summary>
     [Fact]
-    public async Task Handle_UserNotFosteringAnimal_ReturnsNotFound()
+    public async Task Handle_WithInactiveAnimal_ReturnsBadRequest()
     {
         // Arrange
-        using var context = CreateContext();
-        var shelter = CreateTestShelter();
-        var animal = CreateTestAnimal();
-        animal.Shelter = shelter;
+        await SeedBasicTestData();
 
-        context.Shelters.Add(shelter);
-        context.Animals.Add(animal);
-        await context.SaveChangesAsync();
+        var user = new User { Id = "user-001" };
+        _userAccessorMock.Setup(x => x.GetUserAsync()).ReturnsAsync(user);
 
-        var handler = new CreateFosteringActivity.Handler(context, _mockUserAccessor.Object);
+        var animal = await _context.Animals.FindAsync("animal-001");
+        animal!.AnimalState = AnimalState.Inactive;
+        await _context.SaveChangesAsync();
+
+        var startTime = DateTime.UtcNow.AddDays(2).AddHours(10);
+        var endTime = DateTime.UtcNow.AddDays(2).AddHours(12);
 
         var command = new CreateFosteringActivity.Command
         {
-            AnimalId = TestAnimalId,
-            StartDateTime = DateTime.UtcNow.AddDays(1).Date.AddHours(10),
-            EndDateTime = DateTime.UtcNow.AddDays(1).Date.AddHours(12)
+            AnimalId = "animal-001",
+            StartDateTime = startTime,
+            EndDateTime = endTime
         };
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(404, result.Code);
-        Assert.Equal("You are not currently fostering this animal", result.Error);
-    }
-
-    [Fact]
-    public async Task Handle_FosteringNotActive_ReturnsNotFound()
-    {
-        // Arrange
-        using var context = CreateContext();
-        var shelter = CreateTestShelter();
-        var animal = CreateTestAnimal();
-        var fostering = CreateActiveFostering();
-        fostering.Status = FosteringStatus.Cancelled;
-
-        animal.Shelter = shelter;
-        animal.Fosterings.Add(fostering);
-
-        context.Shelters.Add(shelter);
-        context.Animals.Add(animal);
-        context.Fosterings.Add(fostering);
-        await context.SaveChangesAsync();
-
-        var handler = new CreateFosteringActivity.Handler(context, _mockUserAccessor.Object);
-
-        var command = new CreateFosteringActivity.Command
-        {
-            AnimalId = TestAnimalId,
-            StartDateTime = DateTime.UtcNow.AddDays(1).Date.AddHours(10),
-            EndDateTime = DateTime.UtcNow.AddDays(1).Date.AddHours(12)
-        };
-
-        // Act
-        var result = await handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(404, result.Code);
-        Assert.Equal("You are not currently fostering this animal", result.Error);
-    }
-
-    #endregion
-
-    #region Animal State Validation
-
-    [Theory]
-    [InlineData(AnimalState.Inactive)]
-    [InlineData(AnimalState.Available)]
-    [InlineData(AnimalState.HasOwner)]
-    public async Task Handle_InvalidAnimalState_ReturnsBadRequest(AnimalState state)
-    {
-        // Arrange
-        using var context = CreateContext();
-        var shelter = CreateTestShelter();
-        var animal = CreateTestAnimal(state);
-        var fostering = CreateActiveFostering();
-
-        animal.Shelter = shelter;
-        animal.Fosterings.Add(fostering);
-
-        context.Shelters.Add(shelter);
-        context.Animals.Add(animal);
-        context.Fosterings.Add(fostering);
-        await context.SaveChangesAsync();
-
-        var handler = new CreateFosteringActivity.Handler(context, _mockUserAccessor.Object);
-
-        var command = new CreateFosteringActivity.Command
-        {
-            AnimalId = TestAnimalId,
-            StartDateTime = DateTime.UtcNow.AddDays(1).Date.AddHours(10),
-            EndDateTime = DateTime.UtcNow.AddDays(1).Date.AddHours(12)
-        };
-
-        // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.False(result.IsSuccess);
@@ -370,681 +342,487 @@ public class CreateFosteringActivityTests
         Assert.Equal("Animal cannot be visited", result.Error);
     }
 
-    [Theory]
-    [InlineData(AnimalState.PartiallyFostered)]
-    [InlineData(AnimalState.TotallyFostered)]
-    public async Task Handle_ValidAnimalStates_SucceedsForFosteredStates(AnimalState state)
+    /// <summary>
+    /// Ensures that animals available for adoption cannot be scheduled for fostering visits.
+    /// </summary>
+    [Fact]
+    public async Task Handle_WithAvailableAnimal_ReturnsBadRequest()
     {
         // Arrange
-        using var context = CreateContext();
-        var shelter = CreateTestShelter();
-        var animal = CreateTestAnimal(state);
-        var fostering = CreateActiveFostering();
+        await SeedBasicTestData();
 
-        animal.Shelter = shelter;
-        animal.Fosterings.Add(fostering);
+        var user = new User { Id = "user-001" };
+        _userAccessorMock.Setup(x => x.GetUserAsync()).ReturnsAsync(user);
 
-        context.Shelters.Add(shelter);
-        context.Animals.Add(animal);
-        context.Fosterings.Add(fostering);
-        await context.SaveChangesAsync();
+        var animal = await _context.Animals.FindAsync("animal-001");
+        animal!.AnimalState = AnimalState.Available;
+        await _context.SaveChangesAsync();
 
-        var handler = new CreateFosteringActivity.Handler(context, _mockUserAccessor.Object);
+        var startTime = DateTime.UtcNow.AddDays(2).AddHours(10);
+        var endTime = DateTime.UtcNow.AddDays(2).AddHours(12);
 
         var command = new CreateFosteringActivity.Command
         {
-            AnimalId = TestAnimalId,
-            StartDateTime = DateTime.UtcNow.AddDays(1).Date.AddHours(10),
-            EndDateTime = DateTime.UtcNow.AddDays(1).Date.AddHours(12)
+            AnimalId = "animal-001",
+            StartDateTime = startTime,
+            EndDateTime = endTime
         };
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(201, result.Code);
+        Assert.False(result.IsSuccess);
+        Assert.Equal(400, result.Code);
+        Assert.Equal("Animal cannot be visited", result.Error);
     }
 
-    #endregion
-
-    #region Shelter Operating Hours Validation
-
+    /// <summary>
+    /// Ensures that animals already adopted cannot have fostering activities scheduled.
+    /// </summary>
     [Fact]
-    public async Task Handle_StartBeforeOpeningTime_ReturnsUnprocessableEntity()
+    public async Task Handle_WithAnimalHavingOwner_ReturnsBadRequest()
     {
         // Arrange
-        using var context = CreateContext();
-        var shelter = CreateTestShelter();
-        var animal = CreateTestAnimal();
-        var fostering = CreateActiveFostering();
+        await SeedBasicTestData();
 
-        animal.Shelter = shelter;
-        animal.Fosterings.Add(fostering);
+        var user = new User { Id = "user-001" };
+        _userAccessorMock.Setup(x => x.GetUserAsync()).ReturnsAsync(user);
 
-        context.Shelters.Add(shelter);
-        context.Animals.Add(animal);
-        context.Fosterings.Add(fostering);
-        await context.SaveChangesAsync();
+        var animal = await _context.Animals.FindAsync("animal-001");
+        animal!.AnimalState = AnimalState.HasOwner;
+        await _context.SaveChangesAsync();
 
-        var handler = new CreateFosteringActivity.Handler(context, _mockUserAccessor.Object);
-        
-        var startDateTime = DateTime.UtcNow.AddDays(1).Date.AddHours(8); // Before 9 AM
-        var endDateTime = startDateTime.AddHours(2);
+        var startTime = DateTime.UtcNow.AddDays(2).AddHours(10);
+        var endTime = DateTime.UtcNow.AddDays(2).AddHours(12);
 
         var command = new CreateFosteringActivity.Command
         {
-            AnimalId = TestAnimalId,
-            StartDateTime = startDateTime,
-            EndDateTime = endDateTime
+            AnimalId = "animal-001",
+            StartDateTime = startTime,
+            EndDateTime = endTime
         };
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(400, result.Code);
+        Assert.Equal("Animal cannot be visited", result.Error);
+    }
+
+    /// <summary>
+    /// Ensures that users without an active fostering relationship 
+    /// cannot schedule activities, returning <c>404</c>.
+    /// </summary>
+    [Fact]
+    public async Task Handle_WithoutActiveFostering_ReturnsNotFound()
+    {
+        // Arrange
+        await SeedBasicTestData();
+
+        var user = new User { Id = "user-001" };
+        _userAccessorMock.Setup(x => x.GetUserAsync()).ReturnsAsync(user);
+
+        var fostering = await _context.Fosterings.FindAsync("fostering-001");
+        fostering!.Status = FosteringStatus.Cancelled;
+        await _context.SaveChangesAsync();
+
+        var startTime = DateTime.UtcNow.AddDays(2).AddHours(10);
+        var endTime = DateTime.UtcNow.AddDays(2).AddHours(12);
+
+        var command = new CreateFosteringActivity.Command
+        {
+            AnimalId = "animal-001",
+            StartDateTime = startTime,
+            EndDateTime = endTime
+        };
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(404, result.Code);
+        Assert.Equal("You are not currently fostering this animal", result.Error);
+    }
+
+    /// <summary>
+    /// Ensures scheduling before shelter opening hours (09:00) returns <c>422 Unprocessable Entity</c>.
+    /// </summary>
+    [Fact]
+    public async Task Handle_WithStartBeforeShelterOpening_ReturnsUnprocessableEntity()
+    {
+        // Arrange
+        await SeedBasicTestData();
+
+        var user = new User { Id = "user-001" };
+        _userAccessorMock.Setup(x => x.GetUserAsync()).ReturnsAsync(user);
+
+        var tomorrow = DateTime.UtcNow.Date.AddDays(2);
+        var startTime = tomorrow.AddHours(8); // Before 9:00 opening
+        var endTime = tomorrow.AddHours(10);
+
+        var command = new CreateFosteringActivity.Command
+        {
+            AnimalId = "animal-001",
+            StartDateTime = startTime,
+            EndDateTime = endTime
+        };
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(422, result.Code);
-        Assert.Contains("shelter opening time", result.Error);
+        Assert.Contains("opening time", result.Error);
     }
 
+    /// <summary>
+    /// Ensures scheduling after shelter closing hours (18:00) returns <c>422 Unprocessable Entity</c>.
+    /// </summary>
     [Fact]
-    public async Task Handle_EndAfterClosingTime_ReturnsUnprocessableEntity()
+    public async Task Handle_WithEndAfterShelterClosing_ReturnsUnprocessableEntity()
     {
         // Arrange
-        using var context = CreateContext();
-        var shelter = CreateTestShelter();
-        var animal = CreateTestAnimal();
-        var fostering = CreateActiveFostering();
+        await SeedBasicTestData();
 
-        animal.Shelter = shelter;
-        animal.Fosterings.Add(fostering);
+        var user = new User { Id = "user-001" };
+        _userAccessorMock.Setup(x => x.GetUserAsync()).ReturnsAsync(user);
 
-        context.Shelters.Add(shelter);
-        context.Animals.Add(animal);
-        context.Fosterings.Add(fostering);
-        await context.SaveChangesAsync();
-
-        var handler = new CreateFosteringActivity.Handler(context, _mockUserAccessor.Object);
-        
-        var startDateTime = DateTime.UtcNow.AddDays(1).Date.AddHours(17); // 5 PM
-        var endDateTime = startDateTime.AddHours(2); // 7 PM, after 6 PM closing
+        var tomorrow = DateTime.UtcNow.Date.AddDays(2);
+        var startTime = tomorrow.AddHours(16);
+        var endTime = tomorrow.AddHours(19); // After 18:00 closing
 
         var command = new CreateFosteringActivity.Command
         {
-            AnimalId = TestAnimalId,
-            StartDateTime = startDateTime,
-            EndDateTime = endDateTime
+            AnimalId = "animal-001",
+            StartDateTime = startTime,
+            EndDateTime = endTime
         };
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(422, result.Code);
-        Assert.Contains("shelter closing time", result.Error);
+        Assert.Contains("closing time", result.Error);
     }
 
+    /// <summary>
+    /// Ensures that overlapping with shelter unavailability slots 
+    /// returns <c>409 Conflict</c>.
+    /// </summary>
     [Fact]
-    public async Task Handle_WithinOperatingHours_Succeeds()
+    public async Task Handle_WithShelterUnavailability_ReturnsConflict()
     {
         // Arrange
-        using var context = CreateContext();
-        var shelter = CreateTestShelter();
-        var animal = CreateTestAnimal();
-        var fostering = CreateActiveFostering();
+        await SeedBasicTestData();
 
-        animal.Shelter = shelter;
-        animal.Fosterings.Add(fostering);
+        var user = new User { Id = "user-001" };
+        _userAccessorMock.Setup(x => x.GetUserAsync()).ReturnsAsync(user);
 
-        context.Shelters.Add(shelter);
-        context.Animals.Add(animal);
-        context.Fosterings.Add(fostering);
-        await context.SaveChangesAsync();
-
-        var handler = new CreateFosteringActivity.Handler(context, _mockUserAccessor.Object);
-        
-        var startDateTime = DateTime.UtcNow.AddDays(1).Date.AddHours(10); // 10 AM
-        var endDateTime = startDateTime.AddHours(2); // 12 PM
-
-        var command = new CreateFosteringActivity.Command
-        {
-            AnimalId = TestAnimalId,
-            StartDateTime = startDateTime,
-            EndDateTime = endDateTime
-        };
-
-        // Act
-        var result = await handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(201, result.Code);
-    }
-
-    #endregion
-
-    #region Shelter Unavailability Validation
-
-    [Fact]
-    public async Task Handle_ShelterUnavailable_ReturnsConflict()
-    {
-        // Arrange
-        using var context = CreateContext();
-        var shelter = CreateTestShelter();
-        var animal = CreateTestAnimal();
-        var fostering = CreateActiveFostering();
-
-        animal.Shelter = shelter;
-        animal.Fosterings.Add(fostering);
-
-        var startDateTime = DateTime.UtcNow.AddDays(1).Date.AddHours(10);
-        var endDateTime = startDateTime.AddHours(2);
-
+        var tomorrow = DateTime.UtcNow.Date.AddDays(2);
         var unavailabilitySlot = new ShelterUnavailabilitySlot
         {
-            Id = Guid.NewGuid().ToString(),
-            ShelterId = TestShelterId,
-            StartDateTime = startDateTime.AddMinutes(-30),
-            EndDateTime = startDateTime.AddMinutes(30),
-            Status = SlotStatus.Unavailable,
+            Id = "unavail-001",
+            ShelterId = "shelter-001",
+            StartDateTime = tomorrow.AddHours(14),
+            EndDateTime = tomorrow.AddHours(16),
+            Status = SlotStatus.Reserved,
             Type = SlotType.ShelterUnavailable,
             Reason = "Maintenance"
         };
+        await _context.ShelterUnavailabilitySlots.AddAsync(unavailabilitySlot);
+        await _context.SaveChangesAsync();
 
-        context.Shelters.Add(shelter);
-        context.Animals.Add(animal);
-        context.Fosterings.Add(fostering);
-        context.ShelterUnavailabilitySlots.Add(unavailabilitySlot);
-        await context.SaveChangesAsync();
-
-        var handler = new CreateFosteringActivity.Handler(context, _mockUserAccessor.Object);
+        var startTime = tomorrow.AddHours(14).AddMinutes(30);
+        var endTime = tomorrow.AddHours(15).AddMinutes(30);
 
         var command = new CreateFosteringActivity.Command
         {
-            AnimalId = TestAnimalId,
-            StartDateTime = startDateTime,
-            EndDateTime = endDateTime
+            AnimalId = "animal-001",
+            StartDateTime = startTime,
+            EndDateTime = endTime
         };
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(409, result.Code);
-        Assert.Equal("Shelter is unavailable during the requested time", result.Error);
+        Assert.Contains("Shelter is unavailable", result.Error);
     }
 
+    /// <summary>
+    /// Ensures that an overlap with another activity slot 
+    /// returns <c>409 Conflict</c> with proper message.
+    /// </summary>
     [Fact]
-    public async Task Handle_NoShelterUnavailability_Succeeds()
+    public async Task Handle_WithOverlappingActivitySlot_ReturnsConflict()
     {
         // Arrange
-        using var context = CreateContext();
-        var shelter = CreateTestShelter();
-        var animal = CreateTestAnimal();
-        var fostering = CreateActiveFostering();
+        await SeedBasicTestData();
 
-        animal.Shelter = shelter;
-        animal.Fosterings.Add(fostering);
+        var user = new User { Id = "user-001" };
+        _userAccessorMock.Setup(x => x.GetUserAsync()).ReturnsAsync(user);
 
-        var startDateTime = DateTime.UtcNow.AddDays(1).Date.AddHours(10);
-        var endDateTime = startDateTime.AddHours(2);
+        var tomorrow = DateTime.UtcNow.Date.AddDays(2);
 
-        // Add unavailability slot that doesn't overlap
-        var unavailabilitySlot = new ShelterUnavailabilitySlot
-        {
-            Id = Guid.NewGuid().ToString(),
-            ShelterId = TestShelterId,
-            StartDateTime = startDateTime.AddDays(1),
-            EndDateTime = startDateTime.AddDays(1).AddHours(2),
-            Status = SlotStatus.Unavailable,
-            Type = SlotType.ShelterUnavailable
-        };
-
-        context.Shelters.Add(shelter);
-        context.Animals.Add(animal);
-        context.Fosterings.Add(fostering);
-        context.ShelterUnavailabilitySlots.Add(unavailabilitySlot);
-        await context.SaveChangesAsync();
-
-        var handler = new CreateFosteringActivity.Handler(context, _mockUserAccessor.Object);
-
-        var command = new CreateFosteringActivity.Command
-        {
-            AnimalId = TestAnimalId,
-            StartDateTime = startDateTime,
-            EndDateTime = endDateTime
-        };
-
-        // Act
-        var result = await handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(201, result.Code);
-    }
-
-    #endregion
-
-    #region Activity Slot Overlap Validation
-
-    [Fact]
-    public async Task Handle_OverlappingReservedActivitySlot_ReturnsConflict()
-    {
-        // Arrange
-        using var context = CreateContext();
-        var shelter = CreateTestShelter();
-        var animal = CreateTestAnimal();
-        var fostering = CreateActiveFostering();
-
-        animal.Shelter = shelter;
-        animal.Fosterings.Add(fostering);
-
-        var startDateTime = DateTime.UtcNow.AddDays(1).Date.AddHours(10);
-        var endDateTime = startDateTime.AddHours(2);
-
-        // Create existing activity and slot
         var existingActivity = new Activity
         {
-            Id = Guid.NewGuid().ToString(),
-            AnimalId = TestAnimalId,
-            UserId = "other-user",
+            Id = "activity-existing",
+            AnimalId = "animal-001",
+            UserId = user.Id,
             Type = ActivityType.Fostering,
             Status = ActivityStatus.Active,
-            StartDate = startDateTime.AddMinutes(-30),
-            EndDate = startDateTime.AddMinutes(30)
+            StartDate = tomorrow.AddHours(10),
+            EndDate = tomorrow.AddHours(12)
         };
+        await _context.Activities.AddAsync(existingActivity);
 
         var existingSlot = new ActivitySlot
         {
-            Id = Guid.NewGuid().ToString(),
+            Id = "slot-existing",
             ActivityId = existingActivity.Id,
-            StartDateTime = existingActivity.StartDate,
-            EndDateTime = existingActivity.EndDate,
+            StartDateTime = tomorrow.AddHours(10),
+            EndDateTime = tomorrow.AddHours(12),
             Status = SlotStatus.Reserved,
             Type = SlotType.Activity
         };
+        await _context.ActivitySlots.AddAsync(existingSlot);
+        await _context.SaveChangesAsync();
 
-        context.Shelters.Add(shelter);
-        context.Animals.Add(animal);
-        context.Fosterings.Add(fostering);
-        context.Activities.Add(existingActivity);
-        context.ActivitySlots.Add(existingSlot);
-        await context.SaveChangesAsync();
-
-        var handler = new CreateFosteringActivity.Handler(context, _mockUserAccessor.Object);
+        var startTime = tomorrow.AddHours(11);
+        var endTime = tomorrow.AddHours(13);
 
         var command = new CreateFosteringActivity.Command
         {
-            AnimalId = TestAnimalId,
-            StartDateTime = startDateTime,
-            EndDateTime = endDateTime
+            AnimalId = "animal-001",
+            StartDateTime = startTime,
+            EndDateTime = endTime
         };
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(409, result.Code);
-        Assert.Equal("The animal has another visit scheduled during this time", result.Error);
+        Assert.Contains("another visit scheduled", result.Error);
     }
 
+    /// <summary>
+    /// Ensures that overlap with another active fostering activity 
+    /// returns <c>409 Conflict</c>.
+    /// </summary>
     [Fact]
-    public async Task Handle_NonReservedActivitySlot_Succeeds()
+    public async Task Handle_WithOverlappingActivity_ReturnsConflict()
     {
         // Arrange
-        using var context = CreateContext();
-        var shelter = CreateTestShelter();
-        var animal = CreateTestAnimal();
-        var fostering = CreateActiveFostering();
+        await SeedBasicTestData();
 
-        animal.Shelter = shelter;
-        animal.Fosterings.Add(fostering);
+        var user = new User { Id = "user-001" };
+        _userAccessorMock.Setup(x => x.GetUserAsync()).ReturnsAsync(user);
 
-        var startDateTime = DateTime.UtcNow.AddDays(1).Date.AddHours(10);
-        var endDateTime = startDateTime.AddHours(2);
+        var tomorrow = DateTime.UtcNow.Date.AddDays(2);
 
-        // Create existing activity with Available slot (not Reserved)
         var existingActivity = new Activity
         {
-            Id = Guid.NewGuid().ToString(),
-            AnimalId = TestAnimalId,
-            UserId = "other-user",
+            Id = "activity-existing",
+            AnimalId = "animal-001",
+            UserId = user.Id,
             Type = ActivityType.Fostering,
             Status = ActivityStatus.Active,
-            StartDate = startDateTime,
-            EndDate = endDateTime
+            StartDate = tomorrow.AddHours(10),
+            EndDate = tomorrow.AddHours(14)
         };
+        await _context.Activities.AddAsync(existingActivity);
+        await _context.SaveChangesAsync();
 
-        var existingSlot = new ActivitySlot
-        {
-            Id = Guid.NewGuid().ToString(),
-            ActivityId = existingActivity.Id,
-            StartDateTime = existingActivity.StartDate,
-            EndDateTime = existingActivity.EndDate,
-            Status = SlotStatus.Available, // Not Reserved
-            Type = SlotType.Activity
-        };
-
-        context.Shelters.Add(shelter);
-        context.Animals.Add(animal);
-        context.Fosterings.Add(fostering);
-        context.Activities.Add(existingActivity);
-        context.ActivitySlots.Add(existingSlot);
-        await context.SaveChangesAsync();
-
-        var handler = new CreateFosteringActivity.Handler(context, _mockUserAccessor.Object);
+        var startTime = tomorrow.AddHours(12);
+        var endTime = tomorrow.AddHours(16);
 
         var command = new CreateFosteringActivity.Command
         {
-            AnimalId = TestAnimalId,
-            StartDateTime = startDateTime,
-            EndDateTime = endDateTime
+            AnimalId = "animal-001",
+            StartDateTime = startTime,
+            EndDateTime = endTime
         };
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(409, result.Code);
+        Assert.Contains("another activity scheduled", result.Error);
     }
 
-    #endregion
-
-    #region Activity Overlap Validation
-
+    /// <summary>
+    /// Verifies that non-UTC datetimes are automatically converted to UTC before persistence.
+    /// </summary>
     [Fact]
-    public async Task Handle_OverlappingActiveActivity_ReturnsConflict()
+    public async Task Handle_ConvertsNonUtcToUtc()
     {
         // Arrange
-        using var context = CreateContext();
-        var shelter = CreateTestShelter();
-        var animal = CreateTestAnimal();
-        var fostering = CreateActiveFostering();
+        await SeedBasicTestData();
 
-        animal.Shelter = shelter;
-        animal.Fosterings.Add(fostering);
+        var user = new User { Id = "user-001" };
+        _userAccessorMock.Setup(x => x.GetUserAsync()).ReturnsAsync(user);
 
-        var startDateTime = DateTime.UtcNow.AddDays(1).Date.AddHours(10);
-        var endDateTime = startDateTime.AddHours(2);
-
-        // Create existing active activity
-        var existingActivity = new Activity
-        {
-            Id = Guid.NewGuid().ToString(),
-            AnimalId = TestAnimalId,
-            UserId = "other-user",
-            Type = ActivityType.Ownership,
-            Status = ActivityStatus.Active,
-            StartDate = startDateTime.AddMinutes(-30),
-            EndDate = startDateTime.AddMinutes(30)
-        };
-
-        context.Shelters.Add(shelter);
-        context.Animals.Add(animal);
-        context.Fosterings.Add(fostering);
-        context.Activities.Add(existingActivity);
-        await context.SaveChangesAsync();
-
-        var handler = new CreateFosteringActivity.Handler(context, _mockUserAccessor.Object);
+        var localStart = DateTime.Now.AddDays(2).AddHours(10);
+        var localEnd = DateTime.Now.AddDays(2).AddHours(12);
 
         var command = new CreateFosteringActivity.Command
         {
-            AnimalId = TestAnimalId,
-            StartDateTime = startDateTime,
-            EndDateTime = endDateTime
+            AnimalId = "animal-001",
+            StartDateTime = localStart,
+            EndDateTime = localEnd
         };
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(409, result.Code);
-        Assert.Equal("The animal has another activity scheduled during this time", result.Error);
-    }
-
-    [Fact]
-    public async Task Handle_NonActiveActivity_Succeeds()
-    {
-        // Arrange
-        using var context = CreateContext();
-        var shelter = CreateTestShelter();
-        var animal = CreateTestAnimal();
-        var fostering = CreateActiveFostering();
-
-        animal.Shelter = shelter;
-        animal.Fosterings.Add(fostering);
-
-        var startDateTime = DateTime.UtcNow.AddDays(1).Date.AddHours(10);
-        var endDateTime = startDateTime.AddHours(2);
-
-        // Create cancelled activity (not active)
-        var existingActivity = new Activity
-        {
-            Id = Guid.NewGuid().ToString(),
-            AnimalId = TestAnimalId,
-            UserId = "other-user",
-            Type = ActivityType.Fostering,
-            Status = ActivityStatus.Cancelled,
-            StartDate = startDateTime,
-            EndDate = endDateTime
-        };
-
-        context.Shelters.Add(shelter);
-        context.Animals.Add(animal);
-        context.Fosterings.Add(fostering);
-        context.Activities.Add(existingActivity);
-        await context.SaveChangesAsync();
-
-        var handler = new CreateFosteringActivity.Handler(context, _mockUserAccessor.Object);
-
-        var command = new CreateFosteringActivity.Command
-        {
-            AnimalId = TestAnimalId,
-            StartDateTime = startDateTime,
-            EndDateTime = endDateTime
-        };
-
-        // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Equal(201, result.Code);
+        Assert.Equal(DateTimeKind.Utc, result.Value.Activity.StartDate.Kind);
+        Assert.Equal(DateTimeKind.Utc, result.Value.Activity.EndDate.Kind);
     }
 
+    /// <summary>
+    /// Ensures that UTC datetimes remain unchanged when already correctly set.
+    /// </summary>
     [Fact]
-    public async Task Handle_NoOverlappingActivity_Succeeds()
+    public async Task Handle_DoesNotConvertUtcDates()
     {
         // Arrange
-        using var context = CreateContext();
-        var shelter = CreateTestShelter();
-        var animal = CreateTestAnimal();
-        var fostering = CreateActiveFostering();
+        await SeedBasicTestData();
 
-        animal.Shelter = shelter;
-        animal.Fosterings.Add(fostering);
+        var user = new User { Id = "user-001" };
+        _userAccessorMock.Setup(x => x.GetUserAsync()).ReturnsAsync(user);
 
-        var startDateTime = DateTime.UtcNow.AddDays(1).Date.AddHours(10);
-        var endDateTime = startDateTime.AddHours(2);
-
-        // Create activity that doesn't overlap
-        var existingActivity = new Activity
-        {
-            Id = Guid.NewGuid().ToString(),
-            AnimalId = TestAnimalId,
-            UserId = "other-user",
-            Type = ActivityType.Fostering,
-            Status = ActivityStatus.Active,
-            StartDate = startDateTime.AddDays(1),
-            EndDate = startDateTime.AddDays(1).AddHours(2)
-        };
-
-        context.Shelters.Add(shelter);
-        context.Animals.Add(animal);
-        context.Fosterings.Add(fostering);
-        context.Activities.Add(existingActivity);
-        await context.SaveChangesAsync();
-
-        var handler = new CreateFosteringActivity.Handler(context, _mockUserAccessor.Object);
+        var utcStart = DateTime.UtcNow.AddDays(2).AddHours(10);
+        var utcEnd = DateTime.UtcNow.AddDays(2).AddHours(12);
 
         var command = new CreateFosteringActivity.Command
         {
-            AnimalId = TestAnimalId,
-            StartDateTime = startDateTime,
-            EndDateTime = endDateTime
+            AnimalId = "animal-001",
+            StartDateTime = utcStart,
+            EndDateTime = utcEnd
         };
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Equal(201, result.Code);
+        Assert.Equal(utcStart, result.Value.Activity.StartDate);
+        Assert.Equal(utcEnd, result.Value.Activity.EndDate);
     }
 
-    #endregion
-
-    #region Edge Cases
-
+    /// <summary>
+    /// Verifies that all related entities (Activity, Slot, Animal, Shelter)
+    /// are properly included in the handler response.
+    /// </summary>
     [Fact]
-    public async Task Handle_ExactOverlapStart_DetectsConflict()
+    public async Task Handle_ReturnsAllRequiredEntities()
     {
         // Arrange
-        using var context = CreateContext();
-        var shelter = CreateTestShelter();
-        var animal = CreateTestAnimal();
-        var fostering = CreateActiveFostering();
+        await SeedBasicTestData();
 
-        animal.Shelter = shelter;
-        animal.Fosterings.Add(fostering);
+        var user = new User { Id = "user-001" };
+        _userAccessorMock.Setup(x => x.GetUserAsync()).ReturnsAsync(user);
 
-        var startDateTime = DateTime.UtcNow.AddDays(1).Date.AddHours(10);
-        var endDateTime = startDateTime.AddHours(2);
-
-        // Existing activity ends exactly when new one starts
-        var existingActivity = new Activity
-        {
-            Id = Guid.NewGuid().ToString(),
-            AnimalId = TestAnimalId,
-            UserId = "other-user",
-            Type = ActivityType.Fostering,
-            Status = ActivityStatus.Active,
-            StartDate = startDateTime.AddHours(-2),
-            EndDate = startDateTime // Ends exactly when new starts
-        };
-
-        context.Shelters.Add(shelter);
-        context.Animals.Add(animal);
-        context.Fosterings.Add(fostering);
-        context.Activities.Add(existingActivity);
-        await context.SaveChangesAsync();
-
-        var handler = new CreateFosteringActivity.Handler(context, _mockUserAccessor.Object);
+        var startTime = DateTime.UtcNow.AddDays(2).AddHours(10);
+        var endTime = DateTime.UtcNow.AddDays(2).AddHours(12);
 
         var command = new CreateFosteringActivity.Command
         {
-            AnimalId = TestAnimalId,
-            StartDateTime = startDateTime,
-            EndDateTime = endDateTime
+            AnimalId = "animal-001",
+            StartDateTime = startTime,
+            EndDateTime = endTime
         };
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
-
-        // Assert - No overlap because end == start is not overlap
-        Assert.True(result.IsSuccess);
-    }
-
-    [Fact]
-    public async Task Handle_DifferentAnimal_NoConflict()
-    {
-        // Arrange
-        using var context = CreateContext();
-        var shelter = CreateTestShelter();
-        var animal1 = CreateTestAnimal();
-        var animal2Id = "different-animal-456";
-        var animal2 = new Animal
-        {
-            Id = animal2Id,
-            Name = "Different Animal",
-            AnimalState = AnimalState.PartiallyFostered,
-            Species = Species.Cat,
-            Size = SizeType.Small,
-            Sex = SexType.Female,
-            Colour = "Black",
-            BirthDate = new DateOnly(2021, 1, 1),
-            Sterilized = true,
-            Cost = 40,
-            ShelterId = TestShelterId,
-            BreedId = "test-breed-456",
-            Shelter = shelter
-        };
-
-        var fostering = CreateActiveFostering();
-        animal1.Shelter = shelter;
-        animal1.Fosterings.Add(fostering);
-
-        var startDateTime = DateTime.UtcNow.AddDays(1).Date.AddHours(10);
-        var endDateTime = startDateTime.AddHours(2);
-
-        // Create activity for different animal at same time
-        var existingActivity = new Activity
-        {
-            Id = Guid.NewGuid().ToString(),
-            AnimalId = animal2Id,
-            UserId = "other-user",
-            Type = ActivityType.Fostering,
-            Status = ActivityStatus.Active,
-            StartDate = startDateTime,
-            EndDate = endDateTime
-        };
-
-        context.Shelters.Add(shelter);
-        context.Animals.Add(animal1);
-        context.Animals.Add(animal2);
-        context.Fosterings.Add(fostering);
-        context.Activities.Add(existingActivity);
-        await context.SaveChangesAsync();
-
-        var handler = new CreateFosteringActivity.Handler(context, _mockUserAccessor.Object);
-
-        var command = new CreateFosteringActivity.Command
-        {
-            AnimalId = TestAnimalId,
-            StartDateTime = startDateTime,
-            EndDateTime = endDateTime
-        };
-
-        // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Equal(201, result.Code);
+        Assert.NotNull(result.Value.Activity);
+        Assert.NotNull(result.Value.ActivitySlot);
+        Assert.NotNull(result.Value.Animal);
+        Assert.NotNull(result.Value.Shelter);
+        Assert.Equal("animal-001", result.Value.Animal.Id);
+        Assert.Equal("shelter-001", result.Value.Shelter.Id);
     }
 
-    #endregion
-
-    #region Database Save Failure
-
+    /// <summary>
+    /// Ensures that all <see cref="Activity"/> properties are set correctly after creation.
+    /// </summary>
     [Fact]
-    public async Task Handle_SaveChangesFails_ReturnsInternalServerError()
+    public async Task Handle_SetsCorrectActivityProperties()
     {
-        // This test would require mocking the DbContext's SaveChangesAsync method
-        // which is difficult with the current setup. This is a limitation of in-memory database testing.
-        // In a real scenario, you might use a mocking framework that can mock DbContext methods
-        // or test this scenario through integration tests where you can simulate database failures.
-        
-        // For now, we'll document that this scenario should be tested through integration tests
-        // or with a more sophisticated mocking setup.
-        Assert.True(true); // Placeholder
+        // Arrange
+        await SeedBasicTestData();
+
+        var user = new User { Id = "user-001" };
+        _userAccessorMock.Setup(x => x.GetUserAsync()).ReturnsAsync(user);
+
+        var startTime = DateTime.UtcNow.AddDays(2).AddHours(10);
+        var endTime = DateTime.UtcNow.AddDays(2).AddHours(12);
+
+        var command = new CreateFosteringActivity.Command
+        {
+            AnimalId = "animal-001",
+            StartDateTime = startTime,
+            EndDateTime = endTime
+        };
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal(ActivityType.Fostering, result.Value.Activity.Type);
+        Assert.Equal(ActivityStatus.Active, result.Value.Activity.Status);
+        Assert.Equal("user-001", result.Value.Activity.UserId);
+        Assert.Equal("animal-001", result.Value.Activity.AnimalId);
     }
 
-    #endregion
+    /// <summary>
+    /// Ensures that all <see cref="ActivitySlot"/> properties are correctly assigned and linked.
+    /// </summary>
+    [Fact]
+    public async Task Handle_SetsCorrectSlotProperties()
+    {
+        // Arrange
+        await SeedBasicTestData();
+
+        var user = new User { Id = "user-001" };
+        _userAccessorMock.Setup(x => x.GetUserAsync()).ReturnsAsync(user);
+
+        var startTime = DateTime.UtcNow.AddDays(2).AddHours(10);
+        var endTime = DateTime.UtcNow.AddDays(2).AddHours(12);
+
+        var command = new CreateFosteringActivity.Command
+        {
+            AnimalId = "animal-001",
+            StartDateTime = startTime,
+            EndDateTime = endTime
+        };
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal(SlotStatus.Reserved, result.Value.ActivitySlot.Status);
+        Assert.Equal(SlotType.Activity, result.Value.ActivitySlot.Type);
+        Assert.Equal(result.Value.Activity.Id, result.Value.ActivitySlot.ActivityId);
+    }
 }

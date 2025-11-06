@@ -58,14 +58,20 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
     /// The collection of animal breeds available in the system.
     /// </summary>
     public DbSet<Breed> Breeds { get; set; }
-    
+
     /// <summary>
     /// The collection of time slots available for scheduling activities.
     /// </summary>
     public DbSet<Slot> Slots { get; set; }
-    
+
+    /// <summary>
+    /// The collection of <see cref="ActivitySlot"/> entities reserved for specific animal activities.
+    /// </summary>
     public DbSet<ActivitySlot> ActivitySlots { get; set; }
-    
+
+    /// <summary>
+    /// The collection of <see cref="ShelterUnavailabilitySlot"/> entities representing shelter closure or downtime periods.
+    /// </summary>
     public DbSet<ShelterUnavailabilitySlot> ShelterUnavailabilitySlots { get; set; }
 
     /// <summary>
@@ -84,7 +90,6 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
     /// In particular, it ensures that all enumeration properties in the <see cref="Animal"/> entity
     /// are stored as strings instead of their underlying integer values, improving database readability.
     /// </remarks>
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -107,10 +112,10 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
 
         // Shelter -> Images (1:Many relationship)
         modelBuilder.Entity<Shelter>()
-           .HasMany(s => s.Images)
-           .WithOne(i => i.Shelter)
-           .HasForeignKey(i => i.ShelterId)
-           .OnDelete(DeleteBehavior.Cascade);
+            .HasMany(s => s.Images)
+            .WithOne(i => i.Shelter)
+            .HasForeignKey(i => i.ShelterId)
+            .OnDelete(DeleteBehavior.Cascade);
 
 
         // ========== USER CONFIGURATIONS ==========
@@ -138,9 +143,9 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
             .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<User>()
-        .HasIndex(u => u.ShelterId)
-        .IsUnique() // Only one Admin CAA per shelter
-        .HasFilter("\"ShelterId\" IS NOT NULL");  // Onlu applied when ShelterId is not null
+            .HasIndex(u => u.ShelterId)
+            .IsUnique() // Only one Admin CAA per shelter
+            .HasFilter("\"ShelterId\" IS NOT NULL"); // Onlu applied when ShelterId is not null
 
         // ========== ANIMAL CONFIGURATIONS ==========
 
@@ -174,8 +179,8 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
         {
             // One Main image for each animal
             entity.HasIndex(i => new { i.AnimalId, i.IsPrincipal })
-                  .IsUnique()
-                  .HasFilter("\"IsPrincipal\" = true");
+                .IsUnique()
+                .HasFilter("\"IsPrincipal\" = true");
         });
 
         // Animal - Image (1:N)
@@ -183,14 +188,11 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
             .HasOne(i => i.Animal)
             .WithMany(a => a.Images)
             .HasForeignKey(i => i.AnimalId)
-            .OnDelete(DeleteBehavior.Cascade);  // If animal is deleted, deletes its images
+            .OnDelete(DeleteBehavior.Cascade); // If animal is deleted, deletes its images
 
         // ========== FOSTERING CONFIGURATIONS ==========
 
-        modelBuilder.Entity<Fostering>(entity =>
-        {
-            entity.Property(f => f.Status).HasConversion<string>();
-        });
+        modelBuilder.Entity<Fostering>(entity => { entity.Property(f => f.Status).HasConversion<string>(); });
 
         modelBuilder.Entity<Fostering>()
             .HasOne(f => f.Animal)
@@ -212,7 +214,7 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
 
             // An user can only have one ownership request per animal
             entity.HasIndex(or => new { or.AnimalId, or.UserId })
-                  .IsUnique();
+                .IsUnique();
         });
 
         modelBuilder.Entity<OwnershipRequest>()
@@ -236,7 +238,7 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
 
             // An animal can only have one activity starting at a specific date
             entity.HasIndex(a => new { a.AnimalId, a.StartDate })
-                  .IsUnique();
+                .IsUnique();
         });
 
         modelBuilder.Entity<Activity>()
@@ -257,26 +259,27 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
         {
             // An user cannot have the same animal as favorite more than once
             entity.HasIndex(f => new { f.UserId, f.AnimalId })
-                  .IsUnique();
+                .IsUnique();
         });
 
         modelBuilder.Entity<Favorite>()
             .HasOne(f => f.Animal)
             .WithMany(a => a.Favorites)
             .HasForeignKey(f => f.AnimalId)
-            .OnDelete(DeleteBehavior.Cascade);  // If animal is deleted, deletes favorites for that animal
+            .OnDelete(DeleteBehavior.Cascade); // If animal is deleted, deletes favorites for that animal
 
         modelBuilder.Entity<Favorite>()
             .HasOne(f => f.User)
             .WithMany(u => u.Favorites)
             .HasForeignKey(f => f.UserId)
-            .OnDelete(DeleteBehavior.Cascade);  // If user is deleted, deletes user's favorite animals
+            .OnDelete(DeleteBehavior.Cascade); // If user is deleted, deletes user's favorite animals
 
         // ========== NOTIFICATION CONFIGURATIONS ==========
 
         modelBuilder.Entity<Notification>(entity =>
         {
-            entity.Property(n => n.Type).HasConversion<string>(); // Conversion from Enum to string (ex.: 0 to "NEW_OWNERSHIP_REQUEST")
+            entity.Property(n => n.Type)
+                .HasConversion<string>(); // Conversion from Enum to string (ex.: 0 to "NEW_OWNERSHIP_REQUEST")
         });
 
         modelBuilder.Entity<Notification>()
@@ -299,26 +302,26 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
             .HasForeignKey(n => n.OwnershipRequestId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull); // If ownership request is deleted, notification history persists
-        
+
         // ========== SLOT CONFIGURATIONS ==========
 
         modelBuilder.Entity<Slot>(entity =>
         {
             // Primary key
             entity.HasKey(s => s.Id);
-            
+
             entity.HasDiscriminator<SlotType>("Type")
                 .HasValue<ActivitySlot>(SlotType.Activity)
                 .HasValue<ShelterUnavailabilitySlot>(SlotType.ShelterUnavailable);
-            
+
             entity.Property(s => s.Status)
                 .HasConversion<string>()
                 .IsRequired();
-            
+
             entity.Property(s => s.Type)
                 .HasConversion<string>()
                 .IsRequired();
-            
+
             entity.Property(s => s.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .ValueGeneratedOnAdd();
@@ -326,24 +329,23 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
             entity.Property(s => s.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .ValueGeneratedOnAddOrUpdate();
-            
+
             entity.HasIndex(s => new { s.StartDateTime, s.EndDateTime });
         });
-        
+
         // ========== ACTIVITY SLOT CONFIGURATIONS ==========
 
         modelBuilder.Entity<ActivitySlot>(entity =>
         {
-            
             entity.HasOne(s => s.Activity)
                 .WithOne(a => a.Slot)
                 .HasForeignKey<ActivitySlot>(s => s.ActivityId)
                 .OnDelete(DeleteBehavior.Cascade);
-            
+
             entity.HasIndex(s => s.ActivityId)
                 .IsUnique();
         });
-        
+
         // ========== SHELTER UNAVAILABILITY SLOT CONFIGURATION ==========
         modelBuilder.Entity<ShelterUnavailabilitySlot>(entity =>
         {
@@ -351,30 +353,30 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
                 .WithMany(sh => sh.UnavailabilitySlots)
                 .HasForeignKey(s => s.ShelterId)
                 .OnDelete(DeleteBehavior.Cascade);
-            
+
             entity.HasIndex(s => new { s.ShelterId, s.StartDateTime });
         });
-        
-        
+
+
         // ========== SLOT CONFIGURATIONS ==========
 
         modelBuilder.Entity<Slot>(entity =>
         {
             // Primary key
             entity.HasKey(s => s.Id);
-            
+
             entity.HasDiscriminator<SlotType>("Type")
                 .HasValue<ActivitySlot>(SlotType.Activity)
                 .HasValue<ShelterUnavailabilitySlot>(SlotType.ShelterUnavailable);
-            
+
             entity.Property(s => s.Status)
                 .HasConversion<string>()
                 .IsRequired();
-            
+
             entity.Property(s => s.Type)
                 .HasConversion<string>()
                 .IsRequired();
-            
+
             entity.Property(s => s.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .ValueGeneratedOnAdd();
@@ -382,24 +384,23 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
             entity.Property(s => s.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .ValueGeneratedOnAddOrUpdate();
-            
+
             entity.HasIndex(s => new { s.StartDateTime, s.EndDateTime });
         });
-        
+
         // ========== ACTIVITY SLOT CONFIGURATIONS ==========
 
         modelBuilder.Entity<ActivitySlot>(entity =>
         {
-            
             entity.HasOne(s => s.Activity)
                 .WithOne(a => a.Slot)
                 .HasForeignKey<ActivitySlot>(s => s.ActivityId)
                 .OnDelete(DeleteBehavior.Cascade);
-            
+
             entity.HasIndex(s => s.ActivityId)
                 .IsUnique();
         });
-        
+
         // ========== SHELTER UNAVAILABILITY SLOT CONFIGURATION ==========
         modelBuilder.Entity<ShelterUnavailabilitySlot>(entity =>
         {
@@ -407,7 +408,7 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
                 .WithMany(sh => sh.UnavailabilitySlots)
                 .HasForeignKey(s => s.ShelterId)
                 .OnDelete(DeleteBehavior.Cascade);
-            
+
             entity.HasIndex(s => new { s.ShelterId, s.StartDateTime });
         });
     }

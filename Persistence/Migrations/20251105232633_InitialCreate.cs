@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class NewSlotSchema : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -258,7 +258,7 @@ namespace Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
-                    AnimalId = table.Column<string>(type: "character varying(36)", nullable: false),
+                    AnimalId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
                     UserId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
                     Type = table.Column<string>(type: "text", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false),
@@ -434,8 +434,6 @@ namespace Persistence.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-<<<<<<<< HEAD:Persistence/Migrations/20251105025034_InitialCreate.cs
-========
             migrationBuilder.CreateTable(
                 name: "Notifications",
                 columns: table => new
@@ -475,7 +473,6 @@ namespace Persistence.Migrations
                         onDelete: ReferentialAction.SetNull);
                 });
 
->>>>>>>> origin/develop:Persistence/Migrations/20251105084644_NewSlotSchema.cs
             migrationBuilder.CreateIndex(
                 name: "IX_Activities_AnimalId_StartDate",
                 table: "Activities",
@@ -674,18 +671,12 @@ namespace Persistence.Migrations
                 name: "Slots");
 
             migrationBuilder.DropTable(
-                name: "Slots");
-
-            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-<<<<<<<< HEAD:Persistence/Migrations/20251105025034_InitialCreate.cs
-========
                 name: "OwnershipRequests");
 
             migrationBuilder.DropTable(
->>>>>>>> origin/develop:Persistence/Migrations/20251105084644_NewSlotSchema.cs
                 name: "Activities");
 
             migrationBuilder.DropTable(

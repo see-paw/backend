@@ -13,14 +13,27 @@ using WebAPI.DTOs.Activities;
 namespace Tests.ActivitiesTest.ActivitiesFosteringTest.ControllersTest;
 
 /// <summary>
-/// Unit tests for Activities Controller - ScheduleVisit endpoint with >70% coverage.
+/// Unit test suite for the <see cref="ActivitiesController"/> fostering scheduling endpoint (<c>ScheduleActivityFostering</c>).
 /// </summary>
+/// <remarks>
+/// These tests cover the main success and failure scenarios for creating fostering activity visits,
+/// ensuring that:
+/// <list type="bullet">
+/// <item><description>The correct <see cref="CreateFosteringActivity.Command"/> is sent to MediatR.</description></item>
+/// <item><description>HTTP status codes reflect validation outcomes (e.g., 201, 400, 404, 409, 422).</description></item>
+/// <item><description>AutoMapper correctly maps domain results to response DTOs.</description></item>
+/// <item><description>All business rules enforced by the handler are represented in controller responses.</description></item>
+/// </list>
+/// </remarks>
 public class CreateActivityControllerTests
 {
     private readonly Mock<IMediator> _mediatorMock;
     private readonly Mock<IMapper> _mapperMock;
     private readonly ActivitiesController _controller;
 
+    /// <summary>
+    /// Initializes the controller and mock dependencies for testing.
+    /// </summary>
     public CreateActivityControllerTests()
     {
         _mediatorMock = new Mock<IMediator>();
@@ -42,6 +55,10 @@ public class CreateActivityControllerTests
     }
 
 
+    /// <summary>
+    /// Verifies that a valid fostering visit scheduling request
+    /// returns a <c>201 Created</c> result with correctly mapped data.
+    /// </summary>
     [Fact]
     public async Task ScheduleVisit_WithValidRequest_ReturnsCreatedResult()
     {
@@ -162,6 +179,9 @@ public class CreateActivityControllerTests
         Assert.Equal("Test Shelter", returnValue.Shelter.Name);
     }
 
+    /// <summary>
+    /// Ensures that if the requested animal does not exist, the controller returns <c>404 Not Found</c>.
+    /// </summary>
     [Fact]
     public async Task ScheduleVisit_WithAnimalNotFound_ReturnsNotFound()
     {
@@ -187,6 +207,10 @@ public class CreateActivityControllerTests
         Assert.Equal(404, notFoundResult.StatusCode);
     }
 
+    /// <summary>
+    /// Verifies that a user who is not fostering the specified animal
+    /// receives a <c>404 Not Found</c> response.
+    /// </summary>
     [Fact]
     public async Task ScheduleVisit_WithUserNotFostering_ReturnsNotFound()
     {
@@ -212,6 +236,9 @@ public class CreateActivityControllerTests
         Assert.Equal(404, notFoundResult.StatusCode);
     }
 
+    /// <summary>
+    /// Ensures that scheduling a visit for an inactive animal returns <c>400 Bad Request</c>.
+    /// </summary>
     [Fact]
     public async Task ScheduleVisit_WithInactiveAnimal_ReturnsBadRequest()
     {
@@ -237,6 +264,9 @@ public class CreateActivityControllerTests
         Assert.Equal(400, badRequestResult.StatusCode);
     }
 
+    /// <summary>
+    /// Verifies that visits starting before the shelter's opening time return <c>422 Unprocessable Entity</c>.
+    /// </summary>
     [Fact]
     public async Task ScheduleVisit_WithStartBeforeOpeningTime_ReturnsUnprocessableEntity()
     {
@@ -262,6 +292,9 @@ public class CreateActivityControllerTests
         Assert.Equal(422, unprocessableResult.StatusCode);
     }
 
+    /// <summary>
+    /// Verifies that visits ending after the shelter's closing time return <c>422 Unprocessable Entity</c>.
+    /// </summary>
     [Fact]
     public async Task ScheduleVisit_WithEndAfterClosingTime_ReturnsUnprocessableEntity()
     {
@@ -287,6 +320,9 @@ public class CreateActivityControllerTests
         Assert.Equal(422, unprocessableResult.StatusCode);
     }
 
+    /// <summary>
+    /// Ensures that when a shelter is unavailable during the requested period, a <c>409 Conflict</c> is returned.
+    /// </summary>
     [Fact]
     public async Task ScheduleVisit_WithShelterUnavailable_ReturnsConflict()
     {
@@ -312,6 +348,9 @@ public class CreateActivityControllerTests
         Assert.Equal(409, conflictResult.StatusCode);
     }
 
+    /// <summary>
+    /// Ensures that overlapping activity slots for the same animal result in a <c>409 Conflict</c>.
+    /// </summary>
     [Fact]
     public async Task ScheduleVisit_WithActivitySlotOverlap_ReturnsConflict()
     {
@@ -337,6 +376,9 @@ public class CreateActivityControllerTests
         Assert.Equal(409, conflictResult.StatusCode);
     }
 
+    /// <summary>
+    /// Ensures that overlapping active activities for the same animal result in a <c>409 Conflict</c>.
+    /// </summary>
     [Fact]
     public async Task ScheduleVisit_WithActivityOverlap_ReturnsConflict()
     {
@@ -362,6 +404,10 @@ public class CreateActivityControllerTests
         Assert.Equal(409, conflictResult.StatusCode);
     }
 
+    /// <summary>
+    /// Verifies that the controller sends the correct command to MediatR
+    /// containing the same data as the incoming request.
+    /// </summary>
     [Fact]
     public async Task ScheduleVisit_SendsCorrectCommandToMediator()
     {
@@ -458,6 +504,9 @@ public class CreateActivityControllerTests
             c.EndDateTime == dto.EndDateTime), default), Times.Once);
     }
 
+    /// <summary>
+    /// Ensures that AutoMapper is called exactly once with the correct command result.
+    /// </summary>
     [Fact]
     public async Task ScheduleVisit_CallsMapperWithCorrectData()
     {

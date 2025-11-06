@@ -8,12 +8,29 @@ using Persistence;
 
 namespace Tests.ActivitiesTest.ActivitiesFosteringTest.HandlersTest;
 
+/// <summary>
+/// Unit test suite for <see cref="CancelFosteringActivity.Handler"/>, 
+/// responsible for validating and executing the cancellation of fostering activity visits.
+/// </summary>
+/// <remarks>
+/// These tests ensure that the handler:
+/// <list type="bullet">
+/// <item><description>Properly validates authorization and ownership rules.</description></item>
+/// <item><description>Correctly updates the <see cref="Activity"/> and <see cref="ActivitySlot"/> statuses.</description></item>
+/// <item><description>Handles all relevant error cases (404, 403, 400).</description></item>
+/// <item><description>Maintains data integrity and does not affect unrelated records.</description></item>
+/// </list>
+/// Uses EF Core’s <see cref="DbContextOptionsBuilder.UseInMemoryDatabase(string)"/> for isolation and deterministic results.
+/// </remarks>
 public class CancelFosteringActivityTests
 {
     private readonly Mock<IUserAccessor> _userAccessorMock;
     private readonly AppDbContext _context;
     private readonly CancelFosteringActivity.Handler _handler;
 
+    /// <summary>
+    /// Initializes a new test instance, using an in-memory EF Core database and a mocked user accessor.
+    /// </summary>
     public CancelFosteringActivityTests()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -25,6 +42,13 @@ public class CancelFosteringActivityTests
         _handler = new CancelFosteringActivity.Handler(_context, _userAccessorMock.Object);
     }
 
+    /// <summary>
+    /// Seeds reusable test data, including:
+    /// - A fostering user and another user
+    /// - Shelter, breed, and animal
+    /// - Active fostering record
+    /// - Active fostering activity with reserved slot
+    /// </summary>
     private async Task SeedTestData()
     {
         var user = new User
@@ -122,6 +146,10 @@ public class CancelFosteringActivityTests
         await _context.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Ensures that cancelling a valid fostering activity updates
+    /// the activity and slot states successfully, returning a <c>200 OK</c> result.
+    /// </summary>
     [Fact]
     public async Task Handle_WithValidRequest_CancelsActivitySuccessfully()
     {
@@ -156,6 +184,10 @@ public class CancelFosteringActivityTests
         Assert.NotNull(slot.UpdatedAt);
     }
 
+    /// <summary>
+    /// Verifies that attempting to cancel a non-existent activity 
+    /// returns a <c>404 Not Found</c> response with an appropriate error message.
+    /// </summary>
     [Fact]
     public async Task Handle_WithNonExistentActivity_ReturnsNotFound()
     {
@@ -179,6 +211,10 @@ public class CancelFosteringActivityTests
         Assert.Equal("Activity not found", result.Error);
     }
 
+    /// <summary>
+    /// Ensures that a user cannot cancel another user's activity,
+    /// returning a <c>403 Forbidden</c> result.
+    /// </summary>
     [Fact]
     public async Task Handle_WithActivityNotBelongingToUser_ReturnsForbidden()
     {
@@ -202,6 +238,10 @@ public class CancelFosteringActivityTests
         Assert.Equal("You are not authorized to cancel this activity", result.Error);
     }
 
+    /// <summary>
+    /// Verifies that only fostering-type activities can be cancelled through this handler,
+    /// returning a <c>400 Bad Request</c> otherwise.
+    /// </summary>
     [Fact]
     public async Task Handle_WithNonFosteringActivity_ReturnsBadRequest()
     {
@@ -251,6 +291,10 @@ public class CancelFosteringActivityTests
         Assert.Contains("Only fostering activities", result.Error);
     }
 
+    /// <summary>
+    /// Ensures that attempting to cancel an already cancelled activity 
+    /// returns <c>400 Bad Request</c> with a descriptive message.
+    /// </summary>
     [Fact]
     public async Task Handle_WithCancelledActivity_ReturnsBadRequest()
     {
@@ -278,6 +322,10 @@ public class CancelFosteringActivityTests
         Assert.Contains("Cannot cancel an activity with status 'Cancelled'", result.Error);
     }
 
+    /// <summary>
+    /// Ensures that completed activities cannot be cancelled,
+    /// returning <c>400 Bad Request</c>.
+    /// </summary>
     [Fact]
     public async Task Handle_WithCompletedActivity_ReturnsBadRequest()
     {
@@ -305,6 +353,10 @@ public class CancelFosteringActivityTests
         Assert.Contains("Cannot cancel an activity with status 'Completed'", result.Error);
     }
 
+    /// <summary>
+    /// Verifies that cancellation fails if the user no longer has an active fostering relationship
+    /// with the animal, returning <c>403 Forbidden</c>.
+    /// </summary>
     [Fact]
     public async Task Handle_WithoutActiveFostering_ReturnsForbidden()
     {
@@ -332,6 +384,10 @@ public class CancelFosteringActivityTests
         Assert.Equal("You no longer have an active fostering relationship with this animal", result.Error);
     }
 
+    /// <summary>
+    /// Ensures that if the associated activity slot does not exist,
+    /// the handler returns <c>404 Not Found</c>.
+    /// </summary>
     [Fact]
     public async Task Handle_WithMissingSlot_ReturnsNotFound()
     {
@@ -360,6 +416,10 @@ public class CancelFosteringActivityTests
         Assert.Equal("Activity slot not found", result.Error);
     }
 
+    /// <summary>
+    /// Ensures that activities linked to already available slots 
+    /// cannot be cancelled, returning <c>400 Bad Request</c>.
+    /// </summary>
     [Fact]
     public async Task Handle_WithAvailableSlot_ReturnsBadRequest()
     {
@@ -387,6 +447,9 @@ public class CancelFosteringActivityTests
         Assert.Contains("Cannot cancel a slot with status 'Available'", result.Error);
     }
 
+    /// <summary>
+    /// Ensures that cancelling a slot marked as unavailable returns <c>400 Bad Request</c>.
+    /// </summary>
     [Fact]
     public async Task Handle_WithUnavailableSlot_ReturnsBadRequest()
     {
@@ -414,6 +477,10 @@ public class CancelFosteringActivityTests
         Assert.Contains("Cannot cancel a slot with status 'Unavailable'", result.Error);
     }
 
+    /// <summary>
+    /// Verifies that attempting to cancel a past activity (already started or finished)
+    /// returns <c>400 Bad Request</c>.
+    /// </summary>
     [Fact]
     public async Task Handle_WithPastActivity_ReturnsBadRequest()
     {
@@ -518,6 +585,10 @@ public class CancelFosteringActivityTests
         Assert.Equal("Cannot cancel an activity that has already started or passed", result.Error);
     }
 
+    /// <summary>
+    /// Ensures that cancelling an activity that starts "now" also fails with <c>400 Bad Request</c>,
+    /// maintaining consistent temporal validation.
+    /// </summary>
     [Fact]
     public async Task Handle_WithActivityStartingNow_ReturnsBadRequest()
     {
@@ -622,6 +693,9 @@ public class CancelFosteringActivityTests
         Assert.Equal("Cannot cancel an activity that has already started or passed", result.Error);
     }
 
+    /// <summary>
+    /// Verifies that cancelling an activity updates the <see cref="ActivitySlot.UpdatedAt"/> timestamp correctly.
+    /// </summary>
     [Fact]
     public async Task Handle_UpdatesSlotUpdatedAt()
     {
@@ -650,6 +724,10 @@ public class CancelFosteringActivityTests
         Assert.NotEqual(updatedAtBefore, slotAfter.UpdatedAt);
     }
 
+    /// <summary>
+    /// Ensures that cancelling one activity does not affect 
+    /// the status of other unrelated activities in the database.
+    /// </summary>
     [Fact]
     public async Task Handle_DoesNotModifyOtherActivities()
     {
