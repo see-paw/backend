@@ -1,3 +1,4 @@
+using Application.Auth.Commands;
 using Application.Activities.Commands;
 using AutoMapper;
 using Application.Scheduling;
@@ -6,6 +7,7 @@ using WebAPI.DTOs;
 using WebAPI.DTOs.Activities;
 using WebAPI.DTOs.Animals;
 using WebAPI.DTOs.AnimalSchedule;
+using WebAPI.DTOs.Auth;
 using WebAPI.DTOs.Breeds;
 using WebAPI.DTOs.Favorites;
 using WebAPI.DTOs.Fostering;
@@ -204,6 +206,43 @@ public class MappingProfiles : Profile
             .ForMember(d => d.Reason, o => o.MapFrom(s => s.Reason));
 
         CreateMap<Shelter, ResShelterDto>();
+
+        // User Registration mapping
+        CreateMap<ReqRegisterUserDto, User>()
+            // Set the Identity username to the user's email (login is based on UserName).
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email))
+            // Automatically assign the account creation timestamp at registration time.
+            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
+            // Ignore collections and UpdatedAt
+            .ForMember(dest => dest.Shelter, opt => opt.Ignore())
+            .ForMember(dest => dest.Favorites, opt => opt.Ignore())
+            .ForMember(dest => dest.OwnedAnimals, opt => opt.Ignore())
+            .ForMember(dest => dest.Fosterings, opt => opt.Ignore())
+            .ForMember(dest => dest.OwnershipRequests, opt => opt.Ignore())
+            .ForMember(dest => dest.Activities, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
+
+        CreateMap<ReqRegisterUserDto, Register.Command>()
+            .ForMember(dest => dest.User, opt => opt.MapFrom(src => src)) // usa o mapping DTO → User já existente
+            .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Password))
+            .ForMember(dest => dest.SelectedRole, opt => opt.MapFrom(src => src.SelectedRole))
+            // if role == AdminCAA 
+            .ForMember(dest => dest.ShelterName, opt => opt.MapFrom(src => src.ShelterName))
+            .ForMember(dest => dest.ShelterStreet, opt => opt.MapFrom(src => src.ShelterStreet))
+            .ForMember(dest => dest.ShelterCity, opt => opt.MapFrom(src => src.ShelterCity))
+            .ForMember(dest => dest.ShelterPostalCode, opt => opt.MapFrom(src => src.ShelterPostalCode))
+            .ForMember(dest => dest.ShelterPhone, opt => opt.MapFrom(src => src.ShelterPhone))
+            .ForMember(dest => dest.ShelterNIF, opt => opt.MapFrom(src => src.ShelterNIF))
+            .ForMember(dest => dest.ShelterOpeningTime, opt => opt.MapFrom(src => src.ShelterOpeningTime))
+            .ForMember(dest => dest.ShelterClosingTime, opt => opt.MapFrom(src => src.ShelterClosingTime));
+
+        CreateMap<User, ResRegisterUserDto>()
+            .ForMember(dest => dest.Role, opt => opt.Ignore());
+
+        CreateMap<Shelter, ResRegisterShelterDto>()
+            .ForMember(dest => dest.OpeningTime, opt => opt.MapFrom(src => src.OpeningTime.ToString("HH:mm")))
+            .ForMember(dest => dest.ClosingTime, opt => opt.MapFrom(src => src.ClosingTime.ToString("HH:mm")));
+
 
         // Mapping de CreateFosteringActivityResult para ResActivityFosteringDto
         CreateMap<CreateFosteringActivity.CreateFosteringActivityResult, ResActivityFosteringDto>()

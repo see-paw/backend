@@ -70,6 +70,7 @@ namespace Application.Animals.Commands
                     return Result<Animal>.Failure(error: "Animal not owned by this shelter", code: 404);
                 }
 
+                // Map updated fields from request.Animal to the existing animal entity
                 mapper.Map(source: request.Animal, destination: animal);
             
 
