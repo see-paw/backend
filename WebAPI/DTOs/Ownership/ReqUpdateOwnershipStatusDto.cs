@@ -7,5 +7,8 @@ namespace WebAPI.DTOs.Ownership;
 /// </summary>
 public class ReqUpdateOwnershipStatusDto
 {
+    /// <summary>
+    /// Optional information or comments provided when updating the request status.
+    /// </summary>
     public string? RequestInfo { get; set; }
 }

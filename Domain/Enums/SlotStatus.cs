@@ -1,4 +1,4 @@
-﻿namespace Domain.Enums;
+namespace Domain.Enums;
 
 /// <summary>
 /// Represents the current availability state of a <see cref="Slot"/>.
