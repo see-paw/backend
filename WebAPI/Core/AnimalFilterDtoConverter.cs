@@ -1,5 +1,7 @@
-﻿using Application.Animals.Filters;
+using Application.Animals.Filters;
+
 using AutoMapper;
+
 using WebAPI.DTOs.Animals;
 
 namespace WebAPI.Core;
@@ -15,7 +17,7 @@ public class AnimalFilterDtoConverter : ITypeConverter<AnimalFilterDto, AnimalFi
     /// Invalid enum values are ignored rather than throwing exceptions.
     /// </summary>
     public AnimalFilterModel Convert(
-        AnimalFilterDto source, 
+        AnimalFilterDto source,
         AnimalFilterModel destination,
         ResolutionContext context)
     {

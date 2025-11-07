@@ -1,5 +1,7 @@
-﻿using Domain.Enums;
+using Domain.Enums;
+
 using FluentValidation;
+
 using WebAPI.DTOs.Animals;
 
 namespace WebAPI.Validators.Animals;

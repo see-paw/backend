@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+using FluentValidation;
+
 using WebAPI.DTOs.Fostering;
 
 namespace WebAPI.Validators.Fosterings;

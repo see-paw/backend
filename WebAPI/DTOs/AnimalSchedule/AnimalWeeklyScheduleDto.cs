@@ -1,4 +1,4 @@
-﻿using WebAPI.DTOs.Animals;
+using WebAPI.DTOs.Animals;
 using WebAPI.DTOs.Shelter;
 
 namespace WebAPI.DTOs.AnimalSchedule;

@@ -1,4 +1,4 @@
-﻿
+
 namespace WebAPI.Core;
 
 /// <summary>

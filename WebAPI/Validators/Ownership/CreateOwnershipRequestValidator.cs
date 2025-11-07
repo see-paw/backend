@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+using FluentValidation;
+
 using WebAPI.DTOs.Ownership;
 
 namespace WebAPI.Validators.Ownership;

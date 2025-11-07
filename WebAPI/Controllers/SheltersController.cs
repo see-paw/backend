@@ -1,10 +1,14 @@
-﻿using Application.Core;
+using Application.Core;
 using Application.Shelters.Queries;
+
 using AutoMapper;
+
 using Domain;
 using Domain.Common;
-using Microsoft.AspNetCore.Mvc;
+
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
 using WebAPI.DTOs.Animals;
 
 namespace WebAPI.Controllers

@@ -1,5 +1,6 @@
-using Domain;
 using System;
+
+using Domain;
 
 namespace WebAPI.DTOs.Auth
 {

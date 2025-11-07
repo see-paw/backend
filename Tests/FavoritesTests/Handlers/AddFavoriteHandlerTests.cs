@@ -1,4 +1,4 @@
-﻿using Application.Core;
+using Application.Core;
 using Application.Favorites.Commands;
 using Application.Interfaces;
 using AutoMapper;
@@ -87,7 +87,7 @@ namespace Tests.Favorites.Handlers
             userAccessor.Setup(u => u.GetUserAsync()).ReturnsAsync(user);
 
             var mapper = new Mock<IMapper>();
-            var handler = new AddFavorite.Handler(ctx, userAccessor.Object, mapper.Object);
+            var handler = new AddFavorite.Handler(ctx, userAccessor.Object);
 
             var cmd = new AddFavorite.Command { AnimalId = animal.Id };
             var result = await handler.Handle(cmd, default);
@@ -118,7 +118,7 @@ namespace Tests.Favorites.Handlers
             userAccessor.Setup(u => u.GetUserAsync()).ReturnsAsync((User?)null);
 
             var mapper = new Mock<IMapper>();
-            var handler = new AddFavorite.Handler(ctx, userAccessor.Object, mapper.Object);
+            var handler = new AddFavorite.Handler(ctx, userAccessor.Object);
 
             var cmd = new AddFavorite.Command { AnimalId = animal.Id };
             var result = await handler.Handle(cmd, default);
@@ -141,7 +141,7 @@ namespace Tests.Favorites.Handlers
             userAccessor.Setup(u => u.GetUserAsync()).ReturnsAsync(user);
 
             var mapper = new Mock<IMapper>();
-            var handler = new AddFavorite.Handler(ctx, userAccessor.Object, mapper.Object);
+            var handler = new AddFavorite.Handler(ctx, userAccessor.Object);
 
             var cmd = new AddFavorite.Command { AnimalId = Guid.NewGuid().ToString() }; // Nonexistent ID
             var result = await handler.Handle(cmd, default);
@@ -174,7 +174,7 @@ namespace Tests.Favorites.Handlers
             userAccessor.Setup(u => u.GetUserAsync()).ReturnsAsync(user);
 
             var mapper = new Mock<IMapper>();
-            var handler = new AddFavorite.Handler(ctx, userAccessor.Object, mapper.Object);
+            var handler = new AddFavorite.Handler(ctx, userAccessor.Object);
 
             var cmd = new AddFavorite.Command { AnimalId = animal.Id };
             var result = await handler.Handle(cmd, default);
@@ -216,7 +216,7 @@ namespace Tests.Favorites.Handlers
             userAccessor.Setup(u => u.GetUserAsync()).ReturnsAsync(user);
 
             var mapper = new Mock<IMapper>();
-            var handler = new AddFavorite.Handler(ctx, userAccessor.Object, mapper.Object);
+            var handler = new AddFavorite.Handler(ctx, userAccessor.Object);
 
             var cmd = new AddFavorite.Command { AnimalId = animal.Id };
             var result = await handler.Handle(cmd, default);
@@ -260,7 +260,7 @@ namespace Tests.Favorites.Handlers
             userAccessor.Setup(u => u.GetUserAsync()).ReturnsAsync(user);
 
             var mapper = new Mock<IMapper>();
-            var handler = new AddFavorite.Handler(ctx, userAccessor.Object, mapper.Object);
+            var handler = new AddFavorite.Handler(ctx, userAccessor.Object);
 
             var cmd = new AddFavorite.Command { AnimalId = animal.Id };
             var result = await handler.Handle(cmd, default);

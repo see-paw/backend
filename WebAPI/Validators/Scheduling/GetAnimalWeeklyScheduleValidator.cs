@@ -1,4 +1,5 @@
-﻿using Application.Scheduling.Queries;
+using Application.Scheduling.Queries;
+
 using FluentValidation;
 
 namespace WebAPI.Validators.Scheduling;
@@ -32,7 +33,7 @@ public class GetAnimalWeeklyScheduleValidator : AbstractValidator<GetAnimalWeekl
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var minDate = today.AddMonths(-1);
         var maxDate = today.AddYears(1);
-        
+
         return startDate >= minDate && startDate <= maxDate;
     }
 

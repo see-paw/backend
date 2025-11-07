@@ -75,10 +75,11 @@ namespace Infrastructure.BackgroundTasks.Tasks.ActivityTasks
             var windowStart = now.AddHours(HOURS_BEFORE_REMINDER);
             var windowEnd = windowStart.AddMinutes(WINDOW_MINUTES);
 
+            var activityType = GetActivityType();
             var activities = (await context.Activities
                 .Include(a => a.Animal)
                 .Include(a => a.User)
-                .Where(a => a.Type == GetActivityType() && a.Status == ActivityStatus.Active)
+                .Where(a => a.Type == activityType && a.Status == ActivityStatus.Active)
                 .Where(a =>
                     (a.StartDate >= windowStart && a.StartDate <= windowEnd) ||
                     (a.EndDate >= windowStart && a.EndDate <= windowEnd))
@@ -141,20 +142,22 @@ namespace Infrastructure.BackgroundTasks.Tasks.ActivityTasks
             AppDbContext context,
             Activity activity)
         {
+            var userStartReminderType = GetUserStartReminderType();
             bool userReminderExists = await context.Notifications
                 .AnyAsync(n => n.ActivityId == activity.Id &&
-                               n.Type == GetUserStartReminderType());
+                               n.Type == userStartReminderType);
 
+            var adminStartReminderType = GetAdminStartReminderType();
             bool adminReminderExists = await context.Notifications
                 .AnyAsync(n => n.ActivityId == activity.Id &&
-                               n.Type == GetAdminStartReminderType());
+                               n.Type == adminStartReminderType);
 
             if (!userReminderExists)
             {
                 await notificationService.CreateAndSendToUserAsync(
                     userId: activity.User.Id,
                     type: GetUserStartReminderType(),
-                    message: $"Reminder: your {GetActivityDisplayName()} activity with {activity.Animal.Name} starts at {activity.StartDate:t}.",
+                    message: $"Lembrete: A tua atividade de {GetActivityDisplayName()} com o/a {activity.Animal.Name} começa em {activity.StartDate:t}.",
                     animalId: activity.Animal.Id,
                     activityId: activity.Id
                 );
@@ -167,7 +170,7 @@ namespace Infrastructure.BackgroundTasks.Tasks.ActivityTasks
                 await notificationService.CreateAndSendToUserAsync(
                     userId: adminId,
                     type: GetAdminStartReminderType(),
-                    message: $"Reminder: {GetActivityDisplayName()} activity for {activity.Animal.Name} with {activity.User.Name} starts at {activity.StartDate:t}.",
+                    message: $"Lembrete: A atividade de {GetActivityDisplayName()} com o/a {activity.Animal.Name} do utilizador {activity.User.Name} começa em {activity.StartDate:t}.",
                     animalId: activity.Animal.Id,
                     activityId: activity.Id
                 );
@@ -185,20 +188,22 @@ namespace Infrastructure.BackgroundTasks.Tasks.ActivityTasks
             AppDbContext context,
             Activity activity)
         {
+            var userEndReminderType = GetUserEndReminderType();
             bool userReminderExists = await context.Notifications
                 .AnyAsync(n => n.ActivityId == activity.Id &&
-                               n.Type == GetUserEndReminderType());
+                               n.Type == userEndReminderType);
 
+            var adminEndReminderType = GetAdminEndReminderType();
             bool adminReminderExists = await context.Notifications
                 .AnyAsync(n => n.ActivityId == activity.Id &&
-                               n.Type == GetAdminEndReminderType());
+                               n.Type == adminEndReminderType);
 
             if (!userReminderExists)
             {
                 await notificationService.CreateAndSendToUserAsync(
                     userId: activity.User.Id,
                     type: GetUserEndReminderType(),
-                    message: $"Reminder: your {GetActivityDisplayName()} activity with {activity.Animal.Name} will end at {activity.EndDate:t}.",
+                    message: $"Lembrete: A tua atividade de {GetActivityDisplayName()} com o/a {activity.Animal.Name} vai acabar em {activity.EndDate:t}.",
                     animalId: activity.Animal.Id,
                     activityId: activity.Id
                 );
@@ -211,7 +216,7 @@ namespace Infrastructure.BackgroundTasks.Tasks.ActivityTasks
                 await notificationService.CreateAndSendToUserAsync(
                     userId: adminId,
                     type: GetAdminEndReminderType(),
-                    message: $"Reminder: {GetActivityDisplayName()} activity for {activity.Animal.Name} with {activity.User.Name} will end at {activity.EndDate:t}.",
+                    message: $"Lembrete: A atividade de {GetActivityDisplayName()} com o/a {activity.Animal.Name} do utilizador {activity.User.Name} acaba em {activity.EndDate:t}.",
                     animalId: activity.Animal.Id,
                     activityId: activity.Id
                 );

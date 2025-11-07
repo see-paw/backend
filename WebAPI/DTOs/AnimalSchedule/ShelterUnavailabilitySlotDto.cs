@@ -1,4 +1,4 @@
-﻿namespace WebAPI.DTOs.AnimalSchedule;
+namespace WebAPI.DTOs.AnimalSchedule;
 
 /// <summary>
 /// Data transfer object representing a shelter unavailability slot,

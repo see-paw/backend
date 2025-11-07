@@ -1,11 +1,15 @@
-﻿using Application.Core;
+using Application.Core;
 using Application.Fosterings.Commands;
 using Application.Fosterings.Queries;
 using Application.Interfaces;
+
 using AutoMapper;
+
 using Domain.Common;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using WebAPI.DTOs.Fostering;
 
 namespace WebAPI.Controllers
@@ -50,17 +54,17 @@ namespace WebAPI.Controllers
         /// <returns>Mensagem de sucesso ou erro.</returns>
         [Authorize(Roles = AppRoles.User)]
         [HttpPatch("{id}/cancel")]
-            public async Task<ActionResult> CancelFostering(string id)
+        public async Task<ActionResult> CancelFostering(string id)
+        {
+            var userId = userAccessor.GetUserId();
+
+            var command = new CancelFostering.Command
             {
-                var userId = userAccessor.GetUserId();
+                FosteringId = id,
+                UserId = userId
+            };
 
-                var command = new CancelFostering.Command
-                {
-                    FosteringId = id,
-                    UserId = userId
-                };
-
-                var result = await Mediator.Send(command);
+            var result = await Mediator.Send(command);
 
             if (!result.IsSuccess)
                 return HandleResult(result);

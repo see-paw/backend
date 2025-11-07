@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+using FluentValidation;
+
 using WebAPI.DTOs;
 using WebAPI.DTOs.User;
 
@@ -27,12 +28,12 @@ namespace WebAPI.Validators.User
                 .LessThan(DateTime.UtcNow.Date).WithMessage("Birth date cannot be in the future.")
                 .GreaterThan(DateTime.UtcNow.AddYears(-100)).WithMessage("Birth date is unrealistically old.");
 
-            
+
             RuleFor(x => x.Street)
                 .NotEmpty().WithMessage("Street is required.")
                 .MaximumLength(255).WithMessage("Street cannot exceed 255 characters.");
 
-            
+
             RuleFor(x => x.City)
                 .NotEmpty().WithMessage("City is required.")
                 .MaximumLength(255).WithMessage("City cannot exceed 255 characters.");

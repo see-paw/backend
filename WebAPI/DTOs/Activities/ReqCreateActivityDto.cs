@@ -1,4 +1,4 @@
-﻿namespace WebAPI.DTOs.Activities;
+namespace WebAPI.DTOs.Activities;
 
 /// <summary>
 /// Request DTO for creating a new ownership activity.

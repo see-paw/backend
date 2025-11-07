@@ -1,4 +1,4 @@
-﻿namespace WebAPI.DTOs.Auth;
+namespace WebAPI.DTOs.Auth;
 
 /// <summary>
 /// Data transfer object representing shelter information returned after registration.

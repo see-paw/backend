@@ -1,4 +1,5 @@
-﻿using Application.Animals.Commands;
+using Application.Animals.Commands;
+
 using FluentValidation;
 
 namespace WebAPI.Validators.Animals;

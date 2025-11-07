@@ -1,10 +1,14 @@
-﻿using Application.Core;
+using Application.Core;
 using Application.OwnershipRequests.Commands;
 using Application.OwnershipRequests.Queries;
+
 using AutoMapper;
+
 using Domain.Common;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using WebAPI.DTOs;
 using WebAPI.DTOs.Ownership;
 
@@ -162,7 +166,7 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
         return HandleResult(Result<ResOwnershipRequestDto>.Success(responseDto, 200));
     }
 
-  
+
 
 
     /// <summary>
@@ -216,11 +220,11 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
     {
         var result = await Mediator.Send(new GetUserOwnedAnimals.Query());
 
-        if (!result.IsSuccess) 
+        if (!result.IsSuccess)
             return HandleResult(result);
 
         var dtoOwned = mapper.Map<List<ResUserOwnershipsDto>>(result.Value);
-            return HandleResult(Result<List<ResUserOwnershipsDto>>.Success(dtoOwned, 200));
+        return HandleResult(Result<List<ResUserOwnershipsDto>>.Success(dtoOwned, 200));
     }
 }
 

@@ -1,4 +1,4 @@
-﻿namespace WebAPI.DTOs.Fostering;
+namespace WebAPI.DTOs.Fostering;
 
 /// <summary>
 /// Data transfer object used to request the creation of a new fostering agreement for an animal.
