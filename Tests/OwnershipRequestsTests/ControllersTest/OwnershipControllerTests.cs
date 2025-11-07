@@ -25,7 +25,7 @@ public class OwnershipControllerTests
 {
     private readonly Mock<IMediator> _mediatorMock;
     private readonly Mock<IMapper> _mapperMock;
-    private readonly OwnershipRequestsController.OwnershipsController _controller;
+    private readonly OwnershipRequestsController _controller;
 
     /// <summary>
     /// Initializes a new instance of the test class with mock dependencies.
@@ -34,7 +34,7 @@ public class OwnershipControllerTests
     {
         _mediatorMock = new Mock<IMediator>();
         _mapperMock = new Mock<IMapper>();
-        _controller = new OwnershipRequestsController.OwnershipsController(_mapperMock.Object);
+        _controller = new OwnershipRequestsController (_mapperMock.Object);
 
         // Configure controller context with mocked service provider
         var serviceProviderMock = new Mock<IServiceProvider>();
