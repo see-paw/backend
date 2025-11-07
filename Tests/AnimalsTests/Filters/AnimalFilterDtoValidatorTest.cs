@@ -2,7 +2,7 @@
 using WebAPI.DTOs.Animals;
 using WebAPI.Validators.Animals;
 
-namespace Tests.Validators.Animals;
+namespace Tests.AnimalsTests.Filters;
 
 /// <summary>
 /// Unit tests for AnimalFilterDtoValidator.

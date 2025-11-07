@@ -2,7 +2,7 @@
 using Application.Animals.Filters.Specs;
 using Domain.Services;
 
-namespace Tests.Animals.Filters;
+namespace Tests.AnimalsTests.Filters;
 
 /// <summary>
 /// Tests for AnimalSpecBuilder using Equivalence Class Partitioning and Boundary Value Analysis.

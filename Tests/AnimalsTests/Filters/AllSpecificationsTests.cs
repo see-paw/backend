@@ -3,7 +3,7 @@ using Domain;
 using Domain.Enums;
 using Domain.Services;
 
-namespace Tests.Animals.Filters;
+namespace Tests.AnimalsTests.Filters;
 
 /// <summary>
 /// Comprehensive tests for all Specification classes using Equivalence Class Partitioning and Boundary Value Analysis.

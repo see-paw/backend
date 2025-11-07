@@ -1,12 +1,12 @@
 using Application.Interfaces;
-using Application.Ownerships.Queries;
+using Application.OwnershipRequests.Queries;
 using Domain;
 using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Persistence;
 
-namespace Tests.OwnershipTests;
+namespace Tests.OwnershipRequestsTest.HandlersTest;
 
 /// <summary>
 /// Unit tests for <see cref="GetUserOwnedAnimals.Handler"/>.

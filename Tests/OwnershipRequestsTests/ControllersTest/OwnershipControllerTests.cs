@@ -1,6 +1,5 @@
 using Application.Core;
 using Application.OwnershipRequests.Queries;
-using Application.Ownerships.Queries;
 using AutoMapper;
 using Domain;
 using Domain.Enums;
@@ -11,22 +10,22 @@ using Moq;
 using WebAPI.Controllers;
 using WebAPI.DTOs.Ownership;
 
-namespace Tests.OwnershipTests;
+namespace Tests.OwnershipRequestsTest.ControllersTest;
 
 /// <summary>
-/// Unit tests for <see cref="OwnershipsController"/>.
+/// Unit tests for <see cref="OwnershipRequestsController.OwnershipsController"/>.
 /// </summary>
 /// <remarks>
 /// Validates controller-level behavior for ownership-related endpoints:
-/// - <see cref="OwnershipsController.GetUserOwnerships"/> (fetches ownership requests)
-/// - <see cref="OwnershipsController.GetOwnedAnimals"/> (fetches animals owned by the user)
+/// - <see cref="OwnershipRequestsController.OwnershipsController.GetUserOwnerships"/> (fetches ownership requests)
+/// - <see cref="OwnershipRequestsController.OwnershipsController.GetOwnedAnimals"/> (fetches animals owned by the user)
 /// These tests mock dependencies (<see cref="IMediator"/> and <see cref="IMapper"/>) to isolate the controller logic.
 /// </remarks>
 public class OwnershipControllerTests
 {
     private readonly Mock<IMediator> _mediatorMock;
     private readonly Mock<IMapper> _mapperMock;
-    private readonly OwnershipsController _controller;
+    private readonly OwnershipRequestsController.OwnershipsController _controller;
 
     /// <summary>
     /// Initializes a new instance of the test class with mock dependencies.
@@ -35,7 +34,7 @@ public class OwnershipControllerTests
     {
         _mediatorMock = new Mock<IMediator>();
         _mapperMock = new Mock<IMapper>();
-        _controller = new OwnershipsController(_mapperMock.Object);
+        _controller = new OwnershipRequestsController.OwnershipsController(_mapperMock.Object);
 
         // Configure controller context with mocked service provider
         var serviceProviderMock = new Mock<IServiceProvider>();
