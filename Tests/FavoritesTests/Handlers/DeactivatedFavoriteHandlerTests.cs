@@ -1,4 +1,4 @@
-﻿using Application.Core;
+using Application.Core;
 using Application.Favorites.Commands;
 using Application.Interfaces;
 using AutoMapper;
@@ -101,7 +101,7 @@ namespace Tests.Favorites.Handlers
             userAccessor.Setup(u => u.GetUserAsync()).ReturnsAsync(user);
 
             var mapper = new Mock<IMapper>();
-            var handler = new DeactivateFavorite.Handler(ctx, userAccessor.Object, mapper.Object);
+            var handler = new DeactivateFavorite.Handler(ctx, userAccessor.Object);
 
             var cmd = new DeactivateFavorite.Command { AnimalId = animal.Id };
 
@@ -131,7 +131,7 @@ namespace Tests.Favorites.Handlers
             userAccessor.Setup(u => u.GetUserAsync()).ReturnsAsync((User?)null);
 
             var mapper = new Mock<IMapper>();
-            var handler = new DeactivateFavorite.Handler(ctx, userAccessor.Object, mapper.Object);
+            var handler = new DeactivateFavorite.Handler(ctx, userAccessor.Object);
 
             var cmd = new DeactivateFavorite.Command { AnimalId = animal.Id };
             var result = await handler.Handle(cmd, default);
@@ -155,7 +155,7 @@ namespace Tests.Favorites.Handlers
             userAccessor.Setup(u => u.GetUserAsync()).ReturnsAsync(user);
 
             var mapper = new Mock<IMapper>();
-            var handler = new DeactivateFavorite.Handler(ctx, userAccessor.Object, mapper.Object);
+            var handler = new DeactivateFavorite.Handler(ctx, userAccessor.Object);
 
             var cmd = new DeactivateFavorite.Command { AnimalId = animal.Id };
             var result = await handler.Handle(cmd, default);
@@ -195,7 +195,7 @@ namespace Tests.Favorites.Handlers
             userAccessor.Setup(u => u.GetUserAsync()).ReturnsAsync(user);
 
             var mapper = new Mock<IMapper>();
-            var handler = new DeactivateFavorite.Handler(ctx, userAccessor.Object, mapper.Object);
+            var handler = new DeactivateFavorite.Handler(ctx, userAccessor.Object);
 
             var cmd = new DeactivateFavorite.Command { AnimalId = animal.Id };
             var result = await handler.Handle(cmd, default);

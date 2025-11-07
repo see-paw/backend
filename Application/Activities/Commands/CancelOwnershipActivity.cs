@@ -1,4 +1,4 @@
-﻿using Application.Core;
+using Application.Core;
 using Application.Interfaces;
 using Domain;
 using Domain.Enums;
