@@ -1,13 +1,13 @@
 ﻿using Application.Animals.Commands;
 using Application.Animals.Filters;
 using Application.Animals.Queries;
-using Application.Common;
 using Application.Core;
 using Application.Fosterings.Commands;
 using Application.Images.Commands;
 using Application.Interfaces;
 using AutoMapper;
 using Domain;
+using Domain.Common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

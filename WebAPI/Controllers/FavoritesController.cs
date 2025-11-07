@@ -1,8 +1,8 @@
-﻿using Application.Common;
-using Application.Core;
+﻿using Application.Core;
 using Application.Favorites.Commands;
 using Application.Favorites.Queries;
 using AutoMapper;
+using Domain.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs;

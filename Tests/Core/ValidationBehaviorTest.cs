@@ -1,11 +1,9 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
-using MediatR;
 using Moq;
 using WebAPI.Core;
-using Xunit;
 
-namespace Tests
+namespace Tests.Core
 {
     /// <summary>
     /// Unit tests for ValidationBehavior.

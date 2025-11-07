@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using Application.Common;
+using Domain.Common;
 using FluentValidation.TestHelper;
 using WebAPI.DTOs.Auth;
 using WebAPI.Validators.Auth;

@@ -1,9 +1,9 @@
-﻿using Application.Common;
-using Application.Core;
+﻿using Application.Core;
 using Application.Fosterings.Commands;
 using Application.Fosterings.Queries;
 using Application.Interfaces;
 using AutoMapper;
+using Domain.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs.Fostering;

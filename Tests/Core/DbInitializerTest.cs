@@ -1,5 +1,5 @@
-using Application.Common;
 using Domain;
+using Domain.Common;
 using Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Persistence;
 
-namespace Tests
+namespace Tests.Core
 {
     /// <summary>
     /// Unit tests for DbInitializer.

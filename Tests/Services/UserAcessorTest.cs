@@ -1,13 +1,12 @@
 ﻿using System.Security.Claims;
 using Domain;
-using Infrastructure;
 using Infrastructure.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Persistence;
 
-namespace Tests;
+namespace Tests.Services;
 
 /// <summary>
 /// Unit tests for the <see cref="UserAccessor"/> class.

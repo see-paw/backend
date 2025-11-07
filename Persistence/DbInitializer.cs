@@ -1,5 +1,5 @@
-﻿﻿using Application.Common;
- using Domain;
+﻿using Domain;
+using Domain.Common;
 using Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

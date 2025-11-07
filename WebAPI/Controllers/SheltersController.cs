@@ -1,8 +1,8 @@
-﻿using Application.Common;
-using Application.Core;
+﻿using Application.Core;
 using Application.Shelters.Queries;
 using AutoMapper;
 using Domain;
+using Domain.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using WebAPI.DTOs.Animals;

@@ -1,18 +1,12 @@
-﻿using Application.Common;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Domain;
+using Domain.Common;
 
 namespace Persistence.Seeds;
 
-/// <summary>
-/// Seeds roles and users into the database.
-/// </summary>
 internal static class RoleAndUserSeeder
 {
-    /// <summary>
-    /// Seeds roles and users with their assignments.
-    /// </summary>
     public static async Task SeedAsync(
         UserManager<User> userManager,
         RoleManager<IdentityRole> roleManager,
@@ -36,8 +30,8 @@ internal static class RoleAndUserSeeder
                 {
                     Id = SeedConstants.User2Id,
                     Name = "Bob Johnson",
-                    UserName = "bob@SeedConstants.Password2.com",
-                    Email = "bob@SeedConstants.Password2.com",
+                    UserName = "bob@test.com",
+                    Email = "bob@test.com",
                     City = "Porto",
                     Street = "Rua das Flores 10",
                     PostalCode = "4000-123",
@@ -50,8 +44,8 @@ internal static class RoleAndUserSeeder
                 {
                     Id = SeedConstants.User1Id,
                     Name = "Alice Ferreira",
-                    UserName = "alice@SeedConstants.Password2.com",
-                    Email = "alice@SeedConstants.Password2.com",
+                    UserName = "alice@test.com",
+                    Email = "alice@test.com",
                     City = "Lisboa",
                     Street = "Avenida da Liberdade 55",
                     PostalCode = "1250-123",
@@ -65,8 +59,8 @@ internal static class RoleAndUserSeeder
                 {
                     Id = SeedConstants.User3Id,
                     Name = "Carlos Santos",
-                    UserName = "carlos@SeedConstants.Password2.com",
-                    Email = "carlos@SeedConstants.Password2.com",
+                    UserName = "carlos@test.com",
+                    Email = "carlos@test.com",
                     City = "Coimbra",
                     Street = "Rua do Penedo 32",
                     PostalCode = "3000-222",
@@ -79,8 +73,8 @@ internal static class RoleAndUserSeeder
                 {
                     Id = SeedConstants.User4Id,
                     Name = "Diana Silva",
-                    UserName = "diana@SeedConstants.Password2.com",
-                    Email = "diana@SeedConstants.Password2.com",
+                    UserName = "diana@test.com",
+                    Email = "diana@test.com",
                     City = "Faro",
                     Street = "Rua das Oliveiras 8",
                     PostalCode = "8000-333",
@@ -93,8 +87,8 @@ internal static class RoleAndUserSeeder
                 {
                     Id = SeedConstants.User5Id,
                     Name = "Eduardo Lima",
-                    UserName = "eduardo@SeedConstants.Password2.com",
-                    Email = "eduardo@SeedConstants.Password2.com",
+                    UserName = "eduardo@test.com",
+                    Email = "eduardo@test.com",
                     City = "Braga",
                     Street = "Rua Nova 42",
                     PostalCode = "4700-321",
@@ -107,8 +101,8 @@ internal static class RoleAndUserSeeder
                 {
                     Id = SeedConstants.User6Id,
                     Name = "Filipe Marques",
-                    UserName = "filipe@SeedConstants.Password2.com",
-                    Email = "filipe@SeedConstants.Password2.com",
+                    UserName = "filipe@test.com",
+                    Email = "filipe@test.com",
                     City = "Porto",
                     Street = "Rua das Oliveiras 99",
                     PostalCode = "4000-450",
@@ -122,8 +116,8 @@ internal static class RoleAndUserSeeder
                 {
                     Id = SeedConstants.User7Id,
                     Name = "Gustavo Pereira",
-                    UserName = "gustavo@SeedConstants.Password2.com",
-                    Email = "gustavo@SeedConstants.Password2.com",
+                    UserName = "gustavo@test.com",
+                    Email = "gustavo@test.com",
                     City = "Lisboa",
                     Street = "Rua dos Favoritos 15",
                     PostalCode = "1200-100",
@@ -136,10 +130,10 @@ internal static class RoleAndUserSeeder
                 {
                     Id = SeedConstants.User8Id,
                     Name = "Alice Notifications Admin",
-                    UserName = "alice.notif@SeedConstants.Password2.com",
-                    Email = "alice.notif@SeedConstants.Password2.com",
+                    UserName = "alice.notif@test.com",
+                    Email = "alice.notif@test.com",
                     City = "Porto",
-                    Street = "Rua dos SeedConstants.password2es 100",
+                    Street = "Rua dos Testes 100",
                     PostalCode = "4100-100",
                     BirthDate = new DateTime(1990, 1, 1),
                     PhoneNumber = "910000001",
@@ -151,10 +145,10 @@ internal static class RoleAndUserSeeder
                 {
                     Id = SeedConstants.User9Id,
                     Name = "Carlos Notifications User",
-                    UserName = "carlos.notif@SeedConstants.Password2.com",
-                    Email = "carlos.notif@SeedConstants.Password2.com",
+                    UserName = "carlos.notif@test.com",
+                    Email = "carlos.notif@test.com",
                     City = "Porto",
-                    Street = "Rua dos SeedConstants.password2es 200",
+                    Street = "Rua dos Testes 200",
                     PostalCode = "4100-200",
                     BirthDate = new DateTime(1992, 6, 8),
                     PhoneNumber = "910000002",
@@ -164,8 +158,8 @@ internal static class RoleAndUserSeeder
                 (new User
                 {
                     Id = SeedConstants.OwnershipUser1Id,
-                    UserName = "user1@SeedConstants.Password2.com",
-                    Email = "user1@SeedConstants.Password2.com",
+                    UserName = "user1@test.com",
+                    Email = "user1@test.com",
                     Name = "João Silva",
                     BirthDate = new DateTime(1990, 5, 15),
                     Street = "Rua das Flores, 123",
@@ -178,8 +172,8 @@ internal static class RoleAndUserSeeder
                 (new User
                 {
                     Id = SeedConstants.OwnershipUser2Id,
-                    UserName = "user2@SeedConstants.Password2.com",
-                    Email = "user2@SeedConstants.Password2.com",
+                    UserName = "user2@test.com",
+                    Email = "user2@test.com",
                     Name = "Maria Santos",
                     BirthDate = new DateTime(1985, 8, 20),
                     Street = "Avenida da Liberdade, 456",
@@ -192,8 +186,8 @@ internal static class RoleAndUserSeeder
                 (new User
                 {
                     Id = SeedConstants.OwnershipUser3Id,
-                    UserName = "user3@SeedConstants.Password2.com",
-                    Email = "user3@SeedConstants.Password2.com",
+                    UserName = "user3@test.com",
+                    Email = "user3@test.com",
                     Name = "Carlos Pereira",
                     BirthDate = new DateTime(1995, 3, 10),
                     Street = "Rua do Comércio, 789",
@@ -206,10 +200,10 @@ internal static class RoleAndUserSeeder
                 (new User
                 {
                     Id = SeedConstants.FosterUserId,
-                    UserName = "foster@SeedConstants.Password2.com",
-                    Email = "foster@SeedConstants.Password2.com",
+                    UserName = "foster@test.com",
+                    Email = "foster@test.com",
                     EmailConfirmed = true,
-                    Name = "Foster SeedConstants.Password2 User",
+                    Name = "Foster Test User",
                     BirthDate = new DateTime(1990, 1, 1),
                     Street = "Rua dos Fosters 123",
                     City = "Porto",
@@ -221,10 +215,10 @@ internal static class RoleAndUserSeeder
                 (new User
                 {
                     Id = SeedConstants.RegularUserId,
-                    UserName = "regular@SeedConstants.Password2.com",
-                    Email = "regular@SeedConstants.Password2.com",
+                    UserName = "regular@test.com",
+                    Email = "regular@test.com",
                     EmailConfirmed = true,
-                    Name = "Regular SeedConstants.Password2 User",
+                    Name = "Regular Test User",
                     BirthDate = new DateTime(1992, 5, 15),
                     Street = "Rua Regular 456",
                     City = "Lisboa",
@@ -236,8 +230,8 @@ internal static class RoleAndUserSeeder
                 (new User
                 {
                     Id = SeedConstants.CancelFosterUserId,
-                    UserName = "cancel-foster@SeedConstants.Password2.com",
-                    Email = "cancel-foster@SeedConstants.Password2.com",
+                    UserName = "cancel-foster@test.com",
+                    Email = "cancel-foster@test.com",
                     EmailConfirmed = true,
                     Name = "Cancel Foster User",
                     BirthDate = new DateTime(1990, 1, 1),
@@ -251,8 +245,8 @@ internal static class RoleAndUserSeeder
                 (new User
                 {
                     Id = SeedConstants.OtherCancelUserId,
-                    UserName = "other-cancel@SeedConstants.Password2.com",
-                    Email = "other-cancel@SeedConstants.Password2.com",
+                    UserName = "other-cancel@test.com",
+                    Email = "other-cancel@test.com",
                     EmailConfirmed = true,
                     Name = "Other Cancel User",
                     BirthDate = new DateTime(1992, 5, 15),

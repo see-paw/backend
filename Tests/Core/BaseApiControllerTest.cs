@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WebAPI.Controllers;
 
-namespace Tests
+namespace Tests.Core
 {
     /// <summary>
     /// Unit tests for BaseApiController.HandleResult method.

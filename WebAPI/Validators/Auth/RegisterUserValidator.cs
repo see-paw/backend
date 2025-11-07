@@ -1,4 +1,4 @@
-using Application.Common;
+using Domain.Common;
 using FluentValidation;
 using WebAPI.DTOs.Auth;
 

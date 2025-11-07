@@ -1,8 +1,8 @@
 ﻿using Application.Activities.Commands;
 using Application.Activities.Queries;
-using Application.Common;
 using Application.Core;
 using AutoMapper;
+using Domain.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs.Activities;
@@ -229,6 +229,6 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
         );
 
         // Return the successful paginated result
-        return HandleResult(Result<PagedList<ResFosteringVisitDto>>.Success(dtoPagedList, 200));;
+        return HandleResult(Result<PagedList<ResFosteringVisitDto>>.Success(dtoPagedList, 200));
     }
 }

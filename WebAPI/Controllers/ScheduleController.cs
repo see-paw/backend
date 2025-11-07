@@ -1,7 +1,7 @@
-﻿using Application.Common;
-using Application.Core;
+﻿using Application.Core;
 using Application.Scheduling.Queries;
 using AutoMapper;
+using Domain.Common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

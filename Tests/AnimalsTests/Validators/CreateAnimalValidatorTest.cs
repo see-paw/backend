@@ -1,8 +1,8 @@
 ﻿using Application.Animals.Commands;
-using Application.Common;
 using Application.Core;
 using Application.Interfaces;
 using Domain;
+using Domain.Common;
 using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Http;

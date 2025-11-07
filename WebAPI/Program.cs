@@ -19,7 +19,7 @@ using Microsoft.EntityFrameworkCore;
 using Persistence;
 using System.Text.Json.Serialization;
 using Application.Animals.Filters;
-using Application.Common;
+using Domain.Common;
 using WebAPI.Core;
 using WebAPI.Middleware;
 using WebAPI.Validators;
