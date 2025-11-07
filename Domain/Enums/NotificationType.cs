@@ -38,5 +38,45 @@ public enum NotificationType
     /// <summary>
     /// Notification sent to shelter admin when a new ownership activity is proposed by the animal's owner.
     /// </summary>
-    NEW_OWNERSHIP_ACTIVITY
+    NEW_OWNERSHIP_ACTIVITY,
+
+    /// <summary>
+    /// Notification sent to user when a new ownership activity is about to start.
+    /// </summary>
+    OWNERSHIP_ACTIVITY_START_REMINDER_USER,
+
+    /// <summary>
+    /// Notification sent to user when a new ownership activity is about to  end.
+    /// </summary>
+    OWNERSHIP_ACTIVITY_END_REMINDER_USER,
+
+    /// <summary>
+    /// Notification sent to shelter admin when a new ownership activity is about to start.
+    /// </summary>
+    OWNERSHIP_ACTIVITY_START_REMINDER_SHELTER_ADMIN,
+
+    /// <summary>
+    /// Notification sent to shelter admin when a new ownership activity is about to end.
+    /// </summary>
+    OWNERSHIP_ACTIVITY_END_REMINDER_SHELTER_ADMIN,
+
+    /// <summary>
+    /// Notification sent to user when a new fostering activity is about to start or to end.
+    /// </summary>
+    FOSTERING_ACTIVITY_START_REMINDER_USER,
+
+    /// <summary>
+    /// Notification sent to user when a new fostering activity is about to end.
+    /// </summary>
+    FOSTERING_ACTIVITY_END_REMINDER_USER,
+
+    /// <summary>
+    /// Notification sent to shelter admin when a new fostering activity is about to start.
+    /// </summary>
+    FOSTERING_ACTIVITY_START_REMINDER_SHELTER_ADMIN,
+
+    /// <summary>
+    /// Notification sent to shelter admin when a new fostering activity is about to end.
+    /// </summary>
+    FOSTERING_ACTIVITY_END_REMINDER_SHELTER_ADMIN
 }

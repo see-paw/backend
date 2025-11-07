@@ -426,6 +426,7 @@ public class RejectOwnershipRequestHandlerTests
                 It.IsAny<string>(),
                 request.AnimalId,
                 request.Id,
+                It.IsAny<string?>(),
                 It.IsAny<CancellationToken>()
             ),
             Times.Once

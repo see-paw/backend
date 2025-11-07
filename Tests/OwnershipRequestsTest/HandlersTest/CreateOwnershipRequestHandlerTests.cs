@@ -345,6 +345,7 @@ public class CreateOwnershipRequestHandlerTests
                 It.IsAny<string>(),
                 animal.Id,
                 It.IsAny<string>(),
+                It.IsAny<string?>(),
                 It.IsAny<CancellationToken>()
             ),
             Times.Once

@@ -821,6 +821,7 @@ public class ApproveOwnershipRequestHandlerTests
                 It.IsAny<string>(),
                 request.AnimalId,
                 request.Id,
+                It.IsAny<string?>(),
                 It.IsAny<CancellationToken>()
             ),
             Times.Once
@@ -886,6 +887,7 @@ public class ApproveOwnershipRequestHandlerTests
                 It.IsAny<string>(),
                 animal.Id,
                 request.Id,
+                It.IsAny<string?>(),
                 It.IsAny<CancellationToken>()
             ),
             Times.Once

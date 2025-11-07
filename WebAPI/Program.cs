@@ -1,10 +1,4 @@
 ﻿using Application.Animals.Queries;
-using WebAPI.Validators;
-using FluentValidation;
-using Persistence;
-using System.Text.Json.Serialization;
-using Application;
-using Application.Animals;
 using Application.Core;
 using Application.Fosterings;
 using Application.Interfaces;
@@ -13,6 +7,8 @@ using Domain;
 using Domain.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Infrastructure.BackgroundTasks;
+using Infrastructure.BackgroundTasks.Tasks.ActivityTasks;
 using Infrastructure.Hubs;
 using Infrastructure.Images;
 using Infrastructure.Notifications;
@@ -25,6 +21,7 @@ using System.Text.Json.Serialization;
 using Application.Animals.Filters;
 using WebAPI.Core;
 using WebAPI.Middleware;
+using WebAPI.Validators;
 using WebAPI.Validators.Animals;
 
 var inContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
@@ -179,14 +176,16 @@ builder.Services.Configure<FosteringSettings>(
 builder.Services.AddSignalR();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
+// Background Tasks Services
+builder.Services.AddHostedService<ReminderService>();
+builder.Services.AddScoped<IReminderTask, OwnershipActivityCompletionTask>();
+builder.Services.AddScoped<IReminderTask, OwnershipActivityReminderTask>();
+builder.Services.AddScoped<IReminderTask, FosteringActivityReminderTask>();
 
+// Pipeline
 var app = builder.Build();
 
 app.UseSwagger();
-
-
-
-// Pipeline
 app.UseCors(c => c
     .AllowAnyHeader()
     .AllowAnyMethod()
