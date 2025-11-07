@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Application.Common;
 using FluentValidation.TestHelper;
 using WebAPI.DTOs.Auth;
 using WebAPI.Validators.Auth;
@@ -25,7 +26,7 @@ namespace Tests.AuthTests.Validators
         /// <summary>
         /// Creates a valid DTO for a standard user.
         /// </summary>
-        private static ReqRegisterUserDto CreateValidUser(string role = "User")
+        private static ReqRegisterUserDto CreateValidUser(string role = AppRoles.User)
         {
             return new ReqRegisterUserDto
             {
@@ -55,7 +56,7 @@ namespace Tests.AuthTests.Validators
                 City = "Porto",
                 PostalCode = "4000-123",
                 BirthDate = new DateTime(1990, 1, 1),
-                SelectedRole = "AdminCAA",
+                SelectedRole = AppRoles.AdminCAA,
                 ShelterName = "Abrigo da Serra",
                 ShelterStreet = "Rua Verde",
                 ShelterCity = "Porto",
@@ -70,7 +71,7 @@ namespace Tests.AuthTests.Validators
         [Fact]
         public void Should_Pass_When_Normal_User()
         {
-            var dto = CreateValidUser("User");
+            var dto = CreateValidUser(AppRoles.User);
 
             var result = _validator.TestValidate(dto);
 
@@ -80,7 +81,7 @@ namespace Tests.AuthTests.Validators
         [Fact]
         public void Should_Fail_When_AdminCAA_Without_Shelter_Fields()
         {
-            var dto = CreateValidUser("AdminCAA");
+            var dto = CreateValidUser(AppRoles.AdminCAA);
 
             var result = _validator.TestValidate(dto);
 
@@ -112,7 +113,7 @@ namespace Tests.AuthTests.Validators
         [InlineData("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\r\n")]
         public void Should_Fail_When_Normal_User_Has_Invalid_Name(String name)
         {
-            var dto = CreateValidUser("User");
+            var dto = CreateValidUser(AppRoles.User);
             dto.Name = name;
 
             var result = _validator.TestValidate(dto);
@@ -126,7 +127,7 @@ namespace Tests.AuthTests.Validators
         [InlineData("Ana Paula Fonseca Lopes Dias")]
         public void Should_Success_When_Normal_User_Has_Valid_Name(String name)
         {
-            var dto = CreateValidUser("User");
+            var dto = CreateValidUser(AppRoles.User);
             dto.Name = name;
 
             var result = _validator.TestValidate(dto);
@@ -138,7 +139,7 @@ namespace Tests.AuthTests.Validators
         [Fact]
         public void Should_Fail_When_Normal_User_Has_Future_BirthDate()
         {
-            var dto = CreateValidUser("User");
+            var dto = CreateValidUser(AppRoles.User);
             dto.BirthDate = DateTime.UtcNow.AddDays(1);
 
             var result = _validator.TestValidate(dto);
@@ -149,7 +150,7 @@ namespace Tests.AuthTests.Validators
         [Fact]
         public void Should_Fail_When_Normal_User_Has_BirthDate_Older_Than_100_Years()
         {
-            var dto = CreateValidUser("User");
+            var dto = CreateValidUser(AppRoles.User);
             dto.BirthDate = DateTime.UtcNow.AddYears(-101);
 
             var result = _validator.TestValidate(dto);
@@ -160,7 +161,7 @@ namespace Tests.AuthTests.Validators
         [Fact]
         public void Should_Success_When_Normal_User_Has_Past_BirthDate()
         {
-            var dto = CreateValidUser("User");
+            var dto = CreateValidUser(AppRoles.User);
             dto.BirthDate = new DateTime(1999, 5, 15);
 
             var result = _validator.TestValidate(dto);
@@ -174,7 +175,7 @@ namespace Tests.AuthTests.Validators
         [InlineData("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\r\n")]
         public void Should_Fail_When_Normal_User_Has_Invalid_Street(String street)
         {
-            var dto = CreateValidUser("User");
+            var dto = CreateValidUser(AppRoles.User);
             dto.Street = street;
 
             var result = _validator.TestValidate(dto);
@@ -185,7 +186,7 @@ namespace Tests.AuthTests.Validators
         [Fact]
         public void Should_Success_When_Normal_User_Has_Valid_Street()
         {
-            var dto = CreateValidUser("User");
+            var dto = CreateValidUser(AppRoles.User);
             dto.Street = "Rua de Cima";
 
             var result = _validator.TestValidate(dto);
@@ -199,7 +200,7 @@ namespace Tests.AuthTests.Validators
         [InlineData("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\r\n")]
         public void Should_Fail_When_Normal_User_Has_Invalid_City(String city)
         {
-            var dto = CreateValidUser("User");
+            var dto = CreateValidUser(AppRoles.User);
             dto.City = city;
 
             var result = _validator.TestValidate(dto);
@@ -210,7 +211,7 @@ namespace Tests.AuthTests.Validators
         [Fact]
         public void Should_Success_When_Normal_User_Has_Valid_City()
         {
-            var dto = CreateValidUser("User");
+            var dto = CreateValidUser(AppRoles.User);
             dto.City = "Porto";
 
             var result = _validator.TestValidate(dto);
@@ -224,7 +225,7 @@ namespace Tests.AuthTests.Validators
         [InlineData("12-25")]
         public void Should_Fail_When_Normal_User_Has_Invalid_PostalCode(String postalCode)
         {
-            var dto = CreateValidUser("User");
+            var dto = CreateValidUser(AppRoles.User);
             dto.PostalCode = postalCode;
 
             var result = _validator.TestValidate(dto);
@@ -235,7 +236,7 @@ namespace Tests.AuthTests.Validators
         [Fact]
         public void Should_Success_When_Normal_User_Has_Valid_PostalCode()
         {
-            var dto = CreateValidUser("User");
+            var dto = CreateValidUser(AppRoles.User);
             dto.PostalCode = "1425-263";
 
             var result = _validator.TestValidate(dto);
@@ -251,7 +252,7 @@ namespace Tests.AuthTests.Validators
         [InlineData("@domain.com")]
         public void Should_Fail_When_Normal_User_Has_Invalid_Email(string email)
         {
-            var dto = CreateValidUser("User");
+            var dto = CreateValidUser(AppRoles.User);
             dto.Email = email;
 
             var result = _validator.TestValidate(dto);
@@ -265,7 +266,7 @@ namespace Tests.AuthTests.Validators
         [InlineData("my.email+tag@gmail.com")]
         public void Should_Success_When_Normal_User_Has_Valid_Email(string email)
         {
-            var dto = CreateValidUser("User");
+            var dto = CreateValidUser(AppRoles.User);
             dto.Email = email;
 
             var result = _validator.TestValidate(dto);
@@ -286,7 +287,7 @@ namespace Tests.AuthTests.Validators
 
         public void Should_Fail_When_Normal_User_Has_Invalid_Password(String password)
         {
-            var dto = CreateValidUser("User");
+            var dto = CreateValidUser(AppRoles.User);
             dto.Password = password;
 
             var result = _validator.TestValidate(dto);
@@ -303,7 +304,7 @@ namespace Tests.AuthTests.Validators
 
         public void Should_Fail_When_Normal_User_Has_Valid_Password(String password)
         {
-            var dto = CreateValidUser("User");
+            var dto = CreateValidUser(AppRoles.User);
             dto.Password = password;
 
             var result = _validator.TestValidate(dto);

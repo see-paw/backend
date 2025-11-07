@@ -1,4 +1,5 @@
 ﻿using Application.Animals.Commands;
+using Application.Common;
 using Application.Core;
 using Application.Interfaces;
 using Domain;
@@ -417,7 +418,7 @@ public class CreateAnimalTests : IDisposable
         Assert.True(result.IsSuccess);
         _mockNotificationService.Verify(
             x => x.CreateAndSendToRoleAsync(
-                "User",
+                AppRoles.User,
                 NotificationType.NEW_ANIMAL_ADDED,
                 It.IsAny<string>(),
                 animal.Id

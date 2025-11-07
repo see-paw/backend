@@ -1,4 +1,5 @@
-﻿using Application.Interfaces;
+﻿using Application.Common;
+using Application.Interfaces;
 using Domain;
 using Domain.Enums;
 using Infrastructure.Hubs;
@@ -225,7 +226,7 @@ public class NotificationServiceTests : IDisposable
     [Fact]
     public async Task CreateAndSendToRoleAsync_ShouldCreateNotificationForEachUser()
     {
-        var role = "User";
+        var role = AppRoles.User;
         var users = new List<User>
         {
             new User { Id = "user-1", UserName = "user1" },
@@ -243,7 +244,7 @@ public class NotificationServiceTests : IDisposable
     [Fact]
     public async Task CreateAndSendToRoleAsync_ShouldSetIsBroadcastToTrue()
     {
-        var role = "AdminCAA";
+        var role = AppRoles.AdminCAA;
         var users = new List<User>
         {
             new User { Id = "admin-1", UserName = "admin1" }
@@ -260,7 +261,7 @@ public class NotificationServiceTests : IDisposable
     [Fact]
     public async Task CreateAndSendToRoleAsync_ShouldSetTargetRole()
     {
-        var role = "User";
+        var role = AppRoles.User;
         var users = new List<User>
         {
             new User { Id = "user-1", UserName = "user1" }
@@ -277,7 +278,7 @@ public class NotificationServiceTests : IDisposable
     [Fact]
     public async Task CreateAndSendToRoleAsync_ShouldReturnListOfNotifications()
     {
-        var role = "User";
+        var role = AppRoles.User;
         var users = new List<User>
         {
             new User { Id = "user-1", UserName = "user1" },
@@ -306,7 +307,7 @@ public class NotificationServiceTests : IDisposable
     [Fact]
     public async Task CreateAndSendToRoleAsync_ShouldSendViaSignalR_WhenUsersExist()
     {
-        var role = "User";
+        var role = AppRoles.User;
         var users = new List<User>
         {
             new User { Id = "user-1", UserName = "user1" }
@@ -413,7 +414,7 @@ public class NotificationServiceTests : IDisposable
     [Fact]
     public async Task SendToRoleAsync_ShouldSendToAllUsersInRole()
     {
-        var role = "User";
+        var role = AppRoles.User;
         var users = new List<User>
         {
             new User { Id = "user-1", UserName = "user1" },
@@ -463,7 +464,7 @@ public class NotificationServiceTests : IDisposable
     [Fact]
     public async Task SendToRoleAsync_ShouldNotThrow_WhenSignalRFails()
     {
-        var role = "User";
+        var role = AppRoles.User;
         var users = new List<User>
         {
             new User { Id = "user-1", UserName = "user1" }
@@ -492,7 +493,7 @@ public class NotificationServiceTests : IDisposable
     [Fact]
     public async Task SendToRoleAsync_ShouldLogError_WhenSignalRFails()
     {
-        var role = "AdminCAA";
+        var role = AppRoles.AdminCAA;
         var users = new List<User>
         {
             new User { Id = "admin-1", UserName = "admin1" }
