@@ -228,6 +228,6 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
         );
 
         // Return the successful paginated result
-        return Ok(dtoPagedList);
+        return HandleResult(Result<PagedList<ResFosteringVisitDto>>.Success(dtoPagedList, 200));;
     }
 }
