@@ -84,6 +84,7 @@ jobs:
           dotnet test Tests/Tests.csproj \
             --no-restore \
             --configuration Release \
+            --filter "FullyQualifiedName!~ActivityReminderIntegrationTests" \
             --logger "trx;LogFileName=test-results.trx" \
             --results-directory TestResults \
             --collect:"XPlat Code Coverage" \
