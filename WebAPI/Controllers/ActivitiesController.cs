@@ -193,4 +193,41 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
 
         return HandleResult(Result<ResCancelActivityFosteringDto>.Success(responseDto, 200));
     }
+    
+    /// <summary>
+    /// Gets future fostering visit slots for the authenticated user
+    /// </summary>
+    /// <param name="pageNumber">Page number for pagination (default: 1)</param>
+    /// <param name="pageSize">Number of items per page (default: 10, max: 50)</param>
+    /// <returns>Paginated list of fostering visits</returns>
+    [Authorize(Roles = "User")]
+    [HttpGet("fostering-visits")]
+    public async Task<ActionResult> GetFosteringActivities(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var result = await Mediator.Send(new GetFosteringActivitiesByUser.Query
+        {
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        });
+
+        if (!result.IsSuccess || result.Value == null)
+        {
+            return HandleResult(result);
+        }
+
+        var dtoList = mapper.Map<List<ResFosteringVisitDto>>(result.Value);
+
+        // Create a new paginated list with the DTOs
+        var dtoPagedList = new PagedList<ResFosteringVisitDto>(
+            dtoList,
+            result.Value.TotalCount,
+            result.Value.CurrentPage,
+            result.Value.PageSize
+        );
+
+        // Return the successful paginated result
+        return HandleResult(Result<PagedList<ResFosteringVisitDto>>.Success(dtoPagedList, 200));;
+    }
 }

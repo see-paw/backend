@@ -82,7 +82,7 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(16, userManager.Users.Count());
+            Assert.Equal(17, userManager.Users.Count());
         }
 
         /// <summary>
@@ -193,7 +193,7 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(8, userManager.Users.Count());
+            Assert.Equal(9, userManager.Users.Count());
             Assert.Equal("Existing User", userManager.Users.First().Name);
         }
 
@@ -228,7 +228,7 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(7, await context.Shelters.CountAsync());
+            Assert.Equal(8, await context.Shelters.CountAsync());
         }
 
         /// <summary>
@@ -258,7 +258,7 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(5, await context.Shelters.CountAsync());
+            Assert.Equal(6, await context.Shelters.CountAsync());
             Assert.Equal("Existing Shelter", (await context.Shelters.FirstAsync()).Name);
         }
 
@@ -277,7 +277,7 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(9, await context.Breeds.CountAsync());
+            Assert.Equal(12, await context.Breeds.CountAsync());
         }
 
         #endregion
@@ -295,7 +295,7 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(45, await context.Animals.CountAsync());
+            Assert.Equal(50, await context.Animals.CountAsync());
         }
 
         /// <summary>
@@ -306,7 +306,7 @@ namespace Tests
         [InlineData(AnimalState.Inactive, 3)]
         [InlineData(AnimalState.HasOwner, 6)]
         [InlineData(AnimalState.TotallyFostered, 5)]
-        [InlineData(AnimalState.PartiallyFostered, 13)]
+        [InlineData(AnimalState.PartiallyFostered, 18)]
         public async Task SeedData_EmptyDatabase_CreatesAnimalsWithDifferentStates(AnimalState state, int expectedCount)
         {
             await using var context = new AppDbContext(_options);
@@ -322,7 +322,7 @@ namespace Tests
         /// Tests that seeded animals have correct species distribution.
         /// </summary>
         [Theory]
-        [InlineData(Species.Dog, 35)]
+        [InlineData(Species.Dog, 40)]
         [InlineData(Species.Cat, 10)]
         public async Task SeedData_EmptyDatabase_CreatesAnimalsWithCorrectSpecies(Species species, int expectedCount)
         {
@@ -365,7 +365,7 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(26, await context.Animals.CountAsync());
+            Assert.Equal(31, await context.Animals.CountAsync());
             Assert.Equal("Existing Animal", (await context.Animals.FirstAsync()).Name);
         }
 
@@ -385,7 +385,7 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(38, await context.Images.CountAsync());
+            Assert.Equal(44, await context.Images.CountAsync());
         }
 
         /// <summary>
@@ -403,8 +403,8 @@ namespace Tests
             var shelterImages = await context.Images.CountAsync(i => i.ShelterId != null);
             var animalImages = await context.Images.CountAsync(i => i.AnimalId != null);
 
-            Assert.Equal(6, shelterImages);
-            Assert.Equal(32, animalImages);
+            Assert.Equal(7, shelterImages);
+            Assert.Equal(37, animalImages);
         }
 
         /// <summary>
@@ -420,7 +420,7 @@ namespace Tests
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
             var principalImages = await context.Images.CountAsync(i => i.IsPrincipal);
-            Assert.Equal(24, principalImages);
+            Assert.Equal(30, principalImages);
         }
 
         /// <summary>
@@ -463,7 +463,7 @@ namespace Tests
                 .Where(a => a.Images.Any())
                 .ToListAsync();
 
-            Assert.Equal(20, animalsWithImages.Count);
+            Assert.Equal(25, animalsWithImages.Count);
 
             foreach (var animal in animalsWithImages)
             {
@@ -496,7 +496,7 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(13, await context.Images.CountAsync());
+            Assert.Equal(19, await context.Images.CountAsync());
             Assert.Equal("https://example.com/existing.jpg", (await context.Images.FirstAsync()).Url);
         }
 
@@ -515,7 +515,7 @@ namespace Tests
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(17, await context.Fosterings.CountAsync());
+            Assert.Equal(22, await context.Fosterings.CountAsync());
         }
 
         #endregion
