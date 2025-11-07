@@ -2521,7 +2521,7 @@ public static class DbInitializer
     };
     await userManager.CreateAsync(fosterUserC, "Pa$$w0rd");
     await userManager.AddToRoleAsync(fosterUserC,  AppRoles.User);
-
+    
     var otherUser = new User
     {
         Id = "d2b3c4d5-e6f7-4a8b-9c0d-1e2f3a4b5c6d",
