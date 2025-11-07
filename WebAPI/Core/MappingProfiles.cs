@@ -1,11 +1,9 @@
 using Application.Animals.Filters;
-using Application.Interfaces;
 using Application.Auth.Commands;
 using Application.Activities.Commands;
 using AutoMapper;
 using Application.Scheduling;
 using Domain;
-using WebAPI.DTOs;
 using WebAPI.DTOs.Activities;
 using WebAPI.DTOs.Animals;
 using WebAPI.DTOs.AnimalSchedule;
@@ -281,6 +279,25 @@ public class MappingProfiles : Profile
         
         CreateMap<AnimalFilterDto, AnimalFilterModel>()
             .ConvertUsing<AnimalFilterDtoConverter>();
+        
+        // Mapping for FosteringVisitDto
+        CreateMap<Activity, ResFosteringVisitDto>()
+            .ForMember(d => d.ActivityId, o => o.MapFrom(s => s.Id))
+            .ForMember(d => d.AnimalName, o => o.MapFrom(s => s.Animal.Name))
+            .ForMember(d => d.AnimalPrincipalImageUrl, o => o.MapFrom(s => 
+                s.Animal.Images.FirstOrDefault(img => img.IsPrincipal)!.Url))
+            .ForMember(d => d.BreedName, o => o.MapFrom(s => s.Animal.Breed.Name))
+            .ForMember(d => d.AnimalAge, o => o.MapFrom(s => 
+                CalculateAge(s.Animal.BirthDate)))
+            .ForMember(d => d.ShelterName, o => o.MapFrom(s => s.Animal.Shelter.Name))
+            .ForMember(d => d.ShelterAddress, o => o.MapFrom(s => 
+                $"{s.Animal.Shelter.Street}, {s.Animal.Shelter.PostalCode} {s.Animal.Shelter.City}"))
+            .ForMember(d => d.ShelterOpeningTime, o => o.MapFrom(s => s.Animal.Shelter.OpeningTime))
+            .ForMember(d => d.ShelterClosingTime, o => o.MapFrom(s => s.Animal.Shelter.ClosingTime))
+            .ForMember(d => d.VisitStartDateTime, o => o.MapFrom(s => s.Slot!.StartDateTime))
+            .ForMember(d => d.VisitEndDateTime, o => o.MapFrom(s => s.Slot!.EndDateTime))
+            .ForMember(d => d.VisitDate, o => o.MapFrom(s => 
+                DateOnly.FromDateTime(s.Slot!.StartDateTime)));
     }
 
     private static int CalculateAge(DateOnly birthDate)
