@@ -2,6 +2,7 @@ using Application.Auth.Commands;
 using Application.Core;
 using AutoMapper;
 using Domain;
+using Domain.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebAPI.DTOs.Auth;
@@ -62,7 +63,7 @@ namespace WebAPI.Controllers
             responseDto.Role = reqRegisterUserDto.SelectedRole;
 
             // Only map shelter info when the registered user corresponds to an AdminCAA
-            if (responseDto.Role == "AdminCAA" && result.Value.Shelter != null)
+            if (responseDto.Role == AppRoles.AdminCAA && result.Value.Shelter != null)
                 responseDto.Shelter = _mapper.Map<ResRegisterShelterDto>(result.Value.Shelter);
 
             return HandleResult(Result<ResRegisterUserDto>.Success(responseDto, 201));

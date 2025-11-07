@@ -11,9 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Persistence;
-using Xunit;
 
-namespace Tests.IntegrationTests.BackgroundTasks;
+namespace Tests.Integration.BackgroundTasks;
 
 /// <summary>
 /// Integration tests for background tasks using a real test database.

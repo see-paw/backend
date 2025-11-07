@@ -1,4 +1,5 @@
 ﻿using Domain;
+using Domain.Common;
 using Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -51,9 +52,6 @@ public static class DbInitializer
         const string animal10Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd0c";
         const string animal11Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd1c";
         const string animal15Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd5d"; // Notifications testing
-        const string platformAdmin = "PlatformAdmin";
-        const string adminCaa = "AdminCAA";
-        const string userRole = "User";
         const string user1Id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"; // Alice
         const string user2Id = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"; // Bob
         const string user3Id = "cccccccc-cccc-cccc-cccc-cccccccccccc"; // Carlos
@@ -229,10 +227,9 @@ public static class DbInitializer
 
         if (!userManager.Users.Any())
         {
-            var roles = new List<string> { platformAdmin, adminCaa, userRole };
             var logger = loggerFactory.CreateLogger("DbInitializer");
 
-            foreach (var role in roles)
+            foreach (var role in AppRoles.All)
             {
                 if (!await roleManager.RoleExistsAsync(role))
                 {
@@ -335,7 +332,7 @@ public static class DbInitializer
                     PhoneNumber = "918888777",
                     CreatedAt = DateTime.UtcNow
                 },
-                new() // Notifications testing - AdminCAA
+                new() // Notifications testing - AppRoles.AdminCAA
                 {
                     Id = user8Id,
                     Name = "Alice Notifications Admin",
@@ -372,11 +369,11 @@ public static class DbInitializer
                 {
                     var role = user.Email switch
                     {
-                        "bob@test.com" => platformAdmin,
-                        "alice@test.com" => adminCaa,
-                        "filipe@test.com" => adminCaa,
-                        "alice.notif@test.com" => adminCaa, // Notifications testing
-                        _ => userRole
+                        "bob@test.com" => AppRoles.PlatformAdmin,
+                        "alice@test.com" => AppRoles.AdminCAA,
+                        "filipe@test.com" => AppRoles.AdminCAA,
+                        "alice.notif@test.com" => AppRoles.AdminCAA, // Notifications testing
+                        _ => AppRoles.User
                     };
 
                     await userManager.AddToRoleAsync(user, role);
@@ -1159,9 +1156,9 @@ public static class DbInitializer
         await userManager.CreateAsync(user1, "Test@123");
         await userManager.CreateAsync(user2, "Test@123");
         await userManager.CreateAsync(user3, "Test@123");
-        await userManager.AddToRoleAsync(user1, userRole);
-        await userManager.AddToRoleAsync(user2, userRole);
-        await userManager.AddToRoleAsync(user3, userRole);
+        await userManager.AddToRoleAsync(user1, AppRoles.User);
+        await userManager.AddToRoleAsync(user2, AppRoles.User);
+        await userManager.AddToRoleAsync(user3, AppRoles.User);
 
 
         // Create Shelters
@@ -2092,7 +2089,7 @@ public static class DbInitializer
             CreatedAt = DateTime.UtcNow
         };
         await userManager.CreateAsync(fosterUser, "Pa$$w0rd");
-        await userManager.AddToRoleAsync(fosterUser, userRole);
+        await userManager.AddToRoleAsync(fosterUser, AppRoles.User);
 
 
         // Regular User - no fosterings
@@ -2111,7 +2108,7 @@ public static class DbInitializer
             CreatedAt = DateTime.UtcNow
         };
         await userManager.CreateAsync(regularUser, "Pa$$w0rd");
-        await userManager.AddToRoleAsync(regularUser, userRole);
+        await userManager.AddToRoleAsync(regularUser, AppRoles.User);
 
         // ============================================
         // 2. CREATE SHELTER
@@ -2523,7 +2520,7 @@ public static class DbInitializer
             CreatedAt = DateTime.UtcNow
         };
         await userManager.CreateAsync(fosterUserC, "Pa$$w0rd");
-        await userManager.AddToRoleAsync(fosterUserC, userRole);
+        await userManager.AddToRoleAsync(fosterUserC, AppRoles.User);
 
         var otherUser = new User
         {
@@ -2540,7 +2537,7 @@ public static class DbInitializer
             CreatedAt = DateTime.UtcNow
         };
         await userManager.CreateAsync(otherUser, "Pa$$w0rd");
-        await userManager.AddToRoleAsync(otherUser, userRole);
+        await userManager.AddToRoleAsync(otherUser, AppRoles.User);
 
         // ============================================
         // 2. CREATE SHELTER
@@ -3079,7 +3076,7 @@ public static class DbInitializer
         };
 
         await userManager.CreateAsync(testUser, "Test@123");
-        await userManager.AddToRoleAsync(testUser, "User");
+        await userManager.AddToRoleAsync(testUser, AppRoles.User);
         
 
         // =====================================================
