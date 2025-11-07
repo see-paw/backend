@@ -536,3 +536,95 @@ jobs:
         run: |
           echo "🧹 A encerrar ambiente de teste..."
           kill $(cat server_pid.txt) || true
+          
+# ======================================================
+# INTEGRATION TESTS WITH DATABASE
+# ======================================================
+  integration_tests_db:
+    runs-on: ubuntu-latest
+    needs: build
+    
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: seepaw
+          POSTGRES_PASSWORD: seepawpwd
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restaurar dependências
+        run: dotnet restore backend.sln
+
+      - name: Compilar solução
+        run: dotnet build backend.sln --no-restore --configuration Release
+
+      - name: Correr testes de integração com BD
+        run: |
+          echo "🗄️ A correr testes de integração com PostgreSQL..."
+          
+          dotnet test Tests/Tests.csproj \
+            --no-restore \
+            --configuration Release \
+            --filter "FullyQualifiedName~ActivityReminderIntegrationTests" \
+            --logger "trx;LogFileName=integration-db-results.trx" \
+            --results-directory TestResults
+          
+          echo "✅ Testes de integração concluídos"
+
+      - name: Verificar resultados
+        if: always()
+        run: |
+          if [ -f TestResults/integration-db-results.trx ]; then
+            passed=$(grep -o 'outcome="Passed"' TestResults/integration-db-results.trx | wc -l || echo "0")
+            failed=$(grep -o 'outcome="Failed"' TestResults/integration-db-results.trx | wc -l || echo "0")
+            skipped=$(grep -o 'outcome="NotExecuted"' TestResults/integration-db-results.trx | wc -l || echo "0")
+            total=$((passed + failed + skipped))
+            
+            echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+            echo "📊 TESTES DE INTEGRAÇÃO COM BD"
+            echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
+            echo "   Total: $total"
+            echo "   ✅ Passaram: $passed"
+            echo "   ❌ Falharam: $failed"
+            echo "   ⏭️  Saltados: $skipped"
+            
+            if [ $failed -eq 0 ] && [ $total -gt 0 ]; then
+              echo "   🎉 Todos os testes passaram!"
+              echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+            elif [ $failed -gt 0 ]; then
+              echo "   ⚠️  Alguns testes falharam"
+              echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+              exit 1
+            else
+              echo "   ⚠️  Nenhum teste foi executado"
+              echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+              exit 1
+            fi
+          else
+            echo "❌ Ficheiro de resultados não encontrado!"
+            exit 1
+          fi
+
+      - name: Upload resultados de integração com BD
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-db-test-results
+          path: TestResults/
+          if-no-files-found: warn
