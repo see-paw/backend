@@ -1,4 +1,5 @@
-﻿using Application.Core;
+﻿using Application.Common;
+using Application.Core;
 using Application.Scheduling.Queries;
 using AutoMapper;
 using MediatR;
@@ -22,7 +23,7 @@ public class ScheduleController(IMediator mediator, IMapper mapper) : BaseApiCon
     /// An <see cref="ActionResult{T}"/> containing an <see cref="AnimalWeeklyScheduleDto"/> if successful,  
     /// or an appropriate error response if the request fails validation or authorization.
     /// </returns>
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = AppRoles.User)]
     [HttpGet("animals/{animalId}/schedule/weekly")]
     public async Task<ActionResult<AnimalWeeklyScheduleDto>> GetAnimalWeeklySchedule(
         [FromRoute] string animalId, 

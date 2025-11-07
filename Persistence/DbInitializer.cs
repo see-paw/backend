@@ -1,4 +1,5 @@
-﻿using Domain;
+﻿﻿using Application.Common;
+ using Domain;
 using Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -51,9 +52,6 @@ public static class DbInitializer
         const string animal10Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd0c";
         const string animal11Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd1c";
         const string animal15Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd5d"; // Notifications testing
-        const string platformAdmin = "PlatformAdmin";
-        const string adminCaa = "AdminCAA";
-        const string userRole = "User";
         const string user1Id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"; // Alice
         const string user2Id = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"; // Bob
         const string user3Id = "cccccccc-cccc-cccc-cccc-cccccccccccc"; // Carlos
@@ -229,10 +227,9 @@ public static class DbInitializer
 
         if (!userManager.Users.Any())
         {
-            var roles = new List<string> { platformAdmin, adminCaa, userRole };
             var logger = loggerFactory.CreateLogger("DbInitializer");
 
-            foreach (var role in roles)
+            foreach (var role in AppRoles.All)
             {
                 if (!await roleManager.RoleExistsAsync(role))
                 {
@@ -335,7 +332,7 @@ public static class DbInitializer
                     PhoneNumber = "918888777",
                     CreatedAt = DateTime.UtcNow
                 },
-                new() // Notifications testing - AdminCAA
+                new() // Notifications testing - AppRoles.AdminCAA
                 {
                     Id = user8Id,
                     Name = "Alice Notifications Admin",
@@ -372,11 +369,11 @@ public static class DbInitializer
                 {
                     var role = user.Email switch
                     {
-                        "bob@test.com" => platformAdmin,
-                        "alice@test.com" => adminCaa,
-                        "filipe@test.com" => adminCaa,
-                        "alice.notif@test.com" => adminCaa, // Notifications testing
-                        _ => userRole
+                        "bob@test.com" => AppRoles.PlatformAdmin,
+                        "alice@test.com" => AppRoles.AdminCAA,
+                        "filipe@test.com" => AppRoles.AdminCAA,
+                        "alice.notif@test.com" => AppRoles.AdminCAA, // Notifications testing
+                        _ => AppRoles.User
                     };
 
                     await userManager.AddToRoleAsync(user, role);
@@ -693,99 +690,99 @@ public static class DbInitializer
                     Images = new List<Image>()
                 },
 
-            // 5. Animal Totally Fostered (400 Bad Request)
-            new()
-            {
-                Id = "totally-fostered-animal-id",
-                Name = "TestCat TotallyFostered",
-                AnimalState = AnimalState.TotallyFostered,
-                Description = "Animal de teste totalmente acolhido",
-                Species = Species.Cat,
-                Size = SizeType.Small,
-                Sex = SexType.Female,
-                Colour = "Laranja",
-                BirthDate = new DateOnly(2022, 7, 12),
-                Sterilized = true,
-                BreedId = breed1Id,
-                Cost = 30,
-                Features = "Animal de teste - Estado: TotallyFostered",
-                ShelterId = shelter1Id,
-                Images = new List<Image>()
-            },
-            // ========== ANIMALS FOR FAVORITE TESTING =====================
-            new()
-            {
-                Id = animal12Id,
-                Name = "Luna",
-                AnimalState = AnimalState.Available,
-                Description = "Gata carinhosa e tranquila, ideal para apartamento.",
-                Species = Species.Cat,
-                Size = SizeType.Small,
-                Sex = SexType.Female,
-                Colour = "Cinza prateado",
-                BirthDate = new DateOnly(2021, 2, 18),
-                Sterilized = true,
-                BreedId = breed1Id,
-                Cost = 35,
-                Features = "Pelagem sedosa, olhos verdes",
-                ShelterId = shelter1Id,
-                Images = new List<Image>()
-            },
-            new()
-            {
-                Id = animal13Id,
-                Name = "Rex",
-                AnimalState = AnimalState.Available,
-                Description = "Cão ativo e brincalhão, adora crianças.",
-                Species = Species.Dog,
-                Size = SizeType.Medium,
-                Sex = SexType.Male,
-                Colour = "Castanho avermelhado",
-                BirthDate = new DateOnly(2020, 9, 5),
-                Sterilized = true,
-                BreedId = breed2Id,
-                Cost = 55,
-                Features = "Muito energético, gosta de correr",
-                ShelterId = shelter1Id,
-                Images = new List<Image>()
-            },
-            new()
-            {
-                Id = animal14Id,
-                Name = "Simba",
-                AnimalState = AnimalState.Available,
-                Description = "Gato jovem e curioso, adora explorar.",
-                Species = Species.Cat,
-                Size = SizeType.Small,
-                Sex = SexType.Male,
-                Colour = "Laranja tigrado",
-                BirthDate = new DateOnly(2022, 6, 10),
-                Sterilized = false,
-                BreedId = breed1Id,
-                Cost = 28,
-                Features = "Muito brincalhão e ativo",
-                ShelterId = shelter1Id,
-                Images = new List<Image>()
-            },
-            new() // Notifications testing
-            {
-                Id = animal15Id,
-                Name = "NotifTestDog",
-                AnimalState = AnimalState.Available,
-                Description = "Animal exclusivo para testes de notificações",
-                Species = Species.Dog,
-                Size = SizeType.Medium,
-                Sex = SexType.Male,
-                Colour = "Preto e Branco",
-                BirthDate = new DateOnly(2020, 1, 1),
-                Sterilized = true,
-                BreedId = breed2Id,
-                Cost = 50,
-                Features = "Animal de teste isolado - Notifications",
-                ShelterId = shelter3Id,
-                Images = new List<Image>()
-            }
-        };
+                // 5. Animal Totally Fostered (400 Bad Request)
+                new()
+                {
+                    Id = "totally-fostered-animal-id",
+                    Name = "TestCat TotallyFostered",
+                    AnimalState = AnimalState.TotallyFostered,
+                    Description = "Animal de teste totalmente acolhido",
+                    Species = Species.Cat,
+                    Size = SizeType.Small,
+                    Sex = SexType.Female,
+                    Colour = "Laranja",
+                    BirthDate = new DateOnly(2022, 7, 12),
+                    Sterilized = true,
+                    BreedId = breed1Id,
+                    Cost = 30,
+                    Features = "Animal de teste - Estado: TotallyFostered",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
+                // ========== ANIMALS FOR FAVORITE TESTING =====================
+                new()
+                {
+                    Id = animal12Id,
+                    Name = "Luna",
+                    AnimalState = AnimalState.Available,
+                    Description = "Gata carinhosa e tranquila, ideal para apartamento.",
+                    Species = Species.Cat,
+                    Size = SizeType.Small,
+                    Sex = SexType.Female,
+                    Colour = "Cinza prateado",
+                    BirthDate = new DateOnly(2021, 2, 18),
+                    Sterilized = true,
+                    BreedId = breed1Id,
+                    Cost = 35,
+                    Features = "Pelagem sedosa, olhos verdes",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
+                new()
+                {
+                    Id = animal13Id,
+                    Name = "Rex",
+                    AnimalState = AnimalState.Available,
+                    Description = "Cão ativo e brincalhão, adora crianças.",
+                    Species = Species.Dog,
+                    Size = SizeType.Medium,
+                    Sex = SexType.Male,
+                    Colour = "Castanho avermelhado",
+                    BirthDate = new DateOnly(2020, 9, 5),
+                    Sterilized = true,
+                    BreedId = breed2Id,
+                    Cost = 55,
+                    Features = "Muito energético, gosta de correr",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
+                new()
+                {
+                    Id = animal14Id,
+                    Name = "Simba",
+                    AnimalState = AnimalState.Available,
+                    Description = "Gato jovem e curioso, adora explorar.",
+                    Species = Species.Cat,
+                    Size = SizeType.Small,
+                    Sex = SexType.Male,
+                    Colour = "Laranja tigrado",
+                    BirthDate = new DateOnly(2022, 6, 10),
+                    Sterilized = false,
+                    BreedId = breed1Id,
+                    Cost = 28,
+                    Features = "Muito brincalhão e ativo",
+                    ShelterId = shelter1Id,
+                    Images = new List<Image>()
+                },
+                new() // Notifications testing
+                {
+                    Id = animal15Id,
+                    Name = "NotifTestDog",
+                    AnimalState = AnimalState.Available,
+                    Description = "Animal exclusivo para testes de notificações",
+                    Species = Species.Dog,
+                    Size = SizeType.Medium,
+                    Sex = SexType.Male,
+                    Colour = "Preto e Branco",
+                    BirthDate = new DateOnly(2020, 1, 1),
+                    Sterilized = true,
+                    BreedId = breed2Id,
+                    Cost = 50,
+                    Features = "Animal de teste isolado - Notifications",
+                    ShelterId = shelter3Id,
+                    Images = new List<Image>()
+                }
+            };
 
             await dbContext.Animals.AddRangeAsync(animals);
             await dbContext.SaveChangesAsync();
@@ -981,84 +978,84 @@ public static class DbInitializer
 
 
                 // === ANIMAL 12 (Luna) ===
-            new()
-            {
-                Id = imageAnimal12Img1Id,
-                AnimalId = animal12Id,
-                Url = imageUrl1_1,
-                Description = "Luna a descansar",
-                IsPrincipal = true,
-                PublicId = publicIdAnimal1Img1
-            },
-            new()
-            {
-                Id = imageAnimal12Img2Id,
-                AnimalId = animal12Id,
-                Url = imageUrl1_2,
-                Description = "Luna a brincar",
-                IsPrincipal = false,
-                PublicId = publicIdAnimal1Img2
-            },
+                new()
+                {
+                    Id = imageAnimal12Img1Id,
+                    AnimalId = animal12Id,
+                    Url = imageUrl1_1,
+                    Description = "Luna a descansar",
+                    IsPrincipal = true,
+                    PublicId = publicIdAnimal1Img1
+                },
+                new()
+                {
+                    Id = imageAnimal12Img2Id,
+                    AnimalId = animal12Id,
+                    Url = imageUrl1_2,
+                    Description = "Luna a brincar",
+                    IsPrincipal = false,
+                    PublicId = publicIdAnimal1Img2
+                },
 
-            // === ANIMAL 13 (Rex) ===
-            new()
-            {
-                Id = imageAnimal13Img1Id,
-                AnimalId = animal13Id,
-                Url = imageUrl1_1,
-                Description = "Rex no jardim",
-                IsPrincipal = true,
-                PublicId = publicIdAnimal1Img1
-            },
-            new()
-            {
-                Id = imageAnimal13Img2Id,
-                AnimalId = animal13Id,
-                Url = imageUrl1_2,
-                Description = "Rex a correr",
-                IsPrincipal = false,
-                PublicId = publicIdAnimal1Img2
-            },
+                // === ANIMAL 13 (Rex) ===
+                new()
+                {
+                    Id = imageAnimal13Img1Id,
+                    AnimalId = animal13Id,
+                    Url = imageUrl1_1,
+                    Description = "Rex no jardim",
+                    IsPrincipal = true,
+                    PublicId = publicIdAnimal1Img1
+                },
+                new()
+                {
+                    Id = imageAnimal13Img2Id,
+                    AnimalId = animal13Id,
+                    Url = imageUrl1_2,
+                    Description = "Rex a correr",
+                    IsPrincipal = false,
+                    PublicId = publicIdAnimal1Img2
+                },
 
-            // === ANIMAL 14 (Simba) ===
-            new()
-            {
-                Id = imageAnimal14Img1Id,
-                AnimalId = animal14Id,
-                Url = imageUrl1_1,
-                Description = "Simba a explorar",
-                IsPrincipal = true,
-                PublicId = publicIdAnimal1Img1
-            },
-            new()
-            {
-                Id = imageAnimal14Img2Id,
-                AnimalId = animal14Id,
-                Url = imageUrl1_2,
-                Description = "Simba a dormir",
-                IsPrincipal = false,
-                PublicId = publicIdAnimal1Img2
-            },
+                // === ANIMAL 14 (Simba) ===
+                new()
+                {
+                    Id = imageAnimal14Img1Id,
+                    AnimalId = animal14Id,
+                    Url = imageUrl1_1,
+                    Description = "Simba a explorar",
+                    IsPrincipal = true,
+                    PublicId = publicIdAnimal1Img1
+                },
+                new()
+                {
+                    Id = imageAnimal14Img2Id,
+                    AnimalId = animal14Id,
+                    Url = imageUrl1_2,
+                    Description = "Simba a dormir",
+                    IsPrincipal = false,
+                    PublicId = publicIdAnimal1Img2
+                },
 
-            // === ANIMAL 15 (NotifTestDog) - Notifications testing ===
-            new()
-            {
-                Id = imageAnimal15Img1Id,
-                AnimalId = animal15Id,
-                Url = imageUrl1_1,
-                Description = "NotifTestDog principal",
-                IsPrincipal = true,
-                PublicId = publicIdAnimal1Img1
-            },
-            new()
-            {
-                Id = imageAnimal15Img2Id,
-                AnimalId = animal15Id,
-                Url = imageUrl1_2,
-                Description = "NotifTestDog secundário",
-                IsPrincipal = false,
-                PublicId = publicIdAnimal1Img2
-            }
+                // === ANIMAL 15 (NotifTestDog) - Notifications testing ===
+                new()
+                {
+                    Id = imageAnimal15Img1Id,
+                    AnimalId = animal15Id,
+                    Url = imageUrl1_1,
+                    Description = "NotifTestDog principal",
+                    IsPrincipal = true,
+                    PublicId = publicIdAnimal1Img1
+                },
+                new()
+                {
+                    Id = imageAnimal15Img2Id,
+                    AnimalId = animal15Id,
+                    Url = imageUrl1_2,
+                    Description = "NotifTestDog secundário",
+                    IsPrincipal = false,
+                    PublicId = publicIdAnimal1Img2
+                }
             };
 
             await dbContext.Images.AddRangeAsync(images);
@@ -1159,9 +1156,9 @@ public static class DbInitializer
         await userManager.CreateAsync(user1, "Test@123");
         await userManager.CreateAsync(user2, "Test@123");
         await userManager.CreateAsync(user3, "Test@123");
-        await userManager.AddToRoleAsync(user1, userRole);
-        await userManager.AddToRoleAsync(user2, userRole);
-        await userManager.AddToRoleAsync(user3, userRole);
+        await userManager.AddToRoleAsync(user1, AppRoles.User);
+        await userManager.AddToRoleAsync(user2, AppRoles.User);
+        await userManager.AddToRoleAsync(user3, AppRoles.User);
 
 
         // Create Shelters
@@ -1550,33 +1547,33 @@ public static class DbInitializer
                 new()
                 {
                     Id = favorite1Id,
-                    UserId = user7Id,  // Gustavo
-                    AnimalId = animal12Id,  // Luna
+                    UserId = user7Id, // Gustavo
+                    AnimalId = animal12Id, // Luna
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow.AddDays(-3)
                 },
                 new()
                 {
                     Id = favorite2Id,
-                    UserId = user7Id,  // Gustavo
-                    AnimalId = animal13Id,  // Rex
+                    UserId = user7Id, // Gustavo
+                    AnimalId = animal13Id, // Rex
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow.AddDays(-2)
                 },
                 new()
                 {
                     Id = favorite3Id,
-                    UserId = user7Id,  // Gustavo
-                    AnimalId = animal14Id,  // Simba
+                    UserId = user7Id, // Gustavo
+                    AnimalId = animal14Id, // Simba
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow.AddDays(-1)
                 },
                 new()
                 {
                     Id = favorite4Id,
-                    UserId = user7Id,  // Gustavo
-                    AnimalId = "f055cc31-fdeb-4c65-bb73-4f558f67dd1b",  // Bolinhas
-                    IsActive = false,  // INATIVO
+                    UserId = user7Id, // Gustavo
+                    AnimalId = "f055cc31-fdeb-4c65-bb73-4f558f67dd1b", // Bolinhas
+                    IsActive = false, // INATIVO
                     CreatedAt = DateTime.UtcNow.AddDays(-4)
                 }
             };
@@ -2064,18 +2061,18 @@ public static class DbInitializer
         await dbContext.Set<ShelterUnavailabilitySlot>().AddRangeAsync(shelterUnavailabilitySlots);
 
         await dbContext.SaveChangesAsync();
-        
+
         // ============================================
         // DATA FOR TESTING FOSTERING ACTIVITIES
         // ============================================
-    
+
         // Skip if data already exists
         if (dbContext.Users.Any(u => u.Email == "foster@test.com")) return;
 
         // ============================================
         // 1. CREATE USERS
         // ============================================
-        
+
         // Foster User - has active fosterings
         var fosterUser = new User
         {
@@ -2092,8 +2089,8 @@ public static class DbInitializer
             CreatedAt = DateTime.UtcNow
         };
         await userManager.CreateAsync(fosterUser, "Pa$$w0rd");
-        await userManager.AddToRoleAsync(fosterUser, userRole);
-        
+        await userManager.AddToRoleAsync(fosterUser, AppRoles.User);
+
 
         // Regular User - no fosterings
         var regularUser = new User
@@ -2111,12 +2108,12 @@ public static class DbInitializer
             CreatedAt = DateTime.UtcNow
         };
         await userManager.CreateAsync(regularUser, "Pa$$w0rd");
-        await userManager.AddToRoleAsync(regularUser, userRole);
+        await userManager.AddToRoleAsync(regularUser, AppRoles.User);
 
         // ============================================
         // 2. CREATE SHELTER
         // ============================================
-        
+
         var shelter = new Shelter
         {
             Id = "c3d4e5f6-a7b8-4c7d-0e1f-2a3b4c5d6e7f",
@@ -2126,7 +2123,7 @@ public static class DbInitializer
             PostalCode = "4100-001",
             Phone = "223456789",
             NIF = "674498653",
-            OpeningTime = new TimeOnly(9, 0),  // 09:00
+            OpeningTime = new TimeOnly(9, 0), // 09:00
             ClosingTime = new TimeOnly(18, 0), // 18:00
             CreatedAt = DateTime.UtcNow
         };
@@ -2135,7 +2132,7 @@ public static class DbInitializer
         // ============================================
         // 3. CREATE BREED
         // ============================================
-        
+
         var breed = new Breed
         {
             Id = "d4e5f6a7-b8c9-4d8e-1f2a-3b4c5d6e7f8a",
@@ -2283,43 +2280,43 @@ public static class DbInitializer
         dbContext.Animals.Add(animalWithActivity);
 
         var animalNotFostered = new Animal
-            {
-                Id = "e1f2a3b4-c5d6-4e5f-8a9b-0c1d2e3f4a5b",
-                Name = "Not Fostered Dog",
-                AnimalState = AnimalState.PartiallyFostered,
-                Species = Species.Dog,
-                Size = SizeType.Medium,
-                Sex = SexType.Male,
-                Colour = "White",
-                BirthDate = new DateOnly(2020, 5, 10),
-                Sterilized = true,
-                Cost = 45.00m,
-                ShelterId = shelter.Id,
-                BreedId = breed.Id,
-                CreatedAt = DateTime.UtcNow
-            };
-            dbContext.Animals.Add(animalNotFostered);
-            
-            // Animal para teste de shelter unavailability (SEM conflitos)
-            var animalShelterTest = new Animal
-            {
-                Id = "f1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c",
-                Name = "Buddy - Shelter Test",
-                AnimalState = AnimalState.PartiallyFostered,
-                Species = Species.Dog,
-                Size = SizeType.Medium,
-                Sex = SexType.Male,
-                Colour = "Brown",
-                BirthDate = new DateOnly(2020, 3, 15),
-                Sterilized = true,
-                Cost = 50.00m,
-                ShelterId = shelter.Id,
-                BreedId = breed.Id,
-                CreatedAt = DateTime.UtcNow
-            };
-            dbContext.Animals.Add(animalShelterTest);
+        {
+            Id = "e1f2a3b4-c5d6-4e5f-8a9b-0c1d2e3f4a5b",
+            Name = "Not Fostered Dog",
+            AnimalState = AnimalState.PartiallyFostered,
+            Species = Species.Dog,
+            Size = SizeType.Medium,
+            Sex = SexType.Male,
+            Colour = "White",
+            BirthDate = new DateOnly(2020, 5, 10),
+            Sterilized = true,
+            Cost = 45.00m,
+            ShelterId = shelter.Id,
+            BreedId = breed.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.Animals.Add(animalNotFostered);
+
+        // Animal para teste de shelter unavailability (SEM conflitos)
+        var animalShelterTest = new Animal
+        {
+            Id = "f1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c",
+            Name = "Buddy - Shelter Test",
+            AnimalState = AnimalState.PartiallyFostered,
+            Species = Species.Dog,
+            Size = SizeType.Medium,
+            Sex = SexType.Male,
+            Colour = "Brown",
+            BirthDate = new DateOnly(2020, 3, 15),
+            Sterilized = true,
+            Cost = 50.00m,
+            ShelterId = shelter.Id,
+            BreedId = breed.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.Animals.Add(animalShelterTest);
         await dbContext.SaveChangesAsync();
-        
+
         // ============================================
         // 5. CREATE IMAGES
         // ============================================
@@ -2341,7 +2338,7 @@ public static class DbInitializer
         // ============================================
         // 5. CREATE FOSTERINGS
         // ============================================
-        
+
 
         // Active fostering for animal 1
         var fostering1 = new Fostering
@@ -2414,7 +2411,7 @@ public static class DbInitializer
             StartDate = DateTime.UtcNow.AddMonths(-1)
         };
         dbContext.Fosterings.Add(fosteringWithActivity);
-        
+
         // Fostering para este animal
         var fosteringShelterTest = new Fostering
         {
@@ -2461,7 +2458,7 @@ public static class DbInitializer
             UserId = fosterUser.Id,
             Type = ActivityType.Fostering,
             Status = ActivityStatus.Active,
-            StartDate =twoDaysFromNow.AddHours(10),
+            StartDate = twoDaysFromNow.AddHours(10),
             EndDate = twoDaysFromNow.AddHours(12),
             CreatedAt = DateTime.UtcNow
         };
@@ -2499,550 +2496,1166 @@ public static class DbInitializer
         await dbContext.SaveChangesAsync();
 
         Console.WriteLine("✅ Foster Activity test seed data created successfully!");
-        
+
         // ============================================
         // SEED DATA FOR CANCELING FOSTERING ACTIVITY
         // ============================================
-        
+
         // ============================================
-    // 1. CREATE USERS
-    // ============================================
-    
-    var fosterUserC = new User
-    {
-        Id = "c1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c",
-        UserName = "cancel-foster@test.com",
-        Email = "cancel-foster@test.com",
-        EmailConfirmed = true,
-        Name = "Cancel Foster User",
-        BirthDate = new DateTime(1990, 1, 1),
-        Street = "Rua Cancel 123",
-        City = "Porto",
-        PostalCode = "4000-001",
-        PhoneNumber = "912345678",
-        CreatedAt = DateTime.UtcNow
-    };
-    await userManager.CreateAsync(fosterUserC, "Pa$$w0rd");
-    await userManager.AddToRoleAsync(fosterUserC, userRole);
+        // 1. CREATE USERS
+        // ============================================
 
-    var otherUser = new User
-    {
-        Id = "d2b3c4d5-e6f7-4a8b-9c0d-1e2f3a4b5c6d",
-        UserName = "other-cancel@test.com",
-        Email = "other-cancel@test.com",
-        EmailConfirmed = true,
-        Name = "Other Cancel User",
-        BirthDate = new DateTime(1992, 5, 15),
-        Street = "Rua Other 456",
-        City = "Lisboa",
-        PostalCode = "1000-001",
-        PhoneNumber = "913456789",
-        CreatedAt = DateTime.UtcNow
-    };
-    await userManager.CreateAsync(otherUser, "Pa$$w0rd");
-    await userManager.AddToRoleAsync(otherUser, userRole);
+        var fosterUserC = new User
+        {
+            Id = "c1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c",
+            UserName = "cancel-foster@test.com",
+            Email = "cancel-foster@test.com",
+            EmailConfirmed = true,
+            Name = "Cancel Foster User",
+            BirthDate = new DateTime(1990, 1, 1),
+            Street = "Rua Cancel 123",
+            City = "Porto",
+            PostalCode = "4000-001",
+            PhoneNumber = "912345678",
+            CreatedAt = DateTime.UtcNow
+        };
+        await userManager.CreateAsync(fosterUserC, "Pa$$w0rd");
+        await userManager.AddToRoleAsync(fosterUserC, AppRoles.User);
 
-    // ============================================
-    // 2. CREATE SHELTER
-    // ============================================
-    
-    var shelterC = new Shelter
-    {
-        Id = "e3c4d5e6-f7a8-4b9c-0d1e-2f3a4b5c6d7e",
-        Name = "Cancel Test Shelter",
-        Street = "Rua Cancel Shelter 789",
-        City = "Porto",
-        PostalCode = "4100-001",
-        Phone = "223456789",
-        NIF = "295582693",
-        OpeningTime = new TimeOnly(9, 0),
-        ClosingTime = new TimeOnly(18, 0),
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.Shelters.Add(shelterC);
+        var otherUser = new User
+        {
+            Id = "d2b3c4d5-e6f7-4a8b-9c0d-1e2f3a4b5c6d",
+            UserName = "other-cancel@test.com",
+            Email = "other-cancel@test.com",
+            EmailConfirmed = true,
+            Name = "Other Cancel User",
+            BirthDate = new DateTime(1992, 5, 15),
+            Street = "Rua Other 456",
+            City = "Lisboa",
+            PostalCode = "1000-001",
+            PhoneNumber = "913456789",
+            CreatedAt = DateTime.UtcNow
+        };
+        await userManager.CreateAsync(otherUser, "Pa$$w0rd");
+        await userManager.AddToRoleAsync(otherUser, AppRoles.User);
 
-    // ============================================
-    // 3. CREATE BREED
-    // ============================================
-    
-    var breedC = new Breed
-    {
-        Id = "f4d5e6f7-a8b9-4c0d-1e2f-3a4b5c6d7e8f",
-        Name = "Cancel Test Breed",
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.Breeds.Add(breedC);
+        // ============================================
+        // 2. CREATE SHELTER
+        // ============================================
 
-    await dbContext.SaveChangesAsync();
+        var shelterC = new Shelter
+        {
+            Id = "e3c4d5e6-f7a8-4b9c-0d1e-2f3a4b5c6d7e",
+            Name = "Cancel Test Shelter",
+            Street = "Rua Cancel Shelter 789",
+            City = "Porto",
+            PostalCode = "4100-001",
+            Phone = "223456789",
+            NIF = "295582693",
+            OpeningTime = new TimeOnly(9, 0),
+            ClosingTime = new TimeOnly(18, 0),
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.Shelters.Add(shelterC);
 
-    // ============================================
-    // 4. CREATE ANIMALS
-    // ============================================
-    
+        // ============================================
+        // 3. CREATE BREED
+        // ============================================
 
-    // Animal 1: Valid cancellation - active fostering, future activity
-    var animalC1 = new Animal
-    {
-        Id = "a5e6f7a8-b9c0-4d1e-2f3a-4b5c6d7e8f9a",
-        Name = "Cancel Rex",
-        AnimalState = AnimalState.PartiallyFostered,
-        Species = Species.Dog,
-        Size = SizeType.Medium,
-        Sex = SexType.Male,
-        Colour = "Brown",
-        BirthDate = new DateOnly(2020, 3, 15),
-        Sterilized = true,
-        Cost = 50.00m,
-        ShelterId = shelterC.Id,
-        BreedId = breedC.Id,
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.Animals.Add(animalC1);
+        var breedC = new Breed
+        {
+            Id = "f4d5e6f7-a8b9-4c0d-1e2f-3a4b5c6d7e8f",
+            Name = "Cancel Test Breed",
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.Breeds.Add(breedC);
 
-    // Animal 2: For testing "not my activity"
-    var animalC2 = new Animal
-    {
-        Id = "b6f7a8b9-c0d1-4e2f-3a4b-5c6d7e8f9a0b",
-        Name = "Other User Dog",
-        AnimalState = AnimalState.PartiallyFostered,
-        Species = Species.Dog,
-        Size = SizeType.Small,
-        Sex = SexType.Female,
-        Colour = "White",
-        BirthDate = new DateOnly(2021, 6, 20),
-        Sterilized = true,
-        Cost = 40,
-        ShelterId = shelterC.Id,
-        BreedId = breedC.Id,
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.Animals.Add(animalC2);
+        await dbContext.SaveChangesAsync();
 
-    // Animal 3: For testing already cancelled activity
-    var animalC3 = new Animal
-    {
-        Id = "c7a8b9c0-d1e2-4f3a-4b5c-6d7e8f9a0b1c",
-        Name = "Cancelled Dog",
-        AnimalState = AnimalState.PartiallyFostered,
-        Species = Species.Dog,
-        Size = SizeType.Large,
-        Sex = SexType.Male,
-        Colour = "Black",
-        BirthDate = new DateOnly(2019, 11, 10),
-        Sterilized = true,
-        Cost = 60,
-        ShelterId = shelterC.Id,
-        BreedId = breedC.Id,
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.Animals.Add(animalC3);
+        // ============================================
+        // 4. CREATE ANIMALS
+        // ============================================
 
-    // Animal 4: For testing completed activity
-    var animalC4 = new Animal
-    {
-        Id = "d8b9c0d1-e2f3-4a4b-5c6d-7e8f9a0b1c2d",
-        Name = "Completed Dog",
-        AnimalState = AnimalState.PartiallyFostered,
-        Species = Species.Cat,
-        Size = SizeType.Small,
-        Sex = SexType.Female,
-        Colour = "Orange",
-        BirthDate = new DateOnly(2022, 4, 5),
-        Sterilized = false,
-        Cost = 35,
-        ShelterId = shelterC.Id,
-        BreedId = breedC.Id,
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.Animals.Add(animalC4);
 
-    // Animal 5: For testing past activity (already started)
-    var animalC5 = new Animal
-    {
-        Id = "e9c0d1e2-f3a4-4b5c-6d7e-8f9a0b1c2d3e",
-        Name = "Past Dog",
-        AnimalState = AnimalState.PartiallyFostered,
-        Species = Species.Dog,
-        Size = SizeType.Medium,
-        Sex = SexType.Male,
-        Colour = "Golden",
-        BirthDate = new DateOnly(2020, 8, 12),
-        Sterilized = true,
-        Cost = 50,
-        ShelterId = shelterC.Id,
-        BreedId = breedC.Id,
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.Animals.Add(animalC5);
+        // Animal 1: Valid cancellation - active fostering, future activity
+        var animalC1 = new Animal
+        {
+            Id = "a5e6f7a8-b9c0-4d1e-2f3a-4b5c6d7e8f9a",
+            Name = "Cancel Rex",
+            AnimalState = AnimalState.PartiallyFostered,
+            Species = Species.Dog,
+            Size = SizeType.Medium,
+            Sex = SexType.Male,
+            Colour = "Brown",
+            BirthDate = new DateOnly(2020, 3, 15),
+            Sterilized = true,
+            Cost = 50.00m,
+            ShelterId = shelterC.Id,
+            BreedId = breedC.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.Animals.Add(animalC1);
 
-    // Animal 6: For testing without active fostering
-    var animalC6 = new Animal
-    {
-        Id = "f0d1e2f3-a4b5-4c6d-7e8f-9a0b1c2d3e4f",
-        Name = "No Fostering Dog",
-        AnimalState = AnimalState.PartiallyFostered,
-        Species = Species.Dog,
-        Size = SizeType.Small,
-        Sex = SexType.Female,
-        Colour = "Spotted",
-        BirthDate = new DateOnly(2021, 2, 28),
-        Sterilized = true,
-        Cost = 42,
-        ShelterId = shelterC.Id,
-        BreedId = breedC.Id,
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.Animals.Add(animalC6);
+        // Animal 2: For testing "not my activity"
+        var animalC2 = new Animal
+        {
+            Id = "b6f7a8b9-c0d1-4e2f-3a4b-5c6d7e8f9a0b",
+            Name = "Other User Dog",
+            AnimalState = AnimalState.PartiallyFostered,
+            Species = Species.Dog,
+            Size = SizeType.Small,
+            Sex = SexType.Female,
+            Colour = "White",
+            BirthDate = new DateOnly(2021, 6, 20),
+            Sterilized = true,
+            Cost = 40,
+            ShelterId = shelterC.Id,
+            BreedId = breedC.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.Animals.Add(animalC2);
 
-    // Animal 7: For testing ownership activity (not fostering)
-    var animalC7 = new Animal
-    {
-        Id = "a1e2f3a4-b5c6-4d7e-8f9a-0b1c2d3e4f5a",
-        Name = "Ownership Dog",
-        AnimalState = AnimalState.HasOwner,
-        Species = Species.Dog,
-        Size = SizeType.Medium,
-        Sex = SexType.Male,
-        Colour = "White",
-        BirthDate = new DateOnly(2020, 5, 10),
-        Sterilized = true,
-        Cost = 45,
-        ShelterId = shelterC.Id,
-        BreedId = breedC.Id,
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.Animals.Add(animalC7);
+        // Animal 3: For testing already cancelled activity
+        var animalC3 = new Animal
+        {
+            Id = "c7a8b9c0-d1e2-4f3a-4b5c-6d7e8f9a0b1c",
+            Name = "Cancelled Dog",
+            AnimalState = AnimalState.PartiallyFostered,
+            Species = Species.Dog,
+            Size = SizeType.Large,
+            Sex = SexType.Male,
+            Colour = "Black",
+            BirthDate = new DateOnly(2019, 11, 10),
+            Sterilized = true,
+            Cost = 60,
+            ShelterId = shelterC.Id,
+            BreedId = breedC.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.Animals.Add(animalC3);
 
-    // Animal 8: For testing slot with Available status
-    var animalC8 = new Animal
-    {
-        Id = "b2f3a4b5-c6d7-4e8f-9a0b-1c2d3e4f5a6b",
-        Name = "Available Slot Dog",
-        AnimalState = AnimalState.PartiallyFostered,
-        Species = Species.Dog,
-        Size = SizeType.Medium,
-        Sex = SexType.Male,
-        Colour = "Gray",
-        BirthDate = new DateOnly(2020, 7, 15),
-        Sterilized = true,
-        Cost = 50,
-        ShelterId = shelterC.Id,
-        BreedId = breedC.Id,
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.Animals.Add(animalC8);
+        // Animal 4: For testing completed activity
+        var animalC4 = new Animal
+        {
+            Id = "d8b9c0d1-e2f3-4a4b-5c6d-7e8f9a0b1c2d",
+            Name = "Completed Dog",
+            AnimalState = AnimalState.PartiallyFostered,
+            Species = Species.Cat,
+            Size = SizeType.Small,
+            Sex = SexType.Female,
+            Colour = "Orange",
+            BirthDate = new DateOnly(2022, 4, 5),
+            Sterilized = false,
+            Cost = 35,
+            ShelterId = shelterC.Id,
+            BreedId = breedC.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.Animals.Add(animalC4);
 
-    await dbContext.SaveChangesAsync();
+        // Animal 5: For testing past activity (already started)
+        var animalC5 = new Animal
+        {
+            Id = "e9c0d1e2-f3a4-4b5c-6d7e-8f9a0b1c2d3e",
+            Name = "Past Dog",
+            AnimalState = AnimalState.PartiallyFostered,
+            Species = Species.Dog,
+            Size = SizeType.Medium,
+            Sex = SexType.Male,
+            Colour = "Golden",
+            BirthDate = new DateOnly(2020, 8, 12),
+            Sterilized = true,
+            Cost = 50,
+            ShelterId = shelterC.Id,
+            BreedId = breedC.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.Animals.Add(animalC5);
 
-    // ============================================
-    // 5. CREATE FOSTERINGS
-    // ============================================
+        // Animal 6: For testing without active fostering
+        var animalC6 = new Animal
+        {
+            Id = "f0d1e2f3-a4b5-4c6d-7e8f-9a0b1c2d3e4f",
+            Name = "No Fostering Dog",
+            AnimalState = AnimalState.PartiallyFostered,
+            Species = Species.Dog,
+            Size = SizeType.Small,
+            Sex = SexType.Female,
+            Colour = "Spotted",
+            BirthDate = new DateOnly(2021, 2, 28),
+            Sterilized = true,
+            Cost = 42,
+            ShelterId = shelterC.Id,
+            BreedId = breedC.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.Animals.Add(animalC6);
 
-    // Active fostering for animal 1
-    var fosteringC1 = new Fostering
-    {
-        Id = "c3a4b5c6-d7e8-4f9a-0b1c-2d3e4f5a6b7c",
-        AnimalId = animalC1.Id,
-        UserId = fosterUserC.Id,
-        Amount = 50,
-        Status = FosteringStatus.Active,
-        StartDate = DateTime.UtcNow.AddMonths(-1)
-    };
-    dbContext.Fosterings.Add(fosteringC1);
+        // Animal 7: For testing ownership activity (not fostering)
+        var animalC7 = new Animal
+        {
+            Id = "a1e2f3a4-b5c6-4d7e-8f9a-0b1c2d3e4f5a",
+            Name = "Ownership Dog",
+            AnimalState = AnimalState.HasOwner,
+            Species = Species.Dog,
+            Size = SizeType.Medium,
+            Sex = SexType.Male,
+            Colour = "White",
+            BirthDate = new DateOnly(2020, 5, 10),
+            Sterilized = true,
+            Cost = 45,
+            ShelterId = shelterC.Id,
+            BreedId = breedC.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.Animals.Add(animalC7);
 
-    // Active fostering for animal 2 (other user)
-    var fosteringC2 = new Fostering
-    {
-        Id = "d4b5c6d7-e8f9-4a0b-1c2d-3e4f5a6b7c8d",
-        AnimalId = animalC2.Id,
-        UserId = otherUser.Id,
-        Amount = 40,
-        Status = FosteringStatus.Active,
-        StartDate = DateTime.UtcNow.AddMonths(-2)
-    };
-    dbContext.Fosterings.Add(fosteringC2);
+        // Animal 8: For testing slot with Available status
+        var animalC8 = new Animal
+        {
+            Id = "b2f3a4b5-c6d7-4e8f-9a0b-1c2d3e4f5a6b",
+            Name = "Available Slot Dog",
+            AnimalState = AnimalState.PartiallyFostered,
+            Species = Species.Dog,
+            Size = SizeType.Medium,
+            Sex = SexType.Male,
+            Colour = "Gray",
+            BirthDate = new DateOnly(2020, 7, 15),
+            Sterilized = true,
+            Cost = 50,
+            ShelterId = shelterC.Id,
+            BreedId = breedC.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.Animals.Add(animalC8);
 
-    // Active fostering for animal 3
-    var fosteringC3 = new Fostering
-    {
-        Id = "e5c6d7e8-f9a0-4b1c-2d3e-4f5a6b7c8d9e",
-        AnimalId = animalC3.Id,
-        UserId = fosterUserC.Id,
-        Amount = 60,
-        Status = FosteringStatus.Active,
-        StartDate = DateTime.UtcNow.AddMonths(-1)
-    };
-    dbContext.Fosterings.Add(fosteringC3);
+        await dbContext.SaveChangesAsync();
 
-    // Active fostering for animal 4
-    var fosteringC4 = new Fostering
-    {
-        Id = "f6d7e8f9-a0b1-4c2d-3e4f-5a6b7c8d9e0f",
-        AnimalId = animalC4.Id,
-        UserId = fosterUserC.Id,
-        Amount = 35,
-        Status = FosteringStatus.Active,
-        StartDate = DateTime.UtcNow.AddMonths(-1)
-    };
-    dbContext.Fosterings.Add(fosteringC4);
+        // ============================================
+        // 5. CREATE FOSTERINGS
+        // ============================================
 
-    // Active fostering for animal 5
-    var fosteringC5 = new Fostering
-    {
-        Id = "a7e8f9a0-b1c2-4d3e-4f5a-6b7c8d9e0f1a",
-        AnimalId = animalC5.Id,
-        UserId = fosterUserC.Id,
-        Amount = 50.00m,
-        Status = FosteringStatus.Active,
-        StartDate = DateTime.UtcNow.AddMonths(-1)
-    };
-    dbContext.Fosterings.Add(fosteringC5);
+        // Active fostering for animal 1
+        var fosteringC1 = new Fostering
+        {
+            Id = "c3a4b5c6-d7e8-4f9a-0b1c-2d3e4f5a6b7c",
+            AnimalId = animalC1.Id,
+            UserId = fosterUserC.Id,
+            Amount = 50,
+            Status = FosteringStatus.Active,
+            StartDate = DateTime.UtcNow.AddMonths(-1)
+        };
+        dbContext.Fosterings.Add(fosteringC1);
 
-    // Cancelled fostering for animal 6 (to test no active fostering)
-    var fosteringC6 = new Fostering
-    {
-        Id = "b8f9a0b1-c2d3-4e4f-5a6b-7c8d9e0f1a2b",
-        AnimalId = animalC6.Id,
-        UserId = fosterUserC.Id,
-        Amount = 42.00m,
-        Status = FosteringStatus.Cancelled,
-        StartDate = DateTime.UtcNow.AddMonths(-2),
-        EndDate = DateTime.UtcNow.AddMonths(-1)
-    };
-    dbContext.Fosterings.Add(fosteringC6);
+        // Active fostering for animal 2 (other user)
+        var fosteringC2 = new Fostering
+        {
+            Id = "d4b5c6d7-e8f9-4a0b-1c2d-3e4f5a6b7c8d",
+            AnimalId = animalC2.Id,
+            UserId = otherUser.Id,
+            Amount = 40,
+            Status = FosteringStatus.Active,
+            StartDate = DateTime.UtcNow.AddMonths(-2)
+        };
+        dbContext.Fosterings.Add(fosteringC2);
 
-    // Active fostering for animal 8
-    var fosteringC8 = new Fostering
-    {
-        Id = "c9a0b1c2-d3e4-4f5a-6b7c-8d9e0f1a2b3c",
-        AnimalId = animalC8.Id,
-        UserId = fosterUserC.Id,
-        Amount = 50,
-        Status = FosteringStatus.Active,
-        StartDate = DateTime.UtcNow.AddMonths(-1)
-    };
-    dbContext.Fosterings.Add(fosteringC8);
+        // Active fostering for animal 3
+        var fosteringC3 = new Fostering
+        {
+            Id = "e5c6d7e8-f9a0-4b1c-2d3e-4f5a6b7c8d9e",
+            AnimalId = animalC3.Id,
+            UserId = fosterUserC.Id,
+            Amount = 60,
+            Status = FosteringStatus.Active,
+            StartDate = DateTime.UtcNow.AddMonths(-1)
+        };
+        dbContext.Fosterings.Add(fosteringC3);
 
-    await dbContext.SaveChangesAsync();
+        // Active fostering for animal 4
+        var fosteringC4 = new Fostering
+        {
+            Id = "f6d7e8f9-a0b1-4c2d-3e4f-5a6b7c8d9e0f",
+            AnimalId = animalC4.Id,
+            UserId = fosterUserC.Id,
+            Amount = 35,
+            Status = FosteringStatus.Active,
+            StartDate = DateTime.UtcNow.AddMonths(-1)
+        };
+        dbContext.Fosterings.Add(fosteringC4);
 
-    // ============================================
-    // 6. CREATE ACTIVITIES
-    // ============================================
+        // Active fostering for animal 5
+        var fosteringC5 = new Fostering
+        {
+            Id = "a7e8f9a0-b1c2-4d3e-4f5a-6b7c8d9e0f1a",
+            AnimalId = animalC5.Id,
+            UserId = fosterUserC.Id,
+            Amount = 50.00m,
+            Status = FosteringStatus.Active,
+            StartDate = DateTime.UtcNow.AddMonths(-1)
+        };
+        dbContext.Fosterings.Add(fosteringC5);
 
-    // Activity 1: Valid - future, active, fostering
-    var activity1 = new Activity
-    {
-        Id = "d0b1c2d3-e4f5-4a6b-7c8d-9e0f1a2b3c4d",
-        AnimalId = animalC1.Id,
-        UserId = fosterUserC.Id,
-        Type = ActivityType.Fostering,
-        Status = ActivityStatus.Active,
-        StartDate = twoDaysFromNow.AddHours(10),
-        EndDate = twoDaysFromNow.AddHours(12),
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.Activities.Add(activity1);
+        // Cancelled fostering for animal 6 (to test no active fostering)
+        var fosteringC6 = new Fostering
+        {
+            Id = "b8f9a0b1-c2d3-4e4f-5a6b-7c8d9e0f1a2b",
+            AnimalId = animalC6.Id,
+            UserId = fosterUserC.Id,
+            Amount = 42.00m,
+            Status = FosteringStatus.Cancelled,
+            StartDate = DateTime.UtcNow.AddMonths(-2),
+            EndDate = DateTime.UtcNow.AddMonths(-1)
+        };
+        dbContext.Fosterings.Add(fosteringC6);
 
-    // Activity 2: Other user's activity
-    var activity2 = new Activity
-    {
-        Id = "e1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e",
-        AnimalId = animalC2.Id,
-        UserId = otherUser.Id,
-        Type = ActivityType.Fostering,
-        Status = ActivityStatus.Active,
-        StartDate = twoDaysFromNow.AddHours(14),
-        EndDate = twoDaysFromNow.AddHours(16),
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.Activities.Add(activity2);
+        // Active fostering for animal 8
+        var fosteringC8 = new Fostering
+        {
+            Id = "c9a0b1c2-d3e4-4f5a-6b7c-8d9e0f1a2b3c",
+            AnimalId = animalC8.Id,
+            UserId = fosterUserC.Id,
+            Amount = 50,
+            Status = FosteringStatus.Active,
+            StartDate = DateTime.UtcNow.AddMonths(-1)
+        };
+        dbContext.Fosterings.Add(fosteringC8);
 
-    // Activity 3: Already cancelled
-    var activity3 = new Activity
-    {
-        Id = "f2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f",
-        AnimalId = animalC3.Id,
-        UserId = fosterUserC.Id,
-        Type = ActivityType.Fostering,
-        Status = ActivityStatus.Cancelled,
-        StartDate = twoDaysFromNow.AddHours(10),
-        EndDate = twoDaysFromNow.AddHours(12),
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.Activities.Add(activity3);
+        await dbContext.SaveChangesAsync();
 
-    // Activity 4: Already completed
-    var activity4 = new Activity
-    {
-        Id = "a3e4f5a6-b7c8-4d9e-0f1a-2b3c4d5e6f7a",
-        AnimalId = animalC4.Id,
-        UserId = fosterUserC.Id,
-        Type = ActivityType.Fostering,
-        Status = ActivityStatus.Completed,
-        StartDate = DateTime.UtcNow.AddDays(-2),
-        EndDate = DateTime.UtcNow.AddDays(-2).AddHours(2),
-        CreatedAt = DateTime.UtcNow.AddDays(-3)
-    };
-    dbContext.Activities.Add(activity4);
+        // ============================================
+        // 6. CREATE ACTIVITIES
+        // ============================================
 
-    // Activity 5: Past (already started)
-    var activity5 = new Activity
-    {
-        Id = "b4f5a6b7-c8d9-4e0f-1a2b-3c4d5e6f7a8b",
-        AnimalId = animalC5.Id,
-        UserId = fosterUserC.Id,
-        Type = ActivityType.Fostering,
-        Status = ActivityStatus.Active,
-        StartDate = DateTime.UtcNow.AddHours(-1),
-        EndDate = DateTime.UtcNow.AddHours(1),
-        CreatedAt = DateTime.UtcNow.AddHours(-2)
-    };
-    dbContext.Activities.Add(activity5);
+        // Activity 1: Valid - future, active, fostering
+        var activity1 = new Activity
+        {
+            Id = "d0b1c2d3-e4f5-4a6b-7c8d-9e0f1a2b3c4d",
+            AnimalId = animalC1.Id,
+            UserId = fosterUserC.Id,
+            Type = ActivityType.Fostering,
+            Status = ActivityStatus.Active,
+            StartDate = twoDaysFromNow.AddHours(10),
+            EndDate = twoDaysFromNow.AddHours(12),
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.Activities.Add(activity1);
 
-    // Activity 6: With cancelled fostering
-    var activity6 = new Activity
-    {
-        Id = "c5a6b7c8-d9e0-4f1a-2b3c-4d5e6f7a8b9c",
-        AnimalId = animalC6.Id,
-        UserId = fosterUserC.Id,
-        Type = ActivityType.Fostering,
-        Status = ActivityStatus.Active,
-        StartDate = twoDaysFromNow.AddHours(10),
-        EndDate = twoDaysFromNow.AddHours(12),
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.Activities.Add(activity6);
+        // Activity 2: Other user's activity
+        var activity2 = new Activity
+        {
+            Id = "e1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e",
+            AnimalId = animalC2.Id,
+            UserId = otherUser.Id,
+            Type = ActivityType.Fostering,
+            Status = ActivityStatus.Active,
+            StartDate = twoDaysFromNow.AddHours(14),
+            EndDate = twoDaysFromNow.AddHours(16),
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.Activities.Add(activity2);
 
-    // Activity 7: Ownership type (not fostering)
-    var activity7 = new Activity
-    {
-        Id = "d6b7c8d9-e0f1-4a2b-3c4d-5e6f7a8b9c0d",
-        AnimalId = animalC7.Id,
-        UserId = fosterUserC.Id,
-        Type = ActivityType.Ownership,
-        Status = ActivityStatus.Active,
-        StartDate = twoDaysFromNow,
-        EndDate = twoDaysFromNow.AddMonths(1),
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.Activities.Add(activity7);
+        // Activity 3: Already cancelled
+        var activity3 = new Activity
+        {
+            Id = "f2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f",
+            AnimalId = animalC3.Id,
+            UserId = fosterUserC.Id,
+            Type = ActivityType.Fostering,
+            Status = ActivityStatus.Cancelled,
+            StartDate = twoDaysFromNow.AddHours(10),
+            EndDate = twoDaysFromNow.AddHours(12),
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.Activities.Add(activity3);
 
-    // Activity 8: With available slot
-    var activity8 = new Activity
-    {
-        Id = "e7c8d9e0-f1a2-4b3c-4d5e-6f7a8b9c0d1e",
-        AnimalId = animalC8.Id,
-        UserId = fosterUserC.Id,
-        Type = ActivityType.Fostering,
-        Status = ActivityStatus.Active,
-        StartDate = twoDaysFromNow.AddHours(10),
-        EndDate = twoDaysFromNow.AddHours(12),
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.Activities.Add(activity8);
+        // Activity 4: Already completed
+        var activity4 = new Activity
+        {
+            Id = "a3e4f5a6-b7c8-4d9e-0f1a-2b3c4d5e6f7a",
+            AnimalId = animalC4.Id,
+            UserId = fosterUserC.Id,
+            Type = ActivityType.Fostering,
+            Status = ActivityStatus.Completed,
+            StartDate = DateTime.UtcNow.AddDays(-2),
+            EndDate = DateTime.UtcNow.AddDays(-2).AddHours(2),
+            CreatedAt = DateTime.UtcNow.AddDays(-3)
+        };
+        dbContext.Activities.Add(activity4);
 
-    await dbContext.SaveChangesAsync();
+        // Activity 5: Past (already started)
+        var activity5 = new Activity
+        {
+            Id = "b4f5a6b7-c8d9-4e0f-1a2b-3c4d5e6f7a8b",
+            AnimalId = animalC5.Id,
+            UserId = fosterUserC.Id,
+            Type = ActivityType.Fostering,
+            Status = ActivityStatus.Active,
+            StartDate = DateTime.UtcNow.AddHours(-1),
+            EndDate = DateTime.UtcNow.AddHours(1),
+            CreatedAt = DateTime.UtcNow.AddHours(-2)
+        };
+        dbContext.Activities.Add(activity5);
 
-    // ============================================
-    // 7. CREATE ACTIVITY SLOTS
-    // ============================================
+        // Activity 6: With cancelled fostering
+        var activity6 = new Activity
+        {
+            Id = "c5a6b7c8-d9e0-4f1a-2b3c-4d5e6f7a8b9c",
+            AnimalId = animalC6.Id,
+            UserId = fosterUserC.Id,
+            Type = ActivityType.Fostering,
+            Status = ActivityStatus.Active,
+            StartDate = twoDaysFromNow.AddHours(10),
+            EndDate = twoDaysFromNow.AddHours(12),
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.Activities.Add(activity6);
 
-    var slot1 = new ActivitySlot
-    {
-        Id = "f8d9e0f1-a2b3-4c4d-5e6f-7a8b9c0d1e2f",
-        ActivityId = activity1.Id,
-        StartDateTime = twoDaysFromNow.AddHours(10),
-        EndDateTime = twoDaysFromNow.AddHours(12),
-        Status = SlotStatus.Reserved,
-        Type = SlotType.Activity,
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.ActivitySlots.Add(slot1);
+        // Activity 7: Ownership type (not fostering)
+        var activity7 = new Activity
+        {
+            Id = "d6b7c8d9-e0f1-4a2b-3c4d-5e6f7a8b9c0d",
+            AnimalId = animalC7.Id,
+            UserId = fosterUserC.Id,
+            Type = ActivityType.Ownership,
+            Status = ActivityStatus.Active,
+            StartDate = twoDaysFromNow,
+            EndDate = twoDaysFromNow.AddMonths(1),
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.Activities.Add(activity7);
 
-    var slot2 = new ActivitySlot
-    {
-        Id = "a9e0f1a2-b3c4-4d5e-6f7a-8b9c0d1e2f3a",
-        ActivityId = activity2.Id,
-        StartDateTime = twoDaysFromNow.AddHours(14),
-        EndDateTime = twoDaysFromNow.AddHours(16),
-        Status = SlotStatus.Reserved,
-        Type = SlotType.Activity,
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.ActivitySlots.Add(slot2);
+        // Activity 8: With available slot
+        var activity8 = new Activity
+        {
+            Id = "e7c8d9e0-f1a2-4b3c-4d5e-6f7a8b9c0d1e",
+            AnimalId = animalC8.Id,
+            UserId = fosterUserC.Id,
+            Type = ActivityType.Fostering,
+            Status = ActivityStatus.Active,
+            StartDate = twoDaysFromNow.AddHours(10),
+            EndDate = twoDaysFromNow.AddHours(12),
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.Activities.Add(activity8);
 
-    var slot3 = new ActivitySlot
-    {
-        Id = "b0f1a2b3-c4d5-4e6f-7a8b-9c0d1e2f3a4b",
-        ActivityId = activity3.Id,
-        StartDateTime = twoDaysFromNow.AddHours(10),
-        EndDateTime = twoDaysFromNow.AddHours(12),
-        Status = SlotStatus.Available,
-        Type = SlotType.Activity,
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.ActivitySlots.Add(slot3);
+        await dbContext.SaveChangesAsync();
 
-    var slot4 = new ActivitySlot
-    {
-        Id = "c1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c",
-        ActivityId = activity4.Id,
-        StartDateTime = DateTime.UtcNow.AddDays(-2),
-        EndDateTime = DateTime.UtcNow.AddDays(-2).AddHours(2),
-        Status = SlotStatus.Reserved,
-        Type = SlotType.Activity,
-        CreatedAt = DateTime.UtcNow.AddDays(-3)
-    };
-    dbContext.ActivitySlots.Add(slot4);
+        // ============================================
+        // 7. CREATE ACTIVITY SLOTS
+        // ============================================
 
-    var slot5 = new ActivitySlot
-    {
-        Id = "d2b3c4d5-e6f7-4a8b-9c0d-1e2f3a4b5c6d",
-        ActivityId = activity5.Id,
-        StartDateTime = DateTime.UtcNow.AddHours(-1),
-        EndDateTime = DateTime.UtcNow.AddHours(1),
-        Status = SlotStatus.Reserved,
-        Type = SlotType.Activity,
-        CreatedAt = DateTime.UtcNow.AddHours(-2)
-    };
-    dbContext.ActivitySlots.Add(slot5);
+        var slot1 = new ActivitySlot
+        {
+            Id = "f8d9e0f1-a2b3-4c4d-5e6f-7a8b9c0d1e2f",
+            ActivityId = activity1.Id,
+            StartDateTime = twoDaysFromNow.AddHours(10),
+            EndDateTime = twoDaysFromNow.AddHours(12),
+            Status = SlotStatus.Reserved,
+            Type = SlotType.Activity,
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.ActivitySlots.Add(slot1);
 
-    var slot6 = new ActivitySlot
-    {
-        Id = "e3c4d5e6-f7a8-4b9c-0d1e-2f3a4b5c6d7e",
-        ActivityId = activity6.Id,
-        StartDateTime = twoDaysFromNow.AddHours(10),
-        EndDateTime = twoDaysFromNow.AddHours(12),
-        Status = SlotStatus.Reserved,
-        Type = SlotType.Activity,
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.ActivitySlots.Add(slot6);
+        var slot2 = new ActivitySlot
+        {
+            Id = "a9e0f1a2-b3c4-4d5e-6f7a-8b9c0d1e2f3a",
+            ActivityId = activity2.Id,
+            StartDateTime = twoDaysFromNow.AddHours(14),
+            EndDateTime = twoDaysFromNow.AddHours(16),
+            Status = SlotStatus.Reserved,
+            Type = SlotType.Activity,
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.ActivitySlots.Add(slot2);
 
-    var slot7 = new ActivitySlot
-    {
-        Id = "f4d5e6f7-a8b9-4c0d-1e2f-3a4b5c6d7e8f",
-        ActivityId = activity7.Id,
-        StartDateTime = twoDaysFromNow,
-        EndDateTime = twoDaysFromNow.AddMonths(1),
-        Status = SlotStatus.Reserved,
-        Type = SlotType.Activity,
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.ActivitySlots.Add(slot7);
+        var slot3 = new ActivitySlot
+        {
+            Id = "b0f1a2b3-c4d5-4e6f-7a8b-9c0d1e2f3a4b",
+            ActivityId = activity3.Id,
+            StartDateTime = twoDaysFromNow.AddHours(10),
+            EndDateTime = twoDaysFromNow.AddHours(12),
+            Status = SlotStatus.Available,
+            Type = SlotType.Activity,
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.ActivitySlots.Add(slot3);
 
-    var slot8 = new ActivitySlot
-    {
-        Id = "a5e6f7a8-b9c0-4d1e-2f3a-4b5c6d7e8f9a",
-        ActivityId = activity8.Id,
-        StartDateTime = twoDaysFromNow.AddHours(10),
-        EndDateTime = twoDaysFromNow.AddHours(12),
-        Status = SlotStatus.Available, // Already available (to test canceling available slot)
-        Type = SlotType.Activity,
-        CreatedAt = DateTime.UtcNow
-    };
-    dbContext.ActivitySlots.Add(slot8);
+        var slot4 = new ActivitySlot
+        {
+            Id = "c1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c",
+            ActivityId = activity4.Id,
+            StartDateTime = DateTime.UtcNow.AddDays(-2),
+            EndDateTime = DateTime.UtcNow.AddDays(-2).AddHours(2),
+            Status = SlotStatus.Reserved,
+            Type = SlotType.Activity,
+            CreatedAt = DateTime.UtcNow.AddDays(-3)
+        };
+        dbContext.ActivitySlots.Add(slot4);
 
-    await dbContext.SaveChangesAsync();
+        var slot5 = new ActivitySlot
+        {
+            Id = "d2b3c4d5-e6f7-4a8b-9c0d-1e2f3a4b5c6d",
+            ActivityId = activity5.Id,
+            StartDateTime = DateTime.UtcNow.AddHours(-1),
+            EndDateTime = DateTime.UtcNow.AddHours(1),
+            Status = SlotStatus.Reserved,
+            Type = SlotType.Activity,
+            CreatedAt = DateTime.UtcNow.AddHours(-2)
+        };
+        dbContext.ActivitySlots.Add(slot5);
+
+        var slot6 = new ActivitySlot
+        {
+            Id = "e3c4d5e6-f7a8-4b9c-0d1e-2f3a4b5c6d7e",
+            ActivityId = activity6.Id,
+            StartDateTime = twoDaysFromNow.AddHours(10),
+            EndDateTime = twoDaysFromNow.AddHours(12),
+            Status = SlotStatus.Reserved,
+            Type = SlotType.Activity,
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.ActivitySlots.Add(slot6);
+
+        var slot7 = new ActivitySlot
+        {
+            Id = "f4d5e6f7-a8b9-4c0d-1e2f-3a4b5c6d7e8f",
+            ActivityId = activity7.Id,
+            StartDateTime = twoDaysFromNow,
+            EndDateTime = twoDaysFromNow.AddMonths(1),
+            Status = SlotStatus.Reserved,
+            Type = SlotType.Activity,
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.ActivitySlots.Add(slot7);
+
+        var slot8 = new ActivitySlot
+        {
+            Id = "a5e6f7a8-b9c0-4d1e-2f3a-4b5c6d7e8f9a",
+            ActivityId = activity8.Id,
+            StartDateTime = twoDaysFromNow.AddHours(10),
+            EndDateTime = twoDaysFromNow.AddHours(12),
+            Status = SlotStatus.Available, // Already available (to test canceling available slot)
+            Type = SlotType.Activity,
+            CreatedAt = DateTime.UtcNow
+        };
+        dbContext.ActivitySlots.Add(slot8);
+
+        await dbContext.SaveChangesAsync();
+
+
+        // =====================================================
+        // SEED DATA FOR GET FOSTERING ACTIVITIES BY USER
+        // =====================================================
+
+        // Check if test data already exists
+        if (await dbContext.Users.AnyAsync(u => u.Email == "testuser@example.com"))
+        {
+            return; // Data already seeded
+        }
+
+        var now = DateTime.UtcNow;
+
+        // =====================================================
+        // 1. TEST USER
+        // =====================================================
+        var testUser = new User
+        {
+            Id = "test-user-id-001",
+            UserName = "testuser@example.com",
+            Email = "testuser@example.com",
+            EmailConfirmed = true,
+            PhoneNumber = "912345678",
+            PhoneNumberConfirmed = true,
+            Name = "Test User For Fostering",
+            BirthDate = new DateTime(1990, 1, 15),
+            Street = "Rua de Teste 123",
+            City = "Porto",
+            PostalCode = "4000-123",
+            CreatedAt = now,
+            SecurityStamp = Guid.NewGuid().ToString()
+        };
+
+        await userManager.CreateAsync(testUser, "Test@123");
+        await userManager.AddToRoleAsync(testUser, AppRoles.User);
+        
+
+        // =====================================================
+        // 2. TEST SHELTER
+        // =====================================================
+        var testShelterGF = new Shelter
+        {
+            Id = "test-shelter-id-001",
+            Name = "Test Animal Shelter",
+            Street = "Avenida dos Animais 456",
+            City = "Lisboa",
+            PostalCode = "1000-456",
+            Phone = "213456789",
+            NIF = "500123456",
+            OpeningTime = new TimeOnly(9, 0),
+            ClosingTime = new TimeOnly(18, 0),
+            CreatedAt = now
+        };
+
+        await dbContext.Shelters.AddAsync(testShelterGF);
+
+        // Add shelter image (principal)
+        var shelterImage = new Image
+        {
+            Id = "shelter-image-001",
+            PublicId = "shelter_test_001",
+            IsPrincipal = true,
+            ShelterId = testShelterGF.Id,
+            Url = "https://res.cloudinary.com/test/shelter_test_001.jpg",
+            Description = "Test Shelter Main Image",
+            CreatedAt = now
+        };
+
+        await dbContext.Images.AddAsync(shelterImage);
+
+        // =====================================================
+        // 3. TEST BREEDS
+        // =====================================================
+        var breedsGF = new List<Breed>
+        {
+            new Breed
+            {
+                Id = "breed-bull1-001",
+                Name = "Bulldog Francês",
+                Description = "Friendly and outgoing breed",
+                CreatedAt = now
+            },
+            new Breed
+            {
+                Id = "breed-bull2-001",
+                Name = "Bulldog Inglês",
+                Description = "Intelligent and friendly breed",
+                CreatedAt = now
+            },
+            new Breed
+            {
+                Id = "breed-pincher-001",
+                Name = "Pincher",
+                Description = "Small to medium-sized breed",
+                CreatedAt = now
+            }
+        };
+
+        await dbContext.Breeds.AddRangeAsync(breedsGF);
+
+        // =====================================================
+        // 4. TEST ANIMALS
+        // =====================================================
+        var animalsGF = new List<Animal>
+        {
+            // Animal 1: Max
+            new Animal
+            {
+                Id = "animal-max-001",
+                Name = "Max",
+                AnimalState = AnimalState.PartiallyFostered,
+                Description = "Friendly and energetic Labrador",
+                Species = Species.Dog,
+                Size = SizeType.Medium,
+                Sex = SexType.Male,
+                Colour = "Golden",
+                BirthDate = DateOnly.FromDateTime(now.AddYears(-4)),
+                Sterilized = true,
+                Cost = 50.00m,
+                Features = "Loves to play fetch, good with children",
+                CreatedAt = now,
+                ShelterId = testShelterGF.Id,
+                BreedId = "breed-bull1-001"
+            },
+            // Animal 2: Luna
+            new Animal
+            {
+                Id = "animal-luna-001",
+                Name = "Luna",
+                AnimalState = AnimalState.PartiallyFostered,
+                Description = "Sweet and calm Golden Retriever",
+                Species = Species.Dog,
+                Size = SizeType.Large,
+                Sex = SexType.Female,
+                Colour = "Cream",
+                BirthDate = DateOnly.FromDateTime(now.AddYears(-5)),
+                Sterilized = true,
+                Cost = 60.00m,
+                Features = "Gentle, great with other pets",
+                CreatedAt = now,
+                ShelterId = testShelterGF.Id,
+                BreedId = "breed-bull2-001"
+            },
+            // Animal 3: Charlie
+            new Animal
+            {
+                Id = "animal-charlie-001",
+                Name = "Charlie",
+                AnimalState = AnimalState.PartiallyFostered,
+                Description = "Playful and curious Beagle",
+                Species = Species.Dog,
+                Size = SizeType.Small,
+                Sex = SexType.Male,
+                Colour = "Tricolor",
+                BirthDate = DateOnly.FromDateTime(now.AddYears(-3)),
+                Sterilized = false,
+                Cost = 40.00m,
+                Features = "Very active, loves treats",
+                CreatedAt = now,
+                ShelterId = testShelterGF.Id,
+                BreedId = "breed-pincher-001"
+            },
+            // Animal 4: Bella
+            new Animal
+            {
+                Id = "animal-bella-001",
+                Name = "Bella",
+                AnimalState = AnimalState.PartiallyFostered,
+                Description = "Affectionate Labrador",
+                Species = Species.Dog,
+                Size = SizeType.Medium,
+                Sex = SexType.Female,
+                Colour = "Black",
+                BirthDate = DateOnly.FromDateTime(now.AddYears(-6)),
+                Sterilized = true,
+                Cost = 55.00m,
+                Features = "Calm temperament, loves cuddles",
+                CreatedAt = now,
+                ShelterId = testShelterGF.Id,
+                BreedId = "breed-bull1-001"
+            },
+            // Animal 5: Rocky
+            new Animal
+            {
+                Id = "animal-rocky-001",
+                Name = "Rocky",
+                AnimalState = AnimalState.PartiallyFostered,
+                Description = "Strong and loyal Golden Retriever",
+                Species = Species.Dog,
+                Size = SizeType.Large,
+                Sex = SexType.Male,
+                Colour = "Red",
+                BirthDate = DateOnly.FromDateTime(now.AddYears(-7)),
+                Sterilized = true,
+                Cost = 65.00m,
+                Features = "Well-trained, obedient",
+                CreatedAt = now,
+                ShelterId = testShelterGF.Id,
+                BreedId = "breed-bull2-001"
+            }
+        };
+
+        await dbContext.Animals.AddRangeAsync(animalsGF);
+
+        // =====================================================
+        // 5. ANIMAL IMAGES (Principal)
+        // =====================================================
+        var animalImagesGF = new List<Image>
+        {
+            new Image
+            {
+                Id = "image-max-001",
+                PublicId = "animal_max_001",
+                IsPrincipal = true,
+                AnimalId = "animal-max-001",
+                Url = "https://res.cloudinary.com/test/animal_max_001.jpg",
+                Description = "Max Main Photo",
+                CreatedAt = now
+            },
+            new Image
+            {
+                Id = "image-luna-001",
+                PublicId = "animal_luna_001",
+                IsPrincipal = true,
+                AnimalId = "animal-luna-001",
+                Url = "https://res.cloudinary.com/test/animal_luna_001.jpg",
+                Description = "Luna Main Photo",
+                CreatedAt = now
+            },
+            new Image
+            {
+                Id = "image-charlie-001",
+                PublicId = "animal_charlie_001",
+                IsPrincipal = true,
+                AnimalId = "animal-charlie-001",
+                Url = "https://res.cloudinary.com/test/animal_charlie_001.jpg",
+                Description = "Charlie Main Photo",
+                CreatedAt = now
+            },
+            new Image
+            {
+                Id = "image-bella-001",
+                PublicId = "animal_bella_001",
+                IsPrincipal = true,
+                AnimalId = "animal-bella-001",
+                Url = "https://res.cloudinary.com/test/animal_bella_001.jpg",
+                Description = "Bella Main Photo",
+                CreatedAt = now
+            },
+            new Image
+            {
+                Id = "image-rocky-001",
+                PublicId = "animal_rocky_001",
+                IsPrincipal = true,
+                AnimalId = "animal-rocky-001",
+                Url = "https://res.cloudinary.com/test/animal_rocky_001.jpg",
+                Description = "Rocky Main Photo",
+                CreatedAt = now
+            }
+        };
+
+        await dbContext.Images.AddRangeAsync(animalImagesGF);
+
+        // =====================================================
+        // 6. ACTIVE FOSTERINGS
+        // =====================================================
+        var fosteringsGF = new List<Fostering>
+        {
+            new Fostering
+            {
+                Id = "fostering-max-001",
+                AnimalId = "animal-max-001",
+                UserId = testUser.Id,
+                Amount = 25.00m,
+                Status = FosteringStatus.Active,
+                StartDate = now.AddDays(-30)
+            },
+            new Fostering
+            {
+                Id = "fostering-luna-001",
+                AnimalId = "animal-luna-001",
+                UserId = testUser.Id,
+                Amount = 30.00m,
+                Status = FosteringStatus.Active,
+                StartDate = now.AddDays(-60)
+            },
+            new Fostering
+            {
+                Id = "fostering-charlie-001",
+                AnimalId = "animal-charlie-001",
+                UserId = testUser.Id,
+                Amount = 20.00m,
+                Status = FosteringStatus.Active,
+                StartDate = now.AddDays(-45)
+            },
+            new Fostering
+            {
+                Id = "fostering-bella-001",
+                AnimalId = "animal-bella-001",
+                UserId = testUser.Id,
+                Amount = 27.50m,
+                Status = FosteringStatus.Active,
+                StartDate = now.AddDays(-90)
+            },
+            new Fostering
+            {
+                Id = "fostering-rocky-001",
+                AnimalId = "animal-rocky-001",
+                UserId = testUser.Id,
+                Amount = 32.50m,
+                Status = FosteringStatus.Active,
+                StartDate = now.AddDays(-15)
+            }
+        };
+
+        await dbContext.Fosterings.AddRangeAsync(fosteringsGF);
+
+        // =====================================================
+        // 7. ACTIVE FOSTERING ACTIVITIES
+        // =====================================================
+        var activitiesGF = new List<Activity>
+        {
+            new Activity
+            {
+                Id = "activity-max-001",
+                AnimalId = "animal-max-001",
+                UserId = testUser.Id,
+                Type = ActivityType.Fostering,
+                Status = ActivityStatus.Active,
+                StartDate = now.AddDays(-30),
+                EndDate = now.AddDays(335),
+                CreatedAt = now.AddDays(-35)
+            },
+            new Activity
+            {
+                Id = "activity-luna-001",
+                AnimalId = "animal-luna-001",
+                UserId = testUser.Id,
+                Type = ActivityType.Fostering,
+                Status = ActivityStatus.Active,
+                StartDate = now.AddDays(-60),
+                EndDate = now.AddDays(305),
+                CreatedAt = now.AddDays(-65)
+            },
+            new Activity
+            {
+                Id = "activity-charlie-001",
+                AnimalId = "animal-charlie-001",
+                UserId = testUser.Id,
+                Type = ActivityType.Fostering,
+                Status = ActivityStatus.Active,
+                StartDate = now.AddDays(-45),
+                EndDate = now.AddDays(320),
+                CreatedAt = now.AddDays(-50)
+            },
+            new Activity
+            {
+                Id = "activity-bella-001",
+                AnimalId = "animal-bella-001",
+                UserId = testUser.Id,
+                Type = ActivityType.Fostering,
+                Status = ActivityStatus.Active,
+                StartDate = now.AddDays(-90),
+                EndDate = now.AddDays(275),
+                CreatedAt = now.AddDays(-95)
+            },
+            new Activity
+            {
+                Id = "activity-rocky-001",
+                AnimalId = "animal-rocky-001",
+                UserId = testUser.Id,
+                Type = ActivityType.Fostering,
+                Status = ActivityStatus.Active,
+                StartDate = now.AddDays(-15),
+                EndDate = now.AddDays(350),
+                CreatedAt = now.AddDays(-20)
+            }
+        };
+
+        await dbContext.Activities.AddRangeAsync(activitiesGF);
+
+        // Save before adding slots (need activity IDs)
+        await dbContext.SaveChangesAsync();
+
+        // =====================================================
+        // 8. FUTURE ACTIVITY SLOTS (15 total - 3 per animal)
+        // =====================================================
+        var activitySlotsGF = new List<ActivitySlot>
+        {
+            // Slots for Max (3 visits)
+            new ActivitySlot
+            {
+                Id = "slot-max-001",
+                ActivityId = "activity-max-001",
+                StartDateTime = now.AddDays(2).Date.AddHours(10),
+                EndDateTime = now.AddDays(2).Date.AddHours(12),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = now
+            },
+            new ActivitySlot
+            {
+                Id = "slot-max-002",
+                ActivityId = "activity-max-001",
+                StartDateTime = now.AddDays(9).Date.AddHours(14),
+                EndDateTime = now.AddDays(9).Date.AddHours(16),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = now
+            },
+            new ActivitySlot
+            {
+                Id = "slot-max-003",
+                ActivityId = "activity-max-001",
+                StartDateTime = now.AddDays(16).Date.AddHours(10),
+                EndDateTime = now.AddDays(16).Date.AddHours(12),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = now
+            },
+
+            // Slots for Luna (3 visits)
+            new ActivitySlot
+            {
+                Id = "slot-luna-001",
+                ActivityId = "activity-luna-001",
+                StartDateTime = now.AddDays(3).Date.AddHours(15),
+                EndDateTime = now.AddDays(3).Date.AddHours(17),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = now
+            },
+            new ActivitySlot
+            {
+                Id = "slot-luna-002",
+                ActivityId = "activity-luna-001",
+                StartDateTime = now.AddDays(10).Date.AddHours(11),
+                EndDateTime = now.AddDays(10).Date.AddHours(13),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = now
+            },
+            new ActivitySlot
+            {
+                Id = "slot-luna-003",
+                ActivityId = "activity-luna-001",
+                StartDateTime = now.AddDays(17).Date.AddHours(15),
+                EndDateTime = now.AddDays(17).Date.AddHours(17),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = now
+            },
+
+            // Slots for Charlie (3 visits)
+            new ActivitySlot
+            {
+                Id = "slot-charlie-001",
+                ActivityId = "activity-charlie-001",
+                StartDateTime = now.AddDays(4).Date.AddHours(9),
+                EndDateTime = now.AddDays(4).Date.AddHours(11),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = now
+            },
+            new ActivitySlot
+            {
+                Id = "slot-charlie-002",
+                ActivityId = "activity-charlie-001",
+                StartDateTime = now.AddDays(11).Date.AddHours(13),
+                EndDateTime = now.AddDays(11).Date.AddHours(15),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = now
+            },
+            new ActivitySlot
+            {
+                Id = "slot-charlie-003",
+                ActivityId = "activity-charlie-001",
+                StartDateTime = now.AddDays(18).Date.AddHours(9),
+                EndDateTime = now.AddDays(18).Date.AddHours(11),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = now
+            },
+
+            // Slots for Bella (3 visits)
+            new ActivitySlot
+            {
+                Id = "slot-bella-001",
+                ActivityId = "activity-bella-001",
+                StartDateTime = now.AddDays(5).Date.AddHours(16),
+                EndDateTime = now.AddDays(5).Date.AddHours(18),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = now
+            },
+            new ActivitySlot
+            {
+                Id = "slot-bella-002",
+                ActivityId = "activity-bella-001",
+                StartDateTime = now.AddDays(12).Date.AddHours(10),
+                EndDateTime = now.AddDays(12).Date.AddHours(12),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = now
+            },
+            new ActivitySlot
+            {
+                Id = "slot-bella-003",
+                ActivityId = "activity-bella-001",
+                StartDateTime = now.AddDays(19).Date.AddHours(16),
+                EndDateTime = now.AddDays(19).Date.AddHours(18),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = now
+            },
+
+            // Slots for Rocky (3 visits)
+            new ActivitySlot
+            {
+                Id = "slot-rocky-001",
+                ActivityId = "activity-rocky-001",
+                StartDateTime = now.AddDays(6).Date.AddHours(14),
+                EndDateTime = now.AddDays(6).Date.AddHours(16),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = now
+            },
+            new ActivitySlot
+            {
+                Id = "slot-rocky-002",
+                ActivityId = "activity-rocky-001",
+                StartDateTime = now.AddDays(13).Date.AddHours(11),
+                EndDateTime = now.AddDays(13).Date.AddHours(13),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = now
+            },
+            new ActivitySlot
+            {
+                Id = "slot-rocky-003",
+                ActivityId = "activity-rocky-001",
+                StartDateTime = now.AddDays(20).Date.AddHours(14),
+                EndDateTime = now.AddDays(20).Date.AddHours(16),
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity,
+                CreatedAt = now
+            }
+        };
+
+        await dbContext.Set<ActivitySlot>().AddRangeAsync(activitySlotsGF);
+
+        // =====================================================
+        // 9. EDGE CASE DATA (should NOT be returned)
+        // =====================================================
+
+        // Past activity slot (should NOT be returned)
+        var pastSlot = new ActivitySlot
+        {
+            Id = "slot-max-past-001",
+            ActivityId = "activity-max-001",
+            StartDateTime = now.AddDays(-5).Date.AddHours(10),
+            EndDateTime = now.AddDays(-5).Date.AddHours(12),
+            Status = SlotStatus.Reserved,
+            Type = SlotType.Activity,
+            CreatedAt = now
+        };
+        await dbContext.Set<ActivitySlot>().AddAsync(pastSlot);
+
+        // Cancelled activity with future slot (should NOT be returned)
+        var cancelledActivity = new Activity
+        {
+            Id = "activity-cancelled-001",
+            AnimalId = "animal-max-001",
+            UserId = testUser.Id,
+            Type = ActivityType.Fostering,
+            Status = ActivityStatus.Cancelled,
+            StartDate = now.AddDays(-10),
+            EndDate = now.AddDays(355),
+            CreatedAt = now.AddDays(-15)
+        };
+        await dbContext.Activities.AddAsync(cancelledActivity);
+        await dbContext.SaveChangesAsync();
+
+        var cancelledSlot = new ActivitySlot
+        {
+            Id = "slot-cancelled-001",
+            ActivityId = "activity-cancelled-001",
+            StartDateTime = now.AddDays(7).Date.AddHours(10),
+            EndDateTime = now.AddDays(7).Date.AddHours(12),
+            Status = SlotStatus.Reserved,
+            Type = SlotType.Activity,
+            CreatedAt = now
+        };
+        await dbContext.Set<ActivitySlot>().AddAsync(cancelledSlot);
+
+        // Available slot (not reserved, should NOT be returned)
+        var availableSlot = new ActivitySlot
+        {
+            Id = "slot-max-available-001",
+            ActivityId = "activity-max-001",
+            StartDateTime = now.AddDays(8).Date.AddHours(10),
+            EndDateTime = now.AddDays(8).Date.AddHours(12),
+            Status = SlotStatus.Available,
+            Type = SlotType.Activity,
+            CreatedAt = now
+        };
+        await dbContext.Set<ActivitySlot>().AddAsync(availableSlot);
+
+        // =====================================================
+        // SAVE ALL CHANGES
+        // =====================================================
+        await dbContext.SaveChangesAsync();
     }
+
+
 }

@@ -1,4 +1,5 @@
-﻿using Application.Core;
+﻿using Application.Common;
+using Application.Core;
 using Application.Interfaces;
 using Domain;
 using Domain.Enums;
@@ -110,7 +111,7 @@ namespace Application.Animals.Commands
             private async Task NotifyUsers(Animal animal, CancellationToken cancellationToken)
             {
                 await notificationService.CreateAndSendToRoleAsync(
-                    role: "User",
+                    role: AppRoles.User,
                     NotificationType.NEW_ANIMAL_ADDED,
                     message: $"{animal.Name} é o novo patudo disponível para apadrinhamento e adoção responsável!",
                     animalId: animal.Id

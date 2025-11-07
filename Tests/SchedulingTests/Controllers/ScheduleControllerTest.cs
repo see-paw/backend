@@ -10,7 +10,7 @@ using Moq;
 using WebAPI.Controllers;
 using WebAPI.DTOs.AnimalSchedule;
 
-namespace Tests.Controllers;
+namespace Tests.Scheduling.Controllers;
 
 /// <summary>
 /// Tests for ScheduleController using equivalence class partitioning and boundary value analysis.

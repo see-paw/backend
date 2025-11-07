@@ -1,4 +1,5 @@
-﻿using Application.Core;
+﻿using Application.Common;
+using Application.Core;
 using Application.OwnershipRequests.Commands;
 using Application.OwnershipRequests.Queries;
 using AutoMapper;
@@ -30,7 +31,7 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
     /// <response code="401">Unauthorized — if the user is not authenticated.</response>
     /// <response code="403">Forbidden — if the user does not have permission to access this data.</response>
     /// <response code="500">Internal server error — if an unexpected error occurs.</response>
-    [Authorize(Roles = "AdminCAA")]
+    [Authorize(Roles = AppRoles.AdminCAA)]
     [HttpGet]
     public async Task<ActionResult> GetOwnershipRequests([FromQuery] int pageNumber = 1)
     {
@@ -63,7 +64,7 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
     /// </summary>
     /// <param name="dto">The request DTO containing animal ID.</param>
     /// <returns>The created ownership request object.</returns>
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = AppRoles.User)]
     [HttpPost]
     public async Task<ActionResult<ResOwnershipRequestDto>> CreateOwnershipRequest(
         [FromBody] ReqCreateOwnershipRequestDto dto)
@@ -89,7 +90,7 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
     /// <param name="id">The ownership request ID.</param>
     /// <param name="dto">Optional request info to update.</param>
     /// <returns>The updated ownership request object.</returns>
-    [Authorize(Roles = "AdminCAA")]
+    [Authorize(Roles = AppRoles.AdminCAA)]
     [HttpPut("analysing/{id}")]
     public async Task<ActionResult<ResOwnershipRequestDto>> UpdateStatus(string id,
         [FromBody] ReqUpdateOwnershipStatusDto dto)
@@ -115,7 +116,7 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
     /// </summary>
     /// <param name="id">The ownership request ID.</param>
     /// <returns>The approved ownership request object.</returns>
-    [Authorize(Roles = "AdminCAA")]
+    [Authorize(Roles = AppRoles.AdminCAA)]
     [HttpPut("approve/{id}")]
     public async Task<ActionResult<ResOwnershipRequestDto>> ApproveRequest(string id)
     {
@@ -140,7 +141,7 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
     /// <param name="id">The ownership request ID.</param>
     /// <param name="dto">The rejection reason.</param>
     /// <returns>The rejected ownership request object.</returns>
-    [Authorize(Roles = "AdminCAA")]
+    [Authorize(Roles = AppRoles.AdminCAA)]
     [HttpPut("reject/{id}")]
     public async Task<ActionResult<ResOwnershipRequestDto>> RejectRequest(string id,
         [FromBody] ReqRejectOwnershipRequestDto dto)

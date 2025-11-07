@@ -2,7 +2,7 @@
 using FluentValidation.TestHelper;
 using WebAPI.Validators.Scheduling;
 
-namespace Tests.Validators.Scheduling;
+namespace Tests.Scheduling.Validators;
 
 /// <summary>
 /// Tests for GetAnimalWeeklyScheduleValidator using equivalence class partitioning and boundary value analysis.
@@ -596,8 +596,8 @@ public class GetAnimalWeeklyScheduleValidatorTests
         
         if (daysFromMonday <= 3)
             return date.AddDays(-daysFromMonday);
-        else
-            return date.AddDays(daysUntilMonday);
+        
+        return date.AddDays(daysUntilMonday);
     }
 
     private static DateOnly GetNearestMondayBefore(DateOnly date)

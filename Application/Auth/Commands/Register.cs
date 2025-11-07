@@ -1,4 +1,5 @@
-﻿using Application.Core;
+﻿using Application.Common;
+using Application.Core;
 using AutoMapper;
 using Domain;
 using MediatR;
@@ -109,12 +110,12 @@ namespace Application.Auth.Commands
             public async Task<Result<User>> Handle(Command request, CancellationToken ct)
             {
                 // Allowed roles to avoid privilege escalation
-                var allowedRoles = new[] { "User", "AdminCAA" };
+                var allowedRoles = new[] { AppRoles.User, AppRoles.AdminCAA };
                 if (!allowedRoles.Contains(request.SelectedRole))
                     return Result<User>.Failure("Invalid role selected.", 400);
 
                 // If AdminCAA → Create new Shelter before creating the User
-                if (request.SelectedRole == "AdminCAA")
+                if (request.SelectedRole == AppRoles.AdminCAA)
                 {
                     var shelter = new Shelter
                     {
