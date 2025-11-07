@@ -66,6 +66,12 @@ public class Notification
     public string? OwnershipRequestId { get; set; }
 
     /// <summary>
+    /// Reference to the related activity (ownership or fostering).
+    /// </summary>
+    [MaxLength(36)]
+    public string? ActivityId { get; set; }
+
+    /// <summary>
     /// Indicates if this is a broadcast notification (sent to multiple users by role).
     /// </summary>
     [Required]
@@ -94,4 +100,10 @@ public class Notification
     /// </summary>
     [JsonIgnore]
     public OwnershipRequest? OwnershipRequest { get; set; }
+
+    /// <summary>
+    /// The <see cref="Activity"/> entity related to this notification.
+    /// </summary>
+    [JsonIgnore]
+    public Activity? Activity { get; set; }
 }

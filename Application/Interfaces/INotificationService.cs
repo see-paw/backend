@@ -17,6 +17,7 @@ public interface INotificationService
         string message,
         string? animalId = null,
         string? ownershipRequestId = null,
+        string? activityId = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>

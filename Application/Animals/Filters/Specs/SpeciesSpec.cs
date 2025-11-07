@@ -10,6 +10,9 @@ namespace Application.Animals.Filters.Specs;
 /// </summary>
 public class SpeciesSpec : ISpecification<Animal>
 {
+    /// <summary>
+    /// Species value used to filter animals.
+    /// </summary>
     public Species Species { get; init; }
 
     /// <summary>

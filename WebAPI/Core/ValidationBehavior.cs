@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+using FluentValidation;
+
 using MediatR;
 
 namespace WebAPI.Core;

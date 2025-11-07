@@ -1,30 +1,35 @@
-﻿using Application.Animals.Queries;
-using WebAPI.Validators;
-using FluentValidation;
-using Persistence;
 using System.Text.Json.Serialization;
-using Application;
-using Application.Animals;
+
+using Application.Animals.Filters;
+using Application.Animals.Queries;
 using Application.Core;
 using Application.Fosterings;
 using Application.Interfaces;
 using Application.Services;
+
 using Domain;
+using Domain.Common;
 using Domain.Services;
+
 using FluentValidation;
 using FluentValidation.AspNetCore;
+
+using Infrastructure.BackgroundTasks;
+using Infrastructure.BackgroundTasks.Tasks.ActivityTasks;
 using Infrastructure.Hubs;
 using Infrastructure.Images;
 using Infrastructure.Notifications;
 using Infrastructure.Security;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+
 using Persistence;
-using System.Text.Json.Serialization;
-using Application.Animals.Filters;
+
 using WebAPI.Core;
 using WebAPI.Middleware;
+using WebAPI.Validators;
 using WebAPI.Validators.Animals;
 
 var inContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
@@ -107,12 +112,12 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 
-   c.DocInclusionPredicate((docName, apiDescription) =>
-    {
-        // only show the controllers we create, not the ones given by identity
-        return apiDescription.ActionDescriptor?.RouteValues?["controller"] != null
-               && apiDescription.ActionDescriptor.DisplayName!.Contains("WebAPI.Controllers");
-    });
+    c.DocInclusionPredicate((docName, apiDescription) =>
+     {
+         // only show the controllers we create, not the ones given by identity
+         return apiDescription.ActionDescriptor?.RouteValues?["controller"] != null
+                && apiDescription.ActionDescriptor.DisplayName!.Contains("WebAPI.Controllers");
+     });
 });
 
 
@@ -120,7 +125,8 @@ builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
 
 builder.Services.AddCors();
-builder.Services.AddMediatR(x => {
+builder.Services.AddMediatR(x =>
+{
     x.RegisterServicesFromAssemblyContaining<GetAnimalDetails.Handler>();
     x.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
@@ -179,14 +185,16 @@ builder.Services.Configure<FosteringSettings>(
 builder.Services.AddSignalR();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
+// Background Tasks Services
+builder.Services.AddHostedService<ReminderService>();
+builder.Services.AddScoped<IReminderTask, OwnershipActivityCompletionTask>();
+builder.Services.AddScoped<IReminderTask, OwnershipActivityReminderTask>();
+builder.Services.AddScoped<IReminderTask, FosteringActivityReminderTask>();
 
+// Pipeline
 var app = builder.Build();
 
 app.UseSwagger();
-
-
-
-// Pipeline
 app.UseCors(c => c
     .AllowAnyHeader()
     .AllowAnyMethod()
@@ -225,7 +233,7 @@ try
     logger.LogInformation("Migrations applied successfully.");
 
     // Ensure Roles Exist
-    var roles = new[] { "User", "AdminCAA" };
+    var roles = new[] { AppRoles.User, AppRoles.AdminCAA };
     foreach (var role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))

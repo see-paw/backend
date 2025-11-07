@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Domain.Common;
 using Moq;
 
 namespace Tests.AuthTests.Handlers
@@ -79,7 +80,7 @@ namespace Tests.AuthTests.Handlers
             {
                 User = user,
                 Password = "Aa!123456",
-                SelectedRole = "User"
+                SelectedRole = AppRoles.User
             };
             var result = await _handler.Handle(command, CancellationToken.None);
             Assert.True(result.IsSuccess);
@@ -96,7 +97,7 @@ namespace Tests.AuthTests.Handlers
             {
                 User = user,
                 Password = "Aa!12345",
-                SelectedRole = "AdminCAA",
+                SelectedRole = AppRoles.AdminCAA,
                 ShelterName = "Test Shelter",
                 ShelterStreet = "Shelter Street",
                 ShelterCity = "Shelter City",
@@ -145,7 +146,7 @@ namespace Tests.AuthTests.Handlers
             {
                 User = user,
                 Password = "Aa!123456",
-                SelectedRole = "User"
+                SelectedRole = AppRoles.User
             };
 
             var result = await handler.Handle(command, CancellationToken.None);
@@ -167,7 +168,7 @@ namespace Tests.AuthTests.Handlers
             {
                 User = user,
                 Password = "Aa!123456",
-                SelectedRole = "User"
+                SelectedRole = AppRoles.User
             };
 
             var result = await handler.Handle(command, CancellationToken.None);

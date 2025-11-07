@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SignalR Notifications Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .connected { background: #d4edda; color: #155724; }
+        .disconnected { background: #f8d7da; color: #721c24; }
+        .connecting { background: #fff3cd; color: #856404; }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .credentials {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        
+        .notifications {
+            margin-top: 30px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            background: #fafafa;
+        }
+        .notification {
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .notification-time {
+            color: #666;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .info { color: #666; margin: 10px 0; }
+        
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SignalR Notifications Test</h1>
+        
+        <div id="status" class="status disconnected">
+            [X] Disconnected
+        </div>
+
+        <div class="credentials">
+            <h3>Login Credentials</h3>
+            <label for="email"></label><input type="email" id="email" placeholder="Email" value="carlos.notif@test.com">
+            <label for="password"></label><input type="password" id="password" placeholder="Password" value="Pa$$w0rd">
+            <div class="info">
+                <strong>Available users:</strong><br>
+                - carlos.notif@test.com / Pa$$w0rd<br>
+                - alice.notif@test.com / Pa$$w0rd
+            </div>
+        </div>
+
+        <div class="actions">
+            <button id="connectBtn" onclick="connect()">Connect</button>
+            <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+            <button onclick="clearNotifications()">Clear Notifications</button>
+            <button onclick="testOwnership()">Create Test Ownership</button>
+        </div>
+
+        <div class="info">
+            <strong>Connection ID:</strong> <span id="connectionId">-</span>
+        </div>
+
+        <h2>Notifications Received</h2>
+        <div id="notifications" class="notifications">
+            <div class="info">No notifications yet...</div>
+        </div>
+    </div>
+
+    <script>
+        let connection = null;
+        let token = null;
+
+        const API_URL = 'https://localhost:5001';
+
+        function updateStatus(message, className) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${className}`;
+        }
+
+        function addNotification(notification) {
+            const container = document.getElementById('notifications');
+            const notifDiv = document.createElement('div');
+            notifDiv.className = 'notification';
+            
+            const now = new Date().toLocaleTimeString();
+            notifDiv.innerHTML = `
+                <strong>${notification.type || 'Notification'}</strong>
+                <pre>${JSON.stringify(notification, null, 2)}</pre>
+                <div class="notification-time">${now}</div>
+            `;
+            
+            if (container.querySelector('.info')) {
+                container.innerHTML = '';
+            }
+            
+            container.insertBefore(notifDiv, container.firstChild);
+        }
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(`${API_URL}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (!response.ok) throw new Error('Login failed');
+
+                const data = await response.json();
+                token = data.accessToken;
+                console.log('[OK] Login successful');
+                return true;
+            } catch (error) {
+                console.error('[ERROR] Login failed:', error);
+                alert('Login failed! Check credentials.');
+                return false;
+            }
+        }
+
+        async function connect() {
+            updateStatus('[...] Connecting...', 'connecting');
+            document.getElementById('connectBtn').disabled = true;
+
+            const loggedIn = await login();
+            if (!loggedIn) {
+                updateStatus('[X] Disconnected', 'disconnected');
+                document.getElementById('connectBtn').disabled = false;
+                return;
+            }
+
+            connection = new signalR.HubConnectionBuilder()
+                .withUrl(`${API_URL}/notificationHub`, {
+                    accessTokenFactory: () => token
+                })
+                .withAutomaticReconnect()
+                .build();
+
+            connection.on("ReceiveNotification", (notification) => {
+                console.log('[NOTIFICATION]', notification);
+                addNotification(notification);
+            });
+
+            connection.onreconnecting(() => {
+                updateStatus('[...] Reconnecting...', 'connecting');
+            });
+
+            connection.onreconnected((connectionId) => {
+                updateStatus('[OK] Connected (Reconnected)', 'connected');
+                document.getElementById('connectionId').textContent = connectionId;
+            });
+
+            connection.onclose(() => {
+                updateStatus('[X] Disconnected', 'disconnected');
+                document.getElementById('connectBtn').disabled = false;
+                document.getElementById('disconnectBtn').disabled = true;
+                document.getElementById('connectionId').textContent = '-';
+            });
+
+            try {
+                await connection.start();
+                updateStatus('[OK] Connected', 'connected');
+                document.getElementById('connectionId').textContent = connection.connectionId;
+                document.getElementById('disconnectBtn').disabled = false;
+                console.log('[OK] SignalR connected:', connection.connectionId);
+            } catch (error) {
+                console.error('[ERROR] Connection failed:', error);
+                updateStatus('[X] Connection Failed', 'disconnected');
+                document.getElementById('connectBtn').disabled = false;
+                alert('Connection failed! Check if API is running on ' + API_URL);
+            }
+        }
+
+        async function disconnect() {
+            if (connection) {
+                await connection.stop();
+                console.log('[OK] Disconnected');
+            }
+        }
+
+        async function testOwnership() {
+            if (!token) {
+                alert('Connect first!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/ownershiprequests`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        animalID: 'f055cc31-fdeb-4c65-bb73-4f558f67dd5d'
+                    })
+                });
+
+                if (response.ok) {
+                    alert('[OK] Ownership request created! Check notifications.');
+                } else {
+                    alert('[X] Failed to create ownership request');
+                }
+            } catch (error) {
+                console.error('[ERROR]', error);
+                alert('[X] Request failed');
+            }
+        }
+
+        function clearNotifications() {
+            document.getElementById('notifications').innerHTML = '<div class="info">No notifications yet...</div>';
+        }
+    </script>
+</body>
+</html>

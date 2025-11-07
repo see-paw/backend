@@ -1,9 +1,14 @@
 using Application.Auth.Commands;
 using Application.Core;
+
 using AutoMapper;
+
 using Domain;
+using Domain.Common;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using WebAPI.DTOs.Auth;
 
 namespace WebAPI.Controllers
@@ -15,6 +20,13 @@ namespace WebAPI.Controllers
     {
         private readonly IMapper _mapper;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AccountController"/> class.
+        /// </summary>
+        /// <param name="mapper">
+        /// Instance of <see cref="IMapper"/> used for mapping between domain entities,
+        /// commands, and DTOs within account-related operations.
+        /// </param>
         public AccountController(IMapper mapper)
         {
             _mapper = mapper;
@@ -55,7 +67,7 @@ namespace WebAPI.Controllers
             responseDto.Role = reqRegisterUserDto.SelectedRole;
 
             // Only map shelter info when the registered user corresponds to an AdminCAA
-            if (responseDto.Role == "AdminCAA" && result.Value.Shelter != null)
+            if (responseDto.Role == AppRoles.AdminCAA && result.Value.Shelter != null)
                 responseDto.Shelter = _mapper.Map<ResRegisterShelterDto>(result.Value.Shelter);
 
             return HandleResult(Result<ResRegisterUserDto>.Success(responseDto, 201));

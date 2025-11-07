@@ -1,12 +1,17 @@
-﻿using Application.Core;
+using Application.Core;
 using Application.Interfaces;
 using Application.Users.Commands;
 using Application.Users.Queries;
+
 using AutoMapper;
+
 using Domain;
+
 using Infrastructure;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using WebAPI.DTOs;
 using WebAPI.DTOs.User;
 

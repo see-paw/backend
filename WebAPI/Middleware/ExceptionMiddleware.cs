@@ -1,6 +1,9 @@
-﻿using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+
+using FluentValidation;
+
+using Microsoft.AspNetCore.Mvc;
+
 using WebAPI.Core;
 
 namespace WebAPI.Middleware;

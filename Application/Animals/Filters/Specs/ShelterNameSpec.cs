@@ -9,6 +9,9 @@ namespace Application.Animals.Filters.Specs;
 /// </summary>
 public class ShelterNameSpec : ISpecification<Animal>
 {
+    /// <summary>
+    /// Shelter name used for filtering (case-insensitive).
+    /// </summary>
     public string ShelterName { get; init; } = string.Empty;
 
     /// <summary>

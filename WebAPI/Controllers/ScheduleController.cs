@@ -1,9 +1,15 @@
-﻿using Application.Core;
+using Application.Core;
 using Application.Scheduling.Queries;
+
 using AutoMapper;
+
+using Domain.Common;
+
 using MediatR;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using WebAPI.DTOs.AnimalSchedule;
 
 namespace WebAPI.Controllers;
@@ -22,13 +28,13 @@ public class ScheduleController(IMediator mediator, IMapper mapper) : BaseApiCon
     /// An <see cref="ActionResult{T}"/> containing an <see cref="AnimalWeeklyScheduleDto"/> if successful,  
     /// or an appropriate error response if the request fails validation or authorization.
     /// </returns>
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = AppRoles.User)]
     [HttpGet("animals/{animalId}/schedule/weekly")]
     public async Task<ActionResult<AnimalWeeklyScheduleDto>> GetAnimalWeeklySchedule(
-        [FromRoute] string animalId, 
+        [FromRoute] string animalId,
         [FromQuery] DateOnly startDate)
     {
-        var result =  await mediator.Send(new GetAnimalWeeklySchedule.Query
+        var result = await mediator.Send(new GetAnimalWeeklySchedule.Query
         {
             AnimalId = animalId,
             StartDate = startDate

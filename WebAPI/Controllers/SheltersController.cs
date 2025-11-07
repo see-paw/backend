@@ -1,9 +1,14 @@
-﻿using Application.Core;
+using Application.Core;
 using Application.Shelters.Queries;
+
 using AutoMapper;
+
 using Domain;
-using Microsoft.AspNetCore.Mvc;
+using Domain.Common;
+
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
 using WebAPI.DTOs.Animals;
 
 namespace WebAPI.Controllers
@@ -34,7 +39,7 @@ namespace WebAPI.Controllers
         /// A paginated <see cref="PagedList{T}"/> of <see cref="ResAnimalDto"/> objects representing the animals.
         /// Returns <c>400</c> if the page number is invalid or an appropriate error message if the shelter or animals are not found.
         /// </returns>
-        [Authorize(Roles = "AdminCAA")]
+        [Authorize(Roles = AppRoles.AdminCAA)]
         [HttpGet("{shelterId}/animals")]
         public async Task<ActionResult<PagedList<Animal>>> GetAnimalsByShelter(string shelterId, [FromQuery] int pageNumber = 1)
         {

@@ -2,6 +2,7 @@
 using Application.Core;
 using Application.Interfaces;
 using Domain;
+using Domain.Common;
 using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -417,7 +418,7 @@ public class CreateAnimalTests : IDisposable
         Assert.True(result.IsSuccess);
         _mockNotificationService.Verify(
             x => x.CreateAndSendToRoleAsync(
-                "User",
+                AppRoles.User,
                 NotificationType.NEW_ANIMAL_ADDED,
                 It.IsAny<string>(),
                 animal.Id

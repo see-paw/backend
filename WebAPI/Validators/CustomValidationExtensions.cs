@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 
 namespace WebAPI.Validators;
 /// <summary>
@@ -21,7 +21,7 @@ public static class CustomValidationExtensions
     /// Defaults to <c>"ID"</c> if not specified.
     /// </param>
     /// <returns>
-    /// An <see cref="IRuleBuilderOptions{T, string}"/> that can be further configured or finalized
+    /// An IRuleBuilderOptions that can be further configured or finalized
     /// as part of the FluentValidation rule chain.
     /// </returns>
     /// <remarks>

@@ -1,4 +1,4 @@
-﻿namespace WebAPI.DTOs.Fostering
+namespace WebAPI.DTOs.Fostering
 {
     /// <summary>
     /// Represents an active fostering entry for the authenticated user.

@@ -1,9 +1,14 @@
-﻿using Application.Core;
+using Application.Core;
 using Application.Favorites.Commands;
 using Application.Favorites.Queries;
+
 using AutoMapper;
+
+using Domain.Common;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using WebAPI.DTOs;
 using WebAPI.DTOs.Animals;
 using WebAPI.DTOs.Favorites;
@@ -36,7 +41,7 @@ public class FavoritesController(IMapper mapper) : BaseApiController
     /// <response code="200">Returns a paginated list of favorite animals.</response>
     /// <response code="401">Unauthorized — if the user is not authenticated.</response>
     /// <response code="500">Internal server error — if an unexpected error occurs.</response>
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = AppRoles.User)]
     [HttpGet]
     public async Task<ActionResult> GetUserFavorites(
         [FromQuery] int pageNumber = 1,
@@ -71,7 +76,7 @@ public class FavoritesController(IMapper mapper) : BaseApiController
     /// Adds an animal to the authenticated user's favorites list.
     /// </summary>
     /// <param name="animalId">The unique identifier of the animal to favorite.</param>
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = AppRoles.User)]
     [HttpPost("{animalId}")]
     public async Task<ActionResult<ResAnimalDto>> AddFavorite(string animalId)
     {
@@ -88,7 +93,7 @@ public class FavoritesController(IMapper mapper) : BaseApiController
     /// Deactivates an existing animal from the authenticated user's favorites list.
     /// </summary>
     /// <param name="animalId">The unique identifier of the animal to remove from favorites.</param>
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = AppRoles.User)]
     [HttpPatch("{animalId}/deactivate")]
     public async Task<ActionResult<ResAnimalDto>> DeactivateFavorite(string animalId)
     {

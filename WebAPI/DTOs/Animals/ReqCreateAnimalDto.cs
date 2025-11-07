@@ -1,4 +1,5 @@
-﻿using Domain;
+using Domain;
+
 using WebAPI.DTOs.Images;
 
 namespace WebAPI.DTOs.Animals

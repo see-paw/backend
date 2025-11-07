@@ -1,5 +1,7 @@
-﻿using Domain.Enums;
+using Domain.Enums;
+
 using FluentValidation;
+
 using WebAPI.DTOs.Animals;
 
 namespace WebAPI.Validators.Animals;
@@ -10,6 +12,9 @@ namespace WebAPI.Validators.Animals;
 /// </summary>
 public class AnimalFilterDtoValidator : AbstractValidator<AnimalFilterDto>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AnimalFilterDtoValidator"/> class.
+    /// </summary>
     public AnimalFilterDtoValidator()
     {
         RuleFor(x => x.Species)

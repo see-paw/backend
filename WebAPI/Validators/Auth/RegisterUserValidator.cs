@@ -1,4 +1,7 @@
+using Domain.Common;
+
 using FluentValidation;
+
 using WebAPI.DTOs.Auth;
 
 namespace WebAPI.Validators.Auth
@@ -13,6 +16,9 @@ namespace WebAPI.Validators.Auth
     /// </summary>
     public class RegisterUserValidator : AbstractValidator<ReqRegisterUserDto>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegisterUserValidator"/> class.
+        /// </summary>
         public RegisterUserValidator()
         {
             // ----- USER VALIDATION (ALWAYS REQUIRED) -----
@@ -56,12 +62,12 @@ namespace WebAPI.Validators.Auth
 
             RuleFor(x => x.SelectedRole)
                 .NotEmpty().WithMessage("SelectedRole is required.")
-                .Must(role => role == "User" || role == "AdminCAA")
+                .Must(role => role == AppRoles.User || role == AppRoles.AdminCAA)
                 .WithMessage("SelectedRole must be either 'User' or 'AdminCAA'.");
 
 
             // ----- CONDITIONAL VALIDATION (ONLY IF ROLE == AdminCAA) -----
-            When(x => x.SelectedRole == "AdminCAA", () =>
+            When(x => x.SelectedRole == AppRoles.AdminCAA, () =>
             {
                 RuleFor(x => x.ShelterName)
                     .NotEmpty().WithMessage("Shelter name is required for AdminCAA accounts.")

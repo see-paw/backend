@@ -1,4 +1,4 @@
-﻿using Application.Core;
+using Application.Core;
 using Application.Interfaces;
 using AutoMapper;
 using Domain;
@@ -27,7 +27,7 @@ namespace Application.Favorites.Commands
         /// <summary>
         /// Handles the logic for deactivating a favorite record for the current authenticated user.
         /// </summary>
-        public class Handler(AppDbContext dbContext, IUserAccessor userAccessor, IMapper mapper)
+        public class Handler(AppDbContext dbContext, IUserAccessor userAccessor)
             : IRequestHandler<Command, Result<Animal>>
         {
             /// <summary>

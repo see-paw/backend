@@ -9,6 +9,9 @@ namespace Application.Animals.Filters.Specs;
 /// </summary>
 public class BreedSpec : ISpecification<Animal>
 {
+    /// <summary>
+    /// Breed name used for filtering (case-insensitive).
+    /// </summary>
     public string BreedName { get; init; } = string.Empty;
 
     /// <summary>

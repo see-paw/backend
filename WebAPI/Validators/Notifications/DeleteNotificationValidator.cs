@@ -1,4 +1,5 @@
-﻿using Application.Notifications.Commands;
+using Application.Notifications.Commands;
+
 using FluentValidation;
 
 namespace WebAPI.Validators.Notifications;

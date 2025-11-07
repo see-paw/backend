@@ -1,21 +1,27 @@
-﻿using Application.Animals.Commands;
+using Application.Animals.Commands;
 using Application.Animals.Filters;
 using Application.Animals.Queries;
 using Application.Core;
 using Application.Fosterings.Commands;
 using Application.Images.Commands;
 using Application.Interfaces;
+
 using AutoMapper;
+
 using Domain;
+using Domain.Common;
+
 using MediatR;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using WebAPI.DTOs;
-using Boolean = System.Boolean;
 
+using WebAPI.DTOs;
 using WebAPI.DTOs.Animals;
 using WebAPI.DTOs.Fostering;
 using WebAPI.DTOs.Images;
+
+using Boolean = System.Boolean;
 
 namespace WebAPI.Controllers;
 
@@ -44,12 +50,12 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     public async Task<ActionResult<PagedList<ResAnimalDto>>> GetAnimals(
         [FromQuery] AnimalFilterDto animalFilters,
         [FromQuery] string? sortBy = null,
-        [FromQuery] string? order = null, 
+        [FromQuery] string? order = null,
         [FromQuery] int pageNumber = 1)
     {
-        
+
         var filterModel = mapper.Map<AnimalFilterModel>(animalFilters);
-        
+
         var result = await Mediator.Send(new GetAnimalList.Query
         {
             PageNumber = pageNumber,
@@ -103,7 +109,7 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
 
         return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
     }
-    
+
     /// <summary>
     /// Creates a new animal and uploads its associated images.
     /// </summary>
@@ -117,39 +123,39 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// Accepts multipart form data to include both animal information and image files.  
     /// Uses the <see cref="CreateAnimal"/> command via MediatR to handle the creation.
     /// </remarks>
-    [Authorize(Roles = "AdminCAA")]
+    [Authorize(Roles = AppRoles.AdminCAA)]
     [HttpPost]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<string>> CreateAnimal([FromForm] ReqCreateAnimalDto reqAnimalDto)
     {
-            var user = await userAccessor.GetUserAsync();
-            var shelterId = user.ShelterId;
-        
-            if (string.IsNullOrEmpty(shelterId))
-                return Unauthorized("Invalid shelter token");
-        
-            if (reqAnimalDto.Images.Count == 0)
-                return BadRequest("At least one image is required when creating an animal.");
-        
-            var invalidFile = reqAnimalDto.Images.Any(i => i.File.Length == 0);
-            if (invalidFile)
-                return BadRequest("Each image must include a valid file.");
+        var user = await userAccessor.GetUserAsync();
+        var shelterId = user.ShelterId;
 
-            // Map the validated DTO to the domain entity
-            var animal = mapper.Map<Animal>(reqAnimalDto);
-            var imageEntities = mapper.Map<List<Image>>(reqAnimalDto.Images);
-        
-            // Build the command to send to the Application layer
-            var command = new CreateAnimal.Command
-            {
-                Animal = animal,
-                ShelterId = shelterId,
-                Images = imageEntities,
-                Files = reqAnimalDto.Images.Select(i => i.File).ToList()
-            };
+        if (string.IsNullOrEmpty(shelterId))
+            return Unauthorized("Invalid shelter token");
 
-            // Centralized result handling (200, 400, 404, etc.)
-            return HandleResult(await Mediator.Send(command));
+        if (reqAnimalDto.Images.Count == 0)
+            return BadRequest("At least one image is required when creating an animal.");
+
+        var invalidFile = reqAnimalDto.Images.Any(i => i.File.Length == 0);
+        if (invalidFile)
+            return BadRequest("Each image must include a valid file.");
+
+        // Map the validated DTO to the domain entity
+        var animal = mapper.Map<Animal>(reqAnimalDto);
+        var imageEntities = mapper.Map<List<Image>>(reqAnimalDto.Images);
+
+        // Build the command to send to the Application layer
+        var command = new CreateAnimal.Command
+        {
+            Animal = animal,
+            ShelterId = shelterId,
+            Images = imageEntities,
+            Files = reqAnimalDto.Images.Select(i => i.File).ToList()
+        };
+
+        // Centralized result handling (200, 400, 404, etc.)
+        return HandleResult(await Mediator.Send(command));
     }
 
 
@@ -166,7 +172,7 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// Accessible only to users with the <c>AdminCAA</c> role.  
     /// Uses the <see cref="EditAnimal"/> command via MediatR to perform the update.
     /// </remarks>
-    [Authorize(Roles = "AdminCAA")]
+    [Authorize(Roles = AppRoles.AdminCAA)]
     [HttpPut("{id}")]
     public async Task<ActionResult<ResAnimalDto>> EditAnimal(string id, [FromBody] ReqEditAnimalDto reqEditAnimalDto)
     {
@@ -196,20 +202,20 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// A list of <see cref="ResImageDto"/> representing the newly added images on success,
     /// or an appropriate error response on failure.
     /// </returns>
-    [Authorize(Roles = "AdminCAA")]
+    [Authorize(Roles = AppRoles.AdminCAA)]
     [HttpPost("{id}/images")]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<List<ResImageDto>>> AddImagesToAnimal(string id, [FromForm] ReqAddImagesDto reqAddImagesDto)
     {
         var imageEntities = mapper.Map<List<Image>>(reqAddImagesDto.Images);
-    
+
         var command = new AddImagesAnimal.Command
         {
             AnimalId = id,
             Images = imageEntities,
             Files = reqAddImagesDto.Images.Select(i => i.File).ToList()
         };
-    
+
         var result = await Mediator.Send(command);
 
         if (!result.IsSuccess)
@@ -219,7 +225,7 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
 
         return HandleResult(Result<List<ResImageDto>>.Success(imageDtos, 201));
     }
-    
+
     /// <summary>
     /// Deletes an image from a specific animal.
     /// </summary>
@@ -234,7 +240,7 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// Accessible only to users with the <c>AdminCAA</c> role.  
     /// Uses the <see cref="DeleteAnimalImage"/> command via MediatR to handle the deletion.
     /// </remarks>
-    [Authorize(Roles = "AdminCAA")]
+    [Authorize(Roles = AppRoles.AdminCAA)]
     [HttpDelete("{animalId}/images/{imageId}")]
     public async Task<ActionResult<Unit>> DeleteAnimalImage(string animalId, string imageId)
     {
@@ -261,7 +267,7 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// Accessible only to users with the <c>AdminCAA</c> role.  
     /// Uses the <see cref="SetAnimalPrincipalImage"/> command via MediatR to handle the update.
     /// </remarks>
-    [Authorize(Roles = "AdminCAA")]
+    [Authorize(Roles = AppRoles.AdminCAA)]
     [HttpPut("{animalId}/images/{imageId}/set-principal")]
     public async Task<ActionResult<Unit>> SetAnimalPrincipalImage(string animalId, string imageId)
     {
@@ -270,11 +276,11 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
             AnimalId = animalId,
             ImageId = imageId
         };
-        
+
         return HandleResult(await Mediator.Send(command));
     }
-    
-    
+
+
     /// <summary>
     /// Deactivates an existing <see cref="Animal"/> entity within the shelter context,
     /// changing its <see cref="Domain.Enums.AnimalState"/> to <c>Inactive</c> instead of deleting it.
@@ -288,7 +294,7 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// </list>
     /// </para>
     /// <param name="id">The unique identifier of the animal to be deactivated.</param>
-    [Authorize(Roles = "AdminCAA")]
+    [Authorize(Roles = AppRoles.AdminCAA)]
     [HttpPatch("{id}/deactivate")]
     public async Task<ActionResult> DeactivateAnimal(string id)
     {
@@ -312,39 +318,7 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
         var animalDto = mapper.Map<ResAnimalDto>(result.Value);
         return HandleResult(Result<ResAnimalDto>.Success(animalDto, 200));
     }
-    
-    /// <summary>
-    /// Creates a new fostering record for the specified animal, allowing the authenticated user
-    /// to sponsor it with a monthly contribution.
-    /// </summary>
-    /// <param name="animalId">The unique identifier (GUID) of the animal to be fostered.</param>
-    /// <param name="reqAddFosteringDto">The data transfer object containing the monthly contribution value.</param>
-    /// <returns>
-    /// An <see cref="ActionResult{T}"/> containing a <see cref="ResActiveFosteringDto"/> that represents the created fostering record.  
-    /// Returns an appropriate error response if the operation fails.
-    /// <list type="bullet">
-    /// <item><description><c>201 Created</c> – fostering created successfully.</description></item>
-    /// <item><description><c>404 Not Found</c> – the specified animal does not exist.</description></item>
-    /// <item><description><c>409 Conflict</c> – the animal is in an invalid state or already fostered by the same user.</description></item>
-    /// <item><description><c>422 Unprocessable Entity</c> – the monthly value surpasses the animal’s cost.</description></item>
-    /// </list>
-    /// </returns>
-    /// <remarks>
-    /// This endpoint is accessible only to authenticated users with the <c>User</c> role.
-    /// </remarks>
-    [Authorize(Roles = "User")]
-    [HttpPost("{animalId}/fosterings")]
-    public async Task<ActionResult<ResActiveFosteringDto>> AddFostering(string animalId, [FromBody] ReqAddFosteringDto reqAddFosteringDto)
-    {
-        var result = await Mediator.Send(new AddFostering.Command
-        {
-            AnimalId = animalId,
-            MonthValue = reqAddFosteringDto.MonthValue
-            
-        });
-        
-        return HandleResult(result);
-    }
+
 
     /// <summary>
     /// Checks whether a given animal is eligible to be associated with an Ownership.
@@ -373,13 +347,13 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
         {
             AnimalId = id
         });
-        
+
         // If the query result indicates failure, return the corresponding HTTP status and message
         if (!result.IsSuccess)
         {
             return HandleResult(result);
         }
-        
+
         // Map the boolean value and return 200 OK with eligibility result
         var isPossibleToOwnership = mapper.Map<Boolean>(result.Value);
         return HandleResult(Result<Boolean>.Success(isPossibleToOwnership, 200));

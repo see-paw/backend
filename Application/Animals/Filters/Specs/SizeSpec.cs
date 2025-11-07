@@ -10,6 +10,9 @@ namespace Application.Animals.Filters.Specs;
 /// </summary>
 public class SizeSpec : ISpecification<Animal>
 {
+    /// <summary>
+    /// Size value used to filter animals.
+    /// </summary>
     public SizeType Size { get; init; }
 
     /// <summary>

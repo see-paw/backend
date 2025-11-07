@@ -1,4 +1,4 @@
-﻿using Application.Core;
+using Application.Core;
 using Application.Interfaces;
 using AutoMapper;
 using Domain;
@@ -28,7 +28,7 @@ namespace Application.Favorites.Commands
         /// <summary>
         /// Handles the logic for adding or reactivating a favorite animal for the current user.
         /// </summary>
-        public class Handler(AppDbContext dbContext, IUserAccessor userAccessor, IMapper mapper)
+        public class Handler(AppDbContext dbContext, IUserAccessor userAccessor)
             : IRequestHandler<Command, Result<Animal>>
         {
             /// <summary>

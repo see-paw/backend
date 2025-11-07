@@ -26,10 +26,10 @@ public class CustomAuthMiddlewareHandlerTest
     /// </summary>
     public CustomAuthMiddlewareHandlerTest()
     {
-        this._httpContext = new DefaultHttpContext();
-        this._policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
-        this._next = _ => Task.CompletedTask;
-        this._handler = new CustomAuthMiddlewareHandler();
+        _httpContext = new DefaultHttpContext();
+        _policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+        _next = _ => Task.CompletedTask;
+        _handler = new CustomAuthMiddlewareHandler();
     }
 
     /// <summary>

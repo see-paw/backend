@@ -16,7 +16,7 @@ public class ReqCreateActivityFosteringDto
     /// </summary>
     [Required(ErrorMessage = "AnimalId is required.")]
     [MaxLength(36, ErrorMessage = "AnimalId cannot exceed 36 characters.")]
-    [RegularExpression(@"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", 
+    [RegularExpression(@"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
         ErrorMessage = "AnimalId must be a valid GUID.")]
     public string AnimalId { get; set; } = string.Empty;
 

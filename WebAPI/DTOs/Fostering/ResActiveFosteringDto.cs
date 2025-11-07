@@ -1,4 +1,4 @@
-﻿using WebAPI.DTOs.Images;
+using WebAPI.DTOs.Images;
 
 namespace WebAPI.DTOs.Fostering
 {

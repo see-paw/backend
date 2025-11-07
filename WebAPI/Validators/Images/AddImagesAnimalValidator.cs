@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+using FluentValidation;
+
 using WebAPI.DTOs.Images;
 
 namespace WebAPI.Validators.Images;
@@ -25,5 +26,5 @@ public class AddImagesAnimalValidator : AbstractValidator<ReqAddImagesDto>
         RuleForEach(x => x.Images)
             .SetValidator(new ImageValidator());
     }
-    
+
 }

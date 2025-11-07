@@ -10,6 +10,9 @@ namespace Application.Animals.Filters.Specs;
 /// </summary>
 public class SexSpec : ISpecification<Animal>
 {
+    /// <summary>
+    /// Sex value used to filter animals.
+    /// </summary>
     public SexType Sex { get; init; }
 
     /// <summary>
