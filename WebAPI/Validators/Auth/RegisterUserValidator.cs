@@ -1,5 +1,7 @@
 using Domain.Common;
+
 using FluentValidation;
+
 using WebAPI.DTOs.Auth;
 
 namespace WebAPI.Validators.Auth

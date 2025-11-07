@@ -1,4 +1,4 @@
-﻿namespace WebAPI.DTOs.User
+namespace WebAPI.DTOs.User
 {
     /// <summary>
     /// Request DTO used to update the authenticated user's profile.

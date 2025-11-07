@@ -1,14 +1,16 @@
 ﻿using Application.Interfaces;
 using Domain;
 using Domain.Enums;
+using Infrastructure.BackgroundTasks.Tasks;
 using Infrastructure.BackgroundTasks.Tasks.ActivityTasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Persistence;
+using Xunit;
 
-namespace Tests.BackgroundTasksTest
+namespace Tests.BackgroundTasks
 {
     /// <summary>
     /// Unit tests for the BaseActivityReminderTask class.
@@ -161,7 +163,7 @@ namespace Tests.BackgroundTasksTest
             _mockNotificationService.Verify(n => n.CreateAndSendToUserAsync(
                 activity.User.Id,
                 NotificationType.OWNERSHIP_ACTIVITY_START_REMINDER_USER,
-                It.Is<string>(msg => msg.Contains("starts")),
+                It.Is<string>(msg => msg.Contains("começa")),
                 It.IsAny<string?>(), null, activity.Id, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
@@ -188,7 +190,7 @@ namespace Tests.BackgroundTasksTest
             _mockNotificationService.Verify(n => n.CreateAndSendToUserAsync(
                 activity.User.Id,
                 NotificationType.OWNERSHIP_ACTIVITY_END_REMINDER_USER,
-                It.Is<string>(msg => msg.Contains("end")),
+                It.Is<string>(msg => msg.Contains("acaba")),
                 It.IsAny<string?>(), null, activity.Id, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
@@ -308,7 +310,7 @@ namespace Tests.BackgroundTasksTest
             _mockNotificationService.Verify(n => n.CreateAndSendToUserAsync(
                 admin.Id,
                 NotificationType.OWNERSHIP_ACTIVITY_START_REMINDER_SHELTER_ADMIN,
-                It.Is<string>(msg => msg.Contains("starts")),
+                It.Is<string>(msg => msg.Contains("começa")),
                 It.IsAny<string?>(), null, activity.Id, It.IsAny<CancellationToken>()),
                 Times.Once);
         }

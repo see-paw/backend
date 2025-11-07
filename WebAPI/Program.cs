@@ -1,25 +1,32 @@
-﻿using Application.Animals.Queries;
+using System.Text.Json.Serialization;
+
+using Application.Animals.Filters;
+using Application.Animals.Queries;
 using Application.Core;
 using Application.Fosterings;
 using Application.Interfaces;
 using Application.Services;
+
 using Domain;
+using Domain.Common;
 using Domain.Services;
+
 using FluentValidation;
 using FluentValidation.AspNetCore;
+
 using Infrastructure.BackgroundTasks;
 using Infrastructure.BackgroundTasks.Tasks.ActivityTasks;
 using Infrastructure.Hubs;
 using Infrastructure.Images;
 using Infrastructure.Notifications;
 using Infrastructure.Security;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+
 using Persistence;
-using System.Text.Json.Serialization;
-using Application.Animals.Filters;
-using Domain.Common;
+
 using WebAPI.Core;
 using WebAPI.Middleware;
 using WebAPI.Validators;
@@ -105,12 +112,12 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 
-   c.DocInclusionPredicate((docName, apiDescription) =>
-    {
-        // only show the controllers we create, not the ones given by identity
-        return apiDescription.ActionDescriptor?.RouteValues?["controller"] != null
-               && apiDescription.ActionDescriptor.DisplayName!.Contains("WebAPI.Controllers");
-    });
+    c.DocInclusionPredicate((docName, apiDescription) =>
+     {
+         // only show the controllers we create, not the ones given by identity
+         return apiDescription.ActionDescriptor?.RouteValues?["controller"] != null
+                && apiDescription.ActionDescriptor.DisplayName!.Contains("WebAPI.Controllers");
+     });
 });
 
 
@@ -118,7 +125,8 @@ builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
 
 builder.Services.AddCors();
-builder.Services.AddMediatR(x => {
+builder.Services.AddMediatR(x =>
+{
     x.RegisterServicesFromAssemblyContaining<GetAnimalDetails.Handler>();
     x.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });

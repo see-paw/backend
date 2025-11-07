@@ -1,4 +1,5 @@
-﻿using Application.Activities.Commands;
+using Application.Activities.Commands;
+
 using FluentValidation;
 
 namespace WebAPI.Validators.Activities.Ownership;

@@ -1,10 +1,14 @@
-﻿using Application.Activities.Commands;
+using Application.Activities.Commands;
 using Application.Activities.Queries;
 using Application.Core;
+
 using AutoMapper;
+
 using Domain.Common;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using WebAPI.DTOs.Activities;
 
 namespace WebAPI.Controllers;
@@ -194,7 +198,7 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
 
         return HandleResult(Result<ResCancelActivityFosteringDto>.Success(responseDto, 200));
     }
-    
+
     /// <summary>
     /// Gets future fostering visit slots for the authenticated user
     /// </summary>

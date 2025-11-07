@@ -1,4 +1,4 @@
-﻿namespace WebAPI.DTOs.User
+namespace WebAPI.DTOs.User
 {
     /// <summary>
     /// Response DTO returned when fetching the authenticated user's profile.
@@ -8,7 +8,7 @@
     /// </remarks>
     public class ResUserProfileDto
     {
-        
+
         /// <summary>
         /// Full name of the user.
         /// </summary>

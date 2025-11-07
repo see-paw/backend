@@ -1,4 +1,4 @@
-﻿namespace WebAPI.DTOs.Shelter;
+namespace WebAPI.DTOs.Shelter;
 
 /// <summary>
 /// Data transfer object representing basic shelter information.

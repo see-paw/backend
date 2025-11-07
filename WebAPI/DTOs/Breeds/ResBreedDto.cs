@@ -1,4 +1,4 @@
-﻿namespace WebAPI.DTOs.Breeds
+namespace WebAPI.DTOs.Breeds
 {
     /// <summary>
     /// Data Transfer Object (DTO) representing the breed information of an animal.

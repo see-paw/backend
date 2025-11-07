@@ -1,4 +1,5 @@
-﻿using Application.Images.Commands;
+using Application.Images.Commands;
+
 using FluentValidation;
 
 namespace WebAPI.Validators.Images;

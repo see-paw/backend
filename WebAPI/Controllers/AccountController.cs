@@ -1,10 +1,14 @@
 using Application.Auth.Commands;
 using Application.Core;
+
 using AutoMapper;
+
 using Domain;
 using Domain.Common;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using WebAPI.DTOs.Auth;
 
 namespace WebAPI.Controllers

@@ -1,4 +1,4 @@
-﻿namespace WebAPI.DTOs.Images;
+namespace WebAPI.DTOs.Images;
 
 /// <summary>
 /// Represents a request to add multiple images to an entity.

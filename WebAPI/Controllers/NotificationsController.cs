@@ -1,9 +1,12 @@
-﻿using Application.Core;
+using Application.Core;
 using Application.Notifications.Commands;
 using Application.Notifications.Queries;
+
 using AutoMapper;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using WebAPI.DTOs;
 using WebAPI.DTOs.Notifications;
 
