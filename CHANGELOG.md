@@ -1,3 +1,83 @@
+## [1.2.0](https://github.com/see-paw/backend/compare/v1.1.0...v1.2.0) (2025-11-07)
+
+
+### Features
+
+* add command and controller to create a fostering activity and made the unit tests for it. add new entities for slots ([7bc5e46](https://github.com/see-paw/backend/commit/7bc5e4663d5dc32751ee17c014eedf5de3ac4b9a))
+* add notification to shelter admin when new ownership activity is created ([9ea8e4c](https://github.com/see-paw/backend/commit/9ea8e4ce690ed74aa9a05f583addc4ad63e1c68c))
+* add notifications endpoints to retrieve data when user logs in ([2d0a29c](https://github.com/see-paw/backend/commit/2d0a29c8f64b1d9df2484016d3bcb92d7d342671))
+* add notifications to relevant commands ([e157067](https://github.com/see-paw/backend/commit/e1570677738179e7315e7aa49c4a8e3efd579994))
+* added cancel fostering activity feature, and all the tests needed ([b830723](https://github.com/see-paw/backend/commit/b8307238cbcb0b47f8cb0b9f2eb1d1aac86562e2))
+* added new unit tests and documentation; also added roles to program.cs ([ca95cf7](https://github.com/see-paw/backend/commit/ca95cf760d034c05b62c5a146f59746b2b9e5ea9))
+* added new unit tests to createAnimal and EditUserProfilePage ([53f916c](https://github.com/see-paw/backend/commit/53f916c4204ac33e601bb1a843c4d50da1ffb21e))
+* added user register controller, handler, dto and validator ([a2556db](https://github.com/see-paw/backend/commit/a2556db70f68f1cd145f220aa8a7072559ac0ddb))
+* addFavorite and deactivateFavorite controller, handler, unit tests and documentation ([f02dd78](https://github.com/see-paw/backend/commit/f02dd7888ca0da44af63f4968e554d53f7c9f253))
+* **alerts:** add ownership activity completion background task ([1920258](https://github.com/see-paw/backend/commit/1920258837732141d7ff88b8069298f54ef4cf8b))
+* **alerts:** add reminder service and ownership activity completion background task ([7d7e4f2](https://github.com/see-paw/backend/commit/7d7e4f22d411e95af19f596a4359f813e296df49))
+* **Animals:** Implemented Get Animals with AND Filters ([2048b5a](https://github.com/see-paw/backend/commit/2048b5a02d89584974cae037fe9db0742f7162d7))
+* **Domain:** Added Slot Entity to Data Model ([1527af9](https://github.com/see-paw/backend/commit/1527af942311a6e5c693d6d995d26bb65796ba7c))
+* **Domain:** Added Slot Entity to Data Model ([f8a872e](https://github.com/see-paw/backend/commit/f8a872e193970e2dd475bd51d95194a2c2fede12))
+* **notifications:** add SignalR notification system ([935f1d3](https://github.com/see-paw/backend/commit/935f1d3c9188bc4b512ce73ffd32dd203b2b93b5))
+* **ownershipRequests:** add notification to AdminCAA of new ownership requests creation ([2a4e9a8](https://github.com/see-paw/backend/commit/2a4e9a8e7adcc7d7ad245445de828729f9e2caa1))
+* refactor account controller and register handler and added unit tests ([949c2ed](https://github.com/see-paw/backend/commit/949c2ed840a3813f97e166f891b2885afcb77008))
+* **Scheduling:** Implemented Get Animal Weekly Schedule, without slot clipping ([be5e2be](https://github.com/see-paw/backend/commit/be5e2bec2828462657affc2b4c7bae308a6728e5))
+* swagger ([a9ed6d2](https://github.com/see-paw/backend/commit/a9ed6d275a148083e67018cb18282e05de5e6e1a))
+* updated AccountController, handler and dto to register an Admin CAA account ([7de3a18](https://github.com/see-paw/backend/commit/7de3a18f44030ec559d035c5503dd90a511e0115))
+* updated getAnimalsList handler and controller to also be sorted by name, age and createdAt asc and desc. Also added new unit test to getAnimalsListHandlerTests ([b3e454d](https://github.com/see-paw/backend/commit/b3e454d5531cde59c5b795f26b03bac68b9b3c00))
+
+
+### Bug Fixes
+
+* added a mapper for the new dto ([3ab971f](https://github.com/see-paw/backend/commit/3ab971fa78ceddfd88b4612eac47351a00995697))
+* added missing validations in cancel fostering ([ff3e1d3](https://github.com/see-paw/backend/commit/ff3e1d3ab8b5b72eb87c5824f2443db803763959))
+* **approveOwnershipRequest:** add active fosterings list before they are cancelled ([7d096f8](https://github.com/see-paw/backend/commit/7d096f846b0cd7b7246896f8a24821f625b27f15))
+* change the result from the command CreateFosteringActivity, change the controller tests ([479338a](https://github.com/see-paw/backend/commit/479338a2227f062bfae5a19b78d5c6827c5bbb42))
+* create activity handler test ([e9538aa](https://github.com/see-paw/backend/commit/e9538aa0ba02da6385226fcbc58160773b888e2e))
+* **Filters:** Fixed age spec logic ([e6a3019](https://github.com/see-paw/backend/commit/e6a3019bbb22f0b83d633bb878237a6075547ed0))
+* **notificationsController:** change to http endpoints' authorization ([63b2b4a](https://github.com/see-paw/backend/commit/63b2b4a2a9a3db3e76a2ca5cdd6dc3d509898d65))
+* **tests:** updated tests because of merge with develop ([3635df3](https://github.com/see-paw/backend/commit/3635df3272b7b5c96fa8f1d3a387c6f46ff359ca))
+* update dbinitializer tests ([8d1db59](https://github.com/see-paw/backend/commit/8d1db59f9926ecc194d04e4c0c738de1aa329edd))
+
+
+### Documentation
+
+* **Filters:** Added missing documentation ([616aea4](https://github.com/see-paw/backend/commit/616aea434697a3de67b6195dd3c265dcbe3e22b2))
+* **Scheduling:** Added Documentation for Scheduling files ([509491b](https://github.com/see-paw/backend/commit/509491bf91e8b7077545bbae8601d6ecc49838e5)), closes [#75](https://github.com/see-paw/backend/issues/75)
+
+
+### Code Refactoring
+
+* **backgroundTasks:** created baseActivityReminder superclass to avoid repeating code ([14695c7](https://github.com/see-paw/backend/commit/14695c768420a9d23c8e3a370876e8293ebe69e0))
+* baseActivityReminderTask to have portuguese messages to users ([807d6be](https://github.com/see-paw/backend/commit/807d6be5467941db2aa6a6daf6b249ebc131d165))
+* Project Cleanup ([12ed324](https://github.com/see-paw/backend/commit/12ed324f5240ca99f867b2a9662192071b5ae77c))
+* **Roles:** Added AppRoles Domain static class ([a1c23fd](https://github.com/see-paw/backend/commit/a1c23fda9f20318e43c8db1e50596a24837fc9ca))
+* **Scheduling:** Added multi-day Slot clipping and other validations ([d5d59b7](https://github.com/see-paw/backend/commit/d5d59b73c4559f17700c00361a2494ca62984274))
+* **Seed:** Added seed data for Scheduling testing ([4046c08](https://github.com/see-paw/backend/commit/4046c088bb1665d82646da07dd75b134ba6c2dc0))
+* **Seed:** Initialized Refactoring Data Seed ([7e44d84](https://github.com/see-paw/backend/commit/7e44d8494b9279d94e3547782c22be381930ddbb))
+
+
+### Tests
+
+* add unit tests ([1991cae](https://github.com/see-paw/backend/commit/1991cae5693a6796f55157d5af46e3cc7e8eaa17))
+* **alerts:** add integration tests for alerts/reminders system ([429f032](https://github.com/see-paw/backend/commit/429f0320c06a5ae8d29c129d03d41691662460ba))
+* **Animals:** Added Get Animals with Filters Unit Tests ([1a12b16](https://github.com/see-paw/backend/commit/1a12b16abc39797b5f1aea037dba8a5768c0bf7e))
+* **notifications:** add unit tests in the respective handlers to test notifications ([85ad30b](https://github.com/see-paw/backend/commit/85ad30b8a0777e0fbd777efbb0dd752c803a28aa))
+* **Scheduling:** Added unit and integration tests for Get Animal Weekly Schedule ([d94d04c](https://github.com/see-paw/backend/commit/d94d04c390cebb42b53ce5ae6e7e33e0d106d468))
+
+
+### Chores
+
+* apply formatting styles ([0e8e5cb](https://github.com/see-paw/backend/commit/0e8e5cbe8b23c254c7423c77286af7ee6032443a))
+* as a test, changed pipeline to ignore integration tests ([5e1f822](https://github.com/see-paw/backend/commit/5e1f8229e4f204c1ca104f8e9302639a72b3fdb1))
+* change Hubs location to respect architecture construction and add services to program.cs ([414e3d9](https://github.com/see-paw/backend/commit/414e3d9c824edb387ba0112ce2264f007103c810))
+* refactor files and folders ([52fbe8c](https://github.com/see-paw/backend/commit/52fbe8cd1c5ea3f39d67de408cad527989723049))
+* remove warnings from build ([62a24ef](https://github.com/see-paw/backend/commit/62a24ef50c038df95907e559a3aae6036a837c7e))
+* there's only one OwnershipController now ([bce1f7e](https://github.com/see-paw/backend/commit/bce1f7e236ebdac9fcce14fcdc0148b278077874))
+* update dbinitializer for separate notifications test data ([496e7b3](https://github.com/see-paw/backend/commit/496e7b31b4c93b1396fa8d3336a709bd0af3888a))
+* update from develop ([1e83a3a](https://github.com/see-paw/backend/commit/1e83a3aa3ff0d019e8c4e53a418d1d3deffe6fac))
+* updated FavoritesController ([8c56bef](https://github.com/see-paw/backend/commit/8c56befbcdbf92069859f7dcaab481b3ddf32d64))
+* updated pagedList class and fixed unit tests; reorganized unit tests ([5df7c0e](https://github.com/see-paw/backend/commit/5df7c0e64ddbcfc54f694e1b59a644ea6bc9d38b))
+
 ## [1.1.0](https://github.com/see-paw/backend/compare/v1.0.4...v1.1.0) (2025-11-02)
 
 
