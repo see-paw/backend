@@ -8,11 +8,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WebAPI.Controllers;
-using WebAPI.DTOs;
 using WebAPI.DTOs.Favorites;
-using Xunit;
 
-namespace Tests.Favorites.Handlers;
+namespace Tests.Favorites.Controllers;
 
 /// <summary>
 /// Unit tests for GetUserFavorites endpoint in FavoritesController.

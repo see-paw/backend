@@ -2,6 +2,8 @@
 using Infrastructure.BackgroundTasks.Tasks.ActivityTasks;
 using Microsoft.Extensions.Logging;
 
+namespace Tests.BackgroundTasksTest;
+
 class TestActivityReminderTask : BaseActivityReminderTask
 {
     public TestActivityReminderTask(ILogger logger) : base(logger) { }

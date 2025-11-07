@@ -1,3 +1,4 @@
+using Application.Common;
 using FluentValidation;
 using WebAPI.DTOs.Auth;
 
@@ -59,12 +60,12 @@ namespace WebAPI.Validators.Auth
 
             RuleFor(x => x.SelectedRole)
                 .NotEmpty().WithMessage("SelectedRole is required.")
-                .Must(role => role == "User" || role == "AdminCAA")
+                .Must(role => role == AppRoles.User || role == AppRoles.AdminCAA)
                 .WithMessage("SelectedRole must be either 'User' or 'AdminCAA'.");
 
 
             // ----- CONDITIONAL VALIDATION (ONLY IF ROLE == AdminCAA) -----
-            When(x => x.SelectedRole == "AdminCAA", () =>
+            When(x => x.SelectedRole == AppRoles.AdminCAA, () =>
             {
                 RuleFor(x => x.ShelterName)
                     .NotEmpty().WithMessage("Shelter name is required for AdminCAA accounts.")

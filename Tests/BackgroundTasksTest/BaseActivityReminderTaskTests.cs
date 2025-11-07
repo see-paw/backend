@@ -1,16 +1,14 @@
 ﻿using Application.Interfaces;
 using Domain;
 using Domain.Enums;
-using Infrastructure.BackgroundTasks.Tasks;
 using Infrastructure.BackgroundTasks.Tasks.ActivityTasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Persistence;
-using Xunit;
 
-namespace Tests.BackgroundTasks
+namespace Tests.BackgroundTasksTest
 {
     /// <summary>
     /// Unit tests for the BaseActivityReminderTask class.

@@ -1,4 +1,5 @@
-﻿using Application.Core;
+﻿using Application.Common;
+using Application.Core;
 using Application.Fosterings.Commands;
 using Application.Fosterings.Queries;
 using Application.Interfaces;
@@ -26,7 +27,7 @@ namespace WebAPI.Controllers
         /// </returns>
         /// <response code="200">Returns a list of active fosterings for the user.</response>
         /// <response code="401">Returned if the user is not authenticated or lacks a valid token.</response>
-        [Authorize(Roles = "User")]
+        [Authorize(Roles = AppRoles.User)]
         [HttpGet]
         public async Task<ActionResult<List<ResActiveFosteringDto>>> GetActiveFosterings()
         {
@@ -47,7 +48,7 @@ namespace WebAPI.Controllers
         /// </summary>
         /// <param name="id">O identificador único do apadrinhamento a cancelar.</param>
         /// <returns>Mensagem de sucesso ou erro.</returns>
-        [Authorize(Roles = "User")]
+        [Authorize(Roles = AppRoles.User)]
         [HttpPatch("{id}/cancel")]
             public async Task<ActionResult> CancelFostering(string id)
             {

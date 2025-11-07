@@ -1,7 +1,7 @@
 {
   "profiles": {
     "Docker Compose": {
-      "commandName": "DockerCompose",
+      "commandName": "Docker",
       "commandVersion": "1.0",
       "serviceActions": {
         "api": "StartDebugging",

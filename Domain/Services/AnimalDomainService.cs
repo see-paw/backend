@@ -44,7 +44,7 @@ public class AnimalDomainService
         return animal =>
             (animal.BirthDate.Month < month ||
              (animal.BirthDate.Month == month && animal.BirthDate.Day <= day)
-                ? (year - animal.BirthDate.Year)
-                : (year - animal.BirthDate.Year - 1)) == age;
+                ? year - animal.BirthDate.Year
+                : year - animal.BirthDate.Year - 1) == age;
     }
 }

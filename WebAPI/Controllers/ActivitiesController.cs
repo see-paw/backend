@@ -1,5 +1,6 @@
 ﻿using Application.Activities.Commands;
 using Application.Activities.Queries;
+using Application.Common;
 using Application.Core;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -20,7 +21,7 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
     /// <param name="pageNumber">Page number (default: 1).</param>
     /// <param name="status">Optional status filter (Active, Completed, Canceled, All). If not provided, returns all activities.</param>
     /// <returns>Paginated list of ownership activities.</returns>
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = AppRoles.User)]
     [HttpGet("ownership")]
     public async Task<ActionResult> GetOwnershipActivities(
         [FromQuery] int pageNumber = 1,
@@ -61,7 +62,7 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
     /// at the shelter. The activity must be scheduled at least 24 hours in advance and must
     /// fall within the shelter's operating hours.
     /// </remarks>
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = AppRoles.User)]
     [HttpPost("ownership")]
     public async Task<ActionResult<ResActivityDto>> CreateOwnershipActivity([FromBody] ReqCreateActivityDto dto)
     {
@@ -91,7 +92,7 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
     /// This endpoint allows animal owners to cancel their scheduled visits/interactions.
     /// Only activities with Active status can be cancelled.
     /// </remarks>
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = AppRoles.User)]
     [HttpPatch("ownership/{id}/cancel")]
     public async Task<ActionResult<ResActivityDto>> CancelOwnershipActivity(string id)
     {
@@ -126,7 +127,7 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
     /// <response code="400">Invalid request data or business rule violation</response>
     /// <response code="404">Animal not found or user is not fostering the animal</response>
     /// <response code="409">Time slot conflict or shelter unavailable</response>
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = AppRoles.User)]
     [HttpPost("foster-activity")]
     [ProducesResponseType(typeof(ResActivityFosteringDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -170,7 +171,7 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
     /// <response code="400">Invalid cancellation (e.g., already started or inactive).</response>
     /// <response code="403">User not authorized to cancel this activity.</response>
     /// <response code="404">Activity or slot not found.</response>
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = AppRoles.User)]
     [HttpPatch("foster-activity/{id}/cancel")]
     [ProducesResponseType(typeof(ResCancelActivityFosteringDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

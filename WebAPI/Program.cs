@@ -19,6 +19,7 @@ using Microsoft.EntityFrameworkCore;
 using Persistence;
 using System.Text.Json.Serialization;
 using Application.Animals.Filters;
+using Application.Common;
 using WebAPI.Core;
 using WebAPI.Middleware;
 using WebAPI.Validators;
@@ -224,7 +225,7 @@ try
     logger.LogInformation("Migrations applied successfully.");
 
     // Ensure Roles Exist
-    var roles = new[] { "User", "AdminCAA" };
+    var roles = new[] { AppRoles.User, AppRoles.AdminCAA };
     foreach (var role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))

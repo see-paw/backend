@@ -1,6 +1,7 @@
 ﻿using Application.Animals.Commands;
 using Application.Animals.Filters;
 using Application.Animals.Queries;
+using Application.Common;
 using Application.Core;
 using Application.Fosterings.Commands;
 using Application.Images.Commands;
@@ -117,7 +118,7 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// Accepts multipart form data to include both animal information and image files.  
     /// Uses the <see cref="CreateAnimal"/> command via MediatR to handle the creation.
     /// </remarks>
-    [Authorize(Roles = "AdminCAA")]
+    [Authorize(Roles = AppRoles.AdminCAA)]
     [HttpPost]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<string>> CreateAnimal([FromForm] ReqCreateAnimalDto reqAnimalDto)
@@ -166,7 +167,7 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// Accessible only to users with the <c>AdminCAA</c> role.  
     /// Uses the <see cref="EditAnimal"/> command via MediatR to perform the update.
     /// </remarks>
-    [Authorize(Roles = "AdminCAA")]
+    [Authorize(Roles = AppRoles.AdminCAA)]
     [HttpPut("{id}")]
     public async Task<ActionResult<ResAnimalDto>> EditAnimal(string id, [FromBody] ReqEditAnimalDto reqEditAnimalDto)
     {
@@ -196,7 +197,7 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// A list of <see cref="ResImageDto"/> representing the newly added images on success,
     /// or an appropriate error response on failure.
     /// </returns>
-    [Authorize(Roles = "AdminCAA")]
+    [Authorize(Roles = AppRoles.AdminCAA)]
     [HttpPost("{id}/images")]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<List<ResImageDto>>> AddImagesToAnimal(string id, [FromForm] ReqAddImagesDto reqAddImagesDto)
@@ -234,7 +235,7 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// Accessible only to users with the <c>AdminCAA</c> role.  
     /// Uses the <see cref="DeleteAnimalImage"/> command via MediatR to handle the deletion.
     /// </remarks>
-    [Authorize(Roles = "AdminCAA")]
+    [Authorize(Roles = AppRoles.AdminCAA)]
     [HttpDelete("{animalId}/images/{imageId}")]
     public async Task<ActionResult<Unit>> DeleteAnimalImage(string animalId, string imageId)
     {
@@ -261,7 +262,7 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// Accessible only to users with the <c>AdminCAA</c> role.  
     /// Uses the <see cref="SetAnimalPrincipalImage"/> command via MediatR to handle the update.
     /// </remarks>
-    [Authorize(Roles = "AdminCAA")]
+    [Authorize(Roles = AppRoles.AdminCAA)]
     [HttpPut("{animalId}/images/{imageId}/set-principal")]
     public async Task<ActionResult<Unit>> SetAnimalPrincipalImage(string animalId, string imageId)
     {
@@ -288,7 +289,7 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// </list>
     /// </para>
     /// <param name="id">The unique identifier of the animal to be deactivated.</param>
-    [Authorize(Roles = "AdminCAA")]
+    [Authorize(Roles = AppRoles.AdminCAA)]
     [HttpPatch("{id}/deactivate")]
     public async Task<ActionResult> DeactivateAnimal(string id)
     {
@@ -332,7 +333,7 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// <remarks>
     /// This endpoint is accessible only to authenticated users with the <c>User</c> role.
     /// </remarks>
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = AppRoles.User)]
     [HttpPost("{animalId}/fosterings")]
     public async Task<ActionResult<ResActiveFosteringDto>> AddFostering(string animalId, [FromBody] ReqAddFosteringDto reqAddFosteringDto)
     {

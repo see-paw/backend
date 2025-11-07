@@ -1,3 +1,4 @@
+using Application.Common;
 using Application.Core;
 using Application.Interfaces;
 using Application.OwnershipRequests.Queries;
@@ -21,7 +22,7 @@ namespace WebAPI.Controllers;
 /// </list>
 /// Access is restricted to users with the <c>User</c> role.
 /// </remarks>
-[Authorize(Roles = "User")]
+[Authorize(Roles = AppRoles.User)]
 public class OwnershipsController(IMapper mapper) : BaseApiController
 {
     /// <summary>

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using Domain.Enums;
 
 namespace Domain;
@@ -65,14 +66,17 @@ public class Activity
     [Required]
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 
+    
     /// <summary>
     /// The animal entity associated with this activity.
     /// </summary>
+    [JsonIgnore]
     public Animal Animal { get; set; } = null!;
 
     /// <summary>
     /// The user entity participating in this activity.
     /// </summary>
+    [JsonIgnore]
     public User User { get; set; } = null!;
     
     /// <summary>
