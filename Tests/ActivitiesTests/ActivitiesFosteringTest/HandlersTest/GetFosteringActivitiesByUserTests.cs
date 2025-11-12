@@ -10,17 +10,17 @@ namespace Tests.ActivitiesTest.ActivitiesFosteringTest.HandlersTest;
 
 /// <summary>
 /// Unit tests for the <see cref="GetFosteringActivitiesByUser.Handler"/> class.
-/// 
-/// These tests verify the business logic that retrieves a paginated list of 
-/// fostering activities for the currently authenticated user. 
+///
+/// These tests verify the business logic that retrieves a paginated list of
+/// fostering activities for the currently authenticated user.
 /// The handler is responsible for:
 /// - Validating pagination parameters (page number and page size).
 /// - Filtering activities by the logged-in user.
 /// - Returning only valid fostering activities (not cancelled, correct type, active status).
 /// - Excluding activities with missing data (e.g., no slot, slot not reserved, no principal image).
 /// - Ordering the returned results by slot start date in ascending order.
-/// 
-/// The test suite uses an in-memory EF Core database and mock <see cref="IUserAccessor"/> 
+///
+/// The test suite uses an in-memory EF Core database and mock <see cref="IUserAccessor"/>
 /// for isolation and deterministic test outcomes.
 /// </summary>
 public class GetFosteringActivitiesByUserTests
@@ -30,7 +30,7 @@ public class GetFosteringActivitiesByUserTests
     private readonly GetFosteringActivitiesByUser.Handler _handler;
 
     /// <summary>
-    /// Initializes the test suite by creating an in-memory database and 
+    /// Initializes the test suite by creating an in-memory database and
     /// configuring a mock <see cref="IUserAccessor"/> dependency.
     /// </summary>
     public GetFosteringActivitiesByUserTests()
@@ -49,7 +49,7 @@ public class GetFosteringActivitiesByUserTests
     }
 
     /// <summary>
-    /// Verifies that when valid data exists, the handler returns 
+    /// Verifies that when valid data exists, the handler returns
     /// a paginated list containing one fostering activity.
     /// </summary>
     [Fact]
@@ -89,12 +89,12 @@ public class GetFosteringActivitiesByUserTests
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
         Assert.Equal(1, result.Value.TotalCount);
-        Assert.Single(result.Value);
-        Assert.Equal(activity.Id, result.Value.First().Id);
+        Assert.Single(result.Value.Items);
+        Assert.Equal(activity.Id, result.Value.Items.First().Id);
     }
 
     /// <summary>
-    /// Ensures that when the page number is less than one, 
+    /// Ensures that when the page number is less than one,
     /// the handler returns a failure result with a 400 code.
     /// </summary>
     [Fact]
@@ -120,7 +120,7 @@ public class GetFosteringActivitiesByUserTests
     }
 
     /// <summary>
-    /// Ensures that when the page size is less than one, 
+    /// Ensures that when the page size is less than one,
     /// the handler returns a validation failure (400).
     /// </summary>
     [Fact]
@@ -146,7 +146,7 @@ public class GetFosteringActivitiesByUserTests
     }
 
     /// <summary>
-    /// Ensures that when the page size exceeds the maximum (50), 
+    /// Ensures that when the page size exceeds the maximum (50),
     /// the handler returns a validation failure (400).
     /// </summary>
     [Fact]
@@ -172,7 +172,7 @@ public class GetFosteringActivitiesByUserTests
     }
 
     /// <summary>
-    /// Ensures that when there are no future fostering activities, 
+    /// Ensures that when there are no future fostering activities,
     /// the handler returns an empty paginated list.
     /// </summary>
     [Fact]
@@ -212,7 +212,7 @@ public class GetFosteringActivitiesByUserTests
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
         Assert.Equal(0, result.Value.TotalCount);
-        Assert.Empty(result.Value);
+        Assert.Empty(result.Value.Items);
     }
 
     /// <summary>
@@ -253,11 +253,11 @@ public class GetFosteringActivitiesByUserTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Empty(result.Value!);
+        Assert.Empty(result.Value!.Items);
     }
 
     /// <summary>
-    /// Ensures that ownership-type activities are excluded, 
+    /// Ensures that ownership-type activities are excluded,
     /// as only fostering activities are expected.
     /// </summary>
     [Fact]
@@ -295,11 +295,11 @@ public class GetFosteringActivitiesByUserTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Empty(result.Value!);
+        Assert.Empty(result.Value!.Items);
     }
 
     /// <summary>
-    /// Ensures that activities associated with inactive (cancelled) 
+    /// Ensures that activities associated with inactive (cancelled)
     /// fosterings are excluded from the returned results.
     /// </summary>
     [Fact]
@@ -337,11 +337,11 @@ public class GetFosteringActivitiesByUserTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Empty(result.Value!);
+        Assert.Empty(result.Value!.Items);
     }
 
     /// <summary>
-    /// Ensures that activities without an associated slot 
+    /// Ensures that activities without an associated slot
     /// are not returned in the result list.
     /// </summary>
     [Fact]
@@ -378,11 +378,11 @@ public class GetFosteringActivitiesByUserTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Empty(result.Value!);
+        Assert.Empty(result.Value!.Items);
     }
 
     /// <summary>
-    /// Ensures that activities linked to non-reserved slots 
+    /// Ensures that activities linked to non-reserved slots
     /// are filtered out.
     /// </summary>
     [Fact]
@@ -420,11 +420,11 @@ public class GetFosteringActivitiesByUserTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Empty(result.Value!);
+        Assert.Empty(result.Value!.Items);
     }
 
     /// <summary>
-    /// Ensures that animals missing a principal image 
+    /// Ensures that animals missing a principal image
     /// cause their activities to be excluded.
     /// </summary>
     [Fact]
@@ -462,11 +462,11 @@ public class GetFosteringActivitiesByUserTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Empty(result.Value!);
+        Assert.Empty(result.Value!.Items);
     }
 
     /// <summary>
-    /// Ensures that multiple fostering visits are ordered 
+    /// Ensures that multiple fostering visits are ordered
     /// chronologically by slot start date (ascending).
     /// </summary>
     [Fact]
@@ -514,13 +514,13 @@ public class GetFosteringActivitiesByUserTests
         // Assert
         Assert.True(result.IsSuccess);
         Assert.Equal(3, result.Value!.TotalCount);
-        Assert.Equal("act2", result.Value.ElementAt(0).Id); // Closest date first
-        Assert.Equal("act1", result.Value.ElementAt(1).Id);
-        Assert.Equal("act3", result.Value.ElementAt(2).Id); // Furthest date last
+        Assert.Equal("act2", result.Value.Items.ElementAt(0).Id); // Closest date first
+        Assert.Equal("act1", result.Value.Items.ElementAt(1).Id);
+        Assert.Equal("act3", result.Value.Items.ElementAt(2).Id); // Furthest date last
     }
 
     /// <summary>
-    /// Ensures that the handler filters results by the currently 
+    /// Ensures that the handler filters results by the currently
     /// authenticated user, excluding activities from other users.
     /// </summary>
     [Fact]
@@ -566,12 +566,12 @@ public class GetFosteringActivitiesByUserTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.Single(result.Value!);
-        Assert.Equal("act1", result.Value!.First().Id);
+        Assert.Single(result.Value!.Items);
+        Assert.Equal("act1", result.Value!.Items.First().Id);
     }
 
     /// <summary>
-    /// Verifies that pagination is correctly applied to results — 
+    /// Verifies that pagination is correctly applied to results —
     /// only the requested page is returned with proper ordering.
     /// </summary>
     [Fact]
@@ -619,14 +619,14 @@ public class GetFosteringActivitiesByUserTests
         // Assert
         Assert.True(result.IsSuccess);
         Assert.Equal(5, result.Value!.TotalCount);
-        Assert.Equal(2, result.Value.Count());
+        Assert.Equal(2, result.Value.Items.Count);
         Assert.Equal(2, result.Value.CurrentPage);
-        Assert.Equal("act3", result.Value.ElementAt(0).Id);
-        Assert.Equal("act4", result.Value.ElementAt(1).Id);
+        Assert.Equal("act3", result.Value.Items.ElementAt(0).Id);
+        Assert.Equal("act4", result.Value.Items.ElementAt(1).Id);
     }
 
     // Helper methods for creating test entities
-    
+
     /// <summary>
     /// Creates a new <see cref="User"/> entity with sample data.
     /// </summary>

@@ -39,7 +39,7 @@ namespace Application.Animals.Queries
             /// direction of the sorting. Acceptable values: "asc", "desc".
             /// </summary>
             public string? Order { get; set; } = null;
-            
+
             /// <summary>
             /// Filter criteria for querying animals.
             /// </summary>
@@ -50,7 +50,7 @@ namespace Application.Animals.Queries
         /// Handles the execution of the query to fetch a paginated list of animals.
         /// Includes related entities (Breed, Shelter, Images) and filters by animal availability.
         /// </summary>
-        public class Handler(AppDbContext _context, 
+        public class Handler(AppDbContext _context,
             AnimalSpecBuilder specBuilder) : IRequestHandler<Query, Result<PagedList<Animal>>>
         {
             /// <summary>
@@ -80,11 +80,11 @@ namespace Application.Animals.Queries
                 if (request.Filters != null)
                 {
                     var specs = specBuilder.Build(request.Filters);
-                    
+
                     foreach (var spec in specs)
                     {
                         var expression = spec.ToExpression();
-                        
+
                         if (expression != null)
                         {
                             query = query.Where(expression);

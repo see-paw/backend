@@ -14,19 +14,19 @@ namespace Tests.ActivitiesTest.ActivitiesFosteringTest.ControllersTest;
 
 /// <summary>
 /// Unit tests for the <see cref="ActivitiesController"/> method <see cref="ActivitiesController.GetFosteringActivities"/>.
-/// 
+///
 /// These tests verify that the controller:
 /// - Correctly handles successful requests, pagination, and mapping logic.
 /// - Handles invalid requests or mediator failures gracefully.
 /// - Preserves pagination metadata in responses.
 /// - Properly interacts with the <see cref="IMediator"/> and <see cref="IMapper"/> dependencies.
 /// - Returns consistent HTTP responses (e.g., 200 OK, 400 Bad Request).
-/// 
+///
 /// The test class uses mocked dependencies for isolation and follows the AAA (Arrange–Act–Assert) pattern.
 /// </summary>
 public class GetFosteringActivitiesTests
 {
-    
+
     private readonly Mock<IMediator> _mediatorMock;
     private readonly Mock<IMapper> _mapperMock;
     private readonly ActivitiesController _controller;
@@ -40,19 +40,19 @@ public class GetFosteringActivitiesTests
         _mediatorMock = new Mock<IMediator>();
         _mapperMock = new Mock<IMapper>();
         _controller = new ActivitiesController(_mapperMock.Object);
-        
+
         // Create a mock service provider that returns our mocked mediator
         var serviceProviderMock = new Mock<IServiceProvider>();
         serviceProviderMock
             .Setup(sp => sp.GetService(typeof(IMediator)))
             .Returns(_mediatorMock.Object);
-        
+
         // Setup HTTP context with the service provider
         var httpContext = new DefaultHttpContext
         {
             RequestServices = serviceProviderMock.Object
         };
-        
+
         // Setup controller context for HandleResult method
         _controller = new ActivitiesController(_mapperMock.Object)
         {
@@ -84,7 +84,7 @@ public class GetFosteringActivitiesTests
             .ReturnsAsync(Result<PagedList<Activity>>.Success(pagedList, 200));
 
         _mapperMock
-            .Setup(m => m.Map<List<ResFosteringVisitDto>>(It.IsAny<PagedList<Activity>>()))
+            .Setup(m => m.Map<List<ResFosteringVisitDto>>(It.IsAny<List<Activity>>()))
             .Returns(expectedDtos);
 
         // Act
@@ -93,10 +93,10 @@ public class GetFosteringActivitiesTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
         Assert.Equal(200, okResult.StatusCode);
-        
+
         var returnedResult = Assert.IsType<PagedList<ResFosteringVisitDto>>(okResult.Value);
         Assert.NotNull(returnedResult);
-        Assert.Equal(5, returnedResult.Count());
+        Assert.Equal(5, returnedResult.Items.Count);
         Assert.Equal(5, returnedResult.TotalCount);
         Assert.Equal(pageNumber, returnedResult.CurrentPage);
         Assert.Equal(pageSize, returnedResult.PageSize);
@@ -116,8 +116,8 @@ public class GetFosteringActivitiesTests
 
         _mediatorMock
             .Setup(m => m.Send(
-                It.Is<GetFosteringActivitiesByUser.Query>(q => 
-                    q.PageNumber == 1 && q.PageSize == 10), 
+                It.Is<GetFosteringActivitiesByUser.Query>(q =>
+                    q.PageNumber == 1 && q.PageSize == 10),
                 default))
             .ReturnsAsync(Result<PagedList<Activity>>.Success(pagedList, 200));
 
@@ -131,9 +131,9 @@ public class GetFosteringActivitiesTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
         _mediatorMock.Verify(m => m.Send(
-            It.Is<GetFosteringActivitiesByUser.Query>(q => 
-                q.PageNumber == 1 && q.PageSize == 10), 
-            default), 
+            It.Is<GetFosteringActivitiesByUser.Query>(q =>
+                q.PageNumber == 1 && q.PageSize == 10),
+            default),
             Times.Once);
     }
 
@@ -152,8 +152,8 @@ public class GetFosteringActivitiesTests
 
         _mediatorMock
             .Setup(m => m.Send(
-                It.Is<GetFosteringActivitiesByUser.Query>(q => 
-                    q.PageNumber == pageNumber && q.PageSize == pageSize), 
+                It.Is<GetFosteringActivitiesByUser.Query>(q =>
+                    q.PageNumber == pageNumber && q.PageSize == pageSize),
                 default))
             .ReturnsAsync(Result<PagedList<Activity>>.Success(pagedList, 200));
 
@@ -197,7 +197,7 @@ public class GetFosteringActivitiesTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
         var returnedResult = Assert.IsType<PagedList<ResFosteringVisitDto>>(okResult.Value);
-        Assert.Empty(returnedResult);
+        Assert.Empty(returnedResult.Items);
         Assert.Equal(0, returnedResult.TotalCount);
     }
 
@@ -206,7 +206,7 @@ public class GetFosteringActivitiesTests
     #region Error Scenarios
 
     /// <summary>
-    /// Ensures that if the mediator returns a failure result, 
+    /// Ensures that if the mediator returns a failure result,
     /// the controller responds with a BadRequest (400) status.
     /// </summary>
     [Fact]
@@ -263,14 +263,14 @@ public class GetFosteringActivitiesTests
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
         Assert.Equal(400, badRequestResult.StatusCode);
-        
+
         _mapperMock.Verify(m => m.Map<List<ResFosteringVisitDto>>(
-            It.IsAny<PagedList<Activity>>()), 
+            It.IsAny<PagedList<Activity>>()),
             Times.Never);
     }
 
     /// <summary>
-    /// Ensures that when the result is successful but has a null value, 
+    /// Ensures that when the result is successful but has a null value,
     /// the mapping step is skipped to prevent null reference errors.
     /// </summary>
     [Fact]
@@ -287,7 +287,7 @@ public class GetFosteringActivitiesTests
         // Assert
         Assert.IsType<OkObjectResult>(result);
         _mapperMock.Verify(m => m.Map<List<ResFosteringVisitDto>>(
-            It.IsAny<PagedList<Activity>>()), 
+            It.IsAny<PagedList<Activity>>()),
             Times.Never);
     }
 
@@ -312,7 +312,7 @@ public class GetFosteringActivitiesTests
             .ReturnsAsync(Result<PagedList<Activity>>.Success(pagedList, 200));
 
         _mapperMock
-            .Setup(m => m.Map<List<ResFosteringVisitDto>>(pagedList))
+            .Setup(m => m.Map<List<ResFosteringVisitDto>>(pagedList.Items))
             .Returns(expectedDtos);
 
         // Act
@@ -320,7 +320,7 @@ public class GetFosteringActivitiesTests
 
         // Assert
         _mapperMock.Verify(m => m.Map<List<ResFosteringVisitDto>>(
-            It.Is<PagedList<Activity>>(p => p.Count() == 3)), 
+            It.Is<List<Activity>>(p => p.Count == 3)),
             Times.Once);
     }
 
@@ -353,7 +353,7 @@ public class GetFosteringActivitiesTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
         var returnedResult = Assert.IsType<PagedList<ResFosteringVisitDto>>(okResult.Value);
-        
+
         Assert.Equal(totalCount, returnedResult.TotalCount);
         Assert.Equal(currentPage, returnedResult.CurrentPage);
         Assert.Equal(pageSize, returnedResult.PageSize);
@@ -390,10 +390,10 @@ public class GetFosteringActivitiesTests
 
         // Assert
         _mediatorMock.Verify(m => m.Send(
-            It.Is<GetFosteringActivitiesByUser.Query>(q => 
-                q.PageNumber == pageNumber && 
-                q.PageSize == pageSize), 
-            default), 
+            It.Is<GetFosteringActivitiesByUser.Query>(q =>
+                q.PageNumber == pageNumber &&
+                q.PageSize == pageSize),
+            default),
             Times.Once);
     }
 
@@ -411,7 +411,7 @@ public class GetFosteringActivitiesTests
 
         _mediatorMock
             .Setup(m => m.Send(
-                It.IsAny<GetFosteringActivitiesByUser.Query>(), 
+                It.IsAny<GetFosteringActivitiesByUser.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<PagedList<Activity>>.Success(pagedList, 200));
 
@@ -424,8 +424,8 @@ public class GetFosteringActivitiesTests
 
         // Assert
         _mediatorMock.Verify(m => m.Send(
-            It.IsAny<GetFosteringActivitiesByUser.Query>(), 
-            It.IsAny<CancellationToken>()), 
+            It.IsAny<GetFosteringActivitiesByUser.Query>(),
+            It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -474,12 +474,12 @@ public class GetFosteringActivitiesTests
 
         _mediatorMock
             .Setup(m => m.Send(
-                It.Is<GetFosteringActivitiesByUser.Query>(q => q.PageSize == 50), 
+                It.Is<GetFosteringActivitiesByUser.Query>(q => q.PageSize == 50),
                 default))
             .ReturnsAsync(Result<PagedList<Activity>>.Success(pagedList, 200));
 
         _mapperMock
-            .Setup(m => m.Map<List<ResFosteringVisitDto>>(It.IsAny<PagedList<Activity>>()))
+            .Setup(m => m.Map<List<ResFosteringVisitDto>>(It.IsAny<List<Activity>>()))
             .Returns(dtos);
 
         // Act
@@ -489,11 +489,11 @@ public class GetFosteringActivitiesTests
         var okResult = Assert.IsType<OkObjectResult>(result);
         var returnedResult = Assert.IsType<PagedList<ResFosteringVisitDto>>(okResult.Value);
         Assert.Equal(50, returnedResult.PageSize);
-        Assert.Equal(50, returnedResult.Count());
+        Assert.Equal(50, returnedResult.Items.Count);
     }
 
     /// <summary>
-    /// Ensures that when the result contains a single item, 
+    /// Ensures that when the result contains a single item,
     /// the controller still returns a valid paged list.
     /// </summary>
     [Fact]
@@ -509,7 +509,7 @@ public class GetFosteringActivitiesTests
             .ReturnsAsync(Result<PagedList<Activity>>.Success(pagedList, 200));
 
         _mapperMock
-            .Setup(m => m.Map<List<ResFosteringVisitDto>>(It.IsAny<PagedList<Activity>>()))
+            .Setup(m => m.Map<List<ResFosteringVisitDto>>(It.IsAny<List<Activity>>()))
             .Returns(dtos);
 
         // Act
@@ -518,7 +518,7 @@ public class GetFosteringActivitiesTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
         var returnedResult = Assert.IsType<PagedList<ResFosteringVisitDto>>(okResult.Value);
-        Assert.Single(returnedResult);
+        Assert.Single(returnedResult.Items);
     }
 
     #endregion
@@ -527,7 +527,7 @@ public class GetFosteringActivitiesTests
 
     /// <summary>
     /// Creates a list of sample <see cref="Activity"/> entities used for testing.
-    /// Each entity includes related <see cref="Animal"/>, <see cref="Breed"/>, <see cref="Shelter"/>, 
+    /// Each entity includes related <see cref="Animal"/>, <see cref="Breed"/>, <see cref="Shelter"/>,
     /// and <see cref="ActivitySlot"/> data.
     /// </summary>
     /// <param name="count">Number of sample activities to generate.</param>
@@ -639,7 +639,7 @@ public class GetFosteringActivitiesTests
         {
             var visitStartDateTime = now.AddDays(i + 1);
             var visitEndDateTime = visitStartDateTime.AddHours(2);
-            
+
             dtos.Add(new ResFosteringVisitDto
             {
                 ActivityId = Guid.NewGuid().ToString(),

@@ -6,7 +6,7 @@ namespace Application.Core
     /// <summary>
     /// Represents a paginated collection of items with metadata such as total count and current page.
     /// </summary>
-    public class PagedList<T> : IEnumerable<T>
+    public class PagedList<T>
     {
         /// <summary>
         /// The items contained in the current page.
@@ -62,11 +62,5 @@ namespace Application.Core
 
             return new PagedList<T>(items, count, pageNumber, pageSize);
         }
-
-        /// <summary>
-        /// Enables iteration directly on PagedList.
-        /// </summary>
-        public IEnumerator<T> GetEnumerator() => Items.GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

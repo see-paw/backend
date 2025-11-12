@@ -21,14 +21,14 @@ namespace WebAPI.Controllers;
 public class OwnershipRequestsController(IMapper mapper) : BaseApiController
 {
     /// <summary>
-    /// Retrieves all ownership requests associated with animals 
+    /// Retrieves all ownership requests associated with animals
     /// belonging to the authenticated admin's shelter.
     /// </summary>
     /// <param name="pageNumber">
     /// The current page number for pagination. Defaults to <c>1</c>.
     /// </param>
     /// <returns>
-    /// A paginated <see cref="PagedList{T}"/> of <see cref="ResOwnershipRequestDto"/> objects 
+    /// A paginated <see cref="PagedList{T}"/> of <see cref="ResOwnershipRequestDto"/> objects
     /// representing ownership requests related to the admin's shelter.
     /// </returns>
     /// <response code="200">Returns a paginated list of ownership requests.</response>
@@ -49,7 +49,7 @@ public class OwnershipRequestsController(IMapper mapper) : BaseApiController
             return HandleResult(result);
         }
 
-        var dtoList = mapper.Map<List<ResOwnershipRequestDto>>(result.Value);
+        var dtoList = mapper.Map<List<ResOwnershipRequestDto>>(result.Value.Items);
 
         // Create a new paginated list with the DTOs
         var dtoPagedList = new PagedList<ResOwnershipRequestDto>(

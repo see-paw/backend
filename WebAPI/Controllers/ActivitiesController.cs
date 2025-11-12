@@ -42,7 +42,7 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
             return HandleResult(result);
         }
 
-        var dtoList = mapper.Map<List<ResActivityDto>>(result.Value);
+        var dtoList = mapper.Map<List<ResActivityDto>>(result.Value.Items);
 
         // Create a new paginated list with the DTOs
         var dtoPagedList = new PagedList<ResActivityDto>(
@@ -161,14 +161,14 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
     /// Cancels a scheduled fostering activity for the authenticated user.
     /// </summary>
     /// <remarks>
-    /// Available only to users with the <c>User</c> role.  
-    /// The activity must exist, belong to the user, be of type <c>Fostering</c>, 
-    /// and have status <c>Active</c>.  
+    /// Available only to users with the <c>User</c> role.
+    /// The activity must exist, belong to the user, be of type <c>Fostering</c>,
+    /// and have status <c>Active</c>.
     /// On success, the activity is marked as <c>Cancelled</c> and the related slot becomes <c>Available</c>.
     /// </remarks>
     /// <param name="dto">Request body containing the activity ID to cancel.</param>
     /// <returns>
-    /// <see cref="ResCancelActivityFosteringDto"/> if successful;  
+    /// <see cref="ResCancelActivityFosteringDto"/> if successful;
     /// appropriate error code otherwise.
     /// </returns>
     /// <response code="200">Activity cancelled successfully.</response>
@@ -222,7 +222,7 @@ public class ActivitiesController(IMapper mapper) : BaseApiController
             return HandleResult(result);
         }
 
-        var dtoList = mapper.Map<List<ResFosteringVisitDto>>(result.Value);
+        var dtoList = mapper.Map<List<ResFosteringVisitDto>>(result.Value.Items);
 
         // Create a new paginated list with the DTOs
         var dtoPagedList = new PagedList<ResFosteringVisitDto>(

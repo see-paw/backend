@@ -30,7 +30,7 @@ namespace WebAPI.Controllers;
 /// </summary>
 /// <remarks>
 /// Provides endpoints for public users to view animals and for shelter administrators (<c>AdminCAA</c> role)
-/// to manage animal data and images.  
+/// to manage animal data and images.
 /// Uses MediatR to delegate business logic to the Application layer and AutoMapper for DTO mapping.
 /// </remarks>
 public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : BaseApiController
@@ -115,12 +115,12 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// </summary>
     /// <param name="reqAnimalDto">The data and images required to create the animal.</param>
     /// <returns>
-    /// An <see cref="ActionResult{T}"/> containing the ID of the created animal if successful,  
+    /// An <see cref="ActionResult{T}"/> containing the ID of the created animal if successful,
     /// or an error message with the corresponding status code otherwise.
     /// </returns>
     /// <remarks>
-    /// Accessible only to users with the <c>AdminCAA</c> role.  
-    /// Accepts multipart form data to include both animal information and image files.  
+    /// Accessible only to users with the <c>AdminCAA</c> role.
+    /// Accepts multipart form data to include both animal information and image files.
     /// Uses the <see cref="CreateAnimal"/> command via MediatR to handle the creation.
     /// </remarks>
     [Authorize(Roles = AppRoles.AdminCAA)]
@@ -165,11 +165,11 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// <param name="id">The ID of the animal to update.</param>
     /// <param name="reqEditAnimalDto">The data containing the updated animal details.</param>
     /// <returns>
-    /// An <see cref="ActionResult{T}"/> containing the updated <see cref="ResAnimalDto"/> if successful,  
+    /// An <see cref="ActionResult{T}"/> containing the updated <see cref="ResAnimalDto"/> if successful,
     /// or an error message with the corresponding status code otherwise.
     /// </returns>
     /// <remarks>
-    /// Accessible only to users with the <c>AdminCAA</c> role.  
+    /// Accessible only to users with the <c>AdminCAA</c> role.
     /// Uses the <see cref="EditAnimal"/> command via MediatR to perform the update.
     /// </remarks>
     [Authorize(Roles = AppRoles.AdminCAA)]
@@ -232,12 +232,12 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// <param name="animalId">The ID of the animal that owns the image.</param>
     /// <param name="imageId">The ID of the image to delete.</param>
     /// <returns>
-    /// An <see cref="ActionResult{T}"/> indicating success or failure of the deletion.  
-    /// Returns a success result if the image was removed successfully,  
+    /// An <see cref="ActionResult{T}"/> indicating success or failure of the deletion.
+    /// Returns a success result if the image was removed successfully,
     /// or an error message with the corresponding status code otherwise.
     /// </returns>
     /// <remarks>
-    /// Accessible only to users with the <c>AdminCAA</c> role.  
+    /// Accessible only to users with the <c>AdminCAA</c> role.
     /// Uses the <see cref="DeleteAnimalImage"/> command via MediatR to handle the deletion.
     /// </remarks>
     [Authorize(Roles = AppRoles.AdminCAA)]
@@ -259,12 +259,12 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
     /// <param name="animalId">The ID of the animal whose main image will be updated.</param>
     /// <param name="imageId">The ID of the image to set as the main image.</param>
     /// <returns>
-    /// An <see cref="ActionResult{T}"/> containing the result of the operation.  
-    /// Returns a success result if the image was updated successfully,  
+    /// An <see cref="ActionResult{T}"/> containing the result of the operation.
+    /// Returns a success result if the image was updated successfully,
     /// or an error message with the corresponding status code otherwise.
     /// </returns>
     /// <remarks>
-    /// Accessible only to users with the <c>AdminCAA</c> role.  
+    /// Accessible only to users with the <c>AdminCAA</c> role.
     /// Uses the <see cref="SetAnimalPrincipalImage"/> command via MediatR to handle the update.
     /// </remarks>
     [Authorize(Roles = AppRoles.AdminCAA)]

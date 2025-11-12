@@ -14,7 +14,7 @@ namespace Tests.Favorites.Controllers;
 
 /// <summary>
 /// Unit tests for GetUserFavorites endpoint in FavoritesController.
-/// 
+///
 /// These tests validate the retrieval workflow for user favorites, ensuring that:
 /// - Authenticated users can retrieve their favorite animals
 /// - Proper pagination is applied
@@ -316,7 +316,7 @@ public class GetUserFavoritesControllerTests
 
         var okResult = result as OkObjectResult;
         var returnedPagedList = okResult!.Value as PagedList<ResFavoriteAnimalDto>;
-        Assert.Empty(returnedPagedList!);
+        Assert.Empty(returnedPagedList!.Items);
     }
 
     [Fact]

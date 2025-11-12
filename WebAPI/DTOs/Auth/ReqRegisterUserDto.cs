@@ -1,6 +1,3 @@
-using System;
-
-using Domain;
 
 namespace WebAPI.DTOs.Auth
 {
@@ -48,7 +45,7 @@ namespace WebAPI.DTOs.Auth
         public string Password { get; set; } = string.Empty;
 
         /// <summary>
-        /// Selected account role. 
+        /// Selected account role.
         /// Allowed values: "User" (default) or "AdminCAA".
         /// Determines whether shelter data must be provided.
         /// </summary>

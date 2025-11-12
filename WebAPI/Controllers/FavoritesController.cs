@@ -31,7 +31,7 @@ public class FavoritesController(IMapper mapper) : BaseApiController
     /// The number of items per page. Defaults to <c>20</c>.
     /// </param>
     /// <returns>
-    /// A paginated <see cref="PagedList{T}"/> of <see cref="ResFavoriteAnimalDto"/> objects 
+    /// A paginated <see cref="PagedList{T}"/> of <see cref="ResFavoriteAnimalDto"/> objects
     /// representing animals marked as favorites by the user.
     /// </returns>
     /// <remarks>
@@ -58,7 +58,7 @@ public class FavoritesController(IMapper mapper) : BaseApiController
             return HandleResult(result);
         }
 
-        var dtoList = mapper.Map<List<ResFavoriteAnimalDto>>(result.Value);
+        var dtoList = mapper.Map<List<ResFavoriteAnimalDto>>(result.Value.Items);
 
         // Create a new paginated list with the DTOs
         var dtoPagedList = new PagedList<ResFavoriteAnimalDto>(

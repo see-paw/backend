@@ -80,7 +80,7 @@ namespace Tests.AnimalsTests.Handlers
                 CreateAnimal("Buddy")
             };
             var context = CreateInMemoryContext(animals);
-            
+
             var specBuilder = new AnimalSpecBuilder(new AnimalDomainService());
             var handler = new GetAnimalList.Handler(context, specBuilder);
 
@@ -113,7 +113,7 @@ namespace Tests.AnimalsTests.Handlers
             Assert.Equal(2, result.Value.Items.Count);
         }
 
-        
+
 
 
         // Test: Ensure failure is returned when no animals exist.
@@ -143,7 +143,7 @@ namespace Tests.AnimalsTests.Handlers
             var specBuilder = new AnimalSpecBuilder(new AnimalDomainService());
             var handler = new GetAnimalList.Handler(context, specBuilder);
 
-            var query = new GetAnimalList.Query { PageNumber = 2 };
+            var query = new GetAnimalList.Query { PageNumber = 2, PageSize = 10};
 
             var result = await handler.Handle(query, CancellationToken.None);
 
@@ -162,14 +162,14 @@ namespace Tests.AnimalsTests.Handlers
             var specBuilder = new AnimalSpecBuilder(new AnimalDomainService());
             var handler = new GetAnimalList.Handler(context, specBuilder);
 
-            var query = new GetAnimalList.Query { PageNumber = 1 };
+            var query = new GetAnimalList.Query { PageNumber = 1, PageSize = 20};
 
             var result = await handler.Handle(query, CancellationToken.None);
 
             Assert.Equal(2, result.Value.TotalPages);
         }
 
-        //Test: should order by name ascending 
+        //Test: should order by name ascending
         [Fact]
         public async Task ShouldOrderByNameAscending()
         {
@@ -216,7 +216,7 @@ namespace Tests.AnimalsTests.Handlers
             Assert.Equal("Bella", list[1].Name);
         }
 
-        //Test: should order by age ascending 
+        //Test: should order by age ascending
         [Fact]
         public async Task ShouldOrderByAgeAscending()
         {

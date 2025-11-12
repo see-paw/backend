@@ -14,7 +14,7 @@ namespace Tests.ActivitiesTest.ActivitiesOwnershipTest.ControllersTest;
 
 /// <summary>
 /// Unit tests for GetOwnershipActivities endpoint in ActivitiesController.
-/// 
+///
 /// These tests validate the retrieval workflow for ownership activities, ensuring that:
 /// - Users can successfully retrieve their ownership activities
 /// - Filtering by status works correctly
@@ -207,14 +207,13 @@ public class GetOwnershipActivitiesByUserControllerTests
             .ReturnsAsync(Result<PagedList<Activity>>.Success(pagedActivities, 200));
 
         _mockMapper
-            .Setup(m => m.Map<List<ResActivityDto>>(It.IsAny<PagedList<Activity>>()))
+            .Setup(m => m.Map<List<ResActivityDto>>(It.IsAny<List<Activity>>()))
             .Returns(dtoList);
 
         var result = await _controller.GetOwnershipActivities();
 
         var okResult = result as OkObjectResult;
-        var pagedResult = okResult!.Value as PagedList<ResActivityDto>;
-        Assert.Equal(7, pagedResult!.Items.Count);
+        var pagedResult = okResult!.Value as PagedList<ResActivityDto>;        Assert.Equal(7, pagedResult!.Items.Count);
     }
 
     [Fact]
@@ -312,13 +311,13 @@ public class GetOwnershipActivitiesByUserControllerTests
             .ReturnsAsync(Result<PagedList<Activity>>.Success(pagedActivities, 200));
 
         _mockMapper
-            .Setup(m => m.Map<List<ResActivityDto>>(It.IsAny<PagedList<Activity>>()))
+            .Setup(m => m.Map<List<ResActivityDto>>(It.IsAny<List<Activity>>()))
             .Returns(dtoList);
 
         await _controller.GetOwnershipActivities();
 
         _mockMapper.Verify(m => m.Map<List<ResActivityDto>>(
-            It.IsAny<PagedList<Activity>>()), Times.Once);
+            It.IsAny<List<Activity>>()), Times.Once);
     }
 
     [Fact]
@@ -352,7 +351,7 @@ public class GetOwnershipActivitiesByUserControllerTests
 
         var okResult = result as OkObjectResult;
         var pagedResult = okResult!.Value as PagedList<ResActivityDto>;
-        Assert.Empty(pagedResult!);
+        Assert.Empty(pagedResult!.Items);
     }
 
     [Fact]
