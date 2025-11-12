@@ -1,3 +1,16 @@
+## [1.2.1](https://github.com/see-paw/backend/compare/v1.2.0...v1.2.1) (2025-11-12)
+
+
+### CI/CD
+
+* **docker:** add workflow to publish docker image to github container registry ([f326657](https://github.com/see-paw/backend/commit/f326657efcbf1b85e006b76ce49e863aceb9fe2a))
+* **docker:** Merge pull request [#175](https://github.com/see-paw/backend/issues/175) from see-paw/develop ([8e6d959](https://github.com/see-paw/backend/commit/8e6d95938e5b2a5ce969217c37d113f676f740bd))
+
+
+### Chores
+
+* Delete v1.1.0 ([3135084](https://github.com/see-paw/backend/commit/3135084f7753e08f5801bb2223481efe24e0ee7e))
+
 ## [1.2.0](https://github.com/see-paw/backend/compare/v1.1.0...v1.2.0) (2025-11-07)
 
 
