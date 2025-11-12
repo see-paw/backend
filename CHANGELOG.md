@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/see-paw/backend/compare/v1.2.1...v1.2.2) (2025-11-12)
+
+
+### Bug Fixes
+
+* **Pagination:** Fixed Paginated return data ([e2750d3](https://github.com/see-paw/backend/commit/e2750d3aaf8c647be9d8aea3ff70d76f7225cbfd))
+
 ## [1.2.1](https://github.com/see-paw/backend/compare/v1.2.0...v1.2.1) (2025-11-12)
 
 
