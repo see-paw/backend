@@ -1,3 +1,10 @@
+## [1.2.4](https://github.com/see-paw/backend/compare/v1.2.3...v1.2.4) (2025-11-15)
+
+
+### Code Refactoring
+
+* Eliminated health endpoint ([5903f12](https://github.com/see-paw/backend/commit/5903f12e106b15ad7517e59a89a340a4ca1a38ef))
+
 ## [1.2.3](https://github.com/see-paw/backend/compare/v1.2.2...v1.2.3) (2025-11-15)
 
 
