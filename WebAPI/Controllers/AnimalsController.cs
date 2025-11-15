@@ -36,7 +36,7 @@ namespace WebAPI.Controllers;
 /// to manage animal data and images.
 /// Uses MediatR to delegate business logic to the Application layer and AutoMapper for DTO mapping.
 /// </remarks>
-public class AnimalsController(IMapper mapper, IUserAccessor userAccessor, AppDbContext dbContext) : BaseApiController
+public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : BaseApiController
 {
     /// <summary>
     /// Retrieves a paginated list of animals that are available or partially fostered.
@@ -360,16 +360,5 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor, AppDb
         // Map the boolean value and return 200 OK with eligibility result
         var isPossibleToOwnership = mapper.Map<Boolean>(result.Value);
         return HandleResult(Result<Boolean>.Success(isPossibleToOwnership, 200));
-    }
-
-    /// <summary>
-        /// Checks whether a given animal is eligible to be associated with an Ownership.
-        /// </summary>
-
-    [HttpGet("health")]
-    public async Task<IActionResult> Health()
-    {
-        var hasData = await dbContext.Animals.AnyAsync();
-        return Ok(new { status = "healthy", hasData });
     }
 }
