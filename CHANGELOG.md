@@ -1,3 +1,10 @@
+## [1.2.5](https://github.com/see-paw/backend/compare/v1.2.4...v1.2.5) (2025-11-15)
+
+
+### Chores
+
+* Added http port to backend ([9ee5430](https://github.com/see-paw/backend/commit/9ee54306ef7766c1a90a88dc8286df7e5dcb0caa))
+
 ## [1.2.4](https://github.com/see-paw/backend/compare/v1.2.3...v1.2.4) (2025-11-15)
 
 
