@@ -1,3 +1,10 @@
+## [1.2.3](https://github.com/see-paw/backend/compare/v1.2.2...v1.2.3) (2025-11-15)
+
+
+### Chores
+
+* Added health endpoint ([04f9319](https://github.com/see-paw/backend/commit/04f931994502f1058edfe3d8d0662648ab7d2722))
+
 ## [1.2.2](https://github.com/see-paw/backend/compare/v1.2.1...v1.2.2) (2025-11-12)
 
 
