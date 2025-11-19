@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 using Application.Animals.Filters;
 using Application.Animals.Queries;
@@ -195,6 +195,7 @@ builder.Services.AddScoped<IReminderTask, FosteringActivityReminderTask>();
 var app = builder.Build();
 
 app.UseSwagger();
+app.UseSwaggerUI();
 app.UseCors(c => c
     .AllowAnyHeader()
     .AllowAnyMethod()
