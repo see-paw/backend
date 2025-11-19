@@ -52,6 +52,55 @@ namespace WebAPI.Controllers
         }
 
         /// <summary>
+        /// Retrieves the role of the currently authenticated user.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="ResUserRoleDto"/> containing the user's role ("User" or "AdminCAA").
+        /// </returns>
+        [Authorize(Roles = "AdminCAA, User")]
+        [HttpGet("role")]
+        public async Task<ActionResult<ResUserRoleDto>> GetUserRole()
+        {
+            var result = await Mediator.Send(new GetUserRole.Query());
+
+            if (!result.IsSuccess)
+                return HandleResult(Result<ResUserRoleDto>.Failure(result.Error!, result.Code));
+
+            var roleDto = new ResUserRoleDto { Role = result.Value! };
+
+            return HandleResult(Result<ResUserRoleDto>.Success(roleDto, 200));
+        }
+
+        /// <summary>
+        /// Retrieves the ID of the currently authenticated user.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="ResUserIdDto"/> containing the user's ID.
+        /// </returns>
+        [Authorize(Roles = "AdminCAA, User")]
+        [HttpGet("id")]
+        public async Task<ActionResult<ResUserIdDto>> GetUserId()
+        {
+            var result = await Mediator.Send(new GetUserId.Query());
+
+            if (!result.IsSuccess)
+                return HandleResult(Result<ResUserIdDto>.Failure(result.Error!, result.Code));
+
+            var userIdDto = new ResUserIdDto { UserId = result.Value! };
+
+            return HandleResult(Result<ResUserIdDto>.Success(userIdDto, 200));
+        }
+
+        /// <summary>
+        /// Updates the profile information of the currently authenticated user.
+        /// </summary>
+        /// <param name="reqUserProfileDto">The request DTO containing updated user profile information.</param>
+        /// <returns>
+        /// A <see cref="ResUserProfileDto"/> containing the updated user data if the operation succeeds;
+        /// otherwise, an appropriate error response.
+        /// </returns>
+
+        /// <summary>
         /// Updates the profile information of the currently authenticated user.
         /// </summary>
         /// <param name="reqUserProfileDto">The request DTO containing updated user profile information.</param>
