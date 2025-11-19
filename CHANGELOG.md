@@ -1,3 +1,16 @@
+## [1.3.0](https://github.com/see-paw/backend/compare/v1.2.5...v1.3.0) (2025-11-19)
+
+
+### Features
+
+* add GetUserRole and GetUserId endpoints ([9b060e1](https://github.com/see-paw/backend/commit/9b060e1611cb9189fe876b02167445d86b4f9230))
+
+
+### Chores
+
+* add swagger ui to program.cs ([0c8b3ab](https://github.com/see-paw/backend/commit/0c8b3abbd10a0ce8e7fd580fd1281dc50e4b3b6e))
+* remove empty file ([56845de](https://github.com/see-paw/backend/commit/56845de4f0ae16b7657813442c0c2a463056a184))
+
 ## [1.2.5](https://github.com/see-paw/backend/compare/v1.2.4...v1.2.5) (2025-11-15)
 
 
