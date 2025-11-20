@@ -9,17 +9,17 @@ namespace Persistence;
 
 /// <summary>
 /// Provides initial seeding logic for the application's database.
-/// 
-/// This class is responsible for populating the database with essential data, 
-/// including roles, users, shelters, breeds, animals, and images, ensuring 
+///
+/// This class is responsible for populating the database with essential data,
+/// including roles, users, shelters, breeds, animals, and images, ensuring
 /// the system starts with a consistent baseline dataset for development, testing, or demonstration.
 /// </summary>
 public static class DbInitializer
 {
     /// <summary>
     /// Seeds the database with default data such as user roles, users, shelters, breeds, animals, and images.
-    /// 
-    /// This method ensures that core entities are created only when they do not already exist, 
+    ///
+    /// This method ensures that core entities are created only when they do not already exist,
     /// preventing duplication and maintaining idempotent execution.
     /// </summary>
     /// <param name="dbContext">The application's database context used to persist entities.</param>
@@ -3077,7 +3077,7 @@ public static class DbInitializer
 
         await userManager.CreateAsync(testUser, "Test@123");
         await userManager.AddToRoleAsync(testUser, AppRoles.User);
-        
+
 
         // =====================================================
         // 2. TEST SHELTER
@@ -3655,6 +3655,7 @@ public static class DbInitializer
         // SAVE ALL CHANGES
         // =====================================================
         await dbContext.SaveChangesAsync();
+
     }
 
 
