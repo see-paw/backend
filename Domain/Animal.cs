@@ -38,7 +38,7 @@ public class Animal : IHasImages
     /// <summary>
     /// Short textual description of the animal.
     /// </summary>
-    [StringLength(250)]
+    [StringLength(1000)]
     public string? Description { get; set; }
 
     /// <summary>
@@ -88,7 +88,7 @@ public class Animal : IHasImages
     /// <summary>
     /// Additional characteristics or traits of the animal.
     /// </summary>
-    [StringLength(300)]
+    [StringLength(500)]
     public string? Features { get; set; }
 
     /// <summary>
