@@ -223,12 +223,10 @@ try
     var loggerFactory = services.GetRequiredService<ILoggerFactory>();
     var logger = loggerFactory.CreateLogger<Program>();
 
-    var seedMode = Environment.GetEnvironmentVariable("SEED_MODE") ?? "Backend";
 
     logger.LogInformation("=================================================");
     logger.LogInformation($"Environment: {app.Environment.EnvironmentName}");
     logger.LogInformation($"Is Production: {app.Environment.IsProduction()}");
-    logger.LogInformation($"Seed Mode: {seedMode}");
     logger.LogInformation("=================================================");
 
     // Apply migrations
@@ -261,26 +259,10 @@ try
             logger.LogInformation("PRODUCTION MODE - Database already has data. Skipping seed.");
         }
     }
-    else if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Test"))
-    {
-        bool shouldResetDatabase = true;
-        if (seedMode.Equals("Frontend", StringComparison.OrdinalIgnoreCase))
-        {
-            logger.LogWarning($"{app.Environment.EnvironmentName} MODE - Using FRONTEND seed (DbFrontend)");
-            await DbFrontend.SeedData(context, userManager, roleManager, loggerFactory, shouldResetDatabase);
-            logger.LogInformation("Frontend database seeded successfully.");
-        }
-        else
-        {
-            logger.LogWarning($"{app.Environment.EnvironmentName} MODE - Using BACKEND seed (DbInitializer)");
-            await DbInitializer.SeedData(context, userManager, roleManager, loggerFactory, shouldResetDatabase);
-            logger.LogInformation("Backend database seeded successfully.");
-        }
-    }
     else
     {
-        logger.LogWarning($"{app.Environment.EnvironmentName} MODE - Running default seed (DbInitializer).");
-        await DbInitializer.SeedData(context, userManager, roleManager, loggerFactory, false);
+        logger.LogWarning($"DEVELOPMENT MODE ({app.Environment.EnvironmentName}) - Database will be reset and seeded.");
+        await DbInitializer.SeedData(context, userManager, roleManager, loggerFactory, true);
         logger.LogInformation("Database seeded successfully.");
     }
 }
