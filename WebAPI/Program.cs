@@ -223,6 +223,7 @@ try
     var loggerFactory = services.GetRequiredService<ILoggerFactory>();
     var logger = loggerFactory.CreateLogger<Program>();
 
+
     logger.LogInformation("=================================================");
     logger.LogInformation($"Environment: {app.Environment.EnvironmentName}");
     logger.LogInformation($"Is Production: {app.Environment.IsProduction()}");

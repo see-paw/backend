@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class NewSlotSchema : Migration
+    public partial class Initializer : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -92,7 +92,7 @@ namespace Persistence.Migrations
                     BirthDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     Street = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     City = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    PostalCode = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    PostalCode = table.Column<string>(type: "character varying(8)", maxLength: 8, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -447,12 +447,19 @@ namespace Persistence.Migrations
                     ReadAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     AnimalId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: true),
                     OwnershipRequestId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: true),
+                    ActivityId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: true),
                     IsBroadcast = table.Column<bool>(type: "boolean", nullable: false),
                     TargetRole = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Notifications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Notifications_Activities_ActivityId",
+                        column: x => x.ActivityId,
+                        principalTable: "Activities",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Notifications_Animals_AnimalId",
                         column: x => x.AnimalId,
@@ -587,6 +594,11 @@ namespace Persistence.Migrations
                 name: "IX_Images_ShelterId",
                 table: "Images",
                 column: "ShelterId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_ActivityId",
+                table: "Notifications",
+                column: "ActivityId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Notifications_AnimalId",

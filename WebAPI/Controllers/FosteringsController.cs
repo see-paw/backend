@@ -23,7 +23,7 @@ namespace WebAPI.Controllers
         /// Retrieves the list of active fosterings for the currently authenticated user.
         /// </summary>
         /// <remarks>
-        /// This endpoint returns only fosterings with <c>Status = Active</c> that belong to the authenticated user.  
+        /// This endpoint returns only fosterings with <c>Status = Active</c> that belong to the authenticated user.
         /// Each entry includes the animal’s name, age, images, monthly contribution amount, and fostering start date.
         /// </remarks>
         /// <returns>
@@ -81,7 +81,7 @@ namespace WebAPI.Controllers
         /// <param name="animalId">The unique identifier (GUID) of the animal to be fostered.</param>
         /// <param name="reqAddFosteringDto">The data transfer object containing the monthly contribution value.</param>
         /// <returns>
-        /// An <see cref="ActionResult{T}"/> containing a <see cref="ResActiveFosteringDto"/> that represents the created fostering record.  
+        /// An <see cref="ActionResult{T}"/> containing a <see cref="ResActiveFosteringDto"/> that represents the created fostering record.
         /// Returns an appropriate error response if the operation fails.
         /// <list type="bullet">
         /// <item><description><c>201 Created</c> – fostering created successfully.</description></item>
@@ -106,6 +106,7 @@ namespace WebAPI.Controllers
 
             return HandleResult(result);
         }
+
     }
 }
 

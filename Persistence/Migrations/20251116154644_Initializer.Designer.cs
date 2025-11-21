@@ -12,8 +12,8 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251106213007_AddActivityIdToNotifications")]
-    partial class AddActivityIdToNotifications
+    [Migration("20251116154644_Initializer")]
+    partial class Initializer
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

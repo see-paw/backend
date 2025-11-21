@@ -386,7 +386,7 @@ namespace Tests.Core
 
             await DbInitializer.SeedData(context, userManager, roleManager, _loggerFactory);
 
-            Assert.Equal(44, await context.Images.CountAsync());
+            Assert.Equal(47, await context.Images.CountAsync());
         }
 
         /// <summary>
@@ -405,7 +405,7 @@ namespace Tests.Core
             var animalImages = await context.Images.CountAsync(i => i.AnimalId != null);
 
             Assert.Equal(7, shelterImages);
-            Assert.Equal(37, animalImages);
+            Assert.Equal(40, animalImages);
         }
 
         /// <summary>

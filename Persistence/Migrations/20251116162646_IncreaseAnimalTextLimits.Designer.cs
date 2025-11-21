@@ -12,8 +12,8 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251106094537_NewSlotSchema")]
-    partial class NewSlotSchema
+    [Migration("20251116162646_IncreaseAnimalTextLimits")]
+    partial class IncreaseAnimalTextLimits
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -98,12 +98,12 @@ namespace Persistence.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Description")
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<string>("Features")
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -308,6 +308,10 @@ namespace Persistence.Migrations
                         .HasMaxLength(36)
                         .HasColumnType("character varying(36)");
 
+                    b.Property<string>("ActivityId")
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
                     b.Property<string>("AnimalId")
                         .HasMaxLength(36)
                         .HasColumnType("character varying(36)");
@@ -346,6 +350,8 @@ namespace Persistence.Migrations
                         .HasColumnType("character varying(36)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ActivityId");
 
                     b.HasIndex("AnimalId");
 
@@ -559,8 +565,8 @@ namespace Persistence.Migrations
 
                     b.Property<string>("PostalCode")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
@@ -870,6 +876,11 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Domain.Notification", b =>
                 {
+                    b.HasOne("Domain.Activity", "Activity")
+                        .WithMany()
+                        .HasForeignKey("ActivityId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Domain.Animal", "Animal")
                         .WithMany()
                         .HasForeignKey("AnimalId")
@@ -884,6 +895,8 @@ namespace Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Activity");
 
                     b.Navigation("Animal");
 

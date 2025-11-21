@@ -10,10 +10,10 @@ namespace Persistence;
 /// </summary>
 /// <remarks>
 /// The <see cref="AppDbContext"/> class manages access to the database and provides
-/// the configuration for the application's entities.  
+/// the configuration for the application's entities.
 /// It defines the <see cref="DbSet{TEntity}"/> properties used for querying and saving instances
-/// of the domain models.  
-/// 
+/// of the domain models.
+///
 /// The context also configures the mapping of enumeration properties to string values
 /// to ensure data readability and consistency across database records.
 /// </remarks>
@@ -86,7 +86,7 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
     /// The <see cref="ModelBuilder"/> instance used to configure entity relationships, properties, and conversions.
     /// </param>
     /// <remarks>
-    /// This method is overridden to customize how Entity Framework Core maps the domain entities to the database schema.  
+    /// This method is overridden to customize how Entity Framework Core maps the domain entities to the database schema.
     /// In particular, it ensures that all enumeration properties in the <see cref="Animal"/> entity
     /// are stored as strings instead of their underlying integer values, improving database readability.
     /// </remarks>
@@ -117,7 +117,13 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
             .HasForeignKey(i => i.ShelterId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<Animal>()
+            .Property(a => a.Description)
+            .HasMaxLength(1000);
 
+        modelBuilder.Entity<Animal>()
+            .Property(a => a.Features)
+            .HasMaxLength(500);
         // ========== USER CONFIGURATIONS ==========
 
         modelBuilder.Entity<User>(entity =>
