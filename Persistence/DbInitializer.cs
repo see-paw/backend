@@ -955,8 +955,8 @@ public static class DbInitializer
                 {
                     Id = imageAnimal5Img2Id,
                     AnimalId = animal5Id,
-                    Url = imageUrl5_2,
-                    Description ="https://res.cloudinary.com/dnfgbodgr/image/upload/v1763306795/Unknown-6_mstvsn.jpg",
+                    Url = "https://res.cloudinary.com/dnfgbodgr/image/upload/v1763306795/Unknown-6_mstvsn.jpg",
+                    Description ="Thor sendo fofo",
                     IsPrincipal = false,
                     PublicId =  "Unknown-6_mstvsn"
                 },
