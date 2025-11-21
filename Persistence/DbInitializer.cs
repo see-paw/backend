@@ -411,7 +411,7 @@ public static class DbInitializer
                     Id = animal1Id,
                     Name = "Bolinhas",
                     AnimalState = AnimalState.Available,
-                    Description = "Gato muito meigo e brincalhão, gosta de dormir ao sol.",
+                    Description = "Este gato é o verdadeiro mestre da traquinice — um especialista em planos secretos, acrobacias inesperadas e pequenos delitos felinos como roubar meias, derrubar objetos e fingir que não tem nada a ver com o assunto.",
                     Species = Species.Cat,
                     Size = SizeType.Small,
                     Sex = SexType.Male,
@@ -429,7 +429,7 @@ public static class DbInitializer
                     Id = animal2Id,
                     Name = "Lunica",
                     AnimalState = AnimalState.Available,
-                    Description = "Cadela jovem e energética, ideal para famílias com crianças.",
+                    Description = "Esta cadelinha é basicamente uma bolinha de alegria com quatro patas. Super fofa, sempre pronta para brincar, e especialista em transformar dias normais em episódios de comédia romântica — ela faz a comédia, tu tratas da parte romântica com os snacks.\nAdora correr atrás de brinquedos (e ocasionalmente do próprio rabo, porque prioridades), mas também sabe tirar aquelas sestas dignas de um monge Zen. O lema dela é simples: brincar muito, dormir melhor e pedir mimo sempre que possível.",
                     Species = Species.Dog,
                     Size = SizeType.Medium,
                     Sex = SexType.Female,
@@ -465,7 +465,7 @@ public static class DbInitializer
                     Id = animal4Id,
                     Name = "Mika",
                     AnimalState = AnimalState.Available,
-                    Description = "Gata calma e dócil, procura um lar tranquilo.",
+                    Description = "Esta gata é o equivalente felino a um cobertor quentinho num dia frio. Pequena, elegante e com aquele olhar suave que diz “eu deixo-te fazer festas… mas só porque hoje estou de bom humor.",
                     Species = Species.Cat,
                     Size = SizeType.Small,
                     Sex = SexType.Female,
@@ -483,7 +483,7 @@ public static class DbInitializer
                     Id = animal5Id,
                     Name = "Thor",
                     AnimalState = AnimalState.Available,
-                    Description = "Cão de guarda muito protetor, mas fiel à família.",
+                    Description = "Este cão tem oficialmente a expressão mais adoravelmente tonta que já existiu. Parece que está sempre meio confuso com a vida — do género “o quê? já é hora de comer outra vez?” — mas a verdade é que isso só o torna ainda mais irresistível.",
                     Species = Species.Dog,
                     Size = SizeType.Large,
                     Sex = SexType.Male,
@@ -839,19 +839,28 @@ public static class DbInitializer
                 {
                     Id = imageAnimal1Img1Id,
                     AnimalId = animal1Id,
-                    Url = imageUrl1_1,
+                    Url = "https://res.cloudinary.com/dnfgbodgr/image/upload/v1763306364/Unknown-2_d9amcf.jpg",
                     Description = "Bolinhas deitado ao sol",
                     IsPrincipal = true,
-                    PublicId = publicIdAnimal1Img1
+                    PublicId = "Unknown-2_d9amcf"
                 },
                 new()
                 {
                     Id = imageAnimal1Img2Id,
                     AnimalId = animal1Id,
-                    Url = imageUrl1_2,
-                    Description = "Bolinhas a brincar com bola",
+                    Url = "https://res.cloudinary.com/dnfgbodgr/image/upload/v1763306364/Unknown-3_uiip6e.jpg",
+                    Description = "Bolinhas sendo fofo",
                     IsPrincipal = false,
-                    PublicId = publicIdAnimal1Img2
+                    PublicId = "Unknown-3_uiip6e"
+                },
+                new()
+                {
+                    Id = "acf0e6d2-b31e-4b6c-815e-e0a5d74fae91",
+                    AnimalId = animal1Id,
+                    Url = "https://res.cloudinary.com/dnfgbodgr/image/upload/v1763306365/Unknown-4_ygwdpm.jpg",
+                    Description = "Bolinhas sendo maravilhoso",
+                    IsPrincipal = false,
+                    PublicId = "Unknown-4_ygwdpm"
                 },
 
                 // === ANIMAL 2 ===
@@ -859,19 +868,46 @@ public static class DbInitializer
                 {
                     Id = imageAnimal2Img1Id,
                     AnimalId = animal2Id,
-                    Url = imageUrl2_1,
+                    Url = "https://res.cloudinary.com/dnfgbodgr/image/upload/v1763578598/IMG_0594_rifgqj.jpg",
                     Description = "Luna a correr no jardim",
                     IsPrincipal = true,
-                    PublicId = publicIdAnimal2Img1
+                    PublicId = "IMG_0594_rifgqj"
                 },
                 new()
                 {
                     Id = imageAnimal2Img2Id,
                     AnimalId = animal2Id,
-                    Url = imageUrl2_2,
-                    Description = "Luna a dormir tranquilamente",
+                    Url =  "https://res.cloudinary.com/dnfgbodgr/image/upload/v1763578594/IMG_2422_s4mbwt.jpg",
+                    Description = "Luna sendo fofa",
                     IsPrincipal = false,
-                    PublicId = publicIdAnimal2Img2
+                    PublicId = "IMG_2422_s4mbwt"
+                },
+                new()
+                {
+                    Id = "b1f74e6d-0b3a-4f42-ae12-49c7c0f97f55",
+                    AnimalId = animal2Id,
+                    Url =  "https://res.cloudinary.com/dnfgbodgr/image/upload/v1763578591/IMG_3661_ujgaa1.jpg",
+                    Description = "Luna sendo maravilhosa",
+                    IsPrincipal = false,
+                    PublicId = "IMG_3661_ujgaa1"
+                },
+                new()
+                {
+                    Id = "e3d2a9c7-6f01-43f0-8572-0ad3c1e60782",
+                    AnimalId = animal2Id,
+                    Url =  "https://res.cloudinary.com/dnfgbodgr/image/upload/v1763578589/IMG_3957_lysorq.jpg",
+                    Description = "Luna sendo fantástica",
+                    IsPrincipal = false,
+                    PublicId = "IMG_3957_lysorq"
+                },
+                new()
+                {
+                    Id = "a7c5d3b2-2ac4-4d5b-8f8c-37e9f61e2771",
+                    AnimalId = animal2Id,
+                    Url =  "https://res.cloudinary.com/dnfgbodgr/image/upload/v1763578587/IMG_4900_x2rqrq.jpg",
+                    Description = "Luna sendo um piglet",
+                    IsPrincipal = false,
+                    PublicId ="IMG_4900_x2rqrq"
                 },
 
                 // === ANIMAL 3 ===
@@ -899,19 +935,10 @@ public static class DbInitializer
                 {
                     Id = imageAnimal4Img1Id,
                     AnimalId = animal4Id,
-                    Url = imageUrl4_1,
+                    Url = "https://res.cloudinary.com/dnfgbodgr/image/upload/v1763307014/Unknown-7_jgfbn7.jpg",
                     Description = "Mika deitada no sofá",
                     IsPrincipal = true,
-                    PublicId = publicIdAnimal4Img1
-                },
-                new()
-                {
-                    Id = imageAnimal4Img2Id,
-                    AnimalId = animal4Id,
-                    Url = imageUrl4_2,
-                    Description = "Mika a brincar com uma corda",
-                    IsPrincipal = false,
-                    PublicId = publicIdAnimal4Img2
+                    PublicId = "Unknown-7_jgfbn7"
                 },
 
                 // === ANIMAL 5 ===
@@ -919,19 +946,19 @@ public static class DbInitializer
                 {
                     Id = imageAnimal5Img1Id,
                     AnimalId = animal5Id,
-                    Url = imageUrl5_1,
+                    Url = "https://res.cloudinary.com/dnfgbodgr/image/upload/v1763306794/Unknown-5_blrqwy.jpg",
                     Description = "Thor atento ao portão",
                     IsPrincipal = true,
-                    PublicId = publicIdAnimal5Img1
+                    PublicId = "Unknown-5_blrqwy"
                 },
                 new()
                 {
                     Id = imageAnimal5Img2Id,
                     AnimalId = animal5Id,
                     Url = imageUrl5_2,
-                    Description = "Thor a correr no pátio",
+                    Description ="https://res.cloudinary.com/dnfgbodgr/image/upload/v1763306795/Unknown-6_mstvsn.jpg",
                     IsPrincipal = false,
-                    PublicId = publicIdAnimal5Img2
+                    PublicId =  "Unknown-6_mstvsn"
                 },
 
                 // === ANIMAL 6 ===
