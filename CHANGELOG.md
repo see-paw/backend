@@ -1,3 +1,13 @@
+## [1.3.1](https://github.com/see-paw/backend/compare/v1.3.0...v1.3.1) (2025-11-21)
+
+
+### Bug Fixes
+
+* add real images to animals ([153dd9b](https://github.com/see-paw/backend/commit/153dd9b6f12e367c772f05b3856aa62aa7fd993c))
+* change progem.cs so only use one seed ata(DbInitializer) ([abf91bd](https://github.com/see-paw/backend/commit/abf91bd8a28c1875c29bfd11879894cbae93bf9f))
+* change program.cs to have two seed data, one for the backend tests and another for the frontend tests-have to test with the the frontend pipeline ([36fe738](https://github.com/see-paw/backend/commit/36fe7389b9528c4f96970aba3d25c10d0fc135df))
+* tests that failed because of the new animals images ([ee2a59b](https://github.com/see-paw/backend/commit/ee2a59bbe125112b163b86124fb629b4236d1841))
+
 ## [1.3.0](https://github.com/see-paw/backend/compare/v1.2.5...v1.3.0) (2025-11-19)
 
 
