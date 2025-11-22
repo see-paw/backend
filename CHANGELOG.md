@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/see-paw/backend/compare/v1.4.0...v1.4.1) (2025-11-22)
+
+
+### Documentation
+
+* **Users:** Added documentation to the new /users/me endpoint ([4244dea](https://github.com/see-paw/backend/commit/4244dea077567dce6e332215a7a929bd077dcb59))
+
 ## [1.4.0](https://github.com/see-paw/backend/compare/v1.3.1...v1.4.0) (2025-11-22)
 
 
