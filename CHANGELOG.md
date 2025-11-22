@@ -1,3 +1,10 @@
+## [1.4.0](https://github.com/see-paw/backend/compare/v1.3.1...v1.4.0) (2025-11-22)
+
+
+### Features
+
+* **Users:** add GET /api/users/me endpoint to retrieve authenticated user info ([1e4ffa9](https://github.com/see-paw/backend/commit/1e4ffa926cbff03b618aa9937a07376229e40d14))
+
 ## [1.3.1](https://github.com/see-paw/backend/compare/v1.3.0...v1.3.1) (2025-11-21)
 
 
