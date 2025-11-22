@@ -1,18 +1,20 @@
-﻿using Application.Interfaces;
-using Domain;
+﻿using Domain;
 using Domain.Common;
 using Domain.Enums;
+
 using Infrastructure.Hubs;
 using Infrastructure.Notifications;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Moq;
-using Persistence;
-using Xunit;
 
-namespace Tests.NotificationsTest;
+using Moq;
+
+using Persistence;
+
+namespace Tests.NotificationsTests;
 
 /// <summary>
 /// Unit tests for NotificationService.

@@ -1,12 +1,16 @@
 ﻿using Application.Interfaces;
 using Application.OwnershipRequests.Commands;
+
 using Domain;
 using Domain.Enums;
+
 using Microsoft.EntityFrameworkCore;
+
 using Moq;
+
 using Persistence;
 
-namespace Tests.OwnershipRequestsTest.HandlersTest;
+namespace Tests.OwnershipRequestsTests.HandlersTest;
 
 public class ApproveOwnershipRequestHandlerTests
 {

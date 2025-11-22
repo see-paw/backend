@@ -1,13 +1,16 @@
 ﻿using Application.Favorites.Queries;
 using Application.Interfaces;
+
 using Domain;
 using Domain.Enums;
-using Microsoft.EntityFrameworkCore;
-using Moq;
-using Persistence;
-using Xunit;
 
-namespace Tests.Favorites.Handlers;
+using Microsoft.EntityFrameworkCore;
+
+using Moq;
+
+using Persistence;
+
+namespace Tests.FavoritesTests.Handlers;
 
 /// <summary>
 /// Unit tests for GetUserFavorites.Handler.

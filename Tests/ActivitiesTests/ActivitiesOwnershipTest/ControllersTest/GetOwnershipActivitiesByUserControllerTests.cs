@@ -1,16 +1,22 @@
 ﻿using Application.Activities.Queries;
 using Application.Core;
+
 using AutoMapper;
+
 using Domain;
 using Domain.Enums;
+
 using MediatR;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+
 using Moq;
+
 using WebAPI.Controllers;
 using WebAPI.DTOs.Activities;
 
-namespace Tests.ActivitiesTest.ActivitiesOwnershipTest.ControllersTest;
+namespace Tests.ActivitiesTests.ActivitiesOwnershipTest.ControllersTest;
 
 /// <summary>
 /// Unit tests for GetOwnershipActivities endpoint in ActivitiesController.

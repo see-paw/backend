@@ -1,14 +1,17 @@
-﻿namespace Tests.Scheduling.Queries;
-
-using Application.Interfaces;
+﻿using Application.Interfaces;
 using Application.Scheduling;
 using Application.Scheduling.Queries;
+
 using Domain;
 using Domain.Enums;
+
 using Microsoft.EntityFrameworkCore;
+
 using Moq;
+
 using Persistence;
-using Xunit;
+
+namespace Tests.SchedulingTests.Queries;
 
 /// <summary>
 /// Tests for GetAnimalWeeklySchedule.Handler using equivalence class partitioning and boundary value analysis.
@@ -837,7 +840,7 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
         var animal1 = CreateTestAnimal();
         var animal2 = CreateTestAnimal();
         var fostering = CreateActiveFostering(animal1.Id);
-        
+
         var activity = CreateActivity(animal2.Id);
         var activitySlot = new ActivitySlot
         {

@@ -1,12 +1,16 @@
 ﻿using Application.Interfaces;
 using Application.Notifications.Queries;
+
 using Domain;
 using Domain.Enums;
+
 using Microsoft.EntityFrameworkCore;
+
 using Moq;
+
 using Persistence;
 
-namespace Tests.NotificationsTest.Handlers;
+namespace Tests.NotificationsTests.Handlers;
 
 public class GetUserNotificationsHandlerTests
 {

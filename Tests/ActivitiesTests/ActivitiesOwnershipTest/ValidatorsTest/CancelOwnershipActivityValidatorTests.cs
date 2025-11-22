@@ -1,8 +1,10 @@
 ﻿using Application.Activities.Commands;
+
 using FluentValidation.TestHelper;
+
 using WebAPI.Validators.Activities.Ownership;
 
-namespace Tests.ActivitiesTest.ActivitiesOwnershipTest.ValidatorsTest;
+namespace Tests.ActivitiesTests.ActivitiesOwnershipTest.ValidatorsTest;
 
 public class CancelOwnershipActivityValidatorTests
 {

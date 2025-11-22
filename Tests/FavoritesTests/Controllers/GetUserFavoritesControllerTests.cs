@@ -1,16 +1,22 @@
 ﻿using Application.Core;
 using Application.Favorites.Queries;
+
 using AutoMapper;
+
 using Domain;
 using Domain.Enums;
+
 using MediatR;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+
 using Moq;
+
 using WebAPI.Controllers;
 using WebAPI.DTOs.Favorites;
 
-namespace Tests.Favorites.Controllers;
+namespace Tests.FavoritesTests.Controllers;
 
 /// <summary>
 /// Unit tests for GetUserFavorites endpoint in FavoritesController.

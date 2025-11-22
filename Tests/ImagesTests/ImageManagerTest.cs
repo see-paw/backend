@@ -1,14 +1,19 @@
 ﻿using Application.Images;
 using Application.Interfaces;
+
 using Domain;
 using Domain.Enums;
+
 using Infrastructure.Images;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+
 using Moq;
+
 using Persistence;
 
-namespace Tests.Images;
+namespace Tests.ImagesTests;
 
 /// <summary>
 /// Unit tests for ImageManager.

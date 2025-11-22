@@ -1,9 +1,11 @@
 ﻿using Infrastructure.Images;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+
 using Moq;
 
-namespace Tests.Images;
+namespace Tests.ImagesTests;
 
 /// <summary>
 /// Unit tests for CloudinaryService using Equivalence Class Partitioning and Boundary Value Analysis.

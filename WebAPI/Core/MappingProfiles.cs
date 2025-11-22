@@ -2,6 +2,7 @@ using Application.Activities.Commands;
 using Application.Animals.Filters;
 using Application.Auth.Commands;
 using Application.Scheduling;
+using Application.Users.Queries;
 
 using AutoMapper;
 
@@ -26,13 +27,13 @@ namespace WebAPI.Core;
 /// Defines AutoMapper configuration profiles for mapping between entities and DTOs.
 /// </summary>
 /// <remarks>
-/// Centralizes all object-to-object mappings used across the application,  
+/// Centralizes all object-to-object mappings used across the application,
 /// ensuring consistent data transformation between the domain and API layers.
 /// </remarks>
 public class MappingProfiles : Profile
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="MappingProfiles"/> class  
+    /// Initializes a new instance of the <see cref="MappingProfiles"/> class
     /// and registers all entity-to-DTO and DTO-to-entity mappings.
     /// </summary>
     /// <remarks>
@@ -229,7 +230,7 @@ public class MappingProfiles : Profile
             .ForMember(dest => dest.User, opt => opt.MapFrom(src => src)) // usa o mapping DTO → User já existente
             .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Password))
             .ForMember(dest => dest.SelectedRole, opt => opt.MapFrom(src => src.SelectedRole))
-            // if role == AdminCAA 
+            // if role == AdminCAA
             .ForMember(dest => dest.ShelterName, opt => opt.MapFrom(src => src.ShelterName))
             .ForMember(dest => dest.ShelterStreet, opt => opt.MapFrom(src => src.ShelterStreet))
             .ForMember(dest => dest.ShelterCity, opt => opt.MapFrom(src => src.ShelterCity))
@@ -246,6 +247,7 @@ public class MappingProfiles : Profile
             .ForMember(dest => dest.OpeningTime, opt => opt.MapFrom(src => src.OpeningTime.ToString("HH:mm")))
             .ForMember(dest => dest.ClosingTime, opt => opt.MapFrom(src => src.ClosingTime.ToString("HH:mm")));
 
+        CreateMap<GetCurrentUser.UserInfo, ResCurrentUserDto>();
 
         // Mapping de CreateFosteringActivityResult para ResActivityFosteringDto
         CreateMap<CreateFosteringActivity.CreateFosteringActivityResult, ResActivityFosteringDto>()

@@ -1,7 +1,8 @@
 ﻿using Application.Notifications.Queries;
+
 using WebAPI.Validators.Notifications;
 
-namespace Tests.NotificationsTest.Validators;
+namespace Tests.NotificationsTests.Validators;
 
 public class MarkNotificationAsReadValidatorTests
 {

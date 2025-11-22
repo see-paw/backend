@@ -1,15 +1,19 @@
-using Application.Core;
 using Application.Favorites.Commands;
 using Application.Interfaces;
+
 using AutoMapper;
+
 using Domain;
 using Domain.Enums;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+
 using Moq;
+
 using Persistence;
 
-namespace Tests.Favorites.Handlers
+namespace Tests.FavoritesTests.Handlers
 {
     /// <summary>
     /// Unit tests for AddFavorite.Handler.

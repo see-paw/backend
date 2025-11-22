@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class Initializer : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -128,7 +128,7 @@ namespace Persistence.Migrations
                     Id = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     AnimalState = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
+                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     Species = table.Column<string>(type: "text", nullable: false),
                     Size = table.Column<string>(type: "text", nullable: false),
                     Sex = table.Column<string>(type: "text", nullable: false),
@@ -136,7 +136,7 @@ namespace Persistence.Migrations
                     BirthDate = table.Column<DateOnly>(type: "date", nullable: false),
                     Sterilized = table.Column<bool>(type: "boolean", nullable: false),
                     Cost = table.Column<decimal>(type: "numeric", nullable: false),
-                    Features = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
+                    Features = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     ShelterId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),

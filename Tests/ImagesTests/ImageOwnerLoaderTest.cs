@@ -1,11 +1,13 @@
-﻿using Application.Images;
-using Domain;
+﻿using Domain;
 using Domain.Enums;
+
 using Infrastructure.Images;
+
 using Microsoft.EntityFrameworkCore;
+
 using Persistence;
 
-namespace Tests.Images;
+namespace Tests.ImagesTests;
 
 /// <summary>
 /// Unit tests for ImageOwnerLoader using equivalence partitioning.

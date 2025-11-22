@@ -1,12 +1,16 @@
 using Application.Activities.Commands;
 using Application.Interfaces;
+
 using Domain;
 using Domain.Enums;
+
 using Microsoft.EntityFrameworkCore;
+
 using Moq;
+
 using Persistence;
 
-namespace Tests.ActivitiesTest.ActivitiesFosteringTest.HandlersTest;
+namespace Tests.ActivitiesTests.ActivitiesFosteringTest.HandlersTest;
 
 /// <summary>
 /// Unit test suite for <see cref="CancelFosteringActivity.Handler"/>, 

@@ -1,14 +1,19 @@
 ﻿using Application.Core;
 using Application.Images.Commands;
 using Application.Interfaces;
+
 using Domain;
 using Domain.Enums;
+
 using MediatR;
+
 using Microsoft.EntityFrameworkCore;
+
 using Moq;
+
 using Persistence;
 
-namespace Tests.Images.Commands;
+namespace Tests.ImagesTests.Commands;
 
 /// <summary>
 /// Unit tests for DeleteAnimalImage.Handler using Equivalence Class Partitioning and Boundary Value Analysis.

@@ -1,16 +1,22 @@
 ﻿using Application.Core;
 using Application.Scheduling;
 using Application.Scheduling.Queries;
+
 using AutoMapper;
+
 using Domain;
 using Domain.Enums;
+
 using MediatR;
+
 using Microsoft.AspNetCore.Mvc;
+
 using Moq;
+
 using WebAPI.Controllers;
 using WebAPI.DTOs.AnimalSchedule;
 
-namespace Tests.Scheduling.Controllers;
+namespace Tests.SchedulingTests.Controllers;
 
 /// <summary>
 /// Tests for ScheduleController using equivalence class partitioning and boundary value analysis.

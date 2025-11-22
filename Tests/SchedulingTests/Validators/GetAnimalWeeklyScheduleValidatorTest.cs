@@ -1,8 +1,10 @@
 ﻿using Application.Scheduling.Queries;
+
 using FluentValidation.TestHelper;
+
 using WebAPI.Validators.Scheduling;
 
-namespace Tests.Scheduling.Validators;
+namespace Tests.SchedulingTests.Validators;
 
 /// <summary>
 /// Tests for GetAnimalWeeklyScheduleValidator using equivalence class partitioning and boundary value analysis.

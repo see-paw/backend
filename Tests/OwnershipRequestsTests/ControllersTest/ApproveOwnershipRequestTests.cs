@@ -1,17 +1,22 @@
 ﻿using Application.Core;
 using Application.OwnershipRequests.Commands;
+
 using AutoMapper;
+
 using Domain;
 using Domain.Enums;
+
 using MediatR;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+
 using Moq;
+
 using WebAPI.Controllers;
 using WebAPI.DTOs.Ownership;
-using Xunit;
 
-namespace Tests.OwnershipRequestsTest.ControllersTest;
+namespace Tests.OwnershipRequestsTests.ControllersTest;
 
 /// <summary>
 /// Unit tests for ApproveRequest endpoint in OwnershipRequestsController.

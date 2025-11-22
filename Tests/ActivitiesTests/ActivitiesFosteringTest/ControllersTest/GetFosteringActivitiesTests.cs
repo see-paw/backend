@@ -1,16 +1,22 @@
 using Application.Activities.Queries;
 using Application.Core;
+
 using AutoMapper;
+
 using Domain;
 using Domain.Enums;
+
 using MediatR;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+
 using Moq;
+
 using WebAPI.Controllers;
 using WebAPI.DTOs.Activities;
 
-namespace Tests.ActivitiesTest.ActivitiesFosteringTest.ControllersTest;
+namespace Tests.ActivitiesTests.ActivitiesFosteringTest.ControllersTest;
 
 /// <summary>
 /// Unit tests for the <see cref="ActivitiesController"/> method <see cref="ActivitiesController.GetFosteringActivities"/>.

@@ -1,8 +1,9 @@
 ﻿using FluentValidation.TestHelper;
+
 using WebAPI.DTOs.Ownership;
 using WebAPI.Validators.Ownership;
 
-namespace Tests.OwnershipRequestsTest.ValidatorsTest;
+namespace Tests.OwnershipRequestsTests.ValidatorsTest;
 
 public class CreateOwnershipRequestValidatorTests
 {

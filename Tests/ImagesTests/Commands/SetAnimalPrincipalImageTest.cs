@@ -1,14 +1,16 @@
-﻿using Application.Core;
-using Application.Images.Commands;
+﻿using Application.Images.Commands;
 using Application.Interfaces;
+
 using Domain;
 using Domain.Enums;
-using MediatR;
+
 using Microsoft.EntityFrameworkCore;
+
 using Moq;
+
 using Persistence;
 
-namespace Tests.Images.Commands;
+namespace Tests.ImagesTests.Commands;
 
 /// <summary>
 /// Unit tests for SetAnimalPrincipalImage.Handler using equivalence partitioning and boundary value analysis.

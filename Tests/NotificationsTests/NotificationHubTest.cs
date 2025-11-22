@@ -1,9 +1,11 @@
 ﻿using Infrastructure.Hubs;
+
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+
 using Moq;
 
-namespace Tests.NotificationsTest;
+namespace Tests.NotificationsTests;
 
 /// <summary>
 /// Unit tests for NotificationHub.

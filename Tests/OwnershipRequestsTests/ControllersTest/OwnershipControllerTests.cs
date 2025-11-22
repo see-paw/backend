@@ -1,16 +1,22 @@
 using Application.Core;
 using Application.OwnershipRequests.Queries;
+
 using AutoMapper;
+
 using Domain;
 using Domain.Enums;
+
 using MediatR;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+
 using Moq;
+
 using WebAPI.Controllers;
 using WebAPI.DTOs.Ownership;
 
-namespace Tests.OwnershipRequestsTest.ControllersTest;
+namespace Tests.OwnershipRequestsTests.ControllersTest;
 
 /// <summary>
 /// Unit tests for <see cref="OwnershipRequestsController.OwnershipsController"/>.
