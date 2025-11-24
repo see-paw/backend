@@ -1,3 +1,10 @@
+## [1.4.2](https://github.com/see-paw/backend/compare/v1.4.1...v1.4.2) (2025-11-24)
+
+
+### Chores
+
+* Refactor Docker image tagging in workflow ([d20c408](https://github.com/see-paw/backend/commit/d20c4085fbcdd0b9be0f9c85eed3280a26213d8a))
+
 ## [1.4.1](https://github.com/see-paw/backend/compare/v1.4.0...v1.4.1) (2025-11-22)
 
 
