@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using WebAPI.DTOs.Animals;
+using WebAPI.DTOs.Shelter;
 
 namespace WebAPI.Controllers
 {
@@ -69,5 +70,31 @@ namespace WebAPI.Controllers
             // Return the standardized result using the base handler
             return HandleResult(Result<PagedList<ResAnimalDto>>.Success(pagedDtoList, 200));
         }
+
+        /// <summary>
+        /// Retrieves detailed information about a specific shelter.
+        /// </summary>
+        /// <param name="shelterId">The unique identifier of the shelter.</param>
+        /// <returns>
+        /// A <see cref="ResShelterInfoDto"/> with shelter information, or an appropriate error response.
+        /// </returns>
+        [Authorize(Roles = "User,AdminCAA")]
+        [HttpGet("{shelterId}")]
+        public async Task<ActionResult<ResShelterInfoDto>> GetShelterInfo(string shelterId)
+        {
+            // 1️⃣ Chamar a Query na Application
+            var result = await Mediator.Send(new GetShelterInfo.Query(shelterId));
+
+            // 2️⃣ Se falhar, delegar para o HandleResult com o Result<Shelter>
+            if (!result.IsSuccess)
+                return HandleResult(result);
+
+            // 3️⃣ Mapear Domain.Shelter -> ResShelterInfoDto
+            var dto = _mapper.Map<ResShelterInfoDto>(result.Value);
+
+            // 4️⃣ Reembrulhar em Result<ResShelterInfoDto> e usar HandleResult
+            return HandleResult(Result<ResShelterInfoDto>.Success(dto, 200));
+        }
+
     }
 }
