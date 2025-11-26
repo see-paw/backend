@@ -227,7 +227,7 @@ public class MappingProfiles : Profile
             .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
         CreateMap<ReqRegisterUserDto, Register.Command>()
-            .ForMember(dest => dest.User, opt => opt.MapFrom(src => src)) // usa o mapping DTO → User já existente
+            .ForMember(dest => dest.User, opt => opt.MapFrom(src => src))
             .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Password))
             .ForMember(dest => dest.SelectedRole, opt => opt.MapFrom(src => src.SelectedRole))
             // if role == AdminCAA
@@ -303,6 +303,20 @@ public class MappingProfiles : Profile
             .ForMember(d => d.VisitEndDateTime, o => o.MapFrom(s => s.Slot!.EndDateTime))
             .ForMember(d => d.VisitDate, o => o.MapFrom(s =>
                 DateOnly.FromDateTime(s.Slot!.StartDateTime)));
+
+        // Mapping from Shelter to ResShelterInfoDto
+        CreateMap<Shelter, ResShelterInfoDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+            .ForMember(dest => dest.Street, opt => opt.MapFrom(src => src.Street))
+            .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.City))
+            .ForMember(dest => dest.PostalCode, opt => opt.MapFrom(src => src.PostalCode))
+            .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone))
+            .ForMember(dest => dest.Nif, opt => opt.MapFrom(src => src.NIF))
+            .ForMember(dest => dest.OpeningTime, opt =>
+                opt.MapFrom(src => src.OpeningTime.ToString("HH:mm")))
+            .ForMember(dest => dest.ClosingTime, opt =>
+                opt.MapFrom(src => src.ClosingTime.ToString("HH:mm")));
     }
 
     private static int CalculateAge(DateOnly birthDate)
