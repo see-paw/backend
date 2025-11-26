@@ -1,3 +1,15 @@
+## [1.5.0](https://github.com/see-paw/backend/compare/v1.4.2...v1.5.0) (2025-11-26)
+
+
+### Features
+
+* add endpoint to list detailed shelter information by shelter id, requires auth ([0f09ac5](https://github.com/see-paw/backend/commit/0f09ac5d6e58890dbaa63af43e4fa0864254a52a))
+
+
+### Chores
+
+* Refactor Docker image tagging in workflow ([6817820](https://github.com/see-paw/backend/commit/681782053ddac0fdd09c1a1c8273120c354e5ed5))
+
 ## [1.4.2](https://github.com/see-paw/backend/compare/v1.4.1...v1.4.2) (2025-11-24)
 
 
