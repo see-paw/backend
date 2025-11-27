@@ -54,6 +54,12 @@ public class GetCurrentUser
         public string? ShelterId { get; set; }
 
         /// <summary>
+        /// The name of the shelter managed by the user.
+        /// Only populated when the user has the AdminCAA role; otherwise null.
+        /// </summary>
+        public string? ShelterName { get; set; }
+
+        /// <summary>
         /// The user's date of birth.
         /// </summary>
         public DateTime BirthDate { get; set; }
@@ -118,6 +124,13 @@ public class GetCurrentUser
             var roles = await _userManager.GetRolesAsync(user);
             var role = roles.FirstOrDefault() ?? "User";
 
+
+            string? shelterName = null;
+            if (user.ShelterId != null && user.Shelter != null)
+            {
+                shelterName = user.Shelter.Name;
+            }
+
             var userInfo = new UserInfo
             {
                 UserId = user.Id,
@@ -125,6 +138,7 @@ public class GetCurrentUser
                 Name = user.Name,
                 Role = role,
                 ShelterId = user.ShelterId,
+                ShelterName = shelterName,
                 BirthDate = user.BirthDate,
                 Street = user.Street,
                 City = user.City,

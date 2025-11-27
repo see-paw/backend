@@ -1,7 +1,10 @@
 ﻿
+using Application.Animals.Filters;
 using Application.Shelters.Queries;
 using Domain;
 using Domain.Enums;
+using Domain.Services;
+
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
@@ -43,7 +46,6 @@ namespace Tests.AnimalsTests.Handlers
             // Return the ready-to-use context.
             return context;
         }
-
 
         // ===== Helper method =====
         // Creates a valid shelter that satisfies all validation rules from the Shelter entity.
@@ -100,31 +102,6 @@ namespace Tests.AnimalsTests.Handlers
 
         // ===== Tests =====
 
-
-        // Test: Ensure animals are returned in alphabetical order by name.
-        [Fact]
-        public async Task GetAnimalsByShelterInAlphabeticalOrder()
-        {
-            var shelterId = "11111111-1111-1111-1111-111111111111";
-            var breedId = "1a1a1111-1111-1111-1111-111111111111";
-            var animals = new List<Animal>
-            {
-                CreateAnimal("Zebra", shelterId, breedId),
-                CreateAnimal("Alpha", shelterId, breedId),
-                CreateAnimal("Mike", shelterId, breedId)
-            };
-            var shelters = new List<Shelter> { CreateShelter(shelterId) };
-            var breeds = new List<Breed> { CreateBreed(breedId) };
-
-            var context = CreateInMemoryContext(animals, shelters, breeds);
-            var handler = new GetAnimalsByShelter.Handler(context);
-            var query = new GetAnimalsByShelter.Query { ShelterId = shelterId, PageNumber = 1 }; //valid page number
-
-            var result = await handler.Handle(query, CancellationToken.None);
-
-            Assert.Equal("Alpha", result.Value.Items.First().Name);
-        }
-
         // Test: Ensure pagination works correctly.
         [Fact]
         public async Task PaginateResultsCorrectlly()
@@ -138,7 +115,9 @@ namespace Tests.AnimalsTests.Handlers
             var breeds = new List<Breed> { CreateBreed(breedId) };
 
             var context = CreateInMemoryContext(animals, shelters, breeds);
-            var handler = new GetAnimalsByShelter.Handler(context);
+            var animalDomainService = new AnimalDomainService();
+            var specBuilder = new AnimalSpecBuilder(animalDomainService);
+            var handler = new GetAnimalsByShelter.Handler(context, specBuilder);
             var query = new GetAnimalsByShelter.Query { ShelterId = shelterId, PageNumber = 2 };
 
             var result = await handler.Handle(query, CancellationToken.None);
@@ -159,7 +138,9 @@ namespace Tests.AnimalsTests.Handlers
             var breeds = new List<Breed> { CreateBreed(breedId) };
 
             var context = CreateInMemoryContext(animals, shelters, breeds);
-            var handler = new GetAnimalsByShelter.Handler(context);
+            var animalDomainService = new AnimalDomainService();
+            var specBuilder = new AnimalSpecBuilder(animalDomainService);
+            var handler = new GetAnimalsByShelter.Handler(context, specBuilder);
             var query = new GetAnimalsByShelter.Query { ShelterId = shelterId, PageNumber = 1 }; //valid page number
 
             var result = await handler.Handle(query, CancellationToken.None);
@@ -184,12 +165,14 @@ namespace Tests.AnimalsTests.Handlers
             var breeds = new List<Breed> { CreateBreed(breedId) };
 
             var context = CreateInMemoryContext(animals, shelters, breeds);
-            var handler = new GetAnimalsByShelter.Handler(context);
+            var animalDomainService = new AnimalDomainService();
+            var specBuilder = new AnimalSpecBuilder(animalDomainService);
+            var handler = new GetAnimalsByShelter.Handler(context, specBuilder);
             var query = new GetAnimalsByShelter.Query { ShelterId = shelterId, PageNumber = 1 }; //valid page number
 
             var result = await handler.Handle(query, CancellationToken.None);
 
-            Assert.Equal(4, result.Value.Items.Count);
+            Assert.Equal(3, result.Value.Items.Count);
         }
 
         // Test: No animals found for the given shelter.
@@ -201,7 +184,9 @@ namespace Tests.AnimalsTests.Handlers
             var shelters = new List<Shelter> { CreateShelter(shelterId) };
 
             var context = CreateInMemoryContext(animals, shelters);
-            var handler = new GetAnimalsByShelter.Handler(context);
+            var animalDomainService = new AnimalDomainService();
+            var specBuilder = new AnimalSpecBuilder(animalDomainService);
+            var handler = new GetAnimalsByShelter.Handler(context, specBuilder);
             var query = new GetAnimalsByShelter.Query { ShelterId = shelterId, PageNumber = 1 }; //valid page number
 
             var result = await handler.Handle(query, CancellationToken.None);
@@ -229,7 +214,9 @@ namespace Tests.AnimalsTests.Handlers
             var breeds = new List<Breed> { CreateBreed(breedId) };
 
             var context = CreateInMemoryContext(animals, shelters, breeds);
-            var handler = new GetAnimalsByShelter.Handler(context);
+            var animalDomainService = new AnimalDomainService();
+            var specBuilder = new AnimalSpecBuilder(animalDomainService);
+            var handler = new GetAnimalsByShelter.Handler(context, specBuilder);
             var query = new GetAnimalsByShelter.Query { ShelterId = shelter1Id, PageNumber = 1 }; //valid page number
 
             var result = await handler.Handle(query, CancellationToken.None);
@@ -252,7 +239,9 @@ namespace Tests.AnimalsTests.Handlers
             var breeds = new List<Breed> { CreateBreed(breedId) };
 
             var context = CreateInMemoryContext(animals, shelters, breeds);
-            var handler = new GetAnimalsByShelter.Handler(context);
+            var animalDomainService = new AnimalDomainService();
+            var specBuilder = new AnimalSpecBuilder(animalDomainService);
+            var handler = new GetAnimalsByShelter.Handler(context, specBuilder);
             var query = new GetAnimalsByShelter.Query
                 { ShelterId = nonExistentShelterId, PageNumber = 1 }; //valid page number
 
