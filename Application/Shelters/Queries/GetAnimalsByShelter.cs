@@ -1,5 +1,8 @@
+using Application.Animals.Filters;
 using Application.Core;
 using Domain;
+using Domain.Enums;
+
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
@@ -7,8 +10,9 @@ using Persistence;
 namespace Application.Shelters.Queries
 {
     /// <summary>
-    /// Query and handler responsible for retrieving a paginated list of animals
-    /// that belong to a specific shelter.
+    /// Provides the query and handler responsible for retrieving a paginated list of animals
+    /// that belong to a specific shelter. Supports dynamic filtering, sorting, and pagination.
+    /// Uses specification-based filtering and includes related Breed and Image data.
     /// </summary>
     public class GetAnimalsByShelter
     {
@@ -32,37 +36,67 @@ namespace Application.Shelters.Queries
             /// The number of items per page (default is 20).
             /// </summary>
             public int PageSize { get; set; } = 20;
+
+            /// <summary>
+            /// parameter to sort the results by. Acceptable values: "name", "age", "created".
+            /// </summary>
+            public string? SortBy { get; set; } = null;
+
+            /// <summary>
+            /// direction of the sorting. Acceptable values: "asc", "desc".
+            /// </summary>
+            public string? Order { get; set; } = null;
+
+            /// <summary>
+            /// Optional filter criteria for animals (species, age, size, sex, name, breed).
+            /// </summary>
+            public AnimalFilterModel? Filters { get; set; }
         }
 
         /// <summary>
-        /// Handles the business logic for retrieving animals belonging to a specific shelter.
-        /// Validates the existence of the shelter, applies pagination, and returns a consistent result.
+        /// Handles the query for retrieving animals that belong to a specific shelter.
+        /// Validates shelter existence, applies specifications, dynamic sorting,
+        /// and returns a paginated result set.
         /// </summary>
-
         public class Handler : IRequestHandler<Query, Result<PagedList<Animal>>>
         {
             private readonly AppDbContext _context;
+            private readonly AnimalSpecBuilder _specBuilder;
 
             /// <summary>
-            /// Initializes a new instance of the <see cref="Handler"/> class using the provided database context.
+            /// Creates a new instance of <see cref="Handler"/>.
             /// </summary>
             /// <param name="context">Entity Framework Core database context.</param>
-            public Handler(AppDbContext context)
+            /// <param name="specBuilder">Builder used to generate specification filters for animals.</param>
+            public Handler(AppDbContext context, AnimalSpecBuilder specBuilder)
             {
                 _context = context;
+                _specBuilder = specBuilder;
             }
 
             /// <summary>
-            /// Executes the query to fetch a paginated list of animals for the specified shelter.
+            /// Executes the request to retrieve a paginated list of animals for the specified shelter.
+            /// Applies the following steps:
+            /// <list type="number">
+            /// <item><description>Validates pagination and shelter existence.</description></item>
+            /// <item><description>Builds the base query including Breed and Image navigation properties.</description></item>
+            /// <item><description>Applies specification-based filters if provided.</description></item>
+            /// <item><description>Applies dynamic sorting based on <c>SortBy</c> / <c>Order</c>.</description></item>
+            /// <item><description>Executes pagination using <see cref="PagedList{T}"/>.</description></item>
+            /// </list>
             /// </summary>
-            /// <param name="request">The query containing the shelter ID and pagination parameters.</param>
-            /// <param name="cancellationToken">Token to cancel the asynchronous operation if needed.</param>
+            /// <param name="request">The query containing the required parameters.</param>
+            /// <param name="cancellationToken">Cancellation token for the async operation.</param>
             /// <returns>
-            /// A <see cref="Result{T}"/> containing a <see cref="PagedList{Animal}"/> on success,
-            /// or an error message and HTTP-like status code on failure.
+            /// A <see cref="Result{T}"/> containing:
+            /// <list type="bullet">
+            /// <item><description><c>200 OK</c> — Paginated list successfully retrieved.</description></item>
+            /// <item><description><c>404 Not Found</c> — Invalid page number, shelter not found, or no animals available.</description></item>
+            /// </list>
             /// </returns>
             public async Task<Result<PagedList<Animal>>> Handle(Query request, CancellationToken cancellationToken)
             {
+                // Validate pagination
                 if (request.PageNumber < 1)
                     return Result<PagedList<Animal>>.Failure("Page number must be 1 or greater", 404);
 
@@ -78,15 +112,54 @@ namespace Application.Shelters.Queries
                     .Include(a => a.Breed)   // Include breed object
                     .Include(a => a.Images)  // Include associated images
                     .Where(a => a.ShelterId == request.ShelterId)
-                    .OrderBy(a => a.Name)
+                    .Where(a => a.AnimalState != AnimalState.Inactive)
                     .AsQueryable();
 
+                // Apply dynamic filters if provided
+                if (request.Filters != null)
+                {
+                    var specs = _specBuilder.Build(request.Filters);
+
+                    foreach (var spec in specs)
+                    {
+                        var expression = spec.ToExpression();
+                        if (expression != null)
+                        {
+                            query = query.Where(expression);
+                        }
+                    }
+                }
+
+                // Normalize params
+                string sort = request.SortBy?.ToLower() ?? "created";
+                string direction = request.Order?.ToLower() ?? "desc";
+                var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+                // Apply sorting based on parameters
+                query = (sort, direction) switch
+                {
+                    ("name", "asc") => query.OrderBy(a => a.Name),
+                    ("name", "desc") => query.OrderByDescending(a => a.Name),
+
+                    ("age", "asc") => query.OrderBy(a => today.Year - a.BirthDate.Year),
+                    ("age", "desc") => query.OrderByDescending(a => today.Year - a.BirthDate.Year),
+
+                    ("created", "asc") => query.OrderBy(a => a.CreatedAt),
+                    ("created", "desc") => query.OrderByDescending(a => a.CreatedAt),
+
+                    _ => query.OrderByDescending(a => a.CreatedAt)
+                };
                 // Apply pagination using the generic PagedList helper
                 var pagedList = await PagedList<Animal>.CreateAsync(
                     query,
                     request.PageNumber,
                     request.PageSize
                 );
+
+                // Handle the case when no animals were found
+                if (pagedList.Items.Count == 0)
+                    return Result<PagedList<Animal>>.Failure("No animals found for this shelter", 404);
+
 
                 // Handle the case when no animals were found
                 return pagedList.Items.Count == 0 ? Result<PagedList<Animal>>.Failure("No animals found for this shelter", 404) :
