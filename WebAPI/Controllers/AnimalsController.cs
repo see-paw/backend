@@ -2,7 +2,7 @@ using Application.Animals.Commands;
 using Application.Animals.Filters;
 using Application.Animals.Queries;
 using Application.Core;
-using Application.Fosterings.Commands;
+
 using Application.Images.Commands;
 using Application.Interfaces;
 
@@ -360,5 +360,35 @@ public class AnimalsController(IMapper mapper, IUserAccessor userAccessor) : Bas
         // Map the boolean value and return 200 OK with eligibility result
         var isPossibleToOwnership = mapper.Map<Boolean>(result.Value);
         return HandleResult(Result<Boolean>.Success(isPossibleToOwnership, 200));
+    }
+
+    /// <summary>
+    /// Gets all breeds
+    /// Automatically syncs with external API if database is empty
+    /// </summary>
+    /// <returns>List of breeds</returns>
+    /// <response code="200">Returns the list of breeds</response>
+    /// <response code="500">If there was an error fetching breeds</response>
+    [HttpGet("breeds")]
+    [ProducesResponseType(typeof(List<BreedDtos>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<List<BreedDtos>>> GetBreeds()
+    {
+        var result = await Mediator.Send(new GetAllBreeds.Query());
+
+        if (!result.IsSuccess)
+        {
+            return StatusCode(result.Code, result.Error);
+        }
+
+        // Map domain entities to DTOs (Presentation layer responsibility)
+        var breedDtos = result.Value.Select(b => new BreedDtos
+        {
+            Id = b.Id,
+            Name = b.Name,
+            Description = b.Description
+        }).ToList();
+
+        return Ok(breedDtos);
     }
 }

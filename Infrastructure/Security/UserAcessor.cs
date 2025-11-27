@@ -2,13 +2,15 @@
 using Application.Interfaces;
 using Domain;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+
 using Persistence;
 
 namespace Infrastructure.Security;
 
 /// <summary>
 /// Provides access to information about the currently authenticated user.
-/// 
+///
 /// This class acts as a bridge between the HTTP context and the application layer,
 /// allowing services to retrieve the active user's identity and corresponding domain entity
 /// from the database.
@@ -44,7 +46,10 @@ public class UserAccessor(IHttpContextAccessor httpContextAccessor,
     /// </exception>
     public async Task<User> GetUserAsync()
     {
-        return await dbContext.Users.FindAsync(GetUserId())
+        var userId = GetUserId();
+        return await dbContext.Users
+            .Include(u => u.Shelter)
+            .FirstOrDefaultAsync(u => u.Id == userId)
             ?? throw new UnauthorizedAccessException("No user logged in");
     }
 }

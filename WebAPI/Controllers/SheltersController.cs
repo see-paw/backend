@@ -1,3 +1,4 @@
+using Application.Animals.Filters;
 using Application.Core;
 using Application.Shelters.Queries;
 
@@ -25,31 +26,56 @@ namespace WebAPI.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="SheltersController"/> class.
         /// </summary>
-        /// <param name="mapper">AutoMapper instance used for mapping between domain models and DTOs.</param>
+        /// <param name="mapper">AutoMapper instance used to map domain entities to DTOs.</param>
         public SheltersController(IMapper mapper)
         {
             _mapper = mapper;
         }
 
         /// <summary>
-        /// Retrieves a paginated list of animals that belong to a specified shelter.
+        /// Retrieves a paginated, optionally filtered and sorted list of animals
+        /// that belong to a specified shelter.
         /// </summary>
-        /// <param name="shelterId">The unique identifier of the shelter.</param>
-        /// <param name="pageNumber">The page number to retrieve (default is 1).</param>
+        /// <param name="shelterId">The unique identifier of the shelter whose animals are to be retrieved.</param>
+        /// <param name="pageNumber">
+        /// The page number to retrieve for pagination. Defaults to <c>1</c>.
+        /// Must be a positive integer.
+        /// </param>
+        /// <param name="filters">
+        /// Optional filter criteria applied to the animal list.
+        /// Supports fields such as species, size, sex, breed, age range and name.
+        /// </param>
+        /// <param name="sortBy">
+        /// Optional field name to sort the results by.
+        /// Examples: <c>name</c>, <c>age</c>, <c>createdAt</c>.
+        /// </param>
+        /// <param name="order">
+        /// Sorting direction. Accepted values: <c>asc</c> or <c>desc</c>.
+        /// Defaults to backend-defined ordering if not provided.
+        /// </param>
         /// <returns>
-        /// A paginated <see cref="PagedList{T}"/> of <see cref="ResAnimalDto"/> objects representing the animals.
-        /// Returns <c>400</c> if the page number is invalid or an appropriate error message if the shelter or animals are not found.
+        /// Returns a paginated <see cref="PagedList{T}"/> containing <see cref="ResAnimalDto"/> items.
+        /// Possible responses:
+        /// <list type="bullet">
+        /// <item><description><c>200 OK</c> — Paginated list of animals successfully retrieved.</description></item>
+        /// <item><description><c>400 Bad Request</c> — Invalid page number or invalid filters.</description></item>
+        /// <item><description><c>404 Not Found</c> — Shelter not found or shelter contains no animals.</description></item>
+        /// <item><description><c>403 Forbidden</c> — User does not have Admin CAA permissions.</description></item>
+        /// </list>
         /// </returns>
         [Authorize(Roles = AppRoles.AdminCAA)]
         [HttpGet("{shelterId}/animals")]
-        public async Task<ActionResult<PagedList<Animal>>> GetAnimalsByShelter(string shelterId, [FromQuery] int pageNumber = 1)
+        public async Task<ActionResult<PagedList<Animal>>> GetAnimalsByShelter(string shelterId, [FromQuery] int pageNumber = 1, [FromQuery] AnimalFilterModel? filters = null, [FromQuery] string? sortBy = null, [FromQuery] string? order = null)
         {
 
-            // Send the query to the Application layer 
+            // Send the query to the Application layer
             var result = await Mediator.Send(new GetAnimalsByShelter.Query
             {
                 ShelterId = shelterId,
-                PageNumber = pageNumber
+                PageNumber = pageNumber,
+                Filters = filters,
+                SortBy = sortBy,
+                Order = order
             });
 
             // Return failure result if the handler reports an error
@@ -57,7 +83,7 @@ namespace WebAPI.Controllers
                 return HandleResult(result);
 
             // Map Animal to ResAnimalDto for the API response
-            var dtoList = _mapper.Map<List<ResAnimalDto>>(result.Value);
+            var dtoList = _mapper.Map<List<ResAnimalDto>>(result.Value.Items);
 
             // Wrap the DTO list in a paginated structure with metadata
             var pagedDtoList = new PagedList<ResAnimalDto>(
