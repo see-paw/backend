@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/see-paw/backend/compare/v1.5.0...v1.5.1) (2025-11-27)
+
+
+### Bug Fixes
+
+* add filters to the endpoint getAnimalsByShelter, changed BreedDTO so it can have an Id, changed ReqCreateAnimalDTO so it can have an Id, changed ResCurrentUserDto so that can have ShelterName ([0a108ec](https://github.com/see-paw/backend/commit/0a108ecdee0325f4d26e3f60af3612e24b2aa428))
+
 ## [1.5.0](https://github.com/see-paw/backend/compare/v1.4.2...v1.5.0) (2025-11-26)
 
 
