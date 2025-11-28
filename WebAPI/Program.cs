@@ -16,6 +16,7 @@ using FluentValidation.AspNetCore;
 
 using Infrastructure.BackgroundTasks;
 using Infrastructure.BackgroundTasks.Tasks.ActivityTasks;
+using Infrastructure.Breeds;
 using Infrastructure.Hubs;
 using Infrastructure.Images;
 using Infrastructure.Notifications;
@@ -79,6 +80,7 @@ builder.Services.AddControllers().AddJsonOptions(o =>
     o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     o.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
 });
+builder.Services.AddHttpClient<IExternalBreedService, ExternalBreedService>();
 
 //swagger
 builder.Services.AddEndpointsApiExplorer();

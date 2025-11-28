@@ -5,7 +5,6 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 using Application.Core;
-using Application.Interfaces;
 
 namespace Application.Animals.Queries
 {

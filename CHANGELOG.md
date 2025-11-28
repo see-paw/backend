@@ -1,3 +1,36 @@
+## [1.5.1](https://github.com/see-paw/backend/compare/v1.5.0...v1.5.1) (2025-11-27)
+
+
+### Bug Fixes
+
+* add filters to the endpoint getAnimalsByShelter, changed BreedDTO so it can have an Id, changed ReqCreateAnimalDTO so it can have an Id, changed ResCurrentUserDto so that can have ShelterName ([0a108ec](https://github.com/see-paw/backend/commit/0a108ecdee0325f4d26e3f60af3612e24b2aa428))
+
+## [1.5.0](https://github.com/see-paw/backend/compare/v1.4.2...v1.5.0) (2025-11-26)
+
+
+### Features
+
+* add endpoint to list detailed shelter information by shelter id, requires auth ([0f09ac5](https://github.com/see-paw/backend/commit/0f09ac5d6e58890dbaa63af43e4fa0864254a52a))
+
+
+### Chores
+
+* Refactor Docker image tagging in workflow ([6817820](https://github.com/see-paw/backend/commit/681782053ddac0fdd09c1a1c8273120c354e5ed5))
+
+## [1.4.2](https://github.com/see-paw/backend/compare/v1.4.1...v1.4.2) (2025-11-24)
+
+
+### Chores
+
+* Refactor Docker image tagging in workflow ([d20c408](https://github.com/see-paw/backend/commit/d20c4085fbcdd0b9be0f9c85eed3280a26213d8a))
+
+## [1.4.1](https://github.com/see-paw/backend/compare/v1.4.0...v1.4.1) (2025-11-22)
+
+
+### Documentation
+
+* **Users:** Added documentation to the new /users/me endpoint ([4244dea](https://github.com/see-paw/backend/commit/4244dea077567dce6e332215a7a929bd077dcb59))
+
 ## [1.4.0](https://github.com/see-paw/backend/compare/v1.3.1...v1.4.0) (2025-11-22)
 
 
