@@ -147,6 +147,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             StartDate = DateTime.UtcNow.AddMonths(-1)
         };
 
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         await _context.SaveChangesAsync();
@@ -168,6 +171,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
     public async Task Handle_NoFosteringExists_ReturnsConflict()
     {
         var animal = CreateTestAnimal();
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         await _context.SaveChangesAsync();
 
@@ -209,6 +215,8 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Status = FosteringStatus.Active,
             StartDate = DateTime.UtcNow.AddMonths(-1)
         };
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
 
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
@@ -236,6 +244,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
     {
         var animal = CreateTestAnimal();
         var fostering = CreateActiveFostering(animal.Id);
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         await _context.SaveChangesAsync();
@@ -259,6 +270,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
     {
         var animal = CreateTestAnimal();
         var fostering = CreateActiveFostering(animal.Id);
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         await _context.SaveChangesAsync();
@@ -286,6 +300,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
     {
         var animal = CreateTestAnimal();
         var fostering = CreateActiveFostering(animal.Id);
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         await _context.SaveChangesAsync();
@@ -317,6 +334,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
     {
         var animal = CreateTestAnimal();
         var fostering = CreateActiveFostering(animal.Id);
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         await _context.SaveChangesAsync();
@@ -339,6 +359,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
     {
         var animal = CreateTestAnimal();
         var fostering = CreateActiveFostering(animal.Id);
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         await _context.SaveChangesAsync();
@@ -361,6 +384,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
     {
         var animal = CreateTestAnimal();
         var fostering = CreateActiveFostering(animal.Id);
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         await _context.SaveChangesAsync();
@@ -386,6 +412,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
     {
         var animal = CreateTestAnimal();
         var fostering = CreateActiveFostering(animal.Id);
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         await _context.SaveChangesAsync();
@@ -433,6 +462,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Type = SlotType.Activity
         };
 
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         _context.Activities.Add(activity);
@@ -473,6 +505,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Status = status,
             Type = SlotType.ShelterUnavailable
         };
+
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
 
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
@@ -520,6 +555,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Type = SlotType.Activity
         };
 
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         _context.Activities.Add(activity);
@@ -562,6 +600,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Status = SlotStatus.Reserved,
             Type = SlotType.Activity
         };
+
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
 
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
@@ -606,6 +647,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Type = SlotType.Activity
         };
 
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         _context.Activities.Add(activity);
@@ -649,6 +693,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Type = SlotType.Activity
         };
 
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         _context.Activities.Add(activity);
@@ -682,6 +729,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
     {
         var animal = CreateTestAnimal();
         var fostering = CreateActiveFostering(animal.Id);
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         await _context.SaveChangesAsync();
@@ -720,6 +770,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Status = SlotStatus.Reserved,
             Type = SlotType.Activity
         };
+
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
 
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
@@ -761,6 +814,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Status = SlotStatus.Unavailable,
             Type = SlotType.ShelterUnavailable
         };
+
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
 
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
@@ -812,6 +868,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Type = SlotType.ShelterUnavailable
         };
 
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         _context.Activities.Add(activity);
@@ -859,6 +918,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Status = SlotStatus.Reserved,
             Type = SlotType.Activity
         };
+
+        var breed = new Breed { Id = animal1.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
 
         _context.Animals.AddRange(animal1, animal2);
         _context.Fosterings.Add(fostering);
@@ -912,6 +974,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Status = SlotStatus.Unavailable,
             Type = SlotType.ShelterUnavailable
         };
+
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
 
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);

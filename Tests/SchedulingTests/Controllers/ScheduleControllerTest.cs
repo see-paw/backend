@@ -327,29 +327,6 @@ public class ScheduleControllerTests
         Assert.Equal(200, okResult.StatusCode);
     }
 
-    [Fact]
-    public async Task GetAnimalWeeklySchedule_SuccessResult_CallsMapperWithCorrectValue()
-    {
-        var animalId = Guid.NewGuid().ToString();
-        var startDate = DateOnly.FromDateTime(DateTime.UtcNow);
-        var schedule = CreateValidSchedule();
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<AnimalWeeklySchedule>.Success(schedule, 200));
-
-        _mockMapper
-            .Setup(m => m.Map<AnimalWeeklyScheduleDto>(It.IsAny<AnimalWeeklySchedule>()))
-            .Returns(new AnimalWeeklyScheduleDto());
-
-        await _controller.GetAnimalWeeklySchedule(animalId, startDate);
-
-        _mockMapper.Verify(
-            m => m.Map<AnimalWeeklyScheduleDto>(schedule),
-            Times.Once);
-    }
-
     [Theory]
     [InlineData(200)]
     [InlineData(201)]
@@ -493,25 +470,6 @@ public class ScheduleControllerTests
             _controller.GetAnimalWeeklySchedule(animalId, startDate));
     }
 
-    [Fact]
-    public async Task GetAnimalWeeklySchedule_MapperThrowsException_PropagatesException()
-    {
-        var animalId = Guid.NewGuid().ToString();
-        var startDate = DateOnly.FromDateTime(DateTime.UtcNow);
-        var schedule = CreateValidSchedule();
-
-        _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<AnimalWeeklySchedule>.Success(schedule, 200));
-
-        _mockMapper
-            .Setup(m => m.Map<AnimalWeeklyScheduleDto>(It.IsAny<AnimalWeeklySchedule>()))
-            .Throws(new AutoMapperMappingException("Mapping error"));
-
-        await Assert.ThrowsAsync<AutoMapperMappingException>(() =>
-            _controller.GetAnimalWeeklySchedule(animalId, startDate));
-    }
 
     [Fact]
     public async Task GetAnimalWeeklySchedule_MediatorReturnsNull_HandlesOrThrows()
