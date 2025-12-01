@@ -202,7 +202,15 @@ public class MappingProfiles : Profile
             .IncludeBase<Slot, SlotDto>()
             .ForMember(dest => dest.ReservedBy,
                 opt => opt.MapFrom(src => src.Activity.User.UserName))
-            .ForMember(dest => dest.IsOwnReservation, opt => opt.Ignore());
+            .ForMember(dest => dest.IsOwnReservation,
+                opt => opt.MapFrom((src, dest, destMember, context) =>
+                {
+                    if (context.Items.TryGetValue("CurrentUserId", out var userId))
+                    {
+                        return src.Activity.UserId == userId.ToString();
+                    }
+                    return false;
+                }));
 
         // Slots de indisponibilidade do abrigo
         CreateMap<ShelterUnavailabilitySlot, ShelterUnavailabilitySlotDto>()

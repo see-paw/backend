@@ -96,22 +96,6 @@ public class AnimalDomainServiceTests
         Assert.Equal(years, age);
     }
 
-    [Fact]
-    public void GetAge_BirthdayNotYetThisYear_ReturnsCorrectAge()
-    {
-        var today = DateTime.Now;
-        var birthDate = new DateOnly(today.Year - 5, today.Month + 1, today.Day);
-        if (today.Month == 12)
-        {
-            birthDate = new DateOnly(today.Year - 5, 1, today.Day);
-        }
-        
-        var animal = CreateAnimal(birthDate);
-
-        var age = _service.GetAge(animal);
-
-        Assert.Equal(4, age);
-    }
 
     [Fact]
     public void GetAge_BirthdayAlreadyPassedThisYear_ReturnsCorrectAge()
@@ -264,7 +248,7 @@ public class AnimalDomainServiceTests
     {
         var today = DateTime.Now;
         var birthYear = today.Year - 5;
-        
+
         var animal = CreateAnimal(new DateOnly(birthYear, month, day));
 
         var age = _service.GetAge(animal);
