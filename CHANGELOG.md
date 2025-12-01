@@ -1,3 +1,15 @@
+## [1.6.0](https://github.com/see-paw/backend/compare/v1.5.1...v1.6.0) (2025-12-01)
+
+
+### Features
+
+* **Schedule:** Enhance schedule handling with additional ownership checks and activity slot creation ([8809cd0](https://github.com/see-paw/backend/commit/8809cd0c14451581bcf72a7bcadbedf23551c415))
+
+
+### Code Refactoring
+
+* **Tests:** Remove redundant test cases and ensure breed entity is added in scheduling tests ([621e898](https://github.com/see-paw/backend/commit/621e898e619414b0a44f89c904e48b68b226796b))
+
 ## [1.5.1](https://github.com/see-paw/backend/compare/v1.5.0...v1.5.1) (2025-11-27)
 
 
