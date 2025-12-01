@@ -1,4 +1,5 @@
 ﻿using Application.Core;
+using Application.Interfaces;
 using Application.Scheduling;
 using Application.Scheduling.Queries;
 
@@ -27,12 +28,14 @@ public class ScheduleControllerTests
     private readonly Mock<IMediator> _mockMediator;
     private readonly Mock<IMapper> _mockMapper;
     private readonly ScheduleController _controller;
+    private readonly Mock<IUserAccessor> _mockUserAccessor;
 
     public ScheduleControllerTests()
     {
         _mockMediator = new Mock<IMediator>();
         _mockMapper = new Mock<IMapper>();
-        _controller = new ScheduleController(_mockMediator.Object, _mockMapper.Object);
+        _mockUserAccessor = new Mock<IUserAccessor>();
+        _controller = new ScheduleController(_mockMediator.Object, _mockMapper.Object, _mockUserAccessor.Object);
     }
 
     #region AnimalId Parameter - Equivalence Classes
@@ -46,7 +49,7 @@ public class ScheduleControllerTests
 
         _mockMediator
             .Setup(m => m.Send(It.Is<GetAnimalWeeklySchedule.Query>(
-                q => q.AnimalId == animalId && q.StartDate == startDate), 
+                q => q.AnimalId == animalId && q.StartDate == startDate),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Success(schedule, 200));
 
@@ -58,7 +61,7 @@ public class ScheduleControllerTests
 
         _mockMediator.Verify(
             m => m.Send(It.Is<GetAnimalWeeklySchedule.Query>(
-                q => q.AnimalId == animalId), 
+                q => q.AnimalId == animalId),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -69,7 +72,7 @@ public class ScheduleControllerTests
         var startDate = DateOnly.FromDateTime(DateTime.UtcNow);
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Failure("Error", 400));
 
@@ -77,7 +80,7 @@ public class ScheduleControllerTests
 
         _mockMediator.Verify(
             m => m.Send(It.Is<GetAnimalWeeklySchedule.Query>(
-                q => q.AnimalId == null), 
+                q => q.AnimalId == null),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -88,7 +91,7 @@ public class ScheduleControllerTests
         var startDate = DateOnly.FromDateTime(DateTime.UtcNow);
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Failure("Error", 400));
 
@@ -96,7 +99,7 @@ public class ScheduleControllerTests
 
         _mockMediator.Verify(
             m => m.Send(It.Is<GetAnimalWeeklySchedule.Query>(
-                q => q.AnimalId == string.Empty), 
+                q => q.AnimalId == string.Empty),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -107,7 +110,7 @@ public class ScheduleControllerTests
         var startDate = DateOnly.FromDateTime(DateTime.UtcNow);
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Failure("Error", 400));
 
@@ -115,7 +118,7 @@ public class ScheduleControllerTests
 
         _mockMediator.Verify(
             m => m.Send(It.Is<GetAnimalWeeklySchedule.Query>(
-                q => q.AnimalId == "   "), 
+                q => q.AnimalId == "   "),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -127,7 +130,7 @@ public class ScheduleControllerTests
         var startDate = DateOnly.FromDateTime(DateTime.UtcNow);
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Failure("Error", 400));
 
@@ -135,7 +138,7 @@ public class ScheduleControllerTests
 
         _mockMediator.Verify(
             m => m.Send(It.Is<GetAnimalWeeklySchedule.Query>(
-                q => q.AnimalId == invalidId), 
+                q => q.AnimalId == invalidId),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -147,7 +150,7 @@ public class ScheduleControllerTests
         var startDate = DateOnly.FromDateTime(DateTime.UtcNow);
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Failure("Error", 400));
 
@@ -155,7 +158,7 @@ public class ScheduleControllerTests
 
         _mockMediator.Verify(
             m => m.Send(It.Is<GetAnimalWeeklySchedule.Query>(
-                q => q.AnimalId == longId), 
+                q => q.AnimalId == longId),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -167,7 +170,7 @@ public class ScheduleControllerTests
         var startDate = DateOnly.FromDateTime(DateTime.UtcNow);
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Failure("Error", 400));
 
@@ -175,7 +178,7 @@ public class ScheduleControllerTests
 
         _mockMediator.Verify(
             m => m.Send(It.Is<GetAnimalWeeklySchedule.Query>(
-                q => q.AnimalId == specialId), 
+                q => q.AnimalId == specialId),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -192,7 +195,7 @@ public class ScheduleControllerTests
         var schedule = CreateValidSchedule();
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Success(schedule, 200));
 
@@ -204,7 +207,7 @@ public class ScheduleControllerTests
 
         _mockMediator.Verify(
             m => m.Send(It.Is<GetAnimalWeeklySchedule.Query>(
-                q => q.StartDate == startDate), 
+                q => q.StartDate == startDate),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -216,7 +219,7 @@ public class ScheduleControllerTests
         var startDate = DateOnly.MinValue;
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Failure("Error", 400));
 
@@ -224,7 +227,7 @@ public class ScheduleControllerTests
 
         _mockMediator.Verify(
             m => m.Send(It.Is<GetAnimalWeeklySchedule.Query>(
-                q => q.StartDate == DateOnly.MinValue), 
+                q => q.StartDate == DateOnly.MinValue),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -236,7 +239,7 @@ public class ScheduleControllerTests
         var startDate = DateOnly.MaxValue;
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Failure("Error", 400));
 
@@ -244,7 +247,7 @@ public class ScheduleControllerTests
 
         _mockMediator.Verify(
             m => m.Send(It.Is<GetAnimalWeeklySchedule.Query>(
-                q => q.StartDate == DateOnly.MaxValue), 
+                q => q.StartDate == DateOnly.MaxValue),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -256,7 +259,7 @@ public class ScheduleControllerTests
         var startDate = default(DateOnly);
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Failure("Error", 400));
 
@@ -264,7 +267,7 @@ public class ScheduleControllerTests
 
         _mockMediator.Verify(
             m => m.Send(It.Is<GetAnimalWeeklySchedule.Query>(
-                q => q.StartDate == default(DateOnly)), 
+                q => q.StartDate == default(DateOnly)),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -280,7 +283,7 @@ public class ScheduleControllerTests
         var schedule = CreateValidSchedule();
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Success(schedule, 200));
 
@@ -292,7 +295,7 @@ public class ScheduleControllerTests
 
         _mockMediator.Verify(
             m => m.Send(It.Is<GetAnimalWeeklySchedule.Query>(
-                q => q.StartDate == startDate), 
+                q => q.StartDate == startDate),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -310,7 +313,7 @@ public class ScheduleControllerTests
         var expectedDto = new AnimalWeeklyScheduleDto();
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Success(schedule, 200));
 
@@ -332,7 +335,7 @@ public class ScheduleControllerTests
         var schedule = CreateValidSchedule();
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Success(schedule, 200));
 
@@ -357,7 +360,7 @@ public class ScheduleControllerTests
         var schedule = CreateValidSchedule();
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Success(schedule, statusCode));
 
@@ -368,12 +371,12 @@ public class ScheduleControllerTests
         var result = await _controller.GetAnimalWeeklySchedule(animalId, startDate);
 
         var okResult = result.Result as ObjectResult;
-        
+
         if (statusCode == 200)
         {
             okResult = Assert.IsType<OkObjectResult>(result.Result);
         }
-        
+
         Assert.Equal(statusCode, okResult!.StatusCode);
     }
 
@@ -391,7 +394,7 @@ public class ScheduleControllerTests
         var startDate = DateOnly.FromDateTime(DateTime.UtcNow);
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Failure("Error", statusCode));
 
@@ -410,7 +413,7 @@ public class ScheduleControllerTests
         var startDate = DateOnly.FromDateTime(DateTime.UtcNow);
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Failure("Animal not found", 404));
 
@@ -428,7 +431,7 @@ public class ScheduleControllerTests
         var startDate = DateOnly.FromDateTime(DateTime.UtcNow);
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Failure("Animal not fostered", 409));
 
@@ -446,7 +449,7 @@ public class ScheduleControllerTests
         var startDate = DateOnly.FromDateTime(DateTime.UtcNow);
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Failure(null!, 400));
 
@@ -462,7 +465,7 @@ public class ScheduleControllerTests
         var startDate = DateOnly.FromDateTime(DateTime.UtcNow);
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Failure(string.Empty, 400));
 
@@ -482,11 +485,11 @@ public class ScheduleControllerTests
         var startDate = DateOnly.FromDateTime(DateTime.UtcNow);
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Database error"));
 
-        await Assert.ThrowsAsync<Exception>(() => 
+        await Assert.ThrowsAsync<Exception>(() =>
             _controller.GetAnimalWeeklySchedule(animalId, startDate));
     }
 
@@ -498,7 +501,7 @@ public class ScheduleControllerTests
         var schedule = CreateValidSchedule();
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Success(schedule, 200));
 
@@ -506,7 +509,7 @@ public class ScheduleControllerTests
             .Setup(m => m.Map<AnimalWeeklyScheduleDto>(It.IsAny<AnimalWeeklySchedule>()))
             .Throws(new AutoMapperMappingException("Mapping error"));
 
-        await Assert.ThrowsAsync<AutoMapperMappingException>(() => 
+        await Assert.ThrowsAsync<AutoMapperMappingException>(() =>
             _controller.GetAnimalWeeklySchedule(animalId, startDate));
     }
 
@@ -517,11 +520,11 @@ public class ScheduleControllerTests
         var startDate = DateOnly.FromDateTime(DateTime.UtcNow);
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync((Result<AnimalWeeklySchedule>)null!);
 
-        await Assert.ThrowsAnyAsync<Exception>(() => 
+        await Assert.ThrowsAnyAsync<Exception>(() =>
             _controller.GetAnimalWeeklySchedule(animalId, startDate));
     }
 
@@ -533,7 +536,7 @@ public class ScheduleControllerTests
         var schedule = CreateValidSchedule();
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Success(schedule, 200));
 
@@ -558,7 +561,7 @@ public class ScheduleControllerTests
         var schedule = CreateValidSchedule();
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Success(schedule, 200));
 
@@ -570,7 +573,7 @@ public class ScheduleControllerTests
 
         _mockMediator.Verify(
             m => m.Send(
-                It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+                It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -588,7 +591,7 @@ public class ScheduleControllerTests
         var schedule = CreateValidSchedule();
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Success(schedule, 200));
 
@@ -600,7 +603,7 @@ public class ScheduleControllerTests
         await _controller.GetAnimalWeeklySchedule(animalId2, startDate);
 
         _mockMediator.Verify(
-            m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()),
             Times.Exactly(2));
     }
@@ -613,7 +616,7 @@ public class ScheduleControllerTests
         var schedule = CreateValidSchedule();
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Success(schedule, 200));
 
@@ -625,7 +628,7 @@ public class ScheduleControllerTests
         await _controller.GetAnimalWeeklySchedule(animalId, startDate);
 
         _mockMediator.Verify(
-            m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()),
             Times.Exactly(2));
     }
@@ -642,7 +645,7 @@ public class ScheduleControllerTests
         var schedule = CreateValidSchedule();
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Success(schedule, 200));
 
@@ -672,7 +675,7 @@ public class ScheduleControllerTests
         var startDate = DateOnly.FromDateTime(DateTime.UtcNow);
 
         _mockMediator
-            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(), 
+            .Setup(m => m.Send(It.IsAny<GetAnimalWeeklySchedule.Query>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<AnimalWeeklySchedule>.Failure("Error", statusCode));
 
