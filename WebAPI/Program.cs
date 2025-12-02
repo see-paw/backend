@@ -192,7 +192,13 @@ builder.Services.AddHostedService<ReminderService>();
 builder.Services.AddScoped<IReminderTask, OwnershipActivityCompletionTask>();
 builder.Services.AddScoped<IReminderTask, OwnershipActivityReminderTask>();
 builder.Services.AddScoped<IReminderTask, FosteringActivityReminderTask>();
-builder.WebHost.UseUrls("http://0.0.0.0:5000");
+
+// Configure URL based on USE_NGROK environment variable
+var useNgrok = Environment.GetEnvironmentVariable("USE_NGROK") == "true";
+if (useNgrok)
+{
+    builder.WebHost.UseUrls("http://0.0.0.0:5000");
+}
 
 // Pipeline
 var app = builder.Build();
