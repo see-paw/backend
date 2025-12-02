@@ -7,6 +7,7 @@ using Application.Users.Queries;
 using AutoMapper;
 
 using Domain;
+using Domain.Enums;
 
 using WebAPI.DTOs.Activities;
 using WebAPI.DTOs.Animals;
@@ -60,7 +61,12 @@ public class MappingProfiles : Profile
             .ForMember(dest => dest.Breed,
                 opt => opt.MapFrom(src => src.Breed))
             .ForMember(dest => dest.Images,
-                opt => opt.MapFrom(src => src.Images));
+                opt => opt.MapFrom(src => src.Images))
+            .ForMember(dest => dest.CurrentSupportValue,
+            opt => opt.MapFrom(src => src.Fosterings
+                .Where(f => f.Status == FosteringStatus.Active)
+                .Sum(f => f.Amount)));
+
 
         CreateMap<ReqCreateImageDto, Image>(MemberList.Source)
             .ForSourceMember(src => src.File, opt => opt.DoNotValidate());
