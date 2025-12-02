@@ -1,3 +1,10 @@
+## [1.7.0](https://github.com/see-paw/backend/compare/v1.6.0...v1.7.0) (2025-12-02)
+
+
+### Features
+
+* updated getAnimalDetails to return the sum of the amount of the active fosterings of the animal ([644f3f1](https://github.com/see-paw/backend/commit/644f3f11fd352f6a8338df3f6bc268bb53dc132f))
+
 ## [1.6.0](https://github.com/see-paw/backend/compare/v1.5.1...v1.6.0) (2025-12-01)
 
 
