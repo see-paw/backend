@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+using Application.Interfaces;
 using Application.Scheduling;
 using Application.Scheduling.Queries;
 
@@ -147,6 +147,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             StartDate = DateTime.UtcNow.AddMonths(-1)
         };
 
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         await _context.SaveChangesAsync();
@@ -161,13 +164,16 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
 
         Assert.False(result.IsSuccess);
         Assert.Equal(409, result.Code);
-        Assert.Equal("Animal not fostered by user", result.Error);
+        Assert.Equal("Animal not fostered or owned by user", result.Error);
     }
 
     [Fact]
     public async Task Handle_NoFosteringExists_ReturnsConflict()
     {
         var animal = CreateTestAnimal();
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         await _context.SaveChangesAsync();
 
@@ -181,6 +187,7 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
 
         Assert.False(result.IsSuccess);
         Assert.Equal(409, result.Code);
+        Assert.Equal("Animal not fostered or owned by user", result.Error);
     }
 
     [Fact]
@@ -208,6 +215,8 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Status = FosteringStatus.Active,
             StartDate = DateTime.UtcNow.AddMonths(-1)
         };
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
 
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
@@ -223,6 +232,7 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
 
         Assert.False(result.IsSuccess);
         Assert.Equal(409, result.Code);
+        Assert.Equal("Animal not fostered or owned by user", result.Error);
     }
 
     #endregion
@@ -233,12 +243,17 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
     public async Task Handle_OpeningEqualsClosing_ThrowsArgumentException()
     {
         var animal = CreateTestAnimal();
-        animal.Shelter.OpeningTime = new TimeOnly(9, 0);
-        animal.Shelter.ClosingTime = new TimeOnly(9, 0);
-
         var fostering = CreateActiveFostering(animal.Id);
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
+        await _context.SaveChangesAsync();
+
+        _context.Entry(animal).Reference(a => a.Shelter).Load();
+        animal.Shelter.OpeningTime = new TimeOnly(9, 0);
+        animal.Shelter.ClosingTime = new TimeOnly(9, 0);
         await _context.SaveChangesAsync();
 
         var query = new GetAnimalWeeklySchedule.Query
@@ -254,12 +269,17 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
     public async Task Handle_OpeningAfterClosing_ThrowsArgumentException()
     {
         var animal = CreateTestAnimal();
-        animal.Shelter.OpeningTime = new TimeOnly(18, 0);
-        animal.Shelter.ClosingTime = new TimeOnly(9, 0);
-
         var fostering = CreateActiveFostering(animal.Id);
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
+        await _context.SaveChangesAsync();
+
+        _context.Entry(animal).Reference(a => a.Shelter).Load();
+        animal.Shelter.OpeningTime = new TimeOnly(18, 0);
+        animal.Shelter.ClosingTime = new TimeOnly(9, 0);
         await _context.SaveChangesAsync();
 
         var query = new GetAnimalWeeklySchedule.Query
@@ -279,12 +299,17 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
         int openHour, int openMin, int closeHour, int closeMin, int closeSec)
     {
         var animal = CreateTestAnimal();
-        animal.Shelter.OpeningTime = new TimeOnly(openHour, openMin);
-        animal.Shelter.ClosingTime = new TimeOnly(closeHour, closeMin, closeSec);
-
         var fostering = CreateActiveFostering(animal.Id);
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
+        await _context.SaveChangesAsync();
+
+        _context.Entry(animal).Reference(a => a.Shelter).Load();
+        animal.Shelter.OpeningTime = new TimeOnly(openHour, openMin);
+        animal.Shelter.ClosingTime = new TimeOnly(closeHour, closeMin, closeSec);
         await _context.SaveChangesAsync();
 
         SetupMocksForSuccessfulCall();
@@ -309,6 +334,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
     {
         var animal = CreateTestAnimal();
         var fostering = CreateActiveFostering(animal.Id);
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         await _context.SaveChangesAsync();
@@ -331,6 +359,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
     {
         var animal = CreateTestAnimal();
         var fostering = CreateActiveFostering(animal.Id);
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         await _context.SaveChangesAsync();
@@ -353,6 +384,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
     {
         var animal = CreateTestAnimal();
         var fostering = CreateActiveFostering(animal.Id);
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         await _context.SaveChangesAsync();
@@ -365,7 +399,7 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             StartDate = DateOnly.MaxValue
         };
 
-        await Assert.ThrowsAnyAsync<Exception>(() => _handler.Handle(query, CancellationToken.None));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => _handler.Handle(query, CancellationToken.None));
     }
 
     [Theory]
@@ -378,6 +412,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
     {
         var animal = CreateTestAnimal();
         var fostering = CreateActiveFostering(animal.Id);
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         await _context.SaveChangesAsync();
@@ -425,6 +462,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Type = SlotType.Activity
         };
 
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         _context.Activities.Add(activity);
@@ -465,6 +505,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Status = status,
             Type = SlotType.ShelterUnavailable
         };
+
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
 
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
@@ -512,6 +555,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Type = SlotType.Activity
         };
 
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         _context.Activities.Add(activity);
@@ -554,6 +600,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Status = SlotStatus.Reserved,
             Type = SlotType.Activity
         };
+
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
 
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
@@ -598,6 +647,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Type = SlotType.Activity
         };
 
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         _context.Activities.Add(activity);
@@ -641,6 +693,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Type = SlotType.Activity
         };
 
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         _context.Activities.Add(activity);
@@ -674,6 +729,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
     {
         var animal = CreateTestAnimal();
         var fostering = CreateActiveFostering(animal.Id);
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         await _context.SaveChangesAsync();
@@ -712,6 +770,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Status = SlotStatus.Reserved,
             Type = SlotType.Activity
         };
+
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
 
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
@@ -753,6 +814,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Status = SlotStatus.Unavailable,
             Type = SlotType.ShelterUnavailable
         };
+
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
 
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
@@ -804,6 +868,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Type = SlotType.ShelterUnavailable
         };
 
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         _context.Activities.Add(activity);
@@ -851,6 +918,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Status = SlotStatus.Reserved,
             Type = SlotType.Activity
         };
+
+        var breed = new Breed { Id = animal1.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
 
         _context.Animals.AddRange(animal1, animal2);
         _context.Fosterings.Add(fostering);
@@ -905,6 +975,9 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Type = SlotType.ShelterUnavailable
         };
 
+        var breed = new Breed { Id = animal.BreedId, Name = "TestBreed" };
+        _context.Breeds.Add(breed);
+
         _context.Animals.Add(animal);
         _context.Fosterings.Add(fostering);
         _context.Set<ShelterUnavailabilitySlot>().Add(unavailabilitySlot);
@@ -946,7 +1019,6 @@ public class GetAnimalWeeklyScheduleHandlerTests : IDisposable
             Sterilized = true,
             Cost = 50m,
             ShelterId = _testShelter.Id,
-            Shelter = _testShelter,
             BreedId = Guid.NewGuid().ToString()
         };
     }

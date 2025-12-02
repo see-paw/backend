@@ -229,9 +229,9 @@ public class CreateOwnershipActivity
         /// <returns>
         /// The newly created activity entity.
         /// </returns>
-        private static Activity CreateActivity(Command request, string userId)
+        private Activity CreateActivity(Command request, string userId)
         {
-            return new Activity
+            var activity = new Activity
             {
                 AnimalId = request.AnimalId,
                 UserId = userId,
@@ -240,6 +240,20 @@ public class CreateOwnershipActivity
                 StartDate = request.StartDate,
                 EndDate = request.EndDate
             };
+
+            // Create ActivitySlot to reserve the time slot
+            var activitySlot = new ActivitySlot
+            {
+                ActivityId = activity.Id,
+                StartDateTime = request.StartDate,
+                EndDateTime = request.EndDate,
+                Status = SlotStatus.Reserved,
+                Type = SlotType.Activity
+            };
+
+            context.ActivitySlots.Add(activitySlot);
+
+            return activity;
         }
 
         /// <summary>

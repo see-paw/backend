@@ -1,4 +1,5 @@
 using Application.Core;
+using Application.Interfaces;
 using Application.Scheduling.Queries;
 
 using AutoMapper;
@@ -17,7 +18,7 @@ namespace WebAPI.Controllers;
 /// <summary>
 /// Provides endpoints for retrieving animal scheduling information.
 /// </summary>
-public class ScheduleController(IMediator mediator, IMapper mapper) : BaseApiController
+public class ScheduleController(IMediator mediator, IMapper mapper, IUserAccessor userAccessor) : BaseApiController
 {
     /// <summary>
     /// Retrieves the complete weekly schedule of a specific animal.
@@ -45,7 +46,11 @@ public class ScheduleController(IMediator mediator, IMapper mapper) : BaseApiCon
             return HandleResult(result);
         }
 
-        var resDto = mapper.Map<AnimalWeeklyScheduleDto>(result.Value);
+        var currentUser = await userAccessor.GetUserAsync();
+        var resDto = mapper.Map<AnimalWeeklyScheduleDto>(result.Value, opt =>
+        {
+            opt.Items["CurrentUserId"] = currentUser.Id;
+        });
 
         return HandleResult(new Result<AnimalWeeklyScheduleDto>
         {

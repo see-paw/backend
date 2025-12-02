@@ -48,7 +48,7 @@ public class GetAnimalWeeklySchedule
         /// <param name="request">The <see cref="Query"/> containing the animal ID and start date.</param>
         /// <param name="ct">A cancellation token used to cancel the asynchronous operation.</param>
         /// <returns>
-        /// A <see cref="Result{T}"/> containing the <see cref="AnimalWeeklySchedule"/> if successful,  
+        /// A <see cref="Result{T}"/> containing the <see cref="AnimalWeeklySchedule"/> if successful,
         /// or an error result with a message and status code if validation or data retrieval fails.
         /// </returns>
         /// <remarks>
@@ -76,34 +76,40 @@ public class GetAnimalWeeklySchedule
             var animal = await dbContext.Animals
                 .AsNoTracking()
                 .Include(a => a.Shelter)
+                .Include(a => a.Breed)
                 .FirstOrDefaultAsync(a => a.Id == request.AnimalId, ct);
 
             if (animal == null)
             {
                 return Result<AnimalWeeklySchedule>.Failure("Animal not found", 404);
             }
-            
+
             var hasFostering = await dbContext.Fosterings
-                .AnyAsync(f => f.AnimalId == animal.Id 
-                               && f.UserId == user.Id 
+                .AnyAsync(f => f.AnimalId == animal.Id
+                               && f.UserId == user.Id
                                && f.Status == FosteringStatus.Active, ct);
 
-            if (!hasFostering)
+            var hasOwnership = await dbContext.OwnershipRequests
+                .AnyAsync(o => o.AnimalId == animal.Id
+                               && o.UserId == user.Id
+                               && o.Status == OwnershipStatus.Approved, ct);
+
+            if (!hasFostering && !hasOwnership)
             {
-                return Result<AnimalWeeklySchedule>.Failure("Animal not fostered by user", 409);
+                return Result<AnimalWeeklySchedule>.Failure("Animal not fostered or owned by user", 409);
             }
 
             var weekStart = request.StartDate.ToDateTime(TimeOnly.MinValue);
             var weekEnd = request.StartDate.AddDays(7).ToDateTime(TimeOnly.MinValue);
             var opening = animal.Shelter.OpeningTime.ToTimeSpan();
             var closing = animal.Shelter.ClosingTime.ToTimeSpan();
-            
+
             if (opening >= closing) throw new ArgumentException("Opening must be before closing");
 
             var reservedSlots = await dbContext.Set<ActivitySlot>()
                 .AsNoTracking()
                 .Include(s => s.Activity)
-                .ThenInclude(a => a.User) 
+                .ThenInclude(a => a.User)
                 .Where(s => s.Activity.AnimalId == animal.Id
                             && s.Activity.Status == ActivityStatus.Active
                             && s.StartDateTime < weekEnd
@@ -121,7 +127,7 @@ public class GetAnimalWeeklySchedule
             var grouped = reservedSlots.Concat<Slot>(unavailableSlots);
 
             var normalizedSlots = slotNormalizer.Normalize(grouped, opening, closing);
-            
+
             var normalizedReserved = normalizedSlots.Slots.OfType<ActivitySlot>().ToList();
             var normalizedUnavailable = normalizedSlots.Slots.OfType<ShelterUnavailabilitySlot>().ToList();
 
