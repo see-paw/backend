@@ -60,6 +60,12 @@ public static class DbInitializer
         const string user6Id = "66666666-6666-6666-6666-666666666666"; // Filipe
         const string user8Id = "88888888-8888-8888-8888-888888888888"; // Alice Notifications (Notifications testing)
         const string user9Id = "99999999-9999-9999-9999-999999999999"; // Carlos Notifications (Notifications testing)
+        const string user10Id = "10101010-1010-1010-1010-101010101010"; // Helena
+        const string shelter4Id = "44444444-4444-4444-4444-444444444444";
+        const string breed4Id = "4d4d4444-4444-4444-4444-444444444444";
+        const string animal16Id = "f055cc31-fdeb-4c65-bb73-4f558f67dd6d";
+        const string imageAnimal16Img1Id = "00000000-0000-0000-0000-000000016101";
+        const string ownershipRequest6Id = "or-6";
         const string imageShelterUrl1_1 =
             "https://res.cloudinary.com/dnfgbodgr/image/upload/v1761835433/shelter_qnix0r.jpg";
         const string imageShelterUrl1_2 =
@@ -216,6 +222,19 @@ public static class DbInitializer
                     OpeningTime = new TimeOnly(9, 0, 0),
                     ClosingTime = new TimeOnly(18, 0, 0),
                     CreatedAt = DateTime.UtcNow
+                },
+                new() // For owned animal test
+                {
+                    Id = shelter4Id,
+                    Name = "Owned Animal Shelter",
+                    Street = "Rua dos Donos 1",
+                    City = "Porto",
+                    PostalCode = "4100-001",
+                    Phone = "910000010",
+                    NIF = "777777777",
+                    OpeningTime = new TimeOnly(9, 0, 0),
+                    ClosingTime = new TimeOnly(18, 0, 0),
+                    CreatedAt = DateTime.UtcNow
                 }
             };
 
@@ -358,6 +377,19 @@ public static class DbInitializer
                     BirthDate = new DateTime(1992, 6, 8),
                     PhoneNumber = "910000002",
                     CreatedAt = DateTime.UtcNow
+                },
+                new() // User for owned animal
+                {
+                    Id = user10Id,
+                    Name = "Helena Costa",
+                    UserName = "helena@test.com",
+                    Email = "helena@test.com",
+                    City = "Porto",
+                    Street = "Rua dos Testes 300",
+                    PostalCode = "4100-300",
+                    BirthDate = new DateTime(1991, 7, 15),
+                    PhoneNumber = "910000003",
+                    CreatedAt = DateTime.UtcNow
                 }
             };
 
@@ -393,7 +425,8 @@ public static class DbInitializer
             {
                 new() { Id = breed1Id, Name = "Siamês", Description = "Raça de gato elegante e sociável." },
                 new() { Id = breed2Id, Name = "Beagle", Description = "Cão amigável, curioso e ativo." },
-                new() { Id = breed3Id, Name = "Pastor Alemão", Description = "Cão leal, inteligente e protetor." }
+                new() { Id = breed3Id, Name = "Pastor Alemão", Description = "Cão leal, inteligente e protetor." },
+                new() { Id = breed4Id, Name = "Owned Animal Breed", Description = "A breed for an owned animal." }
             };
 
             await dbContext.Breeds.AddRangeAsync(breeds);
@@ -781,6 +814,26 @@ public static class DbInitializer
                     Features = "Animal de teste isolado - Notifications",
                     ShelterId = shelter3Id,
                     Images = new List<Image>()
+                },
+                new() // Owned animal for testing
+                {
+                    Id = animal16Id,
+                    Name = "OwnedAnimal",
+                    AnimalState = AnimalState.HasOwner,
+                    Description = "This is an animal that already has an owner.",
+                    Species = Species.Dog,
+                    Size = SizeType.Medium,
+                    Sex = SexType.Female,
+                    Colour = "Black and White",
+                    BirthDate = new DateOnly(2021, 1, 1),
+                    Sterilized = true,
+                    BreedId = breed4Id,
+                    Cost = 150,
+                    Features = "Very friendly",
+                    ShelterId = shelter4Id,
+                    OwnerId = user10Id,
+                    OwnershipStartDate = DateTime.UtcNow.AddDays(-10),
+                    Images = new List<Image>()
                 }
             };
 
@@ -1082,6 +1135,16 @@ public static class DbInitializer
                     Description = "NotifTestDog secundário",
                     IsPrincipal = false,
                     PublicId = publicIdAnimal1Img2
+                },
+                // === ANIMAL 16 (Owned) ===
+                new()
+                {
+                    Id = imageAnimal16Img1Id,
+                    AnimalId = animal16Id,
+                    Url = imageUrl1_1, // Using a placeholder image
+                    Description = "Owned animal's picture",
+                    IsPrincipal = true,
+                    PublicId = publicIdAnimal1Img1 // Using a placeholder public id
                 }
             };
 
@@ -1132,6 +1195,25 @@ public static class DbInitializer
             };
 
             await dbContext.Fosterings.AddRangeAsync(fosterings);
+            await dbContext.SaveChangesAsync();
+        }
+
+        // ======== SEED OWNERSHIP REQUESTS ========
+        if (!dbContext.OwnershipRequests.Any(or => or.Id == ownershipRequest6Id))
+        {
+            var ownedAnimalRequest = new OwnershipRequest
+            {
+                Id = ownershipRequest6Id,
+                AnimalId = animal16Id,
+                UserId = user10Id,
+                Amount = 150,
+                Status = OwnershipStatus.Approved,
+                RequestInfo = "Test request for owned animal",
+                RequestedAt = DateTime.UtcNow.AddDays(-20),
+                ApprovedAt = DateTime.UtcNow.AddDays(-10),
+                UpdatedAt = DateTime.UtcNow.AddDays(-10)
+            };
+            await dbContext.OwnershipRequests.AddAsync(ownedAnimalRequest);
             await dbContext.SaveChangesAsync();
         }
 
