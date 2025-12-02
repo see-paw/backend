@@ -91,5 +91,11 @@ public class ResAnimalDto
     /// A list of images associated with the animal.
     /// </summary>
     public List<ResImageDto>? Images { get; set; }
+
+    /// <summary>
+    /// The total active fostering support currently received by the animal.
+    /// </summary>
+    public decimal CurrentSupportValue { get; set; }
+
 }
 

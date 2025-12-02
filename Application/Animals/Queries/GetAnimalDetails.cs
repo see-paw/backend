@@ -1,4 +1,4 @@
-﻿using Application.Core;
+using Application.Core;
 using Domain;
 using Domain.Enums;
 using MediatR;
@@ -64,6 +64,7 @@ public class GetAnimalDetails
             var animal = await dbContext.Animals
                 .Include(x => x.Breed)
                 .Include(x => x.Images)
+                .Include(x => x.Fosterings)
                 .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
             if (animal == null)
