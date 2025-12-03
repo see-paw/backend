@@ -1,3 +1,10 @@
+## [1.9.2](https://github.com/see-paw/backend/compare/v1.9.1...v1.9.2) (2025-12-03)
+
+
+### Code Refactoring
+
+* **Program:** Remove unused configuration for WebHost URL ([a9d90ff](https://github.com/see-paw/backend/commit/a9d90ff5b11bd12676ea8837f9279d8ffae2e1d2))
+
 ## [1.9.1](https://github.com/see-paw/backend/compare/v1.9.0...v1.9.1) (2025-12-03)
 
 
