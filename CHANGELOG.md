@@ -1,3 +1,11 @@
+## [1.9.0](https://github.com/see-paw/backend/compare/v1.8.0...v1.9.0) (2025-12-03)
+
+
+### Features
+
+* **WebAPI:** Add conditional NGROK URL support based on environment variable ([510ccae](https://github.com/see-paw/backend/commit/510ccaecbe1af6d950e947509237416c349a20f1))
+* **WebAPI:** Add Testing environment support and database initialization logic ([ef90a3d](https://github.com/see-paw/backend/commit/ef90a3dee07ac752bd5d005d942ef41ab936ad2f))
+
 ## [1.8.0](https://github.com/see-paw/backend/compare/v1.7.0...v1.8.0) (2025-12-02)
 
 
