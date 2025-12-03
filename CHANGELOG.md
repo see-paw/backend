@@ -1,3 +1,10 @@
+## [1.8.0](https://github.com/see-paw/backend/compare/v1.7.0...v1.8.0) (2025-12-02)
+
+
+### Features
+
+* **DbInitializer:** Add seed data for owned animal testing ([948c59c](https://github.com/see-paw/backend/commit/948c59c7b0a34bcec7dd5a627c3ad88bdcc9889a))
+
 ## [1.7.0](https://github.com/see-paw/backend/compare/v1.6.0...v1.7.0) (2025-12-02)
 
 
