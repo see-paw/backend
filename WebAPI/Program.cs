@@ -34,12 +34,18 @@ using WebAPI.Validators;
 using WebAPI.Validators.Animals;
 
 var inContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
-var isProduction = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production"; // Azure provides this env variable
+var aspnetcoreEnv = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+var isProduction = aspnetcoreEnv == "Production"; // Azure provides this env variable
+var isTesting = aspnetcoreEnv == "Testing"; // CI/CD pipeline environment
 
 string environmentName;
 if (isProduction)
 {
     environmentName = "Production";
+}
+else if (isTesting)
+{
+    environmentName = "Testing";
 }
 else if (inContainer)
 {
@@ -267,6 +273,27 @@ try
         {
             logger.LogInformation("PRODUCTION MODE - Database already has data. Skipping seed.");
         }
+    }
+    else if (app.Environment.IsEnvironment("Testing"))
+    {
+        // Testing mode (CI/CD): always reset and seed for consistent test data
+        logger.LogWarning("TESTING MODE - Database will be deleted, recreated and seeded for tests.");
+        await context.Database.EnsureDeletedAsync();
+        await context.Database.MigrateAsync();
+        logger.LogInformation("Database recreated successfully.");
+        
+        // Recreate roles after database reset
+        foreach (var role in roles)
+        {
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new IdentityRole(role));
+                logger.LogInformation($"Role '{role}' recreated.");
+            }
+        }
+        
+        await DbInitializer.SeedData(context, userManager, roleManager, loggerFactory, true);
+        logger.LogInformation("Database seeded successfully for testing.");
     }
     else
     {
