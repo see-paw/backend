@@ -34,18 +34,12 @@ using WebAPI.Validators;
 using WebAPI.Validators.Animals;
 
 var inContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
-var aspnetcoreEnv = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-var isProduction = aspnetcoreEnv == "Production"; // Azure provides this env variable
-var isTesting = aspnetcoreEnv == "Testing"; // CI/CD pipeline environment
+var isProduction = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production"; // Azure provides this env variable
 
 string environmentName;
 if (isProduction)
 {
     environmentName = "Production";
-}
-else if (isTesting)
-{
-    environmentName = "Testing";
 }
 else if (inContainer)
 {
@@ -199,13 +193,6 @@ builder.Services.AddScoped<IReminderTask, OwnershipActivityCompletionTask>();
 builder.Services.AddScoped<IReminderTask, OwnershipActivityReminderTask>();
 builder.Services.AddScoped<IReminderTask, FosteringActivityReminderTask>();
 
-// Configure URL based on USE_NGROK environment variable
-var useNgrok = Environment.GetEnvironmentVariable("USE_NGROK") == "true";
-if (useNgrok)
-{
-    builder.WebHost.UseUrls("http://0.0.0.0:5000");
-}
-
 // Pipeline
 var app = builder.Build();
 
@@ -273,41 +260,6 @@ try
         {
             logger.LogInformation("PRODUCTION MODE - Database already has data. Skipping seed.");
         }
-    }
-    else if (app.Environment.IsEnvironment("Testing"))
-    {
-        // Testing mode (CI/CD): always reset and seed for consistent test data
-        logger.LogWarning("========================================");
-        logger.LogWarning("🧪 TESTING MODE - STARTING DATABASE RESET");
-        logger.LogWarning("========================================");
-        
-        logger.LogWarning("🗑️  Step 1/4: Deleting existing database...");
-        await context.Database.EnsureDeletedAsync();
-        logger.LogInformation("✅ Database deleted successfully.");
-        
-        logger.LogWarning("🔄 Step 2/4: Applying migrations to recreate database...");
-        await context.Database.MigrateAsync();
-        logger.LogInformation("✅ Database recreated successfully.");
-        
-        logger.LogWarning("👥 Step 3/4: Recreating roles...");
-        // Recreate roles after database reset
-        foreach (var role in roles)
-        {
-            if (!await roleManager.RoleExistsAsync(role))
-            {
-                await roleManager.CreateAsync(new IdentityRole(role));
-                logger.LogInformation($"   ✅ Role '{role}' recreated.");
-            }
-        }
-        logger.LogInformation("✅ All roles recreated successfully.");
-        
-        logger.LogWarning("🌱 Step 4/4: Seeding database with test data...");
-        await DbInitializer.SeedData(context, userManager, roleManager, loggerFactory, true);
-        logger.LogInformation("✅ Database seeded successfully for testing.");
-        
-        logger.LogWarning("========================================");
-        logger.LogWarning("✅ DATABASE RESET COMPLETE - READY FOR TESTS");
-        logger.LogWarning("========================================");
     }
     else
     {
