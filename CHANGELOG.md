@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/see-paw/backend/compare/v1.9.0...v1.9.1) (2025-12-03)
+
+
+### Code Refactoring
+
+* **WebAPI:** Enhance logging for "Testing" environment database reset process ([69acb7c](https://github.com/see-paw/backend/commit/69acb7ce3ce14ad2895a6402593f11344f692176))
+
 ## [1.9.0](https://github.com/see-paw/backend/compare/v1.8.0...v1.9.0) (2025-12-03)
 
 
