@@ -1,4 +1,4 @@
-﻿using Infrastructure.BackgroundTasks;
+using Infrastructure.BackgroundTasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -207,7 +207,7 @@ public class ReminderServiceTests
         cts.Cancel();
         await service.StopAsync(cts.Token);
 
-        _mockScope.Verify(s => s.Dispose(), Times.AtLeastOnce);
+        _mockScope.As<IDisposable>().Verify(d => d.Dispose(), Times.AtLeastOnce);
     }
 
     [Fact]

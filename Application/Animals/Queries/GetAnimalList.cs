@@ -1,4 +1,4 @@
-﻿using Application.Animals.Filters;
+using Application.Animals.Filters;
 using Domain;
 using Domain.Enums;
 using MediatR;
@@ -73,7 +73,8 @@ namespace Application.Animals.Queries
                     .Include(a => a.Shelter)      // Include shelter data
                     .Include(a => a.Images)       // Include associated images
                     .Where(a => a.AnimalState == AnimalState.Available
-                             || a.AnimalState == AnimalState.PartiallyFostered)
+                             || a.AnimalState == AnimalState.PartiallyFostered
+                             || a.AnimalState == AnimalState.TotallyFostered)
                     .AsQueryable();
 
                 if (request.Filters != null)
