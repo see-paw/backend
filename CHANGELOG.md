@@ -1,3 +1,10 @@
+## [1.10.0](https://github.com/see-paw/backend/compare/v1.9.3...v1.10.0) (2025-12-05)
+
+
+### Features
+
+* **Postman:** Add Postman collection for API testing and environment-specific permissions ([ae6dec4](https://github.com/see-paw/backend/commit/ae6dec4d5643ef7ad639bb58ac974d6b1836d216))
+
 ## [1.9.3](https://github.com/see-paw/backend/compare/v1.9.2...v1.9.3) (2025-12-05)
 
 
