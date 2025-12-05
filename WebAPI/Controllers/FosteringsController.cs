@@ -107,6 +107,27 @@ namespace WebAPI.Controllers
             return HandleResult(result);
         }
 
+        /// <summary>
+        /// Retrieves the IDs of active fosterings for the authenticated user.
+        /// </summary>
+        /// <returns>List of fostering IDs and their associated animal IDs.</returns>
+        /// <response code="200">Returns the list of IDs.</response>
+        /// <response code="404">User not found.</response>
+        [Authorize(Roles = AppRoles.User)]
+        [HttpGet("ids")]
+        public async Task<ActionResult<List<ResActiveFosteringIdDto>>> GetActiveFosteringIds()
+        {
+            var result = await Mediator.Send(new GetActiveFosteringIds.Query());
+            if (!result.IsSuccess) return HandleResult(result);
+
+            var dtoList = result.Value!.Select(f => new ResActiveFosteringIdDto
+            {
+                Id = f.Id,
+                AnimalId = f.AnimalId
+            }).ToList();
+
+            return HandleResult(Result<List<ResActiveFosteringIdDto>>.Success(dtoList, 200));
+        }
     }
 }
 
