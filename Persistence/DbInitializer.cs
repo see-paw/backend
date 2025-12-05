@@ -1692,7 +1692,7 @@ public static class DbInitializer
         }
 
 // ======== ACTIVITIES & SLOTS ========
-        var baseDate = new DateTime(2025, 11, 3, 0, 0, 0, DateTimeKind.Utc);
+        var baseDate = new DateTime(2025, 12, 1, 0, 0, 0, DateTimeKind.Utc);
 
         const string activityAId = "activity-seed-a";
         const string activityBId = "activity-seed-b";
