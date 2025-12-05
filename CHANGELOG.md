@@ -1,3 +1,11 @@
+## [1.9.3](https://github.com/see-paw/backend/compare/v1.9.2...v1.9.3) (2025-12-05)
+
+
+### Bug Fixes
+
+* tests ([e16c800](https://github.com/see-paw/backend/commit/e16c800d109b0592d501522780b7b024e94ffe8c))
+* totally fostered animals are now listed ([e8fbfa9](https://github.com/see-paw/backend/commit/e8fbfa9f8dc9927a6db17d202f12b2844975e9be))
+
 ## [1.9.2](https://github.com/see-paw/backend/compare/v1.9.1...v1.9.2) (2025-12-03)
 
 
