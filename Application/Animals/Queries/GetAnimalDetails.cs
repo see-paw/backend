@@ -73,7 +73,8 @@ public class GetAnimalDetails
             }
 
             if (animal.AnimalState != AnimalState.Available
-                && animal.AnimalState != AnimalState.PartiallyFostered)
+                && animal.AnimalState != AnimalState.PartiallyFostered
+                && animal.AnimalState != AnimalState.TotallyFostered)
             {
                 return Result<Animal>.Failure("Animal not retrievable", 404);
             }

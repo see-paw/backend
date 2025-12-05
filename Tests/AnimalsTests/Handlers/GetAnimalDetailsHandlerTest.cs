@@ -1,4 +1,4 @@
-﻿using Application.Animals.Queries;
+using Application.Animals.Queries;
 using Domain;
 using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -54,7 +54,6 @@ public class GetAnimalDetailsHandlerTest
     [Theory]
     [InlineData(AnimalState.Inactive)]
     [InlineData(AnimalState.HasOwner)]
-    [InlineData(AnimalState.TotallyFostered)]
     public async Task NonRetrievableStates_ReturnsNotFound(AnimalState invalidState)
     {
         // Arrange
